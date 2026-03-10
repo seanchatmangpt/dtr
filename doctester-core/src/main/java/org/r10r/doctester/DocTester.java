@@ -18,7 +18,7 @@ package org.r10r.doctester;
 import org.apache.http.cookie.Cookie;
 import org.r10r.doctester.rendermachine.RenderMachine;
 import org.r10r.doctester.rendermachine.RenderMachineCommands;
-import org.r10r.doctester.rendermachine.RenderMachineImpl;
+import org.r10r.doctester.rendermachine.RenderMachineMarkdownImpl;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -302,7 +302,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
      */
     public RenderMachine getRenderMachine() {
 
-        return new RenderMachineImpl();
+        return new RenderMachineMarkdownImpl();
 
     }
 

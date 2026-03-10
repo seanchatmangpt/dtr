@@ -71,7 +71,7 @@ public class RenderMachineMarkdownImpl implements RenderMachineMarkdown {
     @Override
     public void sayNextSection(String heading) {
         sections.add(heading);
-        String anchorId = convertHeadingToId(heading);
+        String anchorId = convertTextToId(heading);
         toc.add(String.format("- [%s](#%s)", heading, anchorId));
 
         markdownDocument.add("");
@@ -288,8 +288,8 @@ public class RenderMachineMarkdownImpl implements RenderMachineMarkdown {
         }
     }
 
-    String convertHeadingToId(String heading) {
-        return heading.toLowerCase()
+    public String convertTextToId(String text) {
+        return text.toLowerCase()
                 .replaceAll("[^a-z0-9]", "");
     }
 

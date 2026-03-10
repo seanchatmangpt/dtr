@@ -17,6 +17,8 @@ package org.r10r.doctester;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import org.r10r.doctester.rendermachine.RenderMachine;
+import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import org.junit.AfterClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -71,6 +73,12 @@ import static org.junit.Assert.fail;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ValidateAndStressTest extends DocTester {
+
+    @Override
+    public RenderMachine getRenderMachine() {
+        // Use deprecated HTML renderer for backwards compatibility testing
+        return new RenderMachineImpl();
+    }
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
     private static final String OUTPUT_DIR = "target/site/doctester";

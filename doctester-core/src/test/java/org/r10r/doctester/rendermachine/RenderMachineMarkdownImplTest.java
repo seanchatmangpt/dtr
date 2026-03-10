@@ -158,9 +158,9 @@ public class RenderMachineMarkdownImplTest {
 
     @Test
     public void testHeaderConversionToId() {
-        String id1 = renderMachine.convertHeadingToId("Get All Users");
-        String id2 = renderMachine.convertHeadingToId("Create User (POST)");
-        String id3 = renderMachine.convertHeadingToId("Delete User by ID");
+        String id1 = renderMachine.convertTextToId("Get All Users");
+        String id2 = renderMachine.convertTextToId("Create User (POST)");
+        String id3 = renderMachine.convertTextToId("Delete User by ID");
 
         assert id1.equals("getallusers");
         assert id2.equals("createuserpost");

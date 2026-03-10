@@ -15,6 +15,12 @@
  */
 package org.r10r.doctester.rendermachine;
 
+/**
+ * @deprecated Bootstrap 3.0.0 HTML templates are deprecated.
+ * Use markdown rendering via {@link RenderMachineMarkdown} instead.
+ * These HTML constants are maintained for backwards compatibility only.
+ */
+@Deprecated(since = "1.1.12", forRemoval = true)
 public interface RenderMachineHtml {
 
     String BOOTSTRAP_BASE = "assets/bootstrap/3.0.0/";

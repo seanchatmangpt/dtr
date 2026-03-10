@@ -16,6 +16,8 @@
 package org.r10r.doctester;
 
 import org.r10r.doctester.DocTester;
+import org.r10r.doctester.rendermachine.RenderMachine;
+import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.junit.Assert;
@@ -28,6 +30,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class DocTesterTest extends DocTester {
+
+    @Override
+    public RenderMachine getRenderMachine() {
+        // Use deprecated HTML renderer for backwards compatibility testing
+        return new RenderMachineImpl();
+    }
 
     public static String EXPECTED_FILENAME = DocTesterTest.class.getName() + ".html";
 

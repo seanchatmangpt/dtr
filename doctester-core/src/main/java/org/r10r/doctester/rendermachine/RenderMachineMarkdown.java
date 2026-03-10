@@ -24,28 +24,5 @@ package org.r10r.doctester.rendermachine;
  * Output is suitable for GitHub, GitLab, documentation platforms, and
  * static site generators (MkDocs, Hugo, Jekyll, etc.).
  */
-public interface RenderMachineMarkdown extends RenderMachineCommands {
-
-    /**
-     * Set the test browser for making HTTP requests.
-     *
-     * @param testBrowser the HTTP client to use
-     */
-    void setTestBrowser(org.r10r.doctester.testbrowser.TestBrowser testBrowser);
-
-    /**
-     * Set the output filename (without extension) for this test's documentation.
-     *
-     * @param fileName the test class name or custom identifier
-     */
-    void setFileName(String fileName);
-
-    /**
-     * Finish markdown generation and write output files.
-     *
-     * Creates:
-     * - Individual test documentation file: target/docs/{testName}.md
-     * - Index file: target/docs/README.md (listing all test docs)
-     */
-    void finishAndWriteOut();
+public interface RenderMachineMarkdown extends RenderMachine {
 }

@@ -47,6 +47,12 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use {@link RenderMachineMarkdownImpl} instead.
+ * This HTML renderer is maintained for backwards compatibility only.
+ * The markdown renderer produces more portable, version-control-friendly documentation.
+ */
+@Deprecated(since = "1.1.12", forRemoval = true)
 public class RenderMachineImpl implements RenderMachine {
 
     private final static Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
