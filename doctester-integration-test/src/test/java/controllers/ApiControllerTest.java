@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import models.Article;
@@ -33,8 +34,6 @@ import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -276,7 +275,7 @@ public class ApiControllerTest extends NinjaTest {
     }
 
     private void doLogin(String username, String password) {
-        Map<String, String> formParameters = Maps.newHashMap();
+        Map<String, String> formParameters = new HashMap<>();
         formParameters.put("username", username);
         formParameters.put("password", password);
 
