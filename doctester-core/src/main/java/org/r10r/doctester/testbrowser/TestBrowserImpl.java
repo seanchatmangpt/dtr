@@ -17,7 +17,6 @@ package org.r10r.doctester.testbrowser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.google.common.collect.Sets;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
@@ -53,10 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.nio.charset.StandardCharsets;
-
 import org.apache.hc.core5.http.ParseException;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import static org.r10r.doctester.testbrowser.HttpConstants.*;
