@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 import java.io.IOException;
+import org.r10r.doctester.testbrowser.auth.AuthProvider;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -313,6 +314,37 @@ public class Request {
      */
     public Request followRedirects(boolean followRedirects) {
         this.followRedirects = followRedirects;
+        return this;
+    }
+
+    /**
+     * Applies authentication to this request using the specified auth provider.
+     *
+     * @param authProvider the authentication provider to apply
+     * @return This request for chaining
+     */
+    public Request withAuth(AuthProvider authProvider) {
+        if (authProvider != null) {
+            authProvider.apply(this);
+        }
+        return this;
+    }
+
+    /**
+     * Adds a query parameter to this request's URL.
+     *
+     * @param key the parameter name
+     * @param value the parameter value
+     * @return This request for chaining
+     */
+    public Request addQueryParameter(String key, String value) {
+        // Build URL with query parameter if URI is already set
+        if (this.uri != null) {
+            this.uri = Url.host(this.uri.getScheme() + "://" + this.uri.getAuthority())
+                .path(this.uri.getPath())
+                .addQueryParameter(key, value)
+                .uri();
+        }
         return this;
     }
 
