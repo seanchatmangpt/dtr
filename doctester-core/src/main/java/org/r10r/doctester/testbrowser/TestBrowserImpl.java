@@ -17,8 +17,6 @@ package org.r10r.doctester.testbrowser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -48,6 +46,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.hc.core5.http.ParseException;
@@ -203,7 +207,7 @@ public class TestBrowserImpl implements TestBrowser {
             ///////////////////////////////////////////////////////////////////
             if (httpRequest.formParameters != null) {
 
-                List<NameValuePair> formparams = Lists.newArrayList();
+                List<NameValuePair> formparams = new ArrayList<>();
                 for (Entry<String, String> parameter : httpRequest.formParameters
                         .entrySet()) {
 
@@ -293,7 +297,7 @@ public class TestBrowserImpl implements TestBrowser {
 
     private org.r10r.doctester.testbrowser.Response convertFromApacheHttpResponseToDocTesterHttpResponse(ClassicHttpResponse httpResponse) {
 
-        Map<String, String> headers = Maps.newHashMap();
+        Map<String, String> headers = new HashMap<>();
 
         for (Header header : httpResponse.getHeaders()) {
 
