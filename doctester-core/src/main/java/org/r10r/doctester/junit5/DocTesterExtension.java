@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.r10r.doctester.rendermachine.RenderMachine;
-import org.r10r.doctester.rendermachine.RenderMachineImpl;
+import org.r10r.doctester.rendermachine.RenderMachineMarkdownImpl;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.TestBrowserImpl;
 
@@ -127,7 +127,7 @@ public class DocTesterExtension implements BeforeEachCallback, AfterAllCallback 
      * Creates a new RenderMachine instance. Override to customize.
      */
     protected RenderMachine createRenderMachine() {
-        return new RenderMachineImpl();
+        return new RenderMachineMarkdownImpl();
     }
 
     /**
