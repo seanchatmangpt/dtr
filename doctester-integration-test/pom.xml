@@ -40,11 +40,17 @@ the specific language governing permissions and limitations under the License. -
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--enable-preview --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.0</version>
                 <executions>
                     <execution>
                         <id>enforce-banned-dependencies</id>
@@ -156,6 +162,19 @@ the specific language governing permissions and limitations under the License. -
             <version>1.3.172</version>
         </dependency>
 
+        <!-- JAXB needed for Hibernate 4.x on Java 9+ (javax.xml.bind removed from JDK) -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.9</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- <dependency> <groupId>org.postgresql</groupId> <artifactId>postgresql</artifactId> 
         <version>9.2-1003-jdbc4</version> </dependency> -->
         <dependency>
@@ -188,6 +207,20 @@ the specific language governing permissions and limitations under the License. -
             <groupId>org.ninjaframework</groupId>
             <artifactId>ninja-test-utilities</artifactId>
             <version>${ninja.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Mockito 4.x for Java 25 compatibility (replaces transitive 1.9.5 from ninja-test-utilities) -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.11.0</version>
             <scope>test</scope>
         </dependency>
 
