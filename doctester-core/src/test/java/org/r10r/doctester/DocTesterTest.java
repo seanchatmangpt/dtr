@@ -16,8 +16,6 @@
 package org.r10r.doctester;
 
 import org.r10r.doctester.DocTester;
-import org.r10r.doctester.rendermachine.RenderMachine;
-import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.junit.Assert;
@@ -31,13 +29,7 @@ import static org.junit.Assert.assertThat;
 
 public class DocTesterTest extends DocTester {
 
-    @Override
-    public RenderMachine getRenderMachine() {
-        // Use deprecated HTML renderer for backwards compatibility testing
-        return new RenderMachineImpl();
-    }
-
-    public static String EXPECTED_FILENAME = DocTesterTest.class.getName() + ".html";
+    public static String EXPECTED_FILENAME = DocTesterTest.class.getName() + ".md";
 
     @Test
     public void testThatIndexFileWritingWorks() throws Exception {
@@ -46,11 +38,12 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedIndex = new File("target/site/doctester/index.html");
+        File expectedIndex = new File("target/docs/README.md");
 
         Assert.assertTrue(expectedIndex.exists());
 
-        assertThatFileContainsText(expectedIndex, "index");
+        // README.md is the index, verify it contains the expected header
+        assertThatFileContainsText(expectedIndex, "API Documentation");
 
     }
 
@@ -61,32 +54,29 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/site/doctester/" + EXPECTED_FILENAME);
-        File expectedIndexFile = new File("target/site/doctester/index.html");
+        File expectedDoctestfile = new File("target/docs/" + EXPECTED_FILENAME);
+        File expectedIndexFile = new File("target/docs/README.md");
 
         // just a simple test to make sure the name is written somewhere in the file.
         assertThatFileContainsText(expectedDoctestfile, DocTesterTest.class.getSimpleName());
 
-        // just a simple test to make sure that index.html contains a "link" to the doctest file.
+        // just a simple test to make sure that README.md contains a "link" to the doctest file.
         assertThatFileContainsText(expectedIndexFile, EXPECTED_FILENAME);
 
     }
 
     @Test
-    public void testThatCopyingOfCustomDoctesterCssWorks() throws Exception {
+    public void testThatMarkdownOutputContainsExpectedContent() throws Exception {
 
         doCreateSomeTestOuputForDoctest();
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/site/doctester/" + EXPECTED_FILENAME);
-        File expectedCustomCssFile = new File("target/site/doctester/custom_doctester_stylesheet.css");
+        File expectedDoctestfile = new File("target/docs/" + EXPECTED_FILENAME);
 
-        // just a simple test to make sure the name is written somewhere in the file.
-        assertThatFileContainsText(expectedDoctestfile, "custom_doctester_stylesheet.css");
-
-        // just a simple test to make sure that index.html contains a "link" to the doctest file.
-        assertThatFileContainsText(expectedCustomCssFile, "body");
+        // Verify the markdown file was created and contains test content
+        assertThatFileContainsText(expectedDoctestfile, "another fun heading!");
+        assertThatFileContainsText(expectedDoctestfile, "and a very long text...!");
 
     }
 
@@ -98,7 +88,7 @@ public class DocTesterTest extends DocTester {
     }
 
     @Test
-    public void testThatAssertionFailureGetsWrittenToDoctesterHtmlFile() throws Exception {
+    public void testThatAssertionFailureGetsWrittenToMarkdownFile() throws Exception {
 
         boolean gotTestFailure = false;
 
@@ -112,13 +102,11 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/site/doctester/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
 
-		// this makes sure that the correct alert type is used together
-        // with proper escaping and replacement of \n values...
-        assertThatFileContainsText(expectedDoctestfile,
-                "<div class=\"alert alert-danger\">\n"
-                + "java.lang.AssertionError: <br/>Expected: is &lt;true&gt;<br/>     but: was &lt;false&gt;");
+        // Verify that assertion failures are marked with ✗ and include error message
+        assertThatFileContainsText(expectedDoctestfile, "✗ **FAILED**: This will go wrong");
+        assertThatFileContainsText(expectedDoctestfile, "java.lang.AssertionError");
 
     }
 
