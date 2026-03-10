@@ -1,0 +1,3 @@
+[submodule "jotp"]
+	path = jotp
+	url = https://github.com/seanchatmangpt/java-maven-template
