@@ -15,8 +15,6 @@
  */
 package org.r10r.doctester;
 
-import org.r10r.doctester.rendermachine.RenderMachineImpl;
-import org.r10r.doctester.rendermachine.RenderMachine;
 import org.junit.Test;
 
 import java.io.File;
@@ -28,7 +26,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 /**
  * Stress tests to find DocTester breakpoints for maximum
- * doctest size and count.
+ * documentation generation size and count.
  */
 public class StressTest extends DocTester {
 
