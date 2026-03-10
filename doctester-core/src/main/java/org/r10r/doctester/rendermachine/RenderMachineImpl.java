@@ -15,10 +15,13 @@
  */
 package org.r10r.doctester.rendermachine;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,7 +33,7 @@ import org.r10r.doctester.testbrowser.TestBrowser;
 import org.hamcrest.Matcher;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.html.HtmlEscapers;
 import com.google.common.io.Files;
@@ -38,6 +41,8 @@ import com.google.common.io.Resources;
 import java.io.FileFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,46 +226,35 @@ public class RenderMachineImpl implements RenderMachine {
 
     private void doCreateHtmlPageforThisDoctest() {
 
-        List<String> finalHtmlDocument = Lists.newArrayList();
-
-        finalHtmlDocument.add(RenderMachineHtml.HTML_BEGIN);
-        finalHtmlDocument.add(String.format(RenderMachineHtml.HTML_HEAD, fileName));
-        finalHtmlDocument.add(RenderMachineHtml.BODY_BEGIN);
-
-        String headerFormattedWithTitle = String.format(
-                RenderMachineHtml.BOOTSTRAP_HEADER,
-                fileName);
-
-        finalHtmlDocument.add(headerFormattedWithTitle);
-
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_CONTAINER_BEGIN);
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_BEGIN);
-
+        List<String> navbarElements = Lists.newArrayList();
         for (String string : headerTitle) {
-
-            String elementToAdd = String.format(
+            navbarElements.add(String.format(
                     RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_ELEMENT,
                     convertTextToId(string),
-                    string);
-
-            finalHtmlDocument.add(elementToAdd);
-
+                    string));
         }
 
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_END);
+        // Compose sections lazily with Iterables.concat — no new backing list, no joined String
+        Iterable<String> sections = Iterables.concat(
+                Arrays.asList(
+                        RenderMachineHtml.HTML_BEGIN,
+                        String.format(RenderMachineHtml.HTML_HEAD, fileName),
+                        RenderMachineHtml.BODY_BEGIN,
+                        String.format(RenderMachineHtml.BOOTSTRAP_HEADER, fileName),
+                        RenderMachineHtml.BOOTSTRAP_CONTAINER_BEGIN,
+                        RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_BEGIN),
+                navbarElements,
+                Arrays.asList(
+                        RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_END,
+                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_BEGIN),
+                htmlDocument,
+                Arrays.asList(
+                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_END,
+                        RenderMachineHtml.BOOTSTRAP_CONTAINER_END,
+                        RenderMachineHtml.BODY_END,
+                        RenderMachineHtml.HTML_END));
 
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_BEGIN);
-
-        for (String string : htmlDocument) {
-            finalHtmlDocument.add(string);
-        }
-
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_END);
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_CONTAINER_END);
-        finalHtmlDocument.add(RenderMachineHtml.BODY_END);
-        finalHtmlDocument.add(RenderMachineHtml.HTML_END);
-
-        writeOutListOfHtmlStringsIntoFile(finalHtmlDocument, fileName);
+        writeOutHtmlStringsIntoFile(sections, fileName);
 
     }
 
@@ -268,37 +262,29 @@ public class RenderMachineImpl implements RenderMachine {
 
         File[] files = collectAllDoctestsToCreateIndexFile(BASE_DIR);
 
-        List<String> finalHtmlDocument = Lists.newArrayList();
-
-        finalHtmlDocument.add(RenderMachineHtml.HTML_BEGIN);
-        finalHtmlDocument.add(String.format(RenderMachineHtml.HTML_HEAD, INDEX_FILE_WITHOUT_SUFFIX));
-        finalHtmlDocument.add(RenderMachineHtml.BODY_BEGIN);
-
-        String headerFormattedWithTitle = String.format(
-                RenderMachineHtml.BOOTSTRAP_HEADER,
-                INDEX_FILE_WITHOUT_SUFFIX);
-
-        finalHtmlDocument.add(headerFormattedWithTitle);
-
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_CONTAINER_BEGIN);
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_EMPTY);
-
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_BEGIN);
-
+        List<String> fileLinks = Lists.newArrayList();
         for (File file : files) {
-
-            String link = String.format("<a href=\"%s\">%s</a>", file.getName(), file.getName());
-
-            finalHtmlDocument.add(link);
-            finalHtmlDocument.add(RenderMachineHtml.HTML_NEWLINE);
+            fileLinks.add(String.format("<a href=\"%s\">%s</a>", file.getName(), file.getName()));
+            fileLinks.add(RenderMachineHtml.HTML_NEWLINE);
         }
 
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_END);
-        finalHtmlDocument.add(RenderMachineHtml.BOOTSTRAP_CONTAINER_END);
-        finalHtmlDocument.add(RenderMachineHtml.BODY_END);
-        finalHtmlDocument.add(RenderMachineHtml.HTML_END);
+        Iterable<String> sections = Iterables.concat(
+                Arrays.asList(
+                        RenderMachineHtml.HTML_BEGIN,
+                        String.format(RenderMachineHtml.HTML_HEAD, INDEX_FILE_WITHOUT_SUFFIX),
+                        RenderMachineHtml.BODY_BEGIN,
+                        String.format(RenderMachineHtml.BOOTSTRAP_HEADER, INDEX_FILE_WITHOUT_SUFFIX),
+                        RenderMachineHtml.BOOTSTRAP_CONTAINER_BEGIN,
+                        RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_EMPTY,
+                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_BEGIN),
+                fileLinks,
+                Arrays.asList(
+                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_END,
+                        RenderMachineHtml.BOOTSTRAP_CONTAINER_END,
+                        RenderMachineHtml.BODY_END,
+                        RenderMachineHtml.HTML_END));
 
-        writeOutListOfHtmlStringsIntoFile(finalHtmlDocument, INDEX_FILE_WITHOUT_SUFFIX);
+        writeOutHtmlStringsIntoFile(sections, INDEX_FILE_WITHOUT_SUFFIX);
 
     }
 
@@ -324,26 +310,22 @@ public class RenderMachineImpl implements RenderMachine {
 
     }
 
-    private void writeOutListOfHtmlStringsIntoFile(
-            List<String> finalHtmlDocument,
+    private void writeOutHtmlStringsIntoFile(
+            Iterable<String> htmlLines,
             String fileNameWithoutSuffix) {
 
-        String completeHtmlOutput = Joiner.on("\n").join(finalHtmlDocument);
+        File outputFile = new File(BASE_DIR + File.separator + fileNameWithoutSuffix + ".html");
 
-        try {
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8))) {
 
-            Files.write(
-                    completeHtmlOutput,
-                    new File(
-                            BASE_DIR
-                            + File.separator
-                            + fileNameWithoutSuffix + ".html"),
-                    Charsets.UTF_8);
+            for (String line : htmlLines) {
+                writer.write(line);
+                writer.write('\n');
+            }
 
         } catch (IOException e) {
-
             logger.error("An error ocurred while writing out html to file", e);
-
         }
 
     }
