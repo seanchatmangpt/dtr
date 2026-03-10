@@ -23,6 +23,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 
 import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import models.Article;
@@ -32,8 +33,6 @@ import models.ArticlesDto;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -253,7 +252,7 @@ public class ApiControllerDocTest extends NinjaApiDoctester {
         say("To authenticate we send our credentials to " + LOGIN_URL);
         say("We are then issued a cookie from the server that authenticates us in further requests");
 
-        Map<String, String> formParameters = Maps.newHashMap();
+        Map<String, String> formParameters = new HashMap<>();
         formParameters.put("username", username);
         formParameters.put("password", password);
 
