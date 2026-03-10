@@ -90,9 +90,17 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     }
 
     /**
-     * Inspects the test method for {@link DocSection} and {@link DocDescription}
-     * annotations and emits the corresponding say* calls into the render machine.
-     * Both annotations are optional and independent of each other.
+     * Inspects the test method for doc annotations and emits the corresponding
+     * render-machine calls. All five annotation types are optional and independent.
+     * They are always emitted in this fixed order regardless of the order they
+     * appear in source code:
+     * <ol>
+     *   <li>{@link DocSection} — section heading via {@code sayNextSection()}</li>
+     *   <li>{@link DocDescription} — narrative paragraphs via {@code say()}</li>
+     *   <li>{@link DocNote} — info callout boxes via {@code sayRaw()}</li>
+     *   <li>{@link DocWarning} — warning callout boxes via {@code sayRaw()}</li>
+     *   <li>{@link DocCode} — HTML-escaped {@code <pre><code>} blocks via {@code sayRaw()}</li>
+     * </ol>
      *
      * @param description the JUnit description of the currently starting test
      */
@@ -105,22 +113,73 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
         try {
             Method method = description.getTestClass().getMethod(description.getMethodName());
 
+            // 1. Section heading
             DocSection section = method.getAnnotation(DocSection.class);
             if (section != null) {
                 renderMachine.sayNextSection(section.value());
             }
 
+            // 2. Narrative description paragraphs
             DocDescription desc = method.getAnnotation(DocDescription.class);
             if (desc != null) {
                 for (String line : desc.value()) {
                     renderMachine.say(line);
                 }
             }
+
+            // 3. Informational callout boxes
+            DocNote note = method.getAnnotation(DocNote.class);
+            if (note != null) {
+                for (String line : note.value()) {
+                    renderMachine.sayRaw("<div class=\"alert alert-info\">" + line + "</div>");
+                }
+            }
+
+            // 4. Warning callout boxes
+            DocWarning warning = method.getAnnotation(DocWarning.class);
+            if (warning != null) {
+                for (String line : warning.value()) {
+                    renderMachine.sayRaw("<div class=\"alert alert-warning\">" + line + "</div>");
+                }
+            }
+
+            // 5. Code example block — lines are HTML-escaped and joined with newlines
+            DocCode code = method.getAnnotation(DocCode.class);
+            if (code != null) {
+                String langClass = code.language().isEmpty() ? "" : " class=\"language-" + htmlEscape(code.language()) + "\"";
+                StringBuilder sb = new StringBuilder("<pre><code").append(langClass).append(">");
+                String[] lines = code.value();
+                for (int i = 0; i < lines.length; i++) {
+                    if (i > 0) {
+                        sb.append('\n');
+                    }
+                    sb.append(htmlEscape(lines[i]));
+                }
+                sb.append("</code></pre>");
+                renderMachine.sayRaw(sb.toString());
+            }
+
         } catch (NoSuchMethodException e) {
             logger.warn("DocTester could not find test method '{}' for annotation processing",
                     description.getMethodName());
         }
 
+    }
+
+    /**
+     * Minimal HTML escaping for the five characters that break HTML contexts.
+     * Used when embedding annotation values inside raw HTML fragments.
+     *
+     * @param s raw string that may contain HTML-special characters
+     * @return the string with {@code &}, {@code <}, {@code >}, {@code "} and
+     *         {@code '} replaced by their named HTML entities
+     */
+    private static String htmlEscape(String s) {
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     public void initRenderingMachineIfNull() {
