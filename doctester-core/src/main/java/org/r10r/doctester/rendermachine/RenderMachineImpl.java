@@ -106,7 +106,8 @@ public class RenderMachineImpl implements RenderMachine {
     public String convertTextToId(String textAsH1) {
 
         String textAsH1Converted = textAsH1.toLowerCase();
-        textAsH1Converted = textAsH1Converted.replaceAll("\\W", "");
+        // Remove underscores explicitly since they are word characters in \W
+        textAsH1Converted = textAsH1Converted.replaceAll("[_\\W]", "");
 
         return textAsH1Converted;
 
