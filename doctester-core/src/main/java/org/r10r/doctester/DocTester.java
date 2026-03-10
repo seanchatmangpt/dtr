@@ -29,6 +29,7 @@ import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
@@ -43,6 +44,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
         @Override
         protected void starting(Description description) {
             classNameForDocTesterOutputFile = description.getClassName();
+            currentTestDescription = description;
         }
     };
 
@@ -52,6 +54,11 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
      * something like "com.mycompany.NameOfClassTest".
      */
     private String classNameForDocTesterOutputFile;
+
+    /**
+     * Captured by the testWatcher for annotation processing in setupForTestCaseMethod.
+     */
+    private Description currentTestDescription;
 
     private final Logger logger = LoggerFactory.getLogger(DocTester.class);
 
@@ -76,6 +83,43 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
         // the filename to the renderMachine is here.
         // We accept that we set the fileName too often.
         renderMachine.setFileName(classNameForDocTesterOutputFile);
+
+        // Process @DocSection / @DocDescription annotations declared on the test method.
+        processDocAnnotations(currentTestDescription);
+
+    }
+
+    /**
+     * Inspects the test method for {@link DocSection} and {@link DocDescription}
+     * annotations and emits the corresponding say* calls into the render machine.
+     * Both annotations are optional and independent of each other.
+     *
+     * @param description the JUnit description of the currently starting test
+     */
+    private void processDocAnnotations(Description description) {
+
+        if (description == null) {
+            return;
+        }
+
+        try {
+            Method method = description.getTestClass().getMethod(description.getMethodName());
+
+            DocSection section = method.getAnnotation(DocSection.class);
+            if (section != null) {
+                renderMachine.sayNextSection(section.value());
+            }
+
+            DocDescription desc = method.getAnnotation(DocDescription.class);
+            if (desc != null) {
+                for (String line : desc.value()) {
+                    renderMachine.say(line);
+                }
+            }
+        } catch (NoSuchMethodException e) {
+            logger.warn("DocTester could not find test method '{}' for annotation processing",
+                    description.getMethodName());
+        }
 
     }
 
