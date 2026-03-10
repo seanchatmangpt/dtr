@@ -14,6 +14,11 @@ the specific language governing permissions and limitations under the License. -
     <version>1.1.12-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>DocTester</name>
+    <description>A Java testing framework that generates HTML documentation while running JUnit tests.
+        Provides a fluent API for making HTTP requests and documenting REST API responses.</description>
+    <url>https://github.com/r10r-org/doctester</url>
+
     <modules>
         <module>doctester-core</module>
         <module>doctester-integration-test</module>
@@ -21,14 +26,14 @@ the specific language governing permissions and limitations under the License. -
 
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>central</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
     <scm>
-        <url>https://github.com/doctester/doctester</url>
-        <connection>scm:git://github.com/r10r-org/doctester.git</connection>
+        <url>https://github.com/r10r-org/doctester</url>
+        <connection>scm:git:git://github.com/r10r-org/doctester.git</connection>
         <developerConnection>scm:git:git@github.com:r10r-org/doctester.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
@@ -45,6 +50,17 @@ the specific language governing permissions and limitations under the License. -
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <id>ra</id>
+            <name>ra</name>
+            <email>ra@r10r.org</email>
+            <url>https://github.com/r10r-org</url>
+            <organization>r10r</organization>
+            <organizationUrl>https://github.com/r10r-org</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
@@ -117,8 +133,8 @@ the specific language governing permissions and limitations under the License. -
                                         <message>Java 25 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
-                                        <version>[4.0.0-rc-5,)</version>
-                                        <message>Maven 4.0.0-rc-5 or higher is required.</message>
+                                        <version>[4.0.0-rc-3,)</version>
+                                        <message>Maven 4.0.0-rc-3 or higher is required (mvnd bundles rc-3).</message>
                                     </requireMavenVersion>
                                 </rules>
                             </configuration>
@@ -130,20 +146,96 @@ the specific language governing permissions and limitations under the License. -
     </build>
 
     <profiles>
-        <!-- Release to Maven Central: mvn -P release release:prepare release:perform -->
+        <!--
+            Release to Maven Central (new Central Publisher Portal):
+              mvn -P release -DskipTests clean deploy
+            Or with maven-release-plugin:
+              mvn -P release release:prepare release:perform
+
+            Requires ~/.m2/settings.xml:
+              <server><id>central</id><username>TOKEN_USERNAME</username><password>TOKEN_PASSWORD</password></server>
+            GPG key must be published to a key server (e.g. keys.openpgp.org).
+        -->
         <profile>
             <id>release</id>
             <build>
                 <plugins>
+                    <!-- Publish to Maven Central via the new Sonatype Central Publisher Portal -->
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.6.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Generate sources jar (required by Maven Central) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Generate javadoc jar (required by Maven Central) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- GPG sign all artifacts (required by Maven Central) -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Use pinentry-mode loopback for non-interactive CI/CD signing -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- maven-release-plugin: ensure it uses the correct SCM tag format -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>3.1.1</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <releaseProfiles>release</releaseProfiles>
+                            <goals>deploy</goals>
+                            <tagNameFormat>v@{project.version}</tagNameFormat>
                         </configuration>
                     </plugin>
                 </plugins>
