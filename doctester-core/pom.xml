@@ -20,10 +20,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>doctester-core</artifactId>
+    <name>DocTester Core</name>
+    <description>Core library for DocTester: HTTP test browser and HTML documentation generator for JUnit tests.</description>
     <packaging>jar</packaging>
 
-    <!-- Deploy to central maven using the oss-parent of sonatype -->
-    <!-- https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
+    <!-- Deploy to Maven Central via the Sonatype Central Publisher Portal -->
     <parent>
         <groupId>org.r10r</groupId>
         <artifactId>doctester</artifactId>
