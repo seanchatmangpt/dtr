@@ -16,36 +16,44 @@
 
 package controllers.utils;
 
+import ninja.utils.NinjaMode;
+import ninja.standalone.NinjaJetty;
 import ninja.utils.NinjaConstant;
 import ninja.utils.NinjaTestServer;
 
 import org.r10r.doctester.DocTester;
 import org.r10r.doctester.testbrowser.Url;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import java.util.Optional;
 
 public abstract class NinjaApiDoctester extends DocTester {
-	
+
 	public NinjaTestServer ninjaTestServer;
 
     public NinjaApiDoctester() {
     }
 
-    @Before
+    @BeforeEach
     public void startServerInTestMode() {
         System.setProperty(NinjaConstant.MODE_KEY_NAME, NinjaConstant.MODE_TEST);
-        ninjaTestServer = new NinjaTestServer();
+        ninjaTestServer = NinjaTestServer.builder()
+            .ninjaMode(NinjaMode.test)
+            .standaloneClass(NinjaJetty.class)
+            .port(0) // use random port
+            .build();
     }
 
-    @After
+    @AfterEach
     public void shutdownServer() {
     	System.clearProperty(NinjaConstant.MODE_KEY_NAME);
         ninjaTestServer.shutdown();
     }
-    
+
     @Override
     public Url testServerUrl() {
-    	return Url.host(ninjaTestServer.getServerAddress());    	
+    	return Url.host(ninjaTestServer.getServerAddress());
     }
 
 }

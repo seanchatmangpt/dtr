@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.r10r.doctester.rendermachine.RenderMachine;
-import org.r10r.doctester.rendermachine.RenderMachineMarkdownImpl;
+import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.TestBrowserImpl;
 
@@ -127,7 +127,7 @@ public class DocTesterExtension implements BeforeEachCallback, AfterAllCallback 
      * Creates a new RenderMachine instance. Override to customize.
      */
     protected RenderMachine createRenderMachine() {
-        return new RenderMachineMarkdownImpl();
+        return new RenderMachineImpl();
     }
 
     /**
@@ -167,7 +167,7 @@ public class DocTesterExtension implements BeforeEachCallback, AfterAllCallback 
         var note = method.getAnnotation(org.r10r.doctester.DocNote.class);
         if (note != null) {
             for (String line : note.value()) {
-                renderMachine.sayRaw("<div class=\"alert alert-info\">" + line + "</div>");
+                renderMachine.sayRaw("> [!NOTE]\n> " + line);
             }
         }
 
@@ -175,32 +175,25 @@ public class DocTesterExtension implements BeforeEachCallback, AfterAllCallback 
         var warning = method.getAnnotation(org.r10r.doctester.DocWarning.class);
         if (warning != null) {
             for (String line : warning.value()) {
-                renderMachine.sayRaw("<div class=\"alert alert-warning\">" + line + "</div>");
+                renderMachine.sayRaw("> [!WARNING]\n> " + line);
             }
         }
 
         // Process DocCode annotation
         var code = method.getAnnotation(org.r10r.doctester.DocCode.class);
         if (code != null) {
-            String langClass = code.language().isEmpty() ? "" : " class=\"language-" + htmlEscape(code.language()) + "\"";
-            StringBuilder sb = new StringBuilder("<pre><code").append(langClass).append(">");
+            StringBuilder sb = new StringBuilder();
+            String lang = code.language();
+            sb.append("```").append(lang).append('\n');
             String[] lines = code.value();
             for (int i = 0; i < lines.length; i++) {
                 if (i > 0) {
                     sb.append('\n');
                 }
-                sb.append(htmlEscape(lines[i]));
+                sb.append(lines[i]);
             }
-            sb.append("</code></pre>");
+            sb.append("\n```");
             renderMachine.sayRaw(sb.toString());
         }
-    }
-
-    private static String htmlEscape(String s) {
-        return s.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
     }
 }

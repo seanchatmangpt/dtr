@@ -19,7 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +126,9 @@ public class Url {
 
         try {
 
-            URIBuilder uriBuilder = new URIBuilder(simpleUrlBuilder.toString());
+            // In HttpClient 5, URIBuilder constructor takes a String but may handle it differently
+            // We create a base URI first, then build upon it
+            URIBuilder uriBuilder = new URIBuilder(new URI(simpleUrlBuilder.toString()));
 
             for (Map.Entry<String, String> queryParameter : queryParameters.entrySet()) {
 

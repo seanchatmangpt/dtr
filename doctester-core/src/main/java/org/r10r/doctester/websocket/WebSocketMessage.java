@@ -34,6 +34,13 @@ import java.time.Instant;
 public sealed interface WebSocketMessage {
 
     /**
+     * Returns the timestamp when this message was received or error occurred.
+     *
+     * @return the timestamp of this message
+     */
+    Instant timestamp();
+
+    /**
      * Text message received from the WebSocket server.
      *
      * @param payload the text content of the message

@@ -19,13 +19,13 @@ import org.r10r.doctester.testbrowser.Url;
 import org.r10r.doctester.testbrowser.HttpConstants;
 import org.r10r.doctester.testbrowser.Request;
 import com.google.common.collect.Maps;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
@@ -95,7 +95,7 @@ public class RequestTest {
     @Test
     public void testUrl() {
         System.out.println("url");
-        Url url = Url.host("http:/test.com");
+        Url url = Url.host("http://test.com");
         Request result = Request.GET().url(url);
 
         assertThat(result.uri, equalTo(url.uri()));

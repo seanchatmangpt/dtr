@@ -51,6 +51,18 @@ class AuthProvidersTest {
     }
 
     @Test
+    void apiKeyAuth_inQueryParam_addsQueryParameter() {
+        var auth = new ApiKeyAuth("api_key", "my-api-key", ApiKeyAuth.Location.QUERY_PARAM);
+        var request = Request.GET()
+            .url(org.r10r.doctester.testbrowser.Url.host("http://localhost:8080").path("/test"));
+
+        auth.apply(request);
+
+        // The query parameter should be added to the URI
+        assertTrue(request.uri.toString().contains("api_key=my-api-key"));
+    }
+
+    @Test
     void basicAuth_addsCorrectHeader() {
         var auth = new BasicAuth("user", "pass");
         var request = Request.GET();

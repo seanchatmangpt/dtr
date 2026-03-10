@@ -20,28 +20,28 @@ import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.Url;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class RenderMachineMarkdownImplTest {
+@ExtendWith(MockitoExtension.class)
+public class RenderMachineImplTest {
 
     @Mock
     TestBrowser testBrowser;
 
-    RenderMachineMarkdownImpl renderMachine;
+    RenderMachineImpl renderMachine;
 
-    @Before
+    @BeforeEach
     public void setupTest() {
-        renderMachine = new RenderMachineMarkdownImpl();
+        renderMachine = new RenderMachineImpl();
         renderMachine.setTestBrowser(testBrowser);
         renderMachine.setFileName("TestExample");
     }
@@ -162,9 +162,9 @@ public class RenderMachineMarkdownImplTest {
         String id2 = renderMachine.convertTextToId("Create User (POST)");
         String id3 = renderMachine.convertTextToId("Delete User by ID");
 
-        assert id1.equals("getallusers");
-        assert id2.equals("createuserpost");
-        assert id3.equals("deleteuserbyid");
+        assertTrue(id1.equals("getallusers"));
+        assertTrue(id2.equals("createuserpost"));
+        assertTrue(id3.equals("deleteuserbyid"));
     }
 
     @Test

@@ -20,19 +20,12 @@ package org.r10r.doctester.openapi;
  *
  * <p>Each format produces a different type of output artifact:
  * <ul>
- *   <li>{@link #HTML} - Bootstrap-styled HTML documentation (default)</li>
  *   <li>{@link #OPENAPI_JSON} - OpenAPI 3.1 specification in JSON format</li>
  *   <li>{@link #OPENAPI_YAML} - OpenAPI 3.1 specification in YAML format</li>
- *   <li>{@link #MARKDOWN} - GitHub-flavored Markdown documentation</li>
+ *   <li>{@link #MARKDOWN} - GitHub-flavored Markdown documentation (default)</li>
  * </ul>
  */
 public enum OutputFormat {
-
-    /**
-     * Bootstrap 3 styled HTML documentation with interactive navigation.
-     * Output file: {@code target/site/doctester/<TestClass>.html}
-     */
-    HTML("html"),
 
     /**
      * OpenAPI 3.1 specification in JSON format.
@@ -48,7 +41,7 @@ public enum OutputFormat {
 
     /**
      * GitHub-flavored Markdown documentation.
-     * Output file: {@code target/site/doctester/<TestClass>.md}
+     * Output file: {@code target/docs/<TestClass>.md}
      */
     MARKDOWN("md");
 
@@ -74,7 +67,6 @@ public enum OutputFormat {
      */
     public String getContentType() {
         return switch (this) {
-            case HTML -> "text/html";
             case OPENAPI_JSON -> "application/json";
             case OPENAPI_YAML -> "application/x-yaml";
             case MARKDOWN -> "text/markdown";

@@ -17,16 +17,15 @@
 package controllers.docs;
 
 import controllers.utils.NinjaApiDoctester;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -41,8 +40,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
  */
 public class FileUploadDocTest extends NinjaApiDoctester {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    Path tempDir;
 
     static final String LOGIN_URL    = "/login";
     static final String ARTICLES_URL = "/api/bob@gmail.com/articles.json";
@@ -99,8 +98,8 @@ public class FileUploadDocTest extends NinjaApiDoctester {
             + "multipart/form-data Content-Type header in the request panel. "
             + "Replace the URL with your own upload endpoint:");
 
-        File tempFile = tempFolder.newFile("doctest-upload-demo.txt");
-        Files.writeString(tempFile.toPath(),
+        Path tempFile = tempDir.resolve("doctest-upload-demo.txt");
+        Files.writeString(tempFile,
             "DocTester multipart demo\n",
             StandardCharsets.UTF_8);
 
@@ -109,7 +108,7 @@ public class FileUploadDocTest extends NinjaApiDoctester {
                 .url(testServerUrl().path(LOGIN_URL))
                 .addFormParameter("username", "bob@gmail.com")
                 .addFormParameter("password", "secret")
-                .addFileToUpload("attachment", tempFile));
+                .addFileToUpload("attachment", tempFile.toFile()));
 
         sayAndAssertThat("Multipart request sent", liveDemo.httpStatus, notNullValue());
 

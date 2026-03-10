@@ -31,7 +31,7 @@ import models.ArticlesDto;
 
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;

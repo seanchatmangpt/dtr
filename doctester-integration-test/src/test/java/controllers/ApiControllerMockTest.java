@@ -16,29 +16,29 @@
 
 package controllers;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import ninja.Result;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import dao.ArticleDao;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApiControllerMockTest {
 
     private static final long TEST_ARTICLE_ID = 1L;
 
 	@Mock
     ArticleDao articleDao;
-    
+
     ApiController apiController;
-    
-    @Before
+
+    @BeforeEach
     public void setupTest() {
         apiController = new ApiController();
         apiController.articleDao = articleDao;

@@ -19,7 +19,7 @@ import net.jqwik.api.*;
 import net.jqwik.api.constraints.CharRange;
 import net.jqwik.api.constraints.StringLength;
 import net.jqwik.api.lifecycle.BeforeProperty;
-import org.r10r.doctester.rendermachine.RenderMachineMarkdownImpl;
+import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import org.r10r.doctester.testbrowser.Url;
 
 import java.nio.charset.StandardCharsets;
@@ -59,11 +59,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Label("DocTester — fuzz tests (jqwik adversarial generators)")
 class DocTesterFuzzTest {
 
-    private RenderMachineMarkdownImpl rm;
+    private RenderMachineImpl rm;
 
     @BeforeProperty
     void freshRenderMachine() {
-        rm = new RenderMachineMarkdownImpl();
+        rm = new RenderMachineImpl();
         rm.setFileName("DocTesterFuzzTest");
     }
 

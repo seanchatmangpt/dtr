@@ -28,13 +28,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.hamcrest.Matcher;
 
-import com.google.common.html.HtmlEscapers;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +45,9 @@ import org.slf4j.LoggerFactory;
  * documentation platforms, and static site generators. No HTML/CSS/JS
  * dependencies—just clean, portable markdown.
  */
-public class RenderMachineMarkdownImpl implements RenderMachineMarkdown {
+public class RenderMachineImpl implements RenderMachine {
 
-    private static final Logger logger = LoggerFactory.getLogger(RenderMachineMarkdownImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
 
     private static final String BASE_DIR = "target/docs";
     private static final String INDEX_FILE = "README";
@@ -59,7 +58,7 @@ public class RenderMachineMarkdownImpl implements RenderMachineMarkdown {
     private TestBrowser testBrowser;
     private String fileName;
 
-    public RenderMachineMarkdownImpl() {
+    public RenderMachineImpl() {
     }
 
     @Override

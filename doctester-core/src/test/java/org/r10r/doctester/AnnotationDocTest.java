@@ -17,10 +17,10 @@ package org.r10r.doctester;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,22 +57,22 @@ public class AnnotationDocTest extends DocTester {
     @Test
     @DocSection("Layer 1 — @DocSection in isolation")
     @DocDescription("@DocSection adds an H1 heading entry to the document and to the left-hand TOC navbar.")
-    @DocNote("This heading was produced entirely by the <code>@DocSection</code> annotation — no <code>sayNextSection()</code> call in the method body.")
+    @DocNote("This heading was produced entirely by the `@DocSection` annotation — no `sayNextSection()` call in the method body.")
     public void layer1_docSectionAlone() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("@DocSection value appears in document body",
-                html.contains("Layer 1 — @DocSection in isolation"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("Layer 1 — @DocSection in isolation"),
+                "@DocSection value appears in document body");
     }
 
     @Test
     @DocSection("Layer 1 — @DocDescription (single value)")
-    @DocDescription("A single-string @DocDescription injects exactly one <p> paragraph.")
+    @DocDescription("A single-string @DocDescription injects exactly one paragraph.")
     public void layer1_docDescriptionSingleValue() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("Single @DocDescription value appears in HTML",
-                html.contains("A single-string @DocDescription injects exactly one <p> paragraph."));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("A single-string @DocDescription injects exactly one paragraph."),
+                "Single @DocDescription value appears in markdown");
     }
 
     @Test
@@ -80,26 +80,26 @@ public class AnnotationDocTest extends DocTester {
     @DocDescription({
         "First paragraph emitted by a multi-value @DocDescription.",
         "Second paragraph emitted by the same annotation.",
-        "Third paragraph — each element becomes an independent <p> tag."
+        "Third paragraph — each element becomes an independent paragraph."
     })
     public void layer1_docDescriptionMultipleValues() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("First description paragraph present", html.contains("First paragraph emitted by a multi-value @DocDescription."));
-        Assert.assertTrue("Second description paragraph present", html.contains("Second paragraph emitted by the same annotation."));
-        Assert.assertTrue("Third description paragraph present", html.contains("Third paragraph — each element becomes an independent <p> tag."));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("First paragraph emitted by a multi-value @DocDescription."), "First description paragraph present");
+        Assertions.assertTrue(md.contains("Second paragraph emitted by the same annotation."), "Second description paragraph present");
+        Assertions.assertTrue(md.contains("Third paragraph — each element becomes an independent paragraph."), "Third description paragraph present");
     }
 
     @Test
     @DocSection("Layer 1 — @DocNote (single value)")
-    @DocNote("A single-string @DocNote renders one Bootstrap info alert.")
+    @DocNote("A single-string @DocNote renders one GitHub-flavored NOTE admonition.")
     public void layer1_docNoteSingleValue() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("@DocNote value appears in HTML",
-                html.contains("A single-string @DocNote renders one Bootstrap info alert."));
-        Assert.assertTrue("@DocNote uses alert-info CSS class",
-                html.contains("alert-info"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("A single-string @DocNote renders one GitHub-flavored NOTE admonition."),
+                "@DocNote value appears in markdown");
+        Assertions.assertTrue(md.contains("[!NOTE]"),
+                "@DocNote uses GitHub-flavored NOTE admonition");
     }
 
     @Test
@@ -110,21 +110,21 @@ public class AnnotationDocTest extends DocTester {
     })
     public void layer1_docNoteMultipleValues() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("First @DocNote value present", html.contains("First informational note."));
-        Assert.assertTrue("Second @DocNote value present", html.contains("Second informational note."));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("First informational note."), "First @DocNote value present");
+        Assertions.assertTrue(md.contains("Second informational note."), "Second @DocNote value present");
     }
 
     @Test
     @DocSection("Layer 1 — @DocWarning (single value)")
-    @DocWarning("A single-string @DocWarning renders one Bootstrap warning alert.")
+    @DocWarning("A single-string @DocWarning renders one GitHub-flavored WARNING admonition.")
     public void layer1_docWarningSingleValue() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("@DocWarning value appears in HTML",
-                html.contains("A single-string @DocWarning renders one Bootstrap warning alert."));
-        Assert.assertTrue("@DocWarning uses alert-warning CSS class",
-                html.contains("alert-warning"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("A single-string @DocWarning renders one GitHub-flavored WARNING admonition."),
+                "@DocWarning value appears in markdown");
+        Assertions.assertTrue(md.contains("[!WARNING]"),
+                "@DocWarning uses GitHub-flavored WARNING admonition");
     }
 
     @Test
@@ -135,9 +135,9 @@ public class AnnotationDocTest extends DocTester {
     })
     public void layer1_docWarningMultipleValues() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("First @DocWarning present", html.contains("First warning message."));
-        Assert.assertTrue("Second @DocWarning present", html.contains("Second warning message."));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("First warning message."), "First @DocWarning present");
+        Assertions.assertTrue(md.contains("Second warning message."), "Second @DocWarning present");
     }
 
     @Test
@@ -145,11 +145,11 @@ public class AnnotationDocTest extends DocTester {
     @DocCode("Response response = sayAndMakeRequest(Request.GET().url(testServerUrl()));")
     public void layer1_docCodeSingleLineNoLanguage() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("@DocCode value appears in HTML",
-                html.contains("Response response = sayAndMakeRequest(Request.GET().url(testServerUrl()));"));
-        Assert.assertTrue("@DocCode rendered inside <pre><code>",
-                html.contains("<pre><code>"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("Response response = sayAndMakeRequest(Request.GET().url(testServerUrl()));"),
+                "@DocCode value appears in markdown");
+        Assertions.assertTrue(md.contains("```"),
+                "@DocCode rendered inside markdown code fence");
     }
 
     @Test
@@ -166,10 +166,10 @@ public class AnnotationDocTest extends DocTester {
     )
     public void layer1_docCodeMultiLineWithLanguage() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("First @DocCode line present", html.contains("Request req = Request.POST()"));
-        Assert.assertTrue("language class emitted on <code> element",
-                html.contains("class=\"language-java\""));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("Request req = Request.POST()"), "First @DocCode line present");
+        Assertions.assertTrue(md.contains("```java"),
+                "language class emitted in markdown code fence");
     }
 
     // =========================================================================
@@ -182,12 +182,12 @@ public class AnnotationDocTest extends DocTester {
     @DocDescription("This description must appear after the H1 heading in the document.")
     public void layer3_sectionBeforeDescription() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        int sectionPos = html.indexOf("Layer 3 — section heading appears before description");
-        int descPos    = html.indexOf("This description must appear after the H1 heading");
-        Assert.assertTrue("Section heading index must be less than description index",
-                sectionPos < descPos);
-        Assert.assertTrue("Both positions must be valid (content found)", sectionPos > 0 && descPos > 0);
+        String md = readMarkdown();
+        int sectionPos = md.indexOf("Layer 3 — section heading appears before description");
+        int descPos    = md.indexOf("This description must appear after the H1 heading");
+        Assertions.assertTrue(sectionPos < descPos,
+                "Section heading index must be less than description index");
+        Assertions.assertTrue(sectionPos > 0 && descPos > 0, "Both positions must be valid (content found)");
     }
 
     @Test
@@ -196,10 +196,10 @@ public class AnnotationDocTest extends DocTester {
     @DocNote("Info note must follow the description.")
     public void layer3_descriptionBeforeNote() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        int descPos = html.indexOf("Description paragraph must precede the info note.");
-        int notePos = html.indexOf("Info note must follow the description.");
-        Assert.assertTrue("Description must appear before @DocNote", descPos < notePos);
+        String md = readMarkdown();
+        int descPos = md.indexOf("Description paragraph must precede the info note.");
+        int notePos = md.indexOf("Info note must follow the description.");
+        Assertions.assertTrue(descPos < notePos, "Description must appear before @DocNote");
     }
 
     @Test
@@ -208,10 +208,10 @@ public class AnnotationDocTest extends DocTester {
     @DocWarning("Warning must follow the info note.")
     public void layer3_noteBeforeWarning() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        int notePos    = html.indexOf("Info note must precede the warning.");
-        int warningPos = html.indexOf("Warning must follow the info note.");
-        Assert.assertTrue("@DocNote must appear before @DocWarning", notePos < warningPos);
+        String md = readMarkdown();
+        int notePos    = md.indexOf("Info note must precede the warning.");
+        int warningPos = md.indexOf("Warning must follow the info note.");
+        Assertions.assertTrue(notePos < warningPos, "@DocNote must appear before @DocWarning");
     }
 
     @Test
@@ -220,10 +220,10 @@ public class AnnotationDocTest extends DocTester {
     @DocCode("// code block must follow the warning")
     public void layer3_warningBeforeCode() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        int warningPos = html.indexOf("Warning must precede the code block.");
-        int codePos    = html.indexOf("// code block must follow the warning");
-        Assert.assertTrue("@DocWarning must appear before @DocCode", warningPos < codePos);
+        String md = readMarkdown();
+        int warningPos = md.indexOf("Warning must precede the code block.");
+        int codePos    = md.indexOf("// code block must follow the warning");
+        Assertions.assertTrue(warningPos < codePos, "@DocWarning must appear before @DocCode");
     }
 
     @Test
@@ -234,19 +234,19 @@ public class AnnotationDocTest extends DocTester {
     @DocCode("// Code example at the end of the pipeline")
     public void layer3_fullPipelineOrder() throws IOException {
         finishDocTest();
-        String html = readHtml();
+        String md = readMarkdown();
 
-        int sectionPos = html.indexOf("Layer 3 — full pipeline order");
-        int descPos    = html.indexOf("Narrative description in the middle");
-        int notePos    = html.indexOf("Informational note after the description.");
-        int warnPos    = html.indexOf("Warning after the note.");
-        int codePos    = html.indexOf("// Code example at the end");
+        int sectionPos = md.indexOf("Layer 3 — full pipeline order");
+        int descPos    = md.indexOf("Narrative description in the middle");
+        int notePos    = md.indexOf("Informational note after the description.");
+        int warnPos    = md.indexOf("Warning after the note.");
+        int codePos    = md.indexOf("// Code example at the end");
 
-        Assert.assertTrue("All five markers must be found", sectionPos > 0 && descPos > 0 && notePos > 0 && warnPos > 0 && codePos > 0);
-        Assert.assertTrue("section < desc",    sectionPos < descPos);
-        Assert.assertTrue("desc < note",       descPos    < notePos);
-        Assert.assertTrue("note < warning",    notePos    < warnPos);
-        Assert.assertTrue("warning < code",    warnPos    < codePos);
+        Assertions.assertTrue(sectionPos > 0 && descPos > 0 && notePos > 0 && warnPos > 0 && codePos > 0, "All five markers must be found");
+        Assertions.assertTrue(sectionPos < descPos,    "section < desc");
+        Assertions.assertTrue(descPos < notePos,       "desc < note");
+        Assertions.assertTrue(notePos < warnPos,       "note < warning");
+        Assertions.assertTrue(warnPos < codePos,       "warning < code");
     }
 
     // =========================================================================
@@ -258,11 +258,11 @@ public class AnnotationDocTest extends DocTester {
     public void layer4_annotationThenExplicitSay() throws IOException {
         say("This paragraph was written with an explicit say() call after the annotation-driven heading.");
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("Annotation-driven heading present",
-                html.contains("Layer 4 — @DocSection then explicit say()"));
-        Assert.assertTrue("Explicit say() paragraph present",
-                html.contains("This paragraph was written with an explicit say() call"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("Layer 4 — @DocSection then explicit say()"),
+                "Annotation-driven heading present");
+        Assertions.assertTrue(md.contains("This paragraph was written with an explicit say() call"),
+                "Explicit say() paragraph present");
     }
 
     @Test
@@ -274,9 +274,9 @@ public class AnnotationDocTest extends DocTester {
         sayNextSection("Manually-added subsection within layer 4 test");
         say("Two section headings exist: one from the annotation, one from this explicit call.");
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("Annotation heading present", html.contains("Layer 4 — explicit sayNextSection()"));
-        Assert.assertTrue("Explicit extra heading present", html.contains("Manually-added subsection within layer 4 test"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("Layer 4 — explicit sayNextSection()"), "Annotation heading present");
+        Assertions.assertTrue(md.contains("Manually-added subsection within layer 4 test"), "Explicit extra heading present");
     }
 
     @Test
@@ -285,23 +285,23 @@ public class AnnotationDocTest extends DocTester {
     public void layer4_annotationDescThenExplicitSay() throws IOException {
         say("Additional paragraph via explicit say() call.");
         finishDocTest();
-        String html = readHtml();
-        int annotationDescPos = html.indexOf("Annotation-driven description paragraph.");
-        int explicitSayPos    = html.indexOf("Additional paragraph via explicit say() call.");
-        Assert.assertTrue("Both paragraphs present", annotationDescPos > 0 && explicitSayPos > 0);
-        Assert.assertTrue("Annotation description appears before explicit say()",
-                annotationDescPos < explicitSayPos);
+        String md = readMarkdown();
+        int annotationDescPos = md.indexOf("Annotation-driven description paragraph.");
+        int explicitSayPos    = md.indexOf("Additional paragraph via explicit say() call.");
+        Assertions.assertTrue(annotationDescPos > 0 && explicitSayPos > 0, "Both paragraphs present");
+        Assertions.assertTrue(annotationDescPos < explicitSayPos,
+                "Annotation description appears before explicit say()");
     }
 
     @Test
     @DocSection("Layer 4 — @DocNote alongside explicit sayRaw()")
     @DocNote("Annotation-driven info note.")
     public void layer4_annotationNoteThenExplicitSayRaw() throws IOException {
-        sayRaw("<div class=\"alert alert-success\">Explicit sayRaw() success alert.</div>");
+        sayRaw("> [!TIP]\n> Explicit sayRaw() success alert.");
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("Annotation note present", html.contains("Annotation-driven info note."));
-        Assert.assertTrue("Explicit sayRaw() present", html.contains("Explicit sayRaw() success alert."));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("Annotation-driven info note."), "Annotation note present");
+        Assertions.assertTrue(md.contains("Explicit sayRaw() success alert."), "Explicit sayRaw() present");
     }
 
     @Test
@@ -312,13 +312,13 @@ public class AnnotationDocTest extends DocTester {
         "Accept: application/json"
     })
     public void layer4_annotationCodeWithExplicitSay() throws IOException {
-        say("The <code>@DocCode</code> block above was rendered by the annotation; this paragraph is from <code>say()</code>.");
+        say("The `@DocCode` block above was rendered by the annotation; this paragraph is from `say()`.");
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("HTTP code block present", html.contains("GET /api/articles HTTP/1.1"));
-        Assert.assertTrue("language-http class present", html.contains("class=\"language-http\""));
-        Assert.assertTrue("Explicit say() paragraph present",
-                html.contains("The <code>@DocCode</code> block above was rendered by the annotation"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("GET /api/articles HTTP/1.1"), "HTTP code block present");
+        Assertions.assertTrue(md.contains("```http"), "language-http code fence present");
+        Assertions.assertTrue(md.contains("The `@DocCode` block above was rendered by the annotation"),
+                "Explicit say() paragraph present");
     }
 
     // =========================================================================
@@ -330,9 +330,9 @@ public class AnnotationDocTest extends DocTester {
     @DocDescription("The title contains em dashes, angle-bracket-like characters, and an ampersand: A & B.")
     public void layer5_specialCharsInSectionTitle() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("Section with special chars appears in HTML",
-                html.contains("Layer 5 — special characters in @DocSection title"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("Layer 5 — special characters in @DocSection title"),
+                "Section with special chars appears in markdown");
     }
 
     @Test
@@ -340,11 +340,11 @@ public class AnnotationDocTest extends DocTester {
     @DocDescription("Japanese: 日本語テスト. Arabic: مرحبا. Emoji context: résumé, naïve, façade.")
     public void layer5_unicodeInDescription() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        Assert.assertTrue("Unicode description paragraph present",
-                html.contains("日本語テスト"));
-        Assert.assertTrue("Arabic text present", html.contains("مرحبا"));
-        Assert.assertTrue("Latin extended present", html.contains("résumé"));
+        String md = readMarkdown();
+        Assertions.assertTrue(md.contains("日本語テスト"),
+                "Unicode description paragraph present");
+        Assertions.assertTrue(md.contains("مرحبا"), "Arabic text present");
+        Assertions.assertTrue(md.contains("résumé"), "Latin extended present");
     }
 
     @Test
@@ -363,10 +363,10 @@ public class AnnotationDocTest extends DocTester {
     })
     public void layer5_manyDescriptionValues() throws IOException {
         finishDocTest();
-        String html = readHtml();
+        String md = readMarkdown();
         for (int i = 1; i <= 10; i++) {
-            Assert.assertTrue("Paragraph " + i + " present",
-                    html.contains("Paragraph " + i + " of 10."));
+            Assertions.assertTrue(md.contains("Paragraph " + i + " of 10."),
+                    "Paragraph " + i + " present");
         }
     }
 
@@ -379,9 +379,9 @@ public class AnnotationDocTest extends DocTester {
     })
     public void layer5_manyWarningValues() throws IOException {
         finishDocTest();
-        String html = readHtml();
+        String md = readMarkdown();
         for (int i = 1; i <= 3; i++) {
-            Assert.assertTrue("Warning " + i + " present", html.contains("Warning " + i + " of 3."));
+            Assertions.assertTrue(md.contains("Warning " + i + " of 3."), "Warning " + i + " present");
         }
     }
 
@@ -394,10 +394,10 @@ public class AnnotationDocTest extends DocTester {
     })
     public void layer5_docCodeMultiLinePreservesNewlines() throws IOException {
         finishDocTest();
-        String html = readHtml();
-        // Lines are joined with \n inside <pre><code>
-        Assert.assertTrue("All three lines present in order",
-                html.contains("line one\nline two\nline three"));
+        String md = readMarkdown();
+        // Lines are joined with \n inside code fence
+        Assertions.assertTrue(md.contains("line one\nline two\nline three"),
+                "All three lines present in order");
     }
 
     // =========================================================================
@@ -408,13 +408,13 @@ public class AnnotationDocTest extends DocTester {
     @DocSection("Layer 6 — all five annotations together (full API showcase)")
     @DocDescription({
         "This test demonstrates every annotation simultaneously on a single method.",
-        "The generated HTML for this entry showcases the complete annotation API."
+        "The generated markdown for this entry showcases the complete annotation API."
     })
     @DocNote({
         "The rendering order is always fixed: section → description → note → warning → code.",
         "This order applies regardless of the order the annotations appear in source."
     })
-    @DocWarning("Never annotate a method with <code>@DocSection</code> more than once; only one heading per method is supported.")
+    @DocWarning("Never annotate a method with `@DocSection` more than once; only one heading per method is supported.")
     @DocCode(
         language = "java",
         value = {
@@ -437,37 +437,35 @@ public class AnnotationDocTest extends DocTester {
     )
     public void layer6_allFiveAnnotationsTogether() throws IOException {
         finishDocTest();
-        String html = readHtml();
+        String md = readMarkdown();
 
         // Presence of all five layers' output
-        Assert.assertTrue("Section heading present",
-                html.contains("Layer 6 — all five annotations together"));
-        Assert.assertTrue("First description paragraph present",
-                html.contains("This test demonstrates every annotation simultaneously"));
-        Assert.assertTrue("Second description paragraph present",
-                html.contains("The generated HTML for this entry showcases"));
-        Assert.assertTrue("First note present",
-                html.contains("The rendering order is always fixed"));
-        Assert.assertTrue("Second note present",
-                html.contains("This order applies regardless"));
-        Assert.assertTrue("Warning present",
-                html.contains("Never annotate a method with"));
-        Assert.assertTrue("Code block first line present",
-                html.contains("@DocSection("));
-        Assert.assertTrue("Code block contains HTML-escaped quotes",
-                html.contains("&quot;"));
+        Assertions.assertTrue(md.contains("Layer 6 — all five annotations together"),
+                "Section heading present");
+        Assertions.assertTrue(md.contains("This test demonstrates every annotation simultaneously"),
+                "First description paragraph present");
+        Assertions.assertTrue(md.contains("The generated markdown for this entry showcases"),
+                "Second description paragraph present");
+        Assertions.assertTrue(md.contains("The rendering order is always fixed"),
+                "First note present");
+        Assertions.assertTrue(md.contains("This order applies regardless"),
+                "Second note present");
+        Assertions.assertTrue(md.contains("Never annotate a method with"),
+                "Warning present");
+        Assertions.assertTrue(md.contains("@DocSection("),
+                "Code block first line present");
 
         // Ordering: all five layers in sequence
-        int sPos = html.indexOf("Layer 6 — all five annotations together");
-        int dPos = html.indexOf("This test demonstrates every annotation simultaneously");
-        int nPos = html.indexOf("The rendering order is always fixed");
-        int wPos = html.indexOf("Never annotate a method with");
-        int cPos = html.indexOf("@DocSection(");
+        int sPos = md.indexOf("Layer 6 — all five annotations together");
+        int dPos = md.indexOf("This test demonstrates every annotation simultaneously");
+        int nPos = md.indexOf("The rendering order is always fixed");
+        int wPos = md.indexOf("Never annotate a method with");
+        int cPos = md.indexOf("@DocSection(");
 
-        Assert.assertTrue("section < description", sPos < dPos);
-        Assert.assertTrue("description < note",    dPos < nPos);
-        Assert.assertTrue("note < warning",        nPos < wPos);
-        Assert.assertTrue("warning < code",        wPos < cPos);
+        Assertions.assertTrue(sPos < dPos, "section < description");
+        Assertions.assertTrue(dPos < nPos, "description < note");
+        Assertions.assertTrue(nPos < wPos, "note < warning");
+        Assertions.assertTrue(wPos < cPos, "warning < code");
     }
 
     @Test
@@ -477,8 +475,8 @@ public class AnnotationDocTest extends DocTester {
         say("A test method carrying zero doc annotations continues to work exactly as before.");
         sayAndAssertThat("Explicit assertion still works", 2 + 2, is(4));
         finishDocTest();
-        File html = new File(MD_PATH);
-        Assert.assertTrue("HTML file exists", html.exists());
+        File md = new File(MD_PATH);
+        Assertions.assertTrue(md.exists(), "Markdown file exists");
     }
 
     // =========================================================================
@@ -486,14 +484,14 @@ public class AnnotationDocTest extends DocTester {
     // =========================================================================
 
     /**
-     * Reads the generated HTML file for this test class.
+     * Reads the generated markdown file for this test class.
      * Calls {@link #finishDocTest()} beforehand to ensure the file is flushed.
      */
-    private static String readHtml() throws IOException {
+    private static String readMarkdown() throws IOException {
         return Files.toString(new File(MD_PATH), Charsets.UTF_8);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         finishDocTest();
     }

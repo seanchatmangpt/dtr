@@ -54,7 +54,6 @@ class OpenApiTest {
 
     @Test
     void outputFormat_hasCorrectExtensions() {
-        assertEquals("html", OutputFormat.HTML.getExtension());
         assertEquals("json", OutputFormat.OPENAPI_JSON.getExtension());
         assertEquals("yaml", OutputFormat.OPENAPI_YAML.getExtension());
         assertEquals("md", OutputFormat.MARKDOWN.getExtension());
@@ -62,7 +61,6 @@ class OpenApiTest {
 
     @Test
     void outputFormat_hasCorrectContentTypes() {
-        assertEquals("text/html", OutputFormat.HTML.getContentType());
         assertEquals("application/json", OutputFormat.OPENAPI_JSON.getContentType());
         assertEquals("application/x-yaml", OutputFormat.OPENAPI_YAML.getContentType());
         assertEquals("text/markdown", OutputFormat.MARKDOWN.getContentType());

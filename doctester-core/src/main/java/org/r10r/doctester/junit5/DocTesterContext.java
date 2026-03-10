@@ -15,7 +15,7 @@
  */
 package org.r10r.doctester.junit5;
 
-import org.apache.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.hamcrest.Matcher;
 import org.r10r.doctester.rendermachine.RenderMachine;
 import org.r10r.doctester.rendermachine.RenderMachineCommands;

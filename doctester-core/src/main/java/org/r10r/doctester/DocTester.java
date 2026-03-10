@@ -15,22 +15,20 @@
  */
 package org.r10r.doctester;
 
-import org.apache.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.rendermachine.RenderMachine;
 import org.r10r.doctester.rendermachine.RenderMachineCommands;
-import org.r10r.doctester.rendermachine.RenderMachineMarkdownImpl;
+import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
@@ -38,15 +36,6 @@ import org.r10r.doctester.testbrowser.TestBrowserImpl;
 import org.r10r.doctester.testbrowser.Url;
 
 public abstract class DocTester implements TestBrowser, RenderMachineCommands {
-
-    @Rule
-    public TestRule testWatcher = new TestWatcher() {
-        @Override
-        protected void starting(Description description) {
-            classNameForDocTesterOutputFile = description.getClassName();
-            currentTestDescription = description;
-        }
-    };
 
     /**
      * classNameForDocTesterOutputFile will be set by the testWatcher. That way
@@ -56,9 +45,9 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     private String classNameForDocTesterOutputFile;
 
     /**
-     * Captured by the testWatcher for annotation processing in setupForTestCaseMethod.
+     * Captured from TestInfo for annotation processing in setupForTestCaseMethod.
      */
-    private Description currentTestDescription;
+    private Method currentTestMethod;
 
     private final Logger logger = LoggerFactory.getLogger(DocTester.class);
 
@@ -69,8 +58,14 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     // Protected only for testing
     protected static RenderMachine renderMachine = null;
 
-    @Before
-    public void setupForTestCaseMethod() {
+    @BeforeEach
+    public void setupForTestCaseMethod(TestInfo testInfo) {
+
+        // Capture class name and test method from TestInfo (JUnit 5 replacement for @Rule TestWatcher)
+        classNameForDocTesterOutputFile = testInfo.getTestClass()
+                .map(Class::getName)
+                .orElse(getClass().getName());
+        currentTestMethod = testInfo.getTestMethod().orElse(null);
 
         initRenderingMachineIfNull();
 
@@ -78,14 +73,14 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
         testBrowser = getTestBrowser();
         renderMachine.setTestBrowser(testBrowser);
 
-        // This is all a bit strange. But JUnit's @BeforeClass
+        // This is all a bit strange. But JUnit's @BeforeAll
         // is static. Therefore the only possibility to transmit
         // the filename to the renderMachine is here.
         // We accept that we set the fileName too often.
         renderMachine.setFileName(classNameForDocTesterOutputFile);
 
         // Process @DocSection / @DocDescription annotations declared on the test method.
-        processDocAnnotations(currentTestDescription);
+        processDocAnnotations(currentTestMethod);
 
     }
 
@@ -102,84 +97,56 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
      *   <li>{@link DocCode} — HTML-escaped {@code <pre><code>} blocks via {@code sayRaw()}</li>
      * </ol>
      *
-     * @param description the JUnit description of the currently starting test
+     * @param method the test method (from TestInfo)
      */
-    private void processDocAnnotations(Description description) {
+    private void processDocAnnotations(Method method) {
 
-        if (description == null) {
+        if (method == null) {
             return;
         }
 
-        try {
-            Method method = description.getTestClass().getMethod(description.getMethodName());
-
-            // 1. Section heading
-            DocSection section = method.getAnnotation(DocSection.class);
-            if (section != null) {
-                renderMachine.sayNextSection(section.value());
-            }
-
-            // 2. Narrative description paragraphs
-            DocDescription desc = method.getAnnotation(DocDescription.class);
-            if (desc != null) {
-                for (String line : desc.value()) {
-                    renderMachine.say(line);
-                }
-            }
-
-            // 3. Informational callout boxes
-            DocNote note = method.getAnnotation(DocNote.class);
-            if (note != null) {
-                for (String line : note.value()) {
-                    renderMachine.sayRaw("<div class=\"alert alert-info\">" + line + "</div>");
-                }
-            }
-
-            // 4. Warning callout boxes
-            DocWarning warning = method.getAnnotation(DocWarning.class);
-            if (warning != null) {
-                for (String line : warning.value()) {
-                    renderMachine.sayRaw("<div class=\"alert alert-warning\">" + line + "</div>");
-                }
-            }
-
-            // 5. Code example block — lines are HTML-escaped and joined with newlines
-            DocCode code = method.getAnnotation(DocCode.class);
-            if (code != null) {
-                String langClass = code.language().isEmpty() ? "" : " class=\"language-" + htmlEscape(code.language()) + "\"";
-                StringBuilder sb = new StringBuilder("<pre><code").append(langClass).append(">");
-                String[] lines = code.value();
-                for (int i = 0; i < lines.length; i++) {
-                    if (i > 0) {
-                        sb.append('\n');
-                    }
-                    sb.append(htmlEscape(lines[i]));
-                }
-                sb.append("</code></pre>");
-                renderMachine.sayRaw(sb.toString());
-            }
-
-        } catch (NoSuchMethodException e) {
-            logger.warn("DocTester could not find test method '{}' for annotation processing",
-                    description.getMethodName());
+        // 1. Section heading
+        DocSection section = method.getAnnotation(DocSection.class);
+        if (section != null) {
+            renderMachine.sayNextSection(section.value());
         }
 
-    }
+        // 2. Narrative description paragraphs
+        DocDescription desc = method.getAnnotation(DocDescription.class);
+        if (desc != null) {
+            for (String line : desc.value()) {
+                renderMachine.say(line);
+            }
+        }
 
-    /**
-     * Minimal HTML escaping for the five characters that break HTML contexts.
-     * Used when embedding annotation values inside raw HTML fragments.
-     *
-     * @param s raw string that may contain HTML-special characters
-     * @return the string with {@code &}, {@code <}, {@code >}, {@code "} and
-     *         {@code '} replaced by their named HTML entities
-     */
-    private static String htmlEscape(String s) {
-        return s.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
+        // 3. Informational callout boxes (Markdown GitHub-style alerts)
+        DocNote note = method.getAnnotation(DocNote.class);
+        if (note != null) {
+            for (String line : note.value()) {
+                renderMachine.sayRaw("> [!NOTE]\n> " + line);
+            }
+        }
+
+        // 4. Warning callout boxes (Markdown GitHub-style alerts)
+        DocWarning warning = method.getAnnotation(DocWarning.class);
+        if (warning != null) {
+            for (String line : warning.value()) {
+                renderMachine.sayRaw("> [!WARNING]\n> " + line);
+            }
+        }
+
+        // 5. Code example block — fenced code block in Markdown
+        DocCode code = method.getAnnotation(DocCode.class);
+        if (code != null) {
+            String lang = code.language();
+            StringBuilder sb = new StringBuilder("```").append(lang).append('\n');
+            for (String line : code.value()) {
+                sb.append(line).append('\n');
+            }
+            sb.append("```");
+            renderMachine.sayRaw(sb.toString());
+        }
+
     }
 
     public void initRenderingMachineIfNull() {
@@ -190,7 +157,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void finishDocTest() {
 
         if (renderMachine != null) {
@@ -201,7 +168,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     }
 
     // ////////////////////////////////////////////////////////////////////////
-    // Say methods to print stuff into html
+    // Say methods to generate documentation
     // ////////////////////////////////////////////////////////////////////////
     @Override
     public final void say(String textAsParagraph) {
@@ -302,7 +269,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
      */
     public RenderMachine getRenderMachine() {
 
-        return new RenderMachineMarkdownImpl();
+        return new RenderMachineImpl();
 
     }
 

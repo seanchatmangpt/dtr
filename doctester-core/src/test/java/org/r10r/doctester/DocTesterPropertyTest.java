@@ -19,7 +19,7 @@ import net.jqwik.api.*;
 import net.jqwik.api.constraints.AlphaChars;
 import net.jqwik.api.constraints.StringLength;
 import net.jqwik.api.lifecycle.BeforeProperty;
-import org.r10r.doctester.rendermachine.RenderMachineMarkdownImpl;
+import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import org.r10r.doctester.testbrowser.Url;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -48,13 +48,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @Label("DocTester — property-based tests (jqwik)")
 class DocTesterPropertyTest {
 
-    // A fresh RenderMachineMarkdownImpl for each property trial avoids cross-trial
+    // A fresh RenderMachineImpl for each property trial avoids cross-trial
     // state pollution. The constructor only allocates lists (no I/O).
-    private RenderMachineMarkdownImpl rm;
+    private RenderMachineImpl rm;
 
     @BeforeProperty
     void freshRenderMachine() {
-        rm = new RenderMachineMarkdownImpl();
+        rm = new RenderMachineImpl();
         rm.setFileName("DocTesterPropertyTest");
     }
 

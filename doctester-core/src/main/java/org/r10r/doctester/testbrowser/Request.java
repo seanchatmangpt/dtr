@@ -198,6 +198,9 @@ public class Request {
      * @return This Request for chaining.
      */
     public Request url(Url url) {
+        if (url == null) {
+            throw new NullPointerException("url must not be null");
+        }
         this.uri = url.uri();
         return this;
     }

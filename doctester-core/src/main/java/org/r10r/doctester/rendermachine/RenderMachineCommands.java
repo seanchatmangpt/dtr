@@ -17,7 +17,7 @@ package org.r10r.doctester.rendermachine;
 
 import java.util.List;
 
-import org.apache.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.hamcrest.Matcher;
@@ -25,31 +25,28 @@ import org.hamcrest.Matcher;
 public interface RenderMachineCommands {
 
     /**
-     * A text that will be wrapped inside a paragraph. No escaping is done. You
-     * can use your own html tags inside the text.
+     * A text that will be rendered as a paragraph in the documentation.
+     * No escaping is done. You can use markdown formatting inside the text.
      *
-     * @param text A text that may contain html tags like "This is my
-     * <b>bold</b>
-     * text".
+     * @param text A text that may contain markdown formatting like "This is my **bold** text".
      */
     public void say(String text);
 
     /**
-     * A text that will be wrapped inside a h1. No escaping is done. You can use
-     * your own html tags inside the text.
+     * A heading that will appear as a top-level section in the documentation
+     * and in the table of contents. No escaping is done.
      *
-     * @param headline A text that may contain html tags like "This is my
-     * headline text".
+     * @param headline The section heading text.
      */
     public void sayNextSection(String headline);
 
     /**
-     * If you want to let the renderer render some raw custom html use this
-     * method.
+     * Injects raw content directly into the documentation output.
+     * Use this for custom markdown or other content that bypasses normal formatting.
      *
-     * @param rawHtml A raw plain html String like "<h3>Another headline</h3>"
+     * @param rawMarkdown Raw content to inject (e.g., markdown tables, code blocks, or HTML).
      */
-    public void sayRaw(String rawHtml);
+    public void sayRaw(String rawMarkdown);
 
     /**
      * @return all cookies saved by this TestBrowser.

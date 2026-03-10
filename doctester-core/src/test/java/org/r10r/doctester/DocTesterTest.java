@@ -18,14 +18,14 @@ package org.r10r.doctester;
 import org.r10r.doctester.DocTester;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DocTesterTest extends DocTester {
 
@@ -40,7 +40,7 @@ public class DocTesterTest extends DocTester {
 
         File expectedIndex = new File("target/docs/README.md");
 
-        Assert.assertTrue(expectedIndex.exists());
+        Assertions.assertTrue(expectedIndex.exists());
 
         // README.md is the index, verify it contains the expected header
         assertThatFileContainsText(expectedIndex, "API Documentation");
@@ -80,10 +80,12 @@ public class DocTesterTest extends DocTester {
 
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testThatUsageOfTestBrowserWithoutSpecifyingGetTestUrlIsNotAllowed() {
 
-        testServerUrl();
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            testServerUrl();
+        });
 
     }
 
@@ -120,7 +122,7 @@ public class DocTesterTest extends DocTester {
     public static void assertThatFileContainsText(File file, String text) throws IOException {
 
         String content = Files.toString(file, Charsets.UTF_8);
-        Assert.assertTrue(content.contains(text));
+        Assertions.assertTrue(content.contains(text));
 
     }
 

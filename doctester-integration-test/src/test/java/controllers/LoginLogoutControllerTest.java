@@ -17,16 +17,16 @@
 package controllers;
 
 import controllers.utils.NinjaTest;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LoginLogoutControllerTest extends NinjaTest {
-    
-    @Before
+
+    @BeforeEach
     public void setup() {
         
         makeRequest(Request.GET().url(testServerUrl().path("setup")));
