@@ -106,7 +106,7 @@ public class RenderMachineImpl implements RenderMachine {
     public String convertTextToId(String textAsH1) {
 
         String textAsH1Converted = textAsH1.toLowerCase();
-        textAsH1Converted = textAsH1Converted.replaceAll("\\W", "");
+        textAsH1Converted = textAsH1Converted.replaceAll("[^a-z0-9]", "");
 
         return textAsH1Converted;
 
