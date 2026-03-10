@@ -71,7 +71,7 @@ public class RenderMachineImpl implements RenderMachine {
     public void sayNextSection(String heading) {
         sections.add(heading);
         String anchorId = convertTextToId(heading);
-        toc.add(String.format("- [%s](#%s)", heading, anchorId));
+        toc.add("- [%s](#%s)".formatted(heading, anchorId));
 
         markdownDocument.add("");
         markdownDocument.add("## " + heading);
@@ -83,7 +83,7 @@ public class RenderMachineImpl implements RenderMachine {
         markdownDocument.add("");
         markdownDocument.add("### Cookies");
         for (Cookie cookie : cookies) {
-            markdownDocument.add(String.format("- **%s**: `%s` (path: %s, domain: %s)",
+            markdownDocument.add("- **%s**: `%s` (path: %s, domain: %s)".formatted(
                     cookie.getName(), cookie.getValue(), cookie.getPath(), cookie.getDomain()));
         }
         return cookies;
@@ -95,9 +95,9 @@ public class RenderMachineImpl implements RenderMachine {
         markdownDocument.add("");
         markdownDocument.add("### Cookie: " + name);
         if (cookie != null) {
-            markdownDocument.add(String.format("- **Value**: `%s`", cookie.getValue()));
-            markdownDocument.add(String.format("- **Path**: `%s`", cookie.getPath()));
-            markdownDocument.add(String.format("- **Domain**: `%s`", cookie.getDomain()));
+            markdownDocument.add("- **Value**: `%s`".formatted(cookie.getValue()));
+            markdownDocument.add("- **Path**: `%s`".formatted(cookie.getPath()));
+            markdownDocument.add("- **Domain**: `%s`".formatted(cookie.getDomain()));
         }
         return cookie;
     }
@@ -216,7 +216,7 @@ public class RenderMachineImpl implements RenderMachine {
         for (File file : files) {
             String name = file.getName();
             String baseName = name.substring(0, name.length() - 3); // remove .md
-            index.add(String.format("- [%s](%s)", baseName, name));
+            index.add("- [%s](%s)".formatted(baseName, name));
         }
 
         writeMarkdownFile(index, INDEX_FILE);
