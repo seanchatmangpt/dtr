@@ -30,11 +30,8 @@ import static org.hamcrest.CoreMatchers.is;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertThat;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 public class DocTesterLifecycleTest extends DocTester {
 

@@ -64,9 +64,10 @@ public class UserDao {
             EntityManager entityManager = this.entityManagerProvider.get();
 
             Query query = entityManager
-                    .createQuery("SELECT COUNT(x) FROM User x WHERE username = :usernameParam AND isAdmin = true");
+                    .createQuery("SELECT COUNT(x) FROM User x WHERE username = :usernameParam AND x.isAdmin = :isAdminParam");
 
             Long count = (Long) query.setParameter("usernameParam", username)
+                    .setParameter("isAdminParam", Boolean.TRUE)
                     .getSingleResult();
 
             return count == 1;
