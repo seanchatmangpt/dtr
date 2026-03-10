@@ -17,13 +17,12 @@ package org.r10r.doctester.testbrowser;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 /**
  *
@@ -46,7 +45,7 @@ public class Url {
 
     private Url() {
         simpleUrlBuilder = new StringBuilder();
-        queryParameters = Maps.newHashMap();
+        queryParameters = new HashMap<>();
 
     }
 

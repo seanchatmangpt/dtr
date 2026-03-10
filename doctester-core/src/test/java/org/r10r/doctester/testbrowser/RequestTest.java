@@ -18,10 +18,10 @@ package org.r10r.doctester.testbrowser;
 import org.r10r.doctester.testbrowser.Url;
 import org.r10r.doctester.testbrowser.HttpConstants;
 import org.r10r.doctester.testbrowser.Request;
-import com.google.common.collect.Maps;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -132,7 +132,7 @@ public class RequestTest {
     @Test
     public void testHeaders() {
 
-        Map<String, String> headers = Maps.newHashMap();
+        Map<String, String> headers = new HashMap<>();
         headers.put("header1", "header1_value");
         headers.put("header2", "header2_value");
 
@@ -169,7 +169,7 @@ public class RequestTest {
     @Test
     public void testFormParameters() {
 
-        Map<String, String> formParameters = Maps.newHashMap();
+        Map<String, String> formParameters = new HashMap<>();
         formParameters.put("param1", "param1_value");
         formParameters.put("param2", "param2_value");
 

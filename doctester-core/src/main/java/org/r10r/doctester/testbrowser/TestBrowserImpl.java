@@ -17,9 +17,6 @@ package org.r10r.doctester.testbrowser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
@@ -48,11 +45,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.hc.core5.http.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import org.apache.hc.core5.http.ParseException;
 import java.util.Map.Entry;
 
 import static org.r10r.doctester.testbrowser.HttpConstants.*;
@@ -101,11 +101,11 @@ public class TestBrowserImpl implements TestBrowser {
 
         Response httpResponse;
 
-        if (Sets.newHashSet(HEAD, GET, DELETE).contains(httpRequest.httpRequestType)) {
+        if (Set.of(HEAD, GET, DELETE).contains(httpRequest.httpRequestType)) {
 
             httpResponse = makeHeadGetOrDeleteRequest(httpRequest);
 
-        } else if (Sets.newHashSet(POST, PUT, PATCH).contains(httpRequest.httpRequestType)) {
+        } else if (Set.of(POST, PUT, PATCH).contains(httpRequest.httpRequestType)) {
 
             httpResponse = makePatchPostOrPutRequest(httpRequest);
 
@@ -203,7 +203,7 @@ public class TestBrowserImpl implements TestBrowser {
             ///////////////////////////////////////////////////////////////////
             if (httpRequest.formParameters != null) {
 
-                List<NameValuePair> formparams = Lists.newArrayList();
+                List<NameValuePair> formparams = new ArrayList<>();
                 for (Entry<String, String> parameter : httpRequest.formParameters
                         .entrySet()) {
 
@@ -293,7 +293,7 @@ public class TestBrowserImpl implements TestBrowser {
 
     private org.r10r.doctester.testbrowser.Response convertFromApacheHttpResponseToDocTesterHttpResponse(ClassicHttpResponse httpResponse) {
 
-        Map<String, String> headers = Maps.newHashMap();
+        Map<String, String> headers = new HashMap<>();
 
         for (Header header : httpResponse.getHeaders()) {
 
