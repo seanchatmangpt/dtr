@@ -97,7 +97,8 @@ mvnd.maxHeapSize=2g
 mvnd.threads=4
 EOF
 
-# Configure Maven proxy settings from JAVA_TOOL_OPTIONS (for Maven 4 native HTTP transport)
+# Configure Maven proxy settings from JAVA_TOOL_OPTIONS (Maven 4 native HTTP transport
+# does not read Java system proxy properties — it requires settings.xml)
 log "Configuring Maven proxy settings..."
 if [ ! -f "$HOME/.m2/settings.xml" ]; then
     PROXY_HOST=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP '(?<=proxyHost=)[^ ]+' | head -1 || true)
@@ -108,8 +109,6 @@ if [ ! -f "$HOME/.m2/settings.xml" ]; then
 
     if [ -n "$PROXY_HOST" ] && [ -n "$PROXY_PORT" ]; then
         log "Writing Maven settings.xml with proxy: ${PROXY_HOST}:${PROXY_PORT}"
-        # Replace | with | for Maven nonProxyHosts format
-        NOPROXY_MAVEN=$(echo "$NOPROXY" | tr '|' '|')
         cat > "$HOME/.m2/settings.xml" << XMLEOF
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -123,7 +122,7 @@ if [ ! -f "$HOME/.m2/settings.xml" ]; then
       <port>${PROXY_PORT}</port>
       <username>${PROXY_USER}</username>
       <password>${PROXY_PASS}</password>
-      <nonProxyHosts>${NOPROXY_MAVEN}</nonProxyHosts>
+      <nonProxyHosts>${NOPROXY}</nonProxyHosts>
     </proxy>
     <proxy>
       <id>env-proxy-https</id>
@@ -133,7 +132,7 @@ if [ ! -f "$HOME/.m2/settings.xml" ]; then
       <port>${PROXY_PORT}</port>
       <username>${PROXY_USER}</username>
       <password>${PROXY_PASS}</password>
-      <nonProxyHosts>${NOPROXY_MAVEN}</nonProxyHosts>
+      <nonProxyHosts>${NOPROXY}</nonProxyHosts>
     </proxy>
   </proxies>
 </settings>
@@ -144,18 +143,6 @@ fi
 # ─── 6. Warm up Maven local repository cache ─────────────────────────────────
 log "Warming up Maven dependency cache (downloading project dependencies)..."
 cd "${CLAUDE_PROJECT_DIR}"
-
-# Propagate JAVA_TOOL_OPTIONS proxy settings into Maven settings.xml if not already done
-if [ ! -f "$HOME/.m2/settings.xml" ]; then
-    PROXY_HOST="${HTTPS_PROXY_HOST:-${HTTP_PROXY_HOST:-}}"
-    if [ -z "$PROXY_HOST" ]; then
-        # Try to parse from JAVA_TOOL_OPTIONS if set
-        PROXY_HOST=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP 'proxyHost=\K[^ ]+' | head -1 || true)
-        PROXY_PORT=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP 'proxyPort=\K[^ ]+' | head -1 || true)
-        PROXY_USER=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP 'proxyUser=\K[^ ]+' | head -1 || true)
-        PROXY_PASS=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP 'proxyPassword=\K[^ ]+' | head -1 || true)
-    fi
-fi
 
 # Run warm-up as best-effort (proxy may block in some environments)
 JAVA_HOME="$JAVA_25_HOME" \

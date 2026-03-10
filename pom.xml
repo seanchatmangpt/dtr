@@ -58,6 +58,14 @@ the specific language governing permissions and limitations under the License. -
     </properties>
 
     <build>
+        <plugins>
+            <!-- Enforce Java 25+ and Maven 4+ on every build — inherited by all modules -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+        </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>

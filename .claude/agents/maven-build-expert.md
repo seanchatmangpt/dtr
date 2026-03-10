@@ -47,7 +47,7 @@ cat ~/.m2/mvnd.properties
 ```properties
 mvnd.javaHome=/usr/lib/jvm/java-25-openjdk-amd64
 mvnd.jvmArgs=-Xmx2g --enable-preview -Dfile.encoding=UTF-8
-mvnd.minHeapSize=512m
+mvnd.minHeapSize=256m
 mvnd.maxHeapSize=2g
 mvnd.threads=4
 ```

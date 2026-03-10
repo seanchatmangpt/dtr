@@ -31,6 +31,8 @@ mvnd test -pl doctester-core -Dtest=DocTesterTest
 mvnd --stop
 ```
 
+> **Do NOT use `./mvnw`** — the Maven wrapper downloads Maven 3 (see `.mvn/wrapper/maven-wrapper.properties` for context). Always use `mvnd` or the installed Maven 4 directly: `/opt/apache-maven-4.0.0-rc-5/bin/mvn`.
+
 ## Linting / Code Quality
 
 There is no dedicated linter configured. Maven enforcer validates Java 25+ and Maven 4+.
