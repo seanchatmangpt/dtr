@@ -183,7 +183,6 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 		
         <dependency>
