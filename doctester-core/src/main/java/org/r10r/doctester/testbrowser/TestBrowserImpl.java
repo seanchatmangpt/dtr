@@ -101,11 +101,11 @@ public class TestBrowserImpl implements TestBrowser {
 
         Response httpResponse;
 
-        if (Sets.newHashSet(HEAD, GET, DELETE).contains(httpRequest.httpRequestType)) {
+        if (Set.of(HEAD, GET, DELETE).contains(httpRequest.httpRequestType)) {
 
             httpResponse = makeHeadGetOrDeleteRequest(httpRequest);
 
-        } else if (Sets.newHashSet(POST, PUT, PATCH).contains(httpRequest.httpRequestType)) {
+        } else if (Set.of(POST, PUT, PATCH).contains(httpRequest.httpRequestType)) {
 
             httpResponse = makePatchPostOrPutRequest(httpRequest);
 
