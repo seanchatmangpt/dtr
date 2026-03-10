@@ -1,0 +1,34 @@
+# How-to Guides
+
+How-to guides are **task-oriented**. They assume you know what you want to do and show you how to do it. They are not tutorials — they don't explain concepts or hold your hand through learning.
+
+## Available Guides
+
+### Testing
+
+| Guide | Task |
+|---|---|
+| [Test JSON Endpoints](test-json-endpoints.md) | Send and receive JSON, deserialize responses |
+| [Test XML Endpoints](test-xml-endpoints.md) | Send and receive XML payloads |
+| [Use Cookies](use-cookies.md) | Session cookies, authentication, cookie assertions |
+| [Upload Files](upload-files.md) | Multipart file uploads |
+| [Test with Query Parameters](test-with-query-parameters.md) | Build URLs with query strings |
+| [Use Custom Headers](use-custom-headers.md) | Add Authorization, Accept, and other headers |
+
+### Output & Customization
+
+| Guide | Task |
+|---|---|
+| [Customize HTML Output](customize-html-output.md) | CSS branding, logos, colors |
+| [Control What Gets Documented](control-documentation.md) | `say` vs `makeRequest`, raw HTML |
+
+### Integration
+
+| Guide | Task |
+|---|---|
+| [Add DocTester to a Maven Project](add-to-maven.md) | Dependencies and compiler config |
+| [Integrate with Frameworks](integrate-with-frameworks.md) | Ninja, Arquillian, Spring Boot, Jetty |
+
+---
+
+If you're new to DocTester, start with the [Tutorials](../tutorials/index.md) instead.
