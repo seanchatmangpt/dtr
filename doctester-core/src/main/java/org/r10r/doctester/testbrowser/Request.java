@@ -19,8 +19,8 @@ import java.io.File;
 import java.net.URI;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
 import java.io.IOException;
+import java.util.HashMap;
 import org.r10r.doctester.testbrowser.auth.AuthProvider;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class Request {
     private Request() {
 
         filesToUpload = null;
-        headers = Maps.newHashMap();
+        headers = new HashMap<>();
         formParameters = null;
         followRedirects = true;
 
@@ -229,7 +229,7 @@ public class Request {
      */
     public Request addFileToUpload(String param, File fileToUpload) {
         if (filesToUpload == null) {
-            filesToUpload = Maps.newHashMap();
+            filesToUpload = new HashMap<>();
         }
         filesToUpload.put(param, fileToUpload);
 
@@ -246,7 +246,7 @@ public class Request {
      */
     public Request addHeader(String key, String value) {
         if (headers == null) {
-            headers = Maps.newHashMap();
+            headers = new HashMap<>();
         }
         headers.put(key, value);
         return this;
@@ -275,7 +275,7 @@ public class Request {
      */
     public Request addFormParameter(String key, String value) {
         if (formParameters == null) {
-            formParameters = Maps.newHashMap();
+            formParameters = new HashMap<>();
         }
         formParameters.put(key, value);
         return this;
