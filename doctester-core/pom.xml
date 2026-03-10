@@ -33,6 +33,9 @@
 
     <properties>
         <jackson.version>2.5.4</jackson.version>
+        <junit5.version>5.11.4</junit5.version>
+        <jqwik.version>1.9.0</jqwik.version>
+        <wiremock.version>2.35.2</wiremock.version>
     </properties>
 
     <build>
@@ -157,6 +160,46 @@
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
             <version>1.7.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ================================================================
+             Test libraries: property-based testing, fuzzing, chaos
+             ================================================================ -->
+
+        <!-- JUnit 5 Platform: enables jqwik + keeps JUnit 4 tests running
+             via junit-vintage-engine (both engines discovered by Surefire 3.x) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Property-based testing: jqwik generates thousands of random inputs
+             and shrinks failing examples to minimal reproducers. -->
+        <dependency>
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+            <version>${jqwik.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Chaos / fault-injection: WireMock simulates HTTP server faults
+             (connection reset, empty response, random garbage) so we can verify
+             TestBrowserImpl handles them gracefully.
+             The -standalone artifact shades its Jackson dependency to avoid
+             version conflicts with the project's Jackson 2.5.4 compile dep. -->
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8-standalone</artifactId>
+            <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
 
