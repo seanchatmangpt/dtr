@@ -17,10 +17,6 @@ the specific language governing permissions and limitations under the License. -
         <version>1.1.12-SNAPSHOT</version>
     </parent>
     
-    <properties>
-        <ninja.version>7.0.0</ninja.version>
-        <jetty.version>9.4.53.v20231009</jetty.version>
-    </properties>
 
 
     <build>
@@ -29,7 +25,6 @@ the specific language governing permissions and limitations under the License. -
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.7</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -74,13 +69,11 @@ the specific language governing permissions and limitations under the License. -
             <plugin>
                 <groupId>org.ninjaframework</groupId>
                 <artifactId>ninja-maven-plugin</artifactId>
-                <version>${ninja.version}</version>
             </plugin>
 
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
                 <configuration>
                     <contextPath>/</contextPath>
                     <stopKey>stop</stopKey>
@@ -104,7 +97,6 @@ the specific language governing permissions and limitations under the License. -
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -146,60 +138,51 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>tinymce-jquery</artifactId>
-            <version>3.4.9</version>
         </dependency>
 
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>bootstrap</artifactId>
-            <version>3.0.0</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.4.240</version>
         </dependency>
 
         <!-- Flyway 10.x for H2 2.x compatibility (overrides old Flyway from Ninja framework) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>10.21.0</version>
         </dependency>
 
         <!-- JAXB needed for Hibernate 4.x on Java 9+ (javax.xml.bind removed from JDK) -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.9</version>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- <dependency> <groupId>org.postgresql</groupId> <artifactId>postgresql</artifactId> 
+        <!-- <dependency> <groupId>org.postgresql</groupId> <artifactId>postgresql</artifactId>
         <version>9.2-1003-jdbc4</version> </dependency> -->
         <dependency>
             <groupId>org.ninjaframework</groupId>
             <artifactId>ninja-servlet</artifactId>
-            <version>${ninja.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.ninjaframework</groupId>
             <artifactId>ninja-standalone</artifactId>
-            <version>${ninja.version}</version>
         </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
 		
@@ -213,7 +196,6 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>org.ninjaframework</groupId>
             <artifactId>ninja-test-utilities</artifactId>
-            <version>${ninja.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -232,7 +214,6 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.22.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -240,14 +221,12 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.22.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.12.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -255,7 +234,6 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
 
