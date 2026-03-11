@@ -40,7 +40,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedIndex = new File("target/docs/README.md");
+        File expectedIndex = new File("docs/test/README.md");
 
         Assertions.assertTrue(expectedIndex.exists());
 
@@ -56,8 +56,8 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + EXPECTED_FILENAME);
-        File expectedIndexFile = new File("target/docs/README.md");
+        File expectedDoctestfile = new File("docs/test/" + EXPECTED_FILENAME);
+        File expectedIndexFile = new File("docs/test/README.md");
 
         // just a simple test to make sure the name is written somewhere in the file.
         assertThatFileContainsText(expectedDoctestfile, DocTesterTest.class.getSimpleName());
@@ -74,7 +74,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + EXPECTED_FILENAME);
 
         // Verify the markdown file was created and contains test content
         assertThatFileContainsText(expectedDoctestfile, "another fun heading!");
@@ -106,7 +106,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify that assertion failures are marked with ✗ and include error message
         assertThatFileContainsText(expectedDoctestfile, "✗ **FAILED**: This will go wrong");
@@ -129,7 +129,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify markdown table structure
         assertThatFileContainsText(expectedDoctestfile, "| Feature | Status | Version |");
@@ -148,7 +148,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify code block structure
         assertThatFileContainsText(expectedDoctestfile, "```sql");
@@ -165,7 +165,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify warning alert structure
         assertThatFileContainsText(expectedDoctestfile, "> [!WARNING]");
@@ -181,7 +181,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify note alert structure
         assertThatFileContainsText(expectedDoctestfile, "> [!NOTE]");
@@ -201,7 +201,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify key-value table structure
         assertThatFileContainsText(expectedDoctestfile, "| Key | Value |");
@@ -222,7 +222,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify bullet list structure
         assertThatFileContainsText(expectedDoctestfile, "- Java 25 or higher");
@@ -243,7 +243,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify numbered list structure
         assertThatFileContainsText(expectedDoctestfile, "1. Clone the repository");
@@ -264,7 +264,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify JSON code block structure
         assertThatFileContainsText(expectedDoctestfile, "```json");
@@ -285,7 +285,7 @@ public class DocTesterTest extends DocTester {
 
         finishDocTest();
 
-        File expectedDoctestfile = new File("target/docs/" + DocTesterTest.EXPECTED_FILENAME);
+        File expectedDoctestfile = new File("docs/test/" + DocTesterTest.EXPECTED_FILENAME);
 
         // Verify assertions table structure
         assertThatFileContainsText(expectedDoctestfile, "| Check | Result |");

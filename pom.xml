@@ -95,6 +95,8 @@ the specific language governing permissions and limitations under the License. -
         <maven-deploy-plugin.version>2.7</maven-deploy-plugin.version>
         <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
         <ninja-maven-plugin.version>${ninja.version}</ninja-maven-plugin.version>
+        <!-- Crypto & hashing -->
+        <bouncycastle.version>1.77</bouncycastle.version>
     </properties>
 
     <dependencyManagement>
@@ -269,6 +271,13 @@ the specific language governing permissions and limitations under the License. -
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>${gson.version}</version>
+            </dependency>
+
+            <!-- Cryptography & hashing (for LaTeX receipt embedding) -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

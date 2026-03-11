@@ -35,6 +35,9 @@ import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.TestBrowserImpl;
 import org.r10r.doctester.testbrowser.Url;
+import org.r10r.doctester.crossref.DocTestRef;
+import org.r10r.doctester.crossref.CrossReferenceIndex;
+import org.r10r.doctester.render.RenderMachineFactory;
 
 public abstract class DocTester implements TestBrowser, RenderMachineCommands {
 
@@ -250,6 +253,39 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
         renderMachine.sayAssertions(assertions);
     }
 
+    @Override
+    public final void sayRef(DocTestRef ref) {
+        if (ref != null) {
+            CrossReferenceIndex.getInstance().register(ref);
+        }
+        renderMachine.sayRef(ref);
+    }
+
+    /**
+     * Convenience method to create and render a reference to another DocTest's section.
+     *
+     * @param docTestClass the target DocTest class
+     * @param anchor the section/anchor name within that DocTest
+     */
+    public final void sayRef(Class<?> docTestClass, String anchor) {
+        sayRef(DocTestRef.of(docTestClass, anchor));
+    }
+
+    @Override
+    public final void sayFootnote(String text) {
+        renderMachine.sayFootnote(text);
+    }
+
+    @Override
+    public final void sayCite(String citationKey) {
+        renderMachine.sayCite(citationKey);
+    }
+
+    @Override
+    public final void sayCite(String citationKey, String pageRef) {
+        renderMachine.sayCite(citationKey, pageRef);
+    }
+
     // //////////////////////////////////////////////////////////////////////////
     // Inlined methods of the TestBrowser (for convenience)
     // //////////////////////////////////////////////////////////////////////////
@@ -314,9 +350,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
      * class.
      */
     public RenderMachine getRenderMachine() {
-
-        return new RenderMachineImpl();
-
+        return RenderMachineFactory.createRenderMachine(getClass().getSimpleName());
     }
 
     /**
@@ -351,5 +385,68 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
      */
     public void setClassNameForDocTesterOutputFile(final String name) {
         this.classNameForDocTesterOutputFile = name;
+    }
+
+    /**
+     * Renders content only for slide output (ignored by markdown/blog render machines).
+     *
+     * @param text the text to render on slides only
+     */
+    public void saySlideOnly(String text) {
+        renderMachine.saySlideOnly(text);
+    }
+
+    /**
+     * Renders content only for documentation/blog output (ignored by slide render machines).
+     *
+     * @param text the text to render in docs only
+     */
+    public void sayDocOnly(String text) {
+        renderMachine.sayDocOnly(text);
+    }
+
+    /**
+     * Renders speaker notes for slides (ignored by doc/blog render machines).
+     *
+     * @param text the speaker notes text
+     */
+    public void saySpeakerNote(String text) {
+        renderMachine.saySpeakerNote(text);
+    }
+
+    /**
+     * Renders a hero image for blogs and slides (ignored by other formats).
+     *
+     * @param altText the alt text for the image
+     */
+    public void sayHeroImage(String altText) {
+        renderMachine.sayHeroImage(altText);
+    }
+
+    /**
+     * Renders a tweetable excerpt (≤280 chars) for social media queue.
+     *
+     * @param text the text to tweet (will be truncated to 280 chars)
+     */
+    public void sayTweetable(String text) {
+        renderMachine.sayTweetable(text);
+    }
+
+    /**
+     * Renders a TLDR (too long; didn't read) summary for blogs.
+     *
+     * @param text the summary text
+     */
+    public void sayTldr(String text) {
+        renderMachine.sayTldr(text);
+    }
+
+    /**
+     * Renders a call-to-action link for blogs.
+     *
+     * @param url the URL for the CTA button/link
+     */
+    public void sayCallToAction(String url) {
+        renderMachine.sayCallToAction(url);
     }
 }

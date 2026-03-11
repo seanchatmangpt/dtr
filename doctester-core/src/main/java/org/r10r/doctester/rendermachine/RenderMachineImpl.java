@@ -30,6 +30,9 @@ import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.cookie.Cookie;
+import org.r10r.doctester.bibliography.BibliographyManager;
+import org.r10r.doctester.bibliography.BibTeXRenderer;
+import org.r10r.doctester.crossref.DocTestRef;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
@@ -46,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * documentation platforms, and static site generators. No HTML/CSS/JS
  * dependencies—just clean, portable markdown.
  */
-public class RenderMachineImpl implements RenderMachine {
+public class RenderMachineImpl extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
 
@@ -273,6 +276,35 @@ public class RenderMachineImpl implements RenderMachine {
             String result = entry.getValue() != null ? entry.getValue() : "";
             markdownDocument.add("| " + check + " | `" + result + "` |");
         }
+    }
+
+    @Override
+    public void sayCite(String citationKey) {
+        markdownDocument.add("[cite: " + citationKey + "]");
+    }
+
+    @Override
+    public void sayCite(String citationKey, String pageRef) {
+        markdownDocument.add("[cite: " + citationKey + ", p. " + pageRef + "]");
+    }
+
+    @Override
+    public void sayFootnote(String text) {
+        markdownDocument.add("[^1]: " + text);
+    }
+
+    @Override
+    public void sayRef(DocTestRef ref) {
+        if (ref == null) {
+            return;
+        }
+
+        markdownDocument.add("");
+        String linkText = ref.toString();
+        String docFileName = ref.docTestClassName();
+        String anchor = ref.anchor();
+        // Render as markdown link: [See ApiControllerDocTest#user-creation](../OtherTest.md#anchor)
+        markdownDocument.add("[%s](../%s.md#%s)".formatted(linkText, docFileName, anchor));
     }
 
     @Override
