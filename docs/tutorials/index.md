@@ -4,6 +4,15 @@ Tutorials are **learning-oriented**. They take you through a series of steps to 
 
 ## Available Tutorials
 
+### Java 25 Fundamentals
+
+| Tutorial | What you'll learn |
+|---|---|
+| [Virtual Threads for Lightweight Concurrency](virtual-threads-lightweight-concurrency.md) | How to spawn thousands of concurrent tasks using Java 25 virtual threads |
+| [Records and Sealed Classes](records-sealed-classes.md) | How to eliminate boilerplate with records and enforce type safety with sealed classes |
+
+### API Testing with DocTester
+
 | Tutorial | What you'll build |
 |---|---|
 | [Your First DocTest](your-first-doctest.md) | A complete, runnable DocTest for a public API |
