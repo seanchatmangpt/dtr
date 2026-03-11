@@ -778,6 +778,8 @@ mvnd clean verify
 open target/site/doctester/index.html
 ```
 
+**Note:** DocTester supports both **JUnit 4** (shown above) and **JUnit 5**. For JUnit 5 tests, use `@Test` from `org.junit.jupiter.api` and the `@ExtendWith(DocTesterExtension.class)` annotation. See [Java25DocTest.java](doctester-integration-test/src/test/java/controllers/docs/Java25DocTest.java) for a JUnit 5 example.
+
 ---
 
 ## Architecture
@@ -890,6 +892,39 @@ Complete examples in `doctester-integration-test/src/test/java/controllers/docs/
 ```bash
 mvnd verify -pl doctester-integration-test
 ```
+
+---
+
+## Comprehensive Documentation
+
+This README covers the essentials. For in-depth guides, see `docs/`:
+
+### [docs/tutorials/](docs/tutorials/) — Learn by Example
+
+Hands-on walkthroughs for Java 25 features:
+- [Virtual Threads: Lightweight Concurrency](docs/tutorials/virtual-threads-lightweight-concurrency.md) — Build concurrent HTTP tests without OS thread limits
+- [Records & Sealed Classes](docs/tutorials/records-sealed-classes.md) — Immutable DTOs and exhaustive type safety
+
+### [docs/how-to/](docs/how-to/) — Task-Focused Guides
+
+Step-by-step instructions for specific tasks:
+- [Use Virtual Threads](docs/how-to/use-virtual-threads.md)
+- [Pattern Matching](docs/how-to/pattern-matching.md)
+- [Switch Expressions](docs/how-to/switch-expressions.md)
+- [Text Blocks](docs/how-to/text-blocks.md)
+
+### [docs/reference/](docs/reference/) — API & Technical Details
+
+Comprehensive reference material:
+- [Virtual Threads Reference](docs/reference/virtual-threads-reference.md)
+- [Records & Sealed Classes Reference](docs/reference/records-sealed-reference.md)
+
+### [docs/explanation/](docs/explanation/) — Concepts & Design Philosophy
+
+Deep dives into design decisions:
+- [Java 25 Design Philosophy](docs/explanation/java25-design-philosophy.md)
+- [Virtual Threads Philosophy](docs/explanation/virtual-threads-philosophy.md)
+- [Records & Sealed Classes Philosophy](docs/explanation/records-sealed-philosophy.md)
 
 ---
 
