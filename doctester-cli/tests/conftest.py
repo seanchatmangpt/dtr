@@ -1,19 +1,74 @@
 """Pytest configuration and fixtures for Chicago-style TDD.
 
-These fixtures execute REAL Maven builds and verify REAL DocTester capabilities.
-Tests fail loudly if Maven is unavailable or builds fail - no graceful skipping.
+Fixtures are divided into two categories:
 
-Fixtures:
-- project_root: DocTester repository root (auto-detected)
-- maven_doctester_core_exports: Real HTML exports from doctester-core build
-- maven_integration_test_exports: Real API documentation from integration tests
+1. SAMPLE FIXTURES (for unit tests):
+   - tmp_export_dir: Sample HTML files for unit testing
+   - tmp_markdown_file: Sample Markdown file for unit testing
+
+2. REAL MAVEN FIXTURES (for integration tests):
+   - project_root: DocTester repository root (auto-detected)
+   - maven_doctester_core_exports: Real HTML exports from doctester-core build
+   - maven_integration_test_exports: Real API documentation from integration tests
+
+Tests fail loudly if Maven is unavailable or builds fail - no graceful skipping.
 """
 
 import subprocess
 from pathlib import Path
+from typing import Generator
 import os
 
 import pytest
+
+
+# ============================================================================
+# SAMPLE FIXTURES FOR UNIT TESTS
+# ============================================================================
+
+
+@pytest.fixture
+def tmp_export_dir(tmp_path: Path) -> Generator[Path, None, None]:
+    """Create a temporary export directory with sample HTML files for unit testing."""
+    export_dir = tmp_path / "exports"
+    export_dir.mkdir()
+
+    # Create sample HTML file
+    sample_html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test Export</title>
+    </head>
+    <body>
+        <h1>Test Documentation</h1>
+        <p>This is a test export.</p>
+    </body>
+    </html>
+    """
+    (export_dir / "test_doc.html").write_text(sample_html)
+
+    yield export_dir
+
+
+@pytest.fixture
+def tmp_markdown_file(tmp_path: Path) -> Generator[Path, None, None]:
+    """Create a temporary Markdown file for unit testing."""
+    md_file = tmp_path / "test.md"
+    md_file.write_text("""# Test Document
+
+This is a test markdown file.
+
+## Section 1
+
+Some content here.
+""")
+    yield md_file
+
+
+# ============================================================================
+# REAL MAVEN FIXTURES FOR INTEGRATION TESTS
+# ============================================================================
 
 
 def _find_project_root() -> Path:
