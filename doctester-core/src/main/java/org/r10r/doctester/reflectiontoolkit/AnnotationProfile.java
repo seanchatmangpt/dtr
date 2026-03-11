@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Value class capturing the set of annotations present on a Java class or member.
+ * Record capturing the set of annotations present on a Java class or member.
  *
  * <p>This immutable value object represents the reflection metadata for a single class,
  * including the fully-qualified class name and the set of annotations that decorate it.
@@ -51,9 +51,9 @@ import java.util.Objects;
  * @param className        The fully-qualified class name being annotated
  * @param annotationNames  List of fully-qualified annotation class names applied to the class
  *
- * @since Java 26
+ * @since Java 25
  */
-public value class AnnotationProfile(String className, List<String> annotationNames) {
+public record AnnotationProfile(String className, List<String> annotationNames) {
 
     /**
      * Compact canonical constructor with defensive copying and validation.

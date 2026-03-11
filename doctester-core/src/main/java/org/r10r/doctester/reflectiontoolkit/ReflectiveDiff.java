@@ -15,7 +15,7 @@
 package org.r10r.doctester.reflectiontoolkit;
 
 /**
- * Value class capturing a single field-level difference between two object instances.
+ * Record capturing a single field-level difference between two object instances.
  *
  * <p>This immutable value object represents a comparison of a single field across
  * two versions of an object, useful for generating detailed diff reports, change logs,
@@ -68,9 +68,9 @@ package org.r10r.doctester.reflectiontoolkit;
  * @param afterValueString     String representation of the field value after change
  * @param changed              Flag indicating whether the field values differ
  *
- * @since Java 26
+ * @since Java 25
  */
-public value class ReflectiveDiff(
+public record ReflectiveDiff(
         String fieldName,
         String beforeValueString,
         String afterValueString,

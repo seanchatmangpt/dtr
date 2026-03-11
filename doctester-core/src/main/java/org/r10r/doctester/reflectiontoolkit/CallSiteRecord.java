@@ -15,7 +15,7 @@
 package org.r10r.doctester.reflectiontoolkit;
 
 /**
- * Value class capturing the call site (location in code) where a method invocation occurred.
+ * Record capturing the call site (location in code) where a method invocation occurred.
  *
  * <p>This lightweight, immutable value object represents a point in the source code,
  * useful for stack trace analysis, debugging, and reflection-based introspection.
@@ -45,9 +45,9 @@ package org.r10r.doctester.reflectiontoolkit;
  * @param methodName   The method name (e.g., "sayNextSection")
  * @param lineNumber   The source code line number (0-based or 1-based depending on convention)
  *
- * @since Java 26
+ * @since Java 25
  */
-public value class CallSiteRecord(String className, String methodName, int lineNumber) {
+public record CallSiteRecord(String className, String methodName, int lineNumber) {
 
     /**
      * Compact canonical constructor with defensive validation.
