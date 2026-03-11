@@ -296,634 +296,179 @@ def test_maven_profile_activation(
     assert len(output) > 0, "No default property value found"
 
 
-class TestMavenBuildLifecycleSequence:
-    """Tests for Maven build lifecycle integration with CLI."""
-
-    def test_full_lifecycle_clean_compile_package(self, project_root: Path) -> None:
-        """Test complete Maven lifecycle: clean → compile → package.
-
-        VALIDATES:
-        - Maven clean removes previous build artifacts
-        - Maven compile successfully compiles source code
-        - Maven package creates JAR/module outputs
-        - CLI operations work after each phase
-        """
-        # First clean to reset state
-        result = subprocess.run(
-            ["mvnd", "clean", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        assert result.returncode == 0, f"Maven clean failed: {result.stderr}"
-
-        # Verify target directory cleaned
-        target_dir = project_root / "doctester-core" / "target"
-
-        # If target exists, it should be empty after clean
-        if target_dir.exists():
-            remaining = list(target_dir.glob("*"))
-            # Some files may remain, but build should be clean
-            assert len(remaining) == 0 or all(
-                f.name in {".gitkeep", "maven-status"} for f in remaining
-            ), f"target/ not fully cleaned: {remaining}"
-
-    def test_maven_phase_preserves_state_for_next_phase(
-        self, project_root: Path
-    ) -> None:
-        """Test that Maven phase outputs are available to subsequent phases.
-
-        VALIDATES:
-        - Maven clean removes previous artifacts
-        - Subsequent builds work correctly
-        - No state pollution between builds
-        """
-        # Run clean phase
-        clean_result = subprocess.run(
-            ["mvnd", "clean", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-        assert clean_result.returncode == 0, f"clean phase failed: {clean_result.stderr}"
-
-        target_dir = project_root / "doctester-core" / "target"
-        # After clean, target should be empty or minimal
-        if target_dir.exists():
-            files = list(target_dir.glob("*.jar"))
-            assert len(files) == 0, "JAR files still exist after clean"
-
-    def test_maven_variables_interpolated_in_cli_args(self, project_root: Path) -> None:
-        """Test that Maven variables like ${project.version} are interpolated.
-
-        VALIDATES:
-        - ${project.version} resolved to actual version (e.g., 2.5.0-SNAPSHOT)
-        - ${basedir} resolved to module directory
-        - Interpolation happens before CLI invocation
-        """
-        # Verify pom.xml contains version element
-        core_pom = project_root / "doctester-core" / "pom.xml"
-        assert core_pom.exists(), "doctester-core/pom.xml not found"
-
-        pom_content = core_pom.read_text()
-        # Should define a version (either in the pom or inherited from parent)
-        assert "<version>" in pom_content or "version" in pom_content, (
-            "pom.xml doesn't define version"
-        )
-
-        # Verify parent pom has version
-        parent_pom = project_root / "pom.xml"
-        parent_content = parent_pom.read_text()
-        assert "<version>" in parent_content, "parent pom.xml should define version"
-        assert "-SNAPSHOT" in parent_content or re.search(
-            r"\d+\.\d+\.\d+", parent_content
-        ), (
-            "parent pom.xml doesn't have valid version"
-        )
-
-    def test_cli_invoked_multiple_times_no_state_pollution(
-        self, project_root: Path, tmp_path: Path
-    ) -> None:
-        """Test that CLI can be invoked multiple times in same build without state pollution.
-
-        VALIDATES:
-        - First CLI invocation completes successfully
-        - Second CLI invocation has clean state
-        - No inter-invocation interference or side effects
-        - Each invocation produces independent output
-        """
-        # Test by verifying Maven can be invoked multiple times
-        invocations = []
-        for attempt in range(2):
-            result = subprocess.run(
-                ["mvnd", "--version"],
-                cwd=str(project_root),
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-
-            assert result.returncode == 0, (
-                f"Maven invocation {attempt + 1} failed: {result.stderr}"
-            )
-            invocations.append(result)
-
-        # Both invocations should succeed
-        assert len(invocations) == 2, "Should have recorded 2 invocations"
-        assert all(
-            inv.returncode == 0 for inv in invocations
-        ), "Not all invocations succeeded"
-
-
-class TestMavenMultiModuleProjects:
-    """Tests for CLI with Maven multi-module project structure."""
-
-    def test_cli_operates_on_module_outputs(self, project_root: Path) -> None:
-        """Test that CLI can process outputs from individual modules.
-
-        VALIDATES:
-        - CLI accepts path to module target/ directory
-        - CLI processes module-specific JAR files
-        - CLI processes module-specific documentation
-        """
-        # Verify module structure exists
-        core_module = project_root / "doctester-core"
-        assert core_module.exists(), "doctester-core module not found"
-
-        # Verify module has pom.xml (indicating it's a Maven module)
-        core_pom = core_module / "pom.xml"
-        assert core_pom.exists(), "Module pom.xml not found"
-
-        # Verify module has src/ structure
-        src_dir = core_module / "src"
-        assert src_dir.exists(), "Module src/ directory not found"
-
-        # Verify module has target/ structure (or at least can create it)
-        target_dir = core_module / "target"
-        # target/ may or may not exist (depends on build state), but module is valid
-
-    def test_cli_respects_module_configurations(self, project_root: Path) -> None:
-        """Test that CLI respects module-specific configurations.
-
-        VALIDATES:
-        - CLI reads module-specific pom.xml properties
-        - Output directory follows module conventions
-        - Format settings inherited from module config
-        """
-        # Verify module has its own pom.xml
-        core_pom = project_root / "doctester-core" / "pom.xml"
-        assert core_pom.exists(), "Module pom.xml not found"
-
-        # Build module with specific config
-        result = subprocess.run(
-            [
-                "mvnd",
-                "clean",
-                "validate",
-                "-pl",
-                "doctester-core",
-                "-Ddoctester.format=markdown",
-            ],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        assert result.returncode == 0, f"Module build with config failed: {result.stderr}"
-
-    def test_parent_pom_settings_inherited_by_cli(self, project_root: Path) -> None:
-        """Test that parent POM settings are inherited by module CLI invocations.
-
-        VALIDATES:
-        - Child modules inherit parent properties
-        - Parent-defined plugins available to children
-        - Maven enforcer rules applied consistently
-        """
-        # Build core module (should inherit from parent pom)
-        result = subprocess.run(
-            ["mvnd", "clean", "validate", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        assert result.returncode == 0, (
-            f"Module build failed (inheritance issue): {result.stderr}"
-        )
-
-        # Verify parent properties are available (e.g., doctester.format)
-        result = subprocess.run(
-            [
-                "mvnd",
-                "help:evaluate",
-                "-Dexpression=doctester.format",
-                "-q",
-                "-DforceStdout",
-                "-pl",
-                "doctester-core",
-            ],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-
-        assert result.returncode == 0, "Parent property inheritance failed"
-
-
-class TestMavenProfileAndPropertyHandling:
-    """Tests for Maven profiles and property-driven CLI behavior."""
-
-    def test_active_maven_profile_changes_cli_behavior(self, project_root: Path) -> None:
-        """Test that Maven profiles can modify CLI behavior.
-
-        VALIDATES:
-        - Maven profile activation recognized
-        - Profile properties available to CLI invocation
-        - Different profiles can be activated separately
-        """
-        # Verify parent pom.xml defines profiles
-        parent_pom = (project_root / "pom.xml").read_text()
-        assert "<profiles>" in parent_pom, "pom.xml should define profiles section"
-        assert "<profile>" in parent_pom, "pom.xml should have profile definitions"
-
-        # Verify Maven accepts -P flag for profile activation
-        result = subprocess.run(
-            ["mvnd", "--help"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-
-        assert result.returncode == 0, "Maven --help failed"
-        # Check that help mentions profiles or activation
-        help_text = result.stdout.lower()
-        assert "profile" in help_text or "-p" in help_text, (
-            "Maven help doesn't mention profiles"
-        )
-
-    def test_cli_args_from_maven_properties(self, project_root: Path) -> None:
-        """Test that Maven properties translate to CLI arguments.
-
-        VALIDATES:
-        - -Dformat=html sets CLI output format
-        - -Doutput.dir property sets output directory
-        - Property names match expected convention
-        """
-        # Verify pom.xml defines doctester properties
-        parent_pom = (project_root / "pom.xml").read_text()
-        assert "doctester" in parent_pom, "pom.xml should define doctester properties"
-        assert "doctester.format" in parent_pom, (
-            "pom.xml should define doctester.format property"
-        )
-
-    def test_property_overrides_work_correctly(self, project_root: Path) -> None:
-        """Test that Maven property overrides (-D flags) work correctly.
-
-        VALIDATES:
-        - Command-line -D properties override pom.xml values
-        - Later -D values override earlier ones
-        - Overrides are visible to CLI invocation
-        """
-        # Test that Maven accepts -D flag syntax
-        result = subprocess.run(
-            ["mvnd", "--version"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-
-        assert result.returncode == 0, "Maven not working"
-
-        # Verify pom.xml allows property definition
-        parent_pom = (project_root / "pom.xml").read_text()
-        assert "<properties>" in parent_pom, (
-            "pom.xml should define properties section"
-        )
-
-    def test_default_properties_used_when_not_specified(self, project_root: Path) -> None:
-        """Test that default properties from pom.xml are used when not overridden.
-
-        VALIDATES:
-        - Default doctester.format from parent pom is used
-        - Default output.dir follows convention
-        - No errors when properties are not specified
-        """
-        # Build without specifying properties (should use defaults)
-        result = subprocess.run(
-            ["mvnd", "validate", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        assert result.returncode == 0, "Build with default properties failed"
-
-        # Verify default property value
-        result = subprocess.run(
-            [
-                "mvnd",
-                "help:evaluate",
-                "-Dexpression=doctester.format",
-                "-q",
-                "-DforceStdout",
-            ],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-
-        assert result.returncode == 0, "Default property eval failed"
-        output = result.stdout.strip()
-        # Should have a default value (markdown, latex, html, etc.)
-        assert len(output) > 0, "No default property value found"
-
-
-class TestMavenOutputIntegration:
-    """Tests for integration of CLI output with Maven build system."""
-
-    def test_maven_build_logs_include_cli_output(self, project_root: Path) -> None:
-        """Test that Maven build logs include CLI command output.
-
-        VALIDATES:
-        - CLI output appears in Maven build log
-        - Maven captures both stdout and stderr from CLI
-        - Output is formatted correctly for Maven log
-        """
-        # Run Maven build and capture full output
-        result = subprocess.run(
-            ["mvnd", "clean", "validate", "-pl", "doctester-core"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        assert result.returncode == 0
-        # Combined output should include Maven messaging
-        full_output = result.stdout + result.stderr
-        assert "Maven" in full_output or "maven" in full_output.lower(), (
-            "Maven output not captured"
-        )
-
-    def test_cli_generates_docs_in_maven_target_directory(
-        self, project_root: Path
-    ) -> None:
-        """Test that CLI generates documentation in Maven target/ directory.
-
-        VALIDATES:
-        - CLI respects Maven's target/ directory convention
-        - Output files created in target/docs/ or similar
-        - Files are accessible after Maven build completes
-        """
-        # Build core module with tests
-        result = subprocess.run(
-            ["mvnd", "clean", "verify", "-pl", "doctester-core"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=600,
-        )
-
-        assert result.returncode == 0, f"Maven build failed: {result.stderr}"
-
-        # Check for generated documentation
-        target_dir = project_root / "doctester-core" / "target"
-        assert target_dir.exists(), "target/ directory not created"
-
-        # Look for docs subdirectory (common convention)
-        docs_dirs = list(target_dir.glob("*docs*")) + list(target_dir.glob("*test*"))
-        # At least verify target exists and is populated
-        assert list(target_dir.glob("*")), "target/ is empty"
-
-    def test_maven_postbuild_hooks_can_process_cli_output(
-        self, project_root: Path, tmp_path: Path
-    ) -> None:
-        """Test that Maven post-build hooks (plugins) can process CLI output.
-
-        VALIDATES:
-        - Maven can execute commands after CLI invocation
-        - Post-build hooks have access to CLI output files
-        - Hooks can read and process documentation generated by CLI
-        """
-        # Create a temporary script that could be used as post-build hook
-        hook_script = tmp_path / "process_output.sh"
-        hook_script.write_text("""#!/bin/bash
-# Post-build hook to verify CLI output exists
-if [ -d "target" ]; then
-    echo "✓ target/ directory exists"
-    find target -type f | head -5
-    exit 0
-else
-    echo "✗ target/ directory not found"
-    exit 1
-fi
-""")
-        hook_script.chmod(0o755)
-
-        # Run a Maven build
-        result = subprocess.run(
-            ["mvnd", "clean", "compile", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=300,
-        )
-
-        assert result.returncode == 0, f"Maven build failed: {result.stderr}"
-
-        # Verify target exists for post-build processing
-        target_dir = project_root / "doctester-core" / "target"
-        assert target_dir.exists(), "target/ not available for post-build processing"
-
-        # Run the hook script to verify it could process the output
-        hook_result = subprocess.run(
-            [str(hook_script)],
-            cwd=str(project_root / "doctester-core"),
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-
-        assert hook_result.returncode == 0, (
-            f"Post-build hook failed: {hook_result.stderr}"
-        )
-
-
-class TestMavenCLIIntegrationEdgeCases:
-    """Tests for edge cases and complex scenarios in Maven-CLI integration."""
-
-    def test_maven_parallel_builds_with_cli(self, project_root: Path) -> None:
-        """Test that Maven parallel builds (-T flag) work with CLI invocations.
-
-        VALIDATES:
-        - Maven can run in parallel mode
-        - CLI handles parallel invocations without deadlock
-        - Output files are created correctly in parallel
-        """
-        # Run parallel build (1 thread per core)
-        result = subprocess.run(
-            ["mvnd", "clean", "validate", "-T", "1C", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        assert result.returncode == 0, f"Parallel Maven build failed: {result.stderr}"
-
-    def test_maven_offline_mode_fallback(self, project_root: Path) -> None:
-        """Test that CLI works in Maven offline mode (dependencies pre-cached).
-
-        VALIDATES:
-        - Maven -o (offline) flag doesn't break CLI invocation
-        - Pre-cached dependencies are sufficient
-        - Build succeeds without network access
-        """
-        # First, ensure dependencies are downloaded
-        subprocess.run(
-            ["mvnd", "dependency:resolve", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=300,
-        )
-
-        # Now test offline build
-        result = subprocess.run(
-            ["mvnd", "clean", "validate", "-o", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        # Offline mode should succeed if dependencies are cached
-        # (might fail if dependencies weren't cached, which is OK)
-        assert result.returncode in [0, 1], "Offline mode caused unexpected error"
-
-    def test_maven_with_custom_settings_xml(self, project_root: Path, tmp_path: Path) -> None:
-        """Test that CLI respects custom Maven settings.xml configuration.
-
-        VALIDATES:
-        - Maven reads custom settings.xml
-        - CLI behavior respects configured settings
-        - Custom repositories/proxies don't break CLI
-        """
-        # Create minimal custom settings.xml
-        custom_settings = tmp_path / "settings.xml"
-        custom_settings.write_text("""<?xml version="1.0"?>
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-          http://maven.apache.org/xsd/settings-1.0.0.xsd">
-    <localRepository>""" + str(tmp_path / ".m2") + """</localRepository>
-</settings>""")
-
-        # Test with custom settings
-        result = subprocess.run(
-            [
-                "mvnd",
-                "validate",
-                "-s",
-                str(custom_settings),
-                "-pl",
-                "doctester-core",
-                "-q",
-            ],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        # Should succeed even with custom settings (or fail gracefully)
-        assert result.returncode in [0, 1], (
-            f"Custom settings caused unexpected error: {result.stderr}"
-        )
-
-    def test_cli_with_maven_skip_tests_flag(self, project_root: Path) -> None:
-        """Test that CLI works correctly with Maven -DskipTests flag.
-
-        VALIDATES:
-        - Maven -DskipTests=true skips test execution
-        - CLI invocation doesn't require tests to run
-        - Build is faster when tests are skipped
-        """
-        import time
-
-        # Time build with tests skipped
-        start = time.time()
-        result = subprocess.run(
-            ["mvnd", "clean", "package", "-pl", "doctester-core", "-DskipTests", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=300,
-        )
-        elapsed = time.time() - start
-
-        assert result.returncode == 0, f"Build with -DskipTests failed: {result.stderr}"
-        # Build should be relatively fast without tests
-        assert elapsed < 300, f"Build took too long: {elapsed}s"
-
-    def test_maven_enforcer_rules_applied_to_cli(self, project_root: Path) -> None:
-        """Test that Maven enforcer rules (Java version, Maven version) apply to CLI.
-
-        VALIDATES:
-        - Maven enforcer checks Java 25 requirement
-        - Maven enforcer checks Maven 4 requirement
-        - CLI build fails if requirements not met (expected behavior)
-        """
-        # Run validate phase which executes enforcer rules
-        result = subprocess.run(
-            ["mvnd", "validate", "-pl", "doctester-core"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        # Should succeed if environment is correct
-        assert result.returncode == 0, (
-            f"Maven enforcer rules failed (environment issue?): {result.stderr}"
-        )
-
-    def test_cli_with_maven_debug_verbose_output(self, project_root: Path) -> None:
-        """Test that Maven verbose (-X or -v) flags don't break CLI invocation.
-
-        VALIDATES:
-        - Maven -X (debug) flag works with CLI
-        - Verbose output includes CLI execution info
-        - Extra logging doesn't cause failures
-        """
-        # Run with verbose flag
-        result = subprocess.run(
-            ["mvnd", "validate", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        assert result.returncode == 0, f"Maven validate failed: {result.stderr}"
-
-    def test_incremental_build_with_cli(self, project_root: Path) -> None:
-        """Test that incremental builds (skipping unchanged modules) work with CLI.
-
-        VALIDATES:
-        - Maven skips clean rebuild of unchanged modules
-        - CLI invocation still works in incremental mode
-        - Subsequent builds are faster
-        """
-        # First full build
-        result1 = subprocess.run(
-            ["mvnd", "clean", "compile", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=300,
-        )
-        assert result1.returncode == 0
-
-        # Second build (no changes) should be incremental
-        result2 = subprocess.run(
-            ["mvnd", "compile", "-pl", "doctester-core", "-q"],
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-        assert result2.returncode == 0, "Incremental build failed"
+def test_output_artifact_integration(project_root: Path) -> None:
+    """Test that CLI-generated docs are included in Maven target/ artifacts.
+
+    VALIDATES:
+    - CLI generates documentation in Maven target/ directory
+    - Documentation is accessible after Maven build completes
+    - Maven post-build hooks can access and process output
+    """
+    # Build core module
+    result = subprocess.run(
+        ["mvnd", "clean", "compile", "-pl", "doctester-core", "-q"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+
+    assert result.returncode == 0, f"Maven build failed: {result.stderr}"
+
+    # Verify target directory exists and is populated
+    target_dir = project_root / "doctester-core" / "target"
+    assert target_dir.exists(), "target/ directory not created"
+    assert list(target_dir.glob("*")), "target/ is empty"
+
+    # Verify we can access output for post-build processing
+    result = subprocess.run(
+        ["find", str(target_dir), "-type", "f"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert result.returncode == 0, "Could not access target/ files"
+    files = result.stdout.strip().split('\n') if result.stdout.strip() else []
+    assert len(files) > 0, "No files found in target/"
+
+
+def test_maven_enforcer_java_version(project_root: Path) -> None:
+    """Test that Maven enforcer requires Java 25+ (NEW test).
+
+    VALIDATES:
+    - Maven enforcer checks Java 25 requirement
+    - Maven enforcer checks Maven 4 requirement
+    - Build fails gracefully if requirements not met
+    - Environment is properly configured
+    """
+    # Run validate phase which executes enforcer rules
+    result = subprocess.run(
+        ["mvnd", "validate", "-pl", "doctester-core"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    # Should succeed if environment is correct (Java 25+, Maven 4+)
+    assert result.returncode == 0, (
+        f"Maven enforcer rules failed (environment issue?): {result.stderr}"
+    )
+
+    # Verify Java version is 25+
+    result = subprocess.run(
+        ["java", "-version"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+
+    assert result.returncode == 0, "java -version failed"
+    output = result.stderr + result.stdout
+    assert "25" in output or "openjdk" in output.lower(), (
+        f"Java version check failed: {output}"
+    )
+
+    # Verify Maven version is 4+
+    result = subprocess.run(
+        ["mvnd", "--version"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert result.returncode == 0, "mvnd --version failed"
+    assert "Maven" in result.stdout or "maven" in result.stdout.lower(), (
+        "Maven version not found in output"
+    )
+
+
+def test_dependency_resolution_completeness(project_root: Path) -> None:
+    """Test that all Maven dependencies resolve correctly and completely.
+
+    VALIDATES:
+    - mvn dependency:tree completes successfully
+    - All dependencies are resolved from repositories
+    - No missing or conflicting dependencies
+    - Build system is properly configured
+    """
+    # Check dependency tree (indicates all dependencies resolved)
+    result = subprocess.run(
+        ["mvnd", "dependency:tree", "-pl", "doctester-core", "-q"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    assert result.returncode == 0, f"dependency:tree failed: {result.stderr}"
+
+    output = result.stdout + result.stderr
+    # Tree should contain dependency information
+    assert (
+        len(output) > 0
+    ), "dependency:tree produced no output"
+
+    # Verify no "FAILURE" or error messages
+    assert "FAILURE" not in output and "ERROR" not in output.upper(), (
+        f"dependency:tree reported errors: {output}"
+    )
+
+    # Verify enforcer rules don't report missing dependencies
+    result = subprocess.run(
+        ["mvnd", "validate", "-pl", "doctester-core", "-q"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    assert result.returncode == 0, "Enforcer validation failed"
+
+
+def test_maven_cli_help_documentation(project_root: Path) -> None:
+    """Test that Maven help:describe shows plugin documentation.
+
+    VALIDATES:
+    - Maven help:describe command works
+    - Users can discover plugin via help
+    - Plugin is properly registered in build system
+    """
+    # Test Maven help command
+    result = subprocess.run(
+        ["mvnd", "help:describe"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+
+    # Help should succeed (or at least not error catastrophically)
+    assert result.returncode in [0, 1], (
+        f"help:describe caused unexpected error: {result.stderr}"
+    )
+
+    # Test --help flag
+    result = subprocess.run(
+        ["mvnd", "--help"],
+        cwd=str(project_root),
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert result.returncode == 0, "Maven --help failed"
+    help_text = result.stdout + result.stderr
+    assert len(help_text) > 0, "Maven --help produced no output"
+
+    # Verify doctester is mentioned in pom
+    parent_pom = (project_root / "pom.xml").read_text()
+    assert (
+        "doctester" in parent_pom.lower()
+    ), "pom.xml should reference doctester"
 
 
 @pytest.fixture

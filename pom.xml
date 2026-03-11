@@ -22,6 +22,7 @@ the specific language governing permissions and limitations under the License. -
     <modules>
         <module>doctester-core</module>
         <module>doctester-integration-test</module>
+        <module>doctester-benchmarks</module>
     </modules>
 
     <distributionManagement>

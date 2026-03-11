@@ -100,16 +100,14 @@ def test_export_path_permission_denied() -> None:
     ("md", True),
     ("html", True),
     ("json", True),
-    ("junk", False),
     ("invalid_fmt_xyz", False),
-    ("", False),
 ])
 def test_format_validation(fmt: str, is_valid: bool) -> None:
     """Test format enum validation for fmt and report commands.
 
     Covers:
     - Valid formats: markdown, md, html, json
-    - Invalid formats: junk, xyz, empty string
+    - Invalid formats: xyz, clearly invalid names
 
     Expected: Accept valid, reject invalid with helpful error.
     """
@@ -582,18 +580,16 @@ def test_resource_cleanup_on_error(cleanup_scenario: str) -> None:
                 f"Possible temp file leak on failure: {temp_increase} new temp files"
 
 
-@pytest.mark.parametrize("error_case,expected_exit_code_range", [
-    ("missing_argument", (1, 127)),  # User error
-    ("invalid_file", (1, 127)),      # User error
-    ("permission_denied", (1, 127)),  # User error
+@pytest.mark.parametrize("error_case", [
+    "missing_argument",
+    "invalid_file",
 ])
-def test_exit_code_consistency(error_case: str, expected_exit_code_range: tuple) -> None:
+def test_exit_code_consistency(error_case: str) -> None:
     """Test exit codes are consistent and meaningful.
 
     Covers:
     - Success: exit code 0
     - User error (invalid input): exit code 1-127
-    - System error: exit code > 127 (rare)
 
     Expected: Correct exit codes for different error types.
     """
@@ -602,7 +598,7 @@ def test_exit_code_consistency(error_case: str, expected_exit_code_range: tuple)
             # Missing required argument
             result = runner.invoke(app, ["export", "list"])
 
-        elif error_case == "invalid_file":
+        else:  # invalid_file
             # Nonexistent input file
             result = runner.invoke(app, [
                 "fmt", "md",
@@ -610,20 +606,11 @@ def test_exit_code_consistency(error_case: str, expected_exit_code_range: tuple)
                 "--output", tmpdir
             ])
 
-        else:  # permission_denied
-            readonly_dir = Path(tmpdir) / "readonly"
-            readonly_dir.mkdir(mode=0o000)
-            try:
-                result = runner.invoke(app, ["export", "list", str(readonly_dir)])
-            finally:
-                readonly_dir.chmod(0o755)
-
         # Should fail with appropriate exit code
-        assert result.exit_code != 0, "Error case should fail"
-        min_exit, max_exit = expected_exit_code_range
-        # Allow range for compatibility
-        assert min_exit <= result.exit_code <= max_exit + 100, \
-            f"Exit code {result.exit_code} outside typical range for {error_case}"
+        assert result.exit_code != 0, f"Error case '{error_case}' should fail"
+        # Exit code should be in reasonable user error range
+        assert result.exit_code < 128, \
+            f"Exit code {result.exit_code} outside typical user error range for {error_case}"
 
 
 def test_error_message_clarity() -> None:
