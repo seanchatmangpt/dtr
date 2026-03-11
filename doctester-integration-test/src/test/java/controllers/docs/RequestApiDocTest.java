@@ -50,6 +50,16 @@ public class RequestApiDocTest extends NinjaApiDoctester {
             + "Request.GET(), Request.POST(), Request.PUT(), Request.PATCH(), "
             + "Request.DELETE(), Request.HEAD(). Each returns a new Request for chaining.");
 
+        var httpMethods = new String[][] {
+            {"Method", "Use Case", "Expected Status"},
+            {"GET", "Retrieve articles list", "200"},
+            {"POST", "Create new article", "200"},
+            {"PUT", "Update existing article", "200"},
+            {"DELETE", "Remove article", "204"},
+            {"HEAD", "Check resource exists", "200"}
+        };
+        sayTable(httpMethods);
+
         Response getResp = sayAndMakeRequest(
             Request.GET().url(testServerUrl().path(ARTICLES_URL)));
 
@@ -82,6 +92,16 @@ public class RequestApiDocTest extends NinjaApiDoctester {
         say("These helpers set the Content-Type header to the canonical values "
             + "for JSON and XML APIs. Always call them before payload() "
             + "when the request has a body.");
+
+        var contentTypeGuide = Map.of(
+            "application/json", "For REST APIs and web services",
+            "application/xml", "For legacy systems and document interchange",
+            "application/x-www-form-urlencoded", "For HTML form submissions"
+        );
+        sayKeyValue(contentTypeGuide);
+
+        sayNote("Always set Content-Type before calling payload(). "
+            + "DocTester uses this header to determine serialization format.");
 
         makeRequest(
             Request.POST()
@@ -126,6 +146,15 @@ public class RequestApiDocTest extends NinjaApiDoctester {
         say("addHeader(name, value) adds a single header. "
             + "Chain calls to accumulate multiple headers:");
 
+        var headerPractices = java.util.List.of(
+            "Use Accept header to request JSON or XML format",
+            "Include X-Request-ID for request tracing",
+            "Send X-Client-Version for API versioning",
+            "Set User-Agent to identify your client",
+            "Include Authorization header for protected endpoints"
+        );
+        sayUnorderedList(headerPractices);
+
         Response singleHeader = sayAndMakeRequest(
             Request.GET()
                 .url(testServerUrl().path(ARTICLES_URL))
@@ -136,6 +165,14 @@ public class RequestApiDocTest extends NinjaApiDoctester {
         sayAndAssertThat("Custom headers accepted", singleHeader.httpStatus, equalTo(200));
 
         say("headers(Map) replaces all headers at once:");
+
+        var pattern = """
+            Request.GET()
+                .url(testServerUrl().path("/api/users"))
+                .headers(Map.of(
+                    "Accept", "application/json",
+                    "X-Correlation-ID", "batch-42"))""";
+        sayCode(pattern, "java");
 
         Map<String, String> headers = new LinkedHashMap<>();
         headers.put("Accept", "application/json");
@@ -157,6 +194,15 @@ public class RequestApiDocTest extends NinjaApiDoctester {
         say("addFormParameter(key, value) builds an application/x-www-form-urlencoded "
             + "body — the standard encoding for HTML login forms:");
 
+        var formFlow = java.util.List.of(
+            "Construct a POST request",
+            "Call addFormParameter() for each field (chain multiple calls)",
+            "Submit to the login endpoint",
+            "Cookies are preserved automatically across requests",
+            "Subsequent requests include session cookies"
+        );
+        sayOrderedList(formFlow);
+
         Response loginResp = sayAndMakeRequest(
             Request.POST()
                 .url(testServerUrl().path(LOGIN_URL))
@@ -166,6 +212,15 @@ public class RequestApiDocTest extends NinjaApiDoctester {
         sayAndAssertThat("Form POST — login accepted", loginResp.httpStatus, equalTo(200));
 
         say("formParameters(Map) sets all form fields at once:");
+
+        var formSubmission = """
+            Response response = sayAndMakeRequest(
+                Request.POST()
+                    .url(testServerUrl().path("/login"))
+                    .formParameters(Map.of(
+                        "username", "bob@gmail.com",
+                        "password", "secret")));""";
+        sayCode(formSubmission, "java");
 
         clearCookies();
 
@@ -205,11 +260,16 @@ public class RequestApiDocTest extends NinjaApiDoctester {
                 .contentTypeApplicationJson()
                 .payload(article));
 
+        sayJson(article);
+
         sayAndAssertThat("Payload serialized and accepted", response.httpStatus, equalTo(200));
 
         ArticlesDto list = sayAndMakeRequest(
             Request.GET().url(testServerUrl().path(ARTICLES_URL)))
             .payloadAs(ArticlesDto.class);
+
+        sayWarning("Objects passed to payload() must be mutable and Jackson-compatible. "
+            + "Avoid immutable records with private constructors or custom serialization logic.");
 
         sayAndAssertThat("Article appears in list", list.articles.size(), equalTo(4));
     }

@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 
+import java.util.Map;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
@@ -49,19 +51,18 @@ public class ResponseApiDocTest extends NinjaApiDoctester {
 
         sayAndAssertThat("Status is 200 OK", response.httpStatus, equalTo(200));
 
-        sayRaw("""
-            <table class="table table-bordered table-condensed">
-              <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
-              <tbody>
-                <tr><td>200</td><td>OK — successful GET or POST</td></tr>
-                <tr><td>201</td><td>Created — resource successfully created</td></tr>
-                <tr><td>204</td><td>No Content — success with no body (DELETE)</td></tr>
-                <tr><td>400</td><td>Bad Request — validation failure</td></tr>
-                <tr><td>403</td><td>Forbidden — authentication or role failure</td></tr>
-                <tr><td>404</td><td>Not Found — unknown resource or endpoint</td></tr>
-              </tbody>
-            </table>
-            """);
+        sayTable(new String[][] {
+            {"Status", "Meaning"},
+            {"200", "OK — successful GET or POST"},
+            {"201", "Created — resource successfully created"},
+            {"204", "No Content — success with no body (DELETE)"},
+            {"400", "Bad Request — validation failure"},
+            {"403", "Forbidden — authentication or role failure"},
+            {"404", "Not Found — unknown resource or endpoint"}
+        });
+
+        sayNote("Always check httpStatus before accessing the response body. "
+            + "An error status may have a different body structure or none at all.");
     }
 
     @Test
@@ -83,6 +84,15 @@ public class ResponseApiDocTest extends NinjaApiDoctester {
         sayAndAssertThat("Content-Type is present",        contentType, notNullValue());
         sayAndAssertThat("Content-Type signals JSON",
             contentType.contains("application/json"), equalTo(true));
+
+        var headerPurposes = Map.of(
+            "Content-Type", "Specifies the response format (application/json, application/xml, etc.)",
+            "Content-Length", "Size of the response body in bytes",
+            "Cache-Control", "Directives for caching behaviour",
+            "Set-Cookie", "Instructs the client to store authentication tokens or session IDs",
+            "Location", "URL of a newly created resource (in 201/302 responses)"
+        );
+        sayKeyValue(headerPurposes);
     }
 
     @Test
@@ -105,6 +115,17 @@ public class ResponseApiDocTest extends NinjaApiDoctester {
         sayAndAssertThat("Pretty payload is not null", pretty, notNullValue());
         sayAndAssertThat("Raw payload contains 'articles'",
             raw.contains("articles"), equalTo(true));
+
+        var codeExample = """
+            // Three ways to access the response body:
+            byte[] raw = response.payload;
+            String text = response.payloadAsString();
+            String pretty = response.payloadAsPrettyString();
+            """;
+        sayCode(codeExample, "java");
+
+        sayNote("Use payloadAsString() for raw access (e.g., to log or store). "
+            + "Use payloadAsPrettyString() to display formatted output in assertions.");
     }
 
     @Test
@@ -115,6 +136,14 @@ public class ResponseApiDocTest extends NinjaApiDoctester {
         say("payloadAs(Class) reads the Content-Type header and dispatches "
             + "to the JSON or XML deserializer automatically. "
             + "It is the recommended method for most use cases:");
+
+        sayTable(new String[][] {
+            {"Method", "Auto-detects?", "Use case"},
+            {"payloadAs(Class)", "Yes (Content-Type)", "General-purpose deserialization"},
+            {"payloadJsonAs(Class)", "No (forces JSON)", "When you know the format"},
+            {"payloadXmlAs(Class)", "No (forces XML)", "Override Content-Type header"},
+            {"payloadAsString()", "N/A", "Raw access to body text"}
+        });
 
         Response jsonResp = sayAndMakeRequest(
             Request.GET().url(testServerUrl().path(ARTICLES_URL)));
@@ -127,6 +156,9 @@ public class ResponseApiDocTest extends NinjaApiDoctester {
         sayAndAssertThat("article.id present",    first.id,    notNullValue());
         sayAndAssertThat("article.title present", first.title, notNullValue());
 
+        say("Example JSON structure:");
+        sayJson(json);
+
         say("XML variant — same method, different endpoint:");
 
         Response xmlResp = sayAndMakeRequest(
@@ -134,6 +166,9 @@ public class ResponseApiDocTest extends NinjaApiDoctester {
 
         sayAndAssertThat("XML 200 OK", xmlResp.httpStatus, equalTo(200));
         sayAndAssertThat("XML body present", xmlResp.payload, notNullValue());
+
+        sayNote("payloadAs() is preferred because it respects the server's Content-Type header. "
+            + "This ensures correct deserialization even if the format changes.");
     }
 
     @Test
@@ -152,12 +187,19 @@ public class ResponseApiDocTest extends NinjaApiDoctester {
         sayAndAssertThat("payloadJsonAs() deserializes correctly",
             dto.articles.size(), equalTo(3));
 
-        sayRaw("""
-            <pre><code>// Force JSON (ignores Content-Type):
+        sayWarning("Format override methods bypass Content-Type inspection. "
+            + "Use them sparingly — only when the server sends incorrect Content-Type headers.");
+
+        var forceFormatCode = """
+            // Force JSON (ignores Content-Type):
             MyDto dto = response.payloadJsonAs(MyDto.class);
 
             // Force XML:
-            MyDto dto = response.payloadXmlAs(MyDto.class);</code></pre>
-            """);
+            MyDto dto = response.payloadXmlAs(MyDto.class);
+
+            // With TypeReference for generic collections:
+            List<MyDto> list = response.payloadJsonAs(new TypeReference<>() {});
+            """;
+        sayCode(forceFormatCode, "java");
     }
 }
