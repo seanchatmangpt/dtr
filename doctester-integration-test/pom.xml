@@ -43,6 +43,8 @@ the specific language governing permissions and limitations under the License. -
                 </configuration>
             </plugin>
 
+            <!-- Temporarily disabled due to Maven Central rate limiting -->
+            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -65,6 +67,7 @@ the specific language governing permissions and limitations under the License. -
                     </execution>
                 </executions>
             </plugin>
+            -->
 
             <plugin>
                 <groupId>org.ninjaframework</groupId>
