@@ -382,7 +382,7 @@ void addWarningsAndNotes() {
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-surefire-plugin</artifactId>
-    <version>3.5.2</version>
+    <version>3.5.3</version>
     <configuration>
         <argLine>--enable-preview</argLine>
     </configuration>

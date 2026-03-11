@@ -33,7 +33,7 @@ target/site/doctester/
 **Version 2.0.0:** Generates pure Markdown (portable, no assets)
 
 ```
-target/docs/
+docs/test/
 ├── README.md                     # Index (Markdown)
 ├── UserApiDocTest.md             # Test docs (Markdown)
 └── (OpenAPI specs if generated)
@@ -62,7 +62,7 @@ target/docs/
 - ❌ Custom CSS in `custom_doctester_stylesheet.css`
 
 **Mitigation:**
-1. Update all references from `target/site/doctester/` to `target/docs/`
+1. Update all references from `target/site/doctester/` to `docs/test/`
 2. Update CI/CD to deploy Markdown instead of HTML
 3. Use a static site generator (MkDocs, Docusaurus, Jekyll) to render HTML if needed
 4. If you had custom CSS, configure your site generator's theme instead
@@ -82,8 +82,8 @@ target/docs/
 # Version 2.0.0
 - name: Deploy Docs
   run: |
-    if [ -d "target/docs" ]; then
-      cp -r target/docs ./docs
+    if [ -d "docs/test" ]; then
+      cp -r docs/test ./docs
     fi
 ```
 
@@ -97,7 +97,7 @@ target/docs/
 
 <!-- Version 2.0.0 -->
 <configuration>
-  <docDir>${project.basedir}/target/docs</docDir>
+  <docDir>${project.basedir}/../docs/test</docDir>
 </configuration>
 ```
 
@@ -207,7 +207,7 @@ openjdk version "24.0.1"   ✗ FAILS — not LTS
 
 ---
 
-## 3. Output Directory: `target/site/doctester/` → `target/docs/`
+## 3. Output Directory: `target/site/doctester/` → `docs/test/`
 
 ### What Changed
 
@@ -222,11 +222,11 @@ project/
     └── jquery/
 ```
 
-**Version 2.0.0:** Docs written to `target/docs/`
+**Version 2.0.0:** Docs written to `docs/test/` (repository root)
 
 ```
 project/
-└── target/docs/
+└── docs/test/
     ├── README.md
     ├── UserApiDocTest.md
     └── (OpenAPI specs if generated)
@@ -234,11 +234,12 @@ project/
 
 ### Why?
 
-- `target/docs/` is a standard Maven location for documentation
-- Aligns with static site generator conventions
+- `docs/test/` is located at repository root (not buried in `target/`)
+- Docs are generated once and committed/versioned with the repository
+- Aligns with GitHub documentation structure (`docs/` folder)
 - Shorter path, easier to reference
-- No nested `site/doctester/` directories
-- Compatible with modern documentation tools
+- Markdown files work natively on GitHub without special processing
+- Compatible with static site generators (MkDocs, Docusaurus, Jekyll)
 
 ### Impact Assessment
 
@@ -255,8 +256,8 @@ project/
 
 **Mitigation:**
 1. Update all path references globally (grep, IDE search & replace)
-2. Update CI/CD deploy scripts
-3. Update `.gitignore` patterns (if any exclude the old path)
+2. Update CI/CD deploy scripts to use `docs/test/`
+3. Update `.gitignore` patterns (docs/ is now committed with test runs)
 
 ### Code Changes Required
 
@@ -268,7 +269,7 @@ grep -r "target/site/doctester" .
 
 # Replace (in most files)
 find . -type f \( -name "*.sh" -o -name "*.yml" -o -name "*.yaml" -o -name "pom.xml" \) \
-  -exec sed -i 's|target/site/doctester|target/docs|g' {} \;
+  -exec sed -i 's|target/site/doctester|docs/test|g' {} \;
 ```
 
 **Maven POM files:**
@@ -277,14 +278,14 @@ find . -type f \( -name "*.sh" -o -name "*.yml" -o -name "*.yaml" -o -name "pom.
 <!-- If you have custom paths -->
 <!-- Version 1.x -->
 <property>
-  <name>doctest.output.dir</name>
+  <name>doctester.output.dir</name>
   <value>${project.basedir}/target/site/doctester</value>
 </property>
 
 <!-- Version 2.0.0 -->
 <property>
-  <name>doctest.output.dir</name>
-  <value>${project.basedir}/target/docs</value>
+  <name>doctester.output.dir</name>
+  <value>${project.basedir}/../docs/test</value>
 </property>
 ```
 
@@ -298,8 +299,8 @@ DOCS_DIR="target/site/doctester"
 INDEX_FILE="target/site/doctester/index.html"
 
 # Version 2.0.0
-DOCS_DIR="target/docs"
-INDEX_FILE="target/docs/README.md"
+DOCS_DIR="docs/test"
+INDEX_FILE="docs/test/README.md"
 
 # Copy documentation
 if [ -d "$DOCS_DIR" ]; then
@@ -313,8 +314,9 @@ fi
 # Version 1.x
 /target/site/doctester/
 
-# Version 2.0.0
-/target/docs/
+# Version 2.0.0 — Note: docs/test is typically committed to the repository
+# Only exclude if you want to prevent test-generated docs from being versioned
+# /docs/test/
 ```
 
 ---
