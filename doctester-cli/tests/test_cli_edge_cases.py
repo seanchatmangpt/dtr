@@ -23,7 +23,7 @@ import pytest
 
 from doctester_cli.main import app
 
-runner = CliRunner(mix_stderr=False)
+runner = CliRunner()
 
 
 def get_output(result) -> str:
