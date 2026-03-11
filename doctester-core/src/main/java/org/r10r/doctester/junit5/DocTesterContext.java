@@ -25,6 +25,7 @@ import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.Url;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Context object for JUnit 5 DocTester tests.
@@ -109,6 +110,51 @@ public class DocTesterContext implements RenderMachineCommands {
     @Override
     public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
         renderMachine.sayAndAssertThat(message, actual, matcher);
+    }
+
+    @Override
+    public void sayTable(String[][] data) {
+        renderMachine.sayTable(data);
+    }
+
+    @Override
+    public void sayCode(String code, String language) {
+        renderMachine.sayCode(code, language);
+    }
+
+    @Override
+    public void sayWarning(String message) {
+        renderMachine.sayWarning(message);
+    }
+
+    @Override
+    public void sayNote(String message) {
+        renderMachine.sayNote(message);
+    }
+
+    @Override
+    public void sayKeyValue(Map<String, String> pairs) {
+        renderMachine.sayKeyValue(pairs);
+    }
+
+    @Override
+    public void sayUnorderedList(List<String> items) {
+        renderMachine.sayUnorderedList(items);
+    }
+
+    @Override
+    public void sayOrderedList(List<String> items) {
+        renderMachine.sayOrderedList(items);
+    }
+
+    @Override
+    public void sayJson(Object object) {
+        renderMachine.sayJson(object);
+    }
+
+    @Override
+    public void sayAssertions(Map<String, String> assertions) {
+        renderMachine.sayAssertions(assertions);
     }
 
     // ========================================================================

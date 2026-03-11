@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
@@ -202,6 +203,51 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
 
         sayAndAssertThat(message, "", actual, matcher);
 
+    }
+
+    @Override
+    public final void sayTable(String[][] data) {
+        renderMachine.sayTable(data);
+    }
+
+    @Override
+    public final void sayCode(String code, String language) {
+        renderMachine.sayCode(code, language);
+    }
+
+    @Override
+    public final void sayWarning(String message) {
+        renderMachine.sayWarning(message);
+    }
+
+    @Override
+    public final void sayNote(String message) {
+        renderMachine.sayNote(message);
+    }
+
+    @Override
+    public final void sayKeyValue(Map<String, String> pairs) {
+        renderMachine.sayKeyValue(pairs);
+    }
+
+    @Override
+    public final void sayUnorderedList(List<String> items) {
+        renderMachine.sayUnorderedList(items);
+    }
+
+    @Override
+    public final void sayOrderedList(List<String> items) {
+        renderMachine.sayOrderedList(items);
+    }
+
+    @Override
+    public final void sayJson(Object object) {
+        renderMachine.sayJson(object);
+    }
+
+    @Override
+    public final void sayAssertions(Map<String, String> assertions) {
+        renderMachine.sayAssertions(assertions);
     }
 
     // //////////////////////////////////////////////////////////////////////////
