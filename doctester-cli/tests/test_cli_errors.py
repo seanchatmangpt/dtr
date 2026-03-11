@@ -10,12 +10,15 @@ from typer.testing import CliRunner
 
 from doctester_cli.main import app
 
-runner = CliRunner()
+runner = CliRunner(mix_stderr=False)
 
 
 def get_output(result) -> str:
     """Get combined stdout and stderr from CLI result."""
-    return (result.stdout + result.stderr).lower()
+    output = result.stdout
+    if result.stderr:
+        output += result.stderr
+    return output.lower()
 
 
 # ============================================================================

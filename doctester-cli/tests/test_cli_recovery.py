@@ -8,12 +8,9 @@ format conversion errors.
 Tests follow the principle: graceful degradation is better than total failure.
 """
 
-import os
 import tempfile
 from pathlib import Path
-from typing import Generator
 from typer.testing import CliRunner
-import pytest
 
 from doctester_cli.main import app
 
