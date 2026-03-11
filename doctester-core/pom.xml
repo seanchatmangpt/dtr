@@ -182,6 +182,12 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Cryptography: SHA3-256 for LaTeX receipt hashing -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
