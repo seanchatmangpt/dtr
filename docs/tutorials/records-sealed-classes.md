@@ -397,5 +397,5 @@ public void patternMatchingOnRecords() throws Exception {
 - [Tutorial: Virtual Threads for Concurrency](virtual-threads-lightweight-concurrency.md) — lightweight parallelism
 - [How-to: Pattern Matching with Sealed Records](../how-to/pattern-matching.md) — advanced patterns
 - [How-to: Text Blocks for Documentation](../how-to/text-blocks.md) — multiline strings in Java 25
-- [Reference: Records API](../reference/records-reference.md) — complete documentation
+- [Reference: Records API](../reference/records-sealed-reference.md) — complete documentation
 - [Explanation: Why Records and Sealed Classes](../explanation/records-sealed-philosophy.md) — design philosophy
