@@ -207,6 +207,75 @@ mvnd --stop
 
 ---
 
+## Maven Proxy Authentication (Enterprise Networks)
+
+**Problem:** In corporate environments with upstream proxies, Maven Central may rate-limit or block requests with "too many authentication attempts" errors.
+
+**Solution:** Use the included `maven-proxy-auth.py` local proxy that adds authentication when forwarding to your upstream proxy.
+
+### Setup
+
+1. **Start the local proxy:**
+   ```bash
+   python3 maven-proxy-auth.py &
+   ```
+
+   The proxy listens on `127.0.0.1:3128` and forwards all requests to your upstream proxy with credentials.
+
+2. **Configure Maven to use the local proxy:**
+
+   Add to `.mvn/jvm.config`:
+   ```
+   -Dhttp.proxyHost=127.0.0.1
+   -Dhttp.proxyPort=3128
+   -Dhttps.proxyHost=127.0.0.1
+   -Dhttps.proxyPort=3128
+   -Dhttp.nonProxyHosts=localhost|127.0.0.1
+   ```
+
+   Or pass via command line:
+   ```bash
+   mvnd clean install \
+     -Dhttp.proxyHost=127.0.0.1 \
+     -Dhttp.proxyPort=3128 \
+     -Dhttps.proxyHost=127.0.0.1 \
+     -Dhttps.proxyPort=3128 \
+     -Dhttp.nonProxyHosts=localhost|127.0.0.1
+   ```
+
+3. **Verify upstream proxy environment:**
+   ```bash
+   # Must set one of these:
+   export https_proxy=http://user:pass@proxy.company.com:8080
+   export HTTPS_PROXY=http://user:pass@proxy.company.com:8080
+   export http_proxy=http://user:pass@proxy.company.com:8080
+   export HTTP_PROXY=http://user:pass@proxy.company.com:8080
+   ```
+
+### How It Works
+
+- **Handles HTTPS CONNECT tunneling** — for `https://repo.maven.apache.org/maven2` connections
+- **Handles plain HTTP** — for `http://` artifact repositories
+- **Injects Proxy-Authorization header** — adds upstream proxy credentials automatically
+- **Bidirectional relay** — pipes large artifact downloads efficiently (supports chunked responses)
+
+### Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `Connection refused` | Check proxy is running: `ps aux \| grep maven-proxy` |
+| `Too many auth attempts` | Restart proxy: `pkill -f maven-proxy-auth.py && python3 maven-proxy-auth.py &` |
+| `502 Bad Gateway` | Verify upstream proxy in environment: `echo $https_proxy` |
+| `No route to host` | Check upstream proxy hostname/port: `ping proxy.company.com` |
+
+### See Also
+
+- `maven-proxy-auth.py` — Python local proxy (included in repo)
+- `.mvn/maven.config` — Maven build flags
+- `pom.xml` — Root project configuration
+
+---
+
 ## Architecture — How DocTester Works
 
 DocTester bridges JUnit 4/5 test execution with **multi-format documentation generation** via five layers:
