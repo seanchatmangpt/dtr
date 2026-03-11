@@ -689,6 +689,67 @@ class ApiControllerDocTest extends NinjaApiDoctester {
 }
 ```
 
+### Testing Principles: REAL CODE, REAL MEASUREMENTS
+
+**CRITICAL RULE:** Never simulate, fake, or estimate performance metrics. Always use actual DocTester rendering code with real measurement data.
+
+**What This Means:**
+- ❌ DO NOT: Use `Thread.sleep()` to simulate document rendering
+- ❌ DO NOT: Hard-code fake performance numbers
+- ❌ DO NOT: Create mock objects that don't reflect real behavior
+- ✅ DO: Run actual `RenderMachine` implementations
+- ✅ DO: Measure real document generation time (markdown, latex, openapi)
+- ✅ DO: Use `System.nanoTime()` to capture actual execution time
+- ✅ DO: Report numbers with units and context
+
+**Performance Test Pattern:**
+
+```java
+@Test
+void testRealDocumentGenerationPerformance() {
+    // Use actual DocTester rendering, NOT simulations
+    RenderMachine markdown = new RenderMachineImpl();
+
+    long startNanos = System.nanoTime();
+
+    // Call REAL methods, not mocks
+    markdown.sayNextSection("Performance Test");
+    markdown.say("Real document content with measurements.");
+    markdown.sayCode("System.out.println(\"Hello\");", "java");
+    markdown.sayTable(new String[][] {
+        {"Feature", "Status"},
+        {"Real Code", "✓ Yes"},
+        {"Real Measurement", "✓ Yes"}
+    });
+
+    String output = markdown.finishAndWriteOut();
+
+    long elapsedNanos = System.nanoTime() - startNanos;
+    double elapsedMs = elapsedNanos / 1_000_000.0;
+
+    // REPORT ACTUAL NUMBERS
+    System.out.printf("Document generation took %.2f ms%n", elapsedMs);
+
+    // Assert on REAL behavior
+    assertThat("Markdown output exists", output.length() > 0);
+    assertThat("Performance reasonable", elapsedMs < 5000.0); // 5 seconds max
+}
+```
+
+**Documentation Rule:**
+When reporting performance improvements, include:
+1. **Actual measurement command** that reproduces the result
+2. **Real execution time** (in units: ns, µs, ms, s)
+3. **Environment details** (JVM flags, system specs, Java version)
+4. **Statistical confidence** (number of iterations, warm-up phases)
+5. **Before/after comparison** with both real numbers
+
+Example of HONEST reporting:
+```
+✅ REAL: "JEP 516 metadata cache: 78ns average (10M accesses, 100 iterations, Java 25.0.2)"
+❌ FAKE: "JEP 516 cache: 99% faster (simulation shows 6,667x)"
+```
+
 ### OpenAPI/Swagger Generation
 
 All HTTP exchanges are automatically collected for OpenAPI spec generation:
