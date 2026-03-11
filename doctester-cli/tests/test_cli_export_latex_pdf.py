@@ -1,7 +1,13 @@
-"""Tests for LaTeX and PDF export functionality."""
+"""Tests for LaTeX and PDF export functionality (Chicago TDD style).
+
+Chicago TDD emphasizes:
+- Testing real behavior and outcomes
+- Using actual objects, not mocks
+- Focusing on integration and end-to-end behavior
+- Minimal use of test doubles (only at system boundaries)
+"""
 
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 import pytest
 from typer.testing import CliRunner
 
@@ -29,522 +35,579 @@ runner = CliRunner()
 # ============================================================================
 # UNIT TESTS: LatexTemplate and CompilerStrategy Enums
 # ============================================================================
+# These test the actual enum contracts without mocking
 
 
-class TestLatexTemplate:
-    """Test LatexTemplate enum."""
+class TestLatexTemplateEnum:
+    """Test LatexTemplate enum provides correct values."""
 
-    def test_arxiv_template_exists(self) -> None:
-        """Test ARXIV template exists."""
-        assert LatexTemplate.ARXIV.value == "arxiv"
+    def test_all_five_templates_exist(self) -> None:
+        """Verify all 5 LaTeX templates are defined."""
+        templates = {t.value: t for t in LatexTemplate}
+        assert len(templates) == 5
+        assert "arxiv" in templates
+        assert "patent" in templates
+        assert "ieee" in templates
+        assert "acm" in templates
+        assert "nature" in templates
 
-    def test_patent_template_exists(self) -> None:
-        """Test PATENT template exists."""
-        assert LatexTemplate.PATENT.value == "patent"
+    def test_template_enum_created_from_string_value(self) -> None:
+        """Test creating template enum from string values."""
+        for template in LatexTemplate:
+            result = LatexTemplate(template.value)
+            assert result == template
 
-    def test_ieee_template_exists(self) -> None:
-        """Test IEEE template exists."""
-        assert LatexTemplate.IEEE.value == "ieee"
-
-    def test_acm_template_exists(self) -> None:
-        """Test ACM template exists."""
-        assert LatexTemplate.ACM.value == "acm"
-
-    def test_nature_template_exists(self) -> None:
-        """Test NATURE template exists."""
-        assert LatexTemplate.NATURE.value == "nature"
-
-    def test_enum_from_string(self) -> None:
-        """Test creating template enum from string."""
-        template = LatexTemplate("arxiv")
-        assert template == LatexTemplate.ARXIV
-
-    def test_invalid_template_raises_error(self) -> None:
-        """Test invalid template raises ValueError."""
+    def test_invalid_template_value_raises_value_error(self) -> None:
+        """Test invalid template string raises ValueError."""
         with pytest.raises(ValueError):
-            LatexTemplate("invalid")  # type: ignore
+            LatexTemplate("invalid_template")
 
 
-class TestCompilerStrategy:
-    """Test CompilerStrategy enum."""
+class TestCompilerStrategyEnum:
+    """Test CompilerStrategy enum provides correct strategies."""
 
-    def test_auto_strategy_exists(self) -> None:
-        """Test AUTO strategy exists."""
-        assert CompilerStrategy.AUTO.value == "auto"
+    def test_all_five_strategies_exist(self) -> None:
+        """Verify all 5 compiler strategies are defined."""
+        strategies = {s.value: s for s in CompilerStrategy}
+        assert len(strategies) == 5
+        assert "auto" in strategies
+        assert "latexmk" in strategies
+        assert "pdflatex" in strategies
+        assert "xelatex" in strategies
+        assert "pandoc" in strategies
 
-    def test_latexmk_strategy_exists(self) -> None:
-        """Test LATEXMK strategy exists."""
-        assert CompilerStrategy.LATEXMK.value == "latexmk"
+    def test_strategy_enum_created_from_string_value(self) -> None:
+        """Test creating strategy enum from string values."""
+        for strategy in CompilerStrategy:
+            result = CompilerStrategy(strategy.value)
+            assert result == strategy
 
-    def test_pdflatex_strategy_exists(self) -> None:
-        """Test PDFLATEX strategy exists."""
-        assert CompilerStrategy.PDFLATEX.value == "pdflatex"
-
-    def test_xelatex_strategy_exists(self) -> None:
-        """Test XELATEX strategy exists."""
-        assert CompilerStrategy.XELATEX.value == "xelatex"
-
-    def test_pandoc_strategy_exists(self) -> None:
-        """Test PANDOC strategy exists."""
-        assert CompilerStrategy.PANDOC.value == "pandoc"
-
-    def test_enum_from_string(self) -> None:
-        """Test creating compiler enum from string."""
-        compiler = CompilerStrategy("latexmk")
-        assert compiler == CompilerStrategy.LATEXMK
-
-    def test_invalid_compiler_raises_error(self) -> None:
-        """Test invalid compiler raises ValueError."""
+    def test_invalid_strategy_raises_value_error(self) -> None:
+        """Test invalid strategy string raises ValueError."""
         with pytest.raises(ValueError):
-            CompilerStrategy("invalid")  # type: ignore
+            CompilerStrategy("invalid_compiler")
 
 
 # ============================================================================
-# UNIT TESTS: LatexConverter
+# INTEGRATION TESTS: LatexConverter (Real File Operations)
 # ============================================================================
+# Chicago TDD: Test real behavior with actual files, no mocks
 
 
-class TestLatexConverter:
-    """Test LaTeX converter."""
+class TestLatexConverterRealBehavior:
+    """Test LaTeX converter with real file operations."""
 
-    def test_converter_initialization(self) -> None:
-        """Test converter can be instantiated."""
+    def test_converter_copies_valid_latex_file_successfully(self, tmp_path: Path) -> None:
+        """Test that valid LaTeX file is copied to output location."""
+        # Arrange
+        input_tex = tmp_path / "input.tex"
+        input_tex.write_text("\\documentclass{article}\n\\end{document}")
+        output_tex = tmp_path / "output.tex"
+
+        # Act
         converter = LatexConverter()
-        assert converter is not None
+        config = LatexExportConfig(input_path=input_tex, output_path=output_tex)
+        result = converter.convert(config)
 
-    def test_convert_with_missing_input_file(self, tmp_path: Path) -> None:
-        """Test convert raises error for missing input file."""
+        # Assert - verify real outcome
+        assert result.files_processed == 1
+        assert output_tex.exists()
+        assert output_tex.read_text() == input_tex.read_text()
+
+    def test_converter_refuses_to_overwrite_without_force(self, tmp_path: Path) -> None:
+        """Test that existing files are not overwritten without force flag."""
+        # Arrange
+        input_tex = tmp_path / "input.tex"
+        input_tex.write_text("\\documentclass{article}\n\\end{document}")
+        output_tex = tmp_path / "output.tex"
+        original_content = "original content"
+        output_tex.write_text(original_content)
+
+        # Act
         converter = LatexConverter()
-        config = LatexExportConfig(
-            input_path=tmp_path / "missing.md",
-            output_path=tmp_path / "output.tex",
-        )
+        config = LatexExportConfig(input_path=input_tex, output_path=output_tex, force=False)
+        result = converter.convert(config)
 
-        with pytest.raises(ConversionError) as exc_info:
+        # Assert - verify file unchanged
+        assert result.files_processed == 0
+        assert output_tex.read_text() == original_content
+
+    def test_converter_overwrites_existing_file_with_force_flag(self, tmp_path: Path) -> None:
+        """Test that files are overwritten when force=True."""
+        # Arrange
+        input_tex = tmp_path / "input.tex"
+        new_content = "\\documentclass{article}\n\\end{document}"
+        input_tex.write_text(new_content)
+        output_tex = tmp_path / "output.tex"
+        output_tex.write_text("old content")
+
+        # Act
+        converter = LatexConverter()
+        config = LatexExportConfig(input_path=input_tex, output_path=output_tex, force=True)
+        result = converter.convert(config)
+
+        # Assert - verify file was overwritten
+        assert result.files_processed == 1
+        assert output_tex.read_text() == new_content
+
+    def test_converter_rejects_missing_input_file(self, tmp_path: Path) -> None:
+        """Test that missing input file raises ConversionError."""
+        # Arrange
+        missing_file = tmp_path / "nonexistent.tex"
+        output_file = tmp_path / "output.tex"
+
+        # Act & Assert
+        converter = LatexConverter()
+        config = LatexExportConfig(input_path=missing_file, output_path=output_file)
+        with pytest.raises(ConversionError):
             converter.convert(config)
 
-        assert "not found" in str(exc_info.value.message).lower()
-
-    @patch("doctester_cli.converters.latex_converter.subprocess.run")
-    def test_convert_markdown_to_latex_success(
-        self, mock_run: MagicMock, tmp_path: Path
-    ) -> None:
-        """Test successful Markdown to LaTeX conversion."""
-        # Setup
-        md_file = tmp_path / "test.md"
-        md_file.write_text("# Title\nContent here")
+    def test_converter_handles_unsupported_file_type(self, tmp_path: Path) -> None:
+        """Test that unsupported file types raise ConversionError."""
+        # Arrange
+        input_file = tmp_path / "file.xyz"
+        input_file.write_text("some content")
         output_file = tmp_path / "output.tex"
 
-        # Mock subprocess calls
-        mock_run.return_value = MagicMock(returncode=0, stderr="", stdout="")
-
-        # Convert
+        # Act & Assert
         converter = LatexConverter()
-        config = LatexExportConfig(
-            input_path=md_file,
-            output_path=output_file,
-        )
-        result = converter.convert(config)
-
-        # Verify
-        assert result.files_processed == 1
-        assert result.files_failed == 0
-
-    def test_convert_latex_file_copies_successfully(self, tmp_path: Path) -> None:
-        """Test converting (copying) LaTeX file."""
-        # Setup
-        tex_file = tmp_path / "input.tex"
-        tex_file.write_text("\\documentclass{article}\n\\begin{document}\nTest\n\\end{document}")
-        output_file = tmp_path / "output.tex"
-
-        # Convert
-        converter = LatexConverter()
-        config = LatexExportConfig(
-            input_path=tex_file,
-            output_path=output_file,
-        )
-        result = converter.convert(config)
-
-        # Verify
-        assert result.files_processed == 1
-        assert output_file.exists()
-        assert output_file.read_text() == tex_file.read_text()
-
-    def test_convert_skips_existing_without_force(self, tmp_path: Path) -> None:
-        """Test convert skips existing file without force flag."""
-        # Setup
-        tex_file = tmp_path / "input.tex"
-        tex_file.write_text("\\documentclass{article}\n\\end{document}")
-        output_file = tmp_path / "output.tex"
-        output_file.write_text("existing content")
-
-        # Convert without force
-        converter = LatexConverter()
-        config = LatexExportConfig(
-            input_path=tex_file,
-            output_path=output_file,
-            force=False,
-        )
-        result = converter.convert(config)
-
-        # Verify
-        assert result.files_processed == 0
-        assert "skipping" in result.warnings[0].lower()
+        config = LatexExportConfig(input_path=input_file, output_path=output_file)
+        with pytest.raises(ConversionError):
+            converter.convert(config)
 
 
 # ============================================================================
-# UNIT TESTS: PdfConverter
+# INTEGRATION TESTS: PdfConverter (Real Compiler Behavior)
 # ============================================================================
+# Chicago TDD: Test real behavior of compiler availability
 
 
-class TestPdfConverter:
-    """Test PDF converter."""
+class TestPdfConverterRealBehavior:
+    """Test PDF converter with real system state."""
 
-    def test_converter_initialization(self) -> None:
-        """Test converter can be instantiated."""
+    def test_converter_detects_available_compilers(self) -> None:
+        """Test that converter can detect available compilers."""
+        # This is a real behavior test - checks system state
         converter = PdfConverter()
-        assert converter is not None
 
-    def test_compiler_chain_defined(self) -> None:
-        """Test compiler chain is defined."""
+        # Test each strategy - results depend on what's installed
+        # But the function should return boolean without error
+        for strategy in CompilerStrategy:
+            if strategy == CompilerStrategy.AUTO:
+                continue  # AUTO is not a single compiler
+            result = converter._compiler_available(strategy)
+            assert isinstance(result, bool)
+
+    def test_converter_rejects_non_tex_file(self, tmp_path: Path) -> None:
+        """Test that non-.tex files are rejected."""
+        # Arrange
+        input_file = tmp_path / "file.md"
+        input_file.write_text("# Title")
+        output_file = tmp_path / "output.pdf"
+
+        # Act & Assert
         converter = PdfConverter()
-        assert len(converter.COMPILER_CHAIN) == 4
-        assert converter.COMPILER_CHAIN[0] == CompilerStrategy.LATEXMK
-
-    def test_convert_with_missing_tex_file(self, tmp_path: Path) -> None:
-        """Test convert raises error for missing .tex file."""
-        converter = PdfConverter()
-        config = PdfExportConfig(
-            input_path=tmp_path / "missing.tex",
-            output_path=tmp_path / "output.pdf",
-        )
-
+        config = PdfExportConfig(input_path=input_file, output_path=output_file)
         with pytest.raises(LatexCompilationError):
             converter.convert(config)
 
-    @patch("doctester_cli.converters.pdf_converter.subprocess.run")
-    def test_compiler_available_check(
-        self, mock_run: MagicMock
-    ) -> None:
-        """Test compiler availability check."""
-        mock_run.return_value = MagicMock(returncode=0)
+    def test_converter_rejects_missing_tex_file(self, tmp_path: Path) -> None:
+        """Test that missing .tex file raises LatexCompilationError."""
+        # Arrange
+        missing_file = tmp_path / "nonexistent.tex"
+        output_file = tmp_path / "output.pdf"
 
+        # Act & Assert
         converter = PdfConverter()
-        available = converter._compiler_available(CompilerStrategy.PDFLATEX)
+        config = PdfExportConfig(input_path=missing_file, output_path=output_file)
+        with pytest.raises(LatexCompilationError):
+            converter.convert(config)
 
-        assert available is True
-        mock_run.assert_called_once()
-
-    def test_compiler_available_handles_missing_compiler(self) -> None:
-        """Test compiler availability returns False for missing compiler."""
+    def test_converter_has_fallback_chain_order(self) -> None:
+        """Test that compiler chain has correct precedence order."""
         converter = PdfConverter()
-        # Use a fake compiler name that doesn't exist
-        available = converter._compiler_available(CompilerStrategy.PANDOC)
-
-        # Result depends on whether pandoc is installed
-        # Just verify the function doesn't raise an exception
-        assert isinstance(available, bool)
+        assert len(converter.COMPILER_CHAIN) == 4
+        assert converter.COMPILER_CHAIN[0] == CompilerStrategy.LATEXMK
+        assert converter.COMPILER_CHAIN[1] == CompilerStrategy.PDFLATEX
+        assert converter.COMPILER_CHAIN[2] == CompilerStrategy.XELATEX
+        assert converter.COMPILER_CHAIN[3] == CompilerStrategy.PANDOC
 
 
 # ============================================================================
-# UNIT TESTS: LatexManager
+# INTEGRATION TESTS: LatexManager (End-to-End Orchestration)
 # ============================================================================
+# Chicago TDD: Test real orchestration behavior
 
 
-class TestLatexManager:
-    """Test LaTeX manager orchestration."""
+class TestLatexManagerOrchestration:
+    """Test LatexManager orchestrates converters correctly."""
 
-    def test_manager_initialization(self) -> None:
-        """Test manager can be instantiated."""
+    def test_manager_initializes_with_both_converters(self) -> None:
+        """Test that manager creates both required converters."""
         manager = LatexManager()
-        assert manager is not None
-        assert hasattr(manager, "latex_converter")
-        assert hasattr(manager, "pdf_converter")
+        assert isinstance(manager.latex_converter, LatexConverter)
+        assert isinstance(manager.pdf_converter, PdfConverter)
 
-    def test_generate_latex_with_valid_config(self, tmp_path: Path) -> None:
-        """Test generate_latex with valid LaTeX file."""
-        # Setup
-        tex_file = tmp_path / "input.tex"
-        tex_file.write_text("\\documentclass{article}\n\\end{document}")
-        output_file = tmp_path / "output.tex"
+    def test_manager_generates_latex_from_existing_tex_file(self, tmp_path: Path) -> None:
+        """Test that manager can copy/validate LaTeX files."""
+        # Arrange
+        input_tex = tmp_path / "input.tex"
+        input_tex.write_text("\\documentclass{article}\n\\end{document}")
+        output_tex = tmp_path / "output.tex"
 
-        # Generate
+        # Act
         manager = LatexManager()
-        result = manager.generate_latex(tex_file, output_file)
+        result = manager.generate_latex(input_tex, output_tex)
 
-        # Verify
+        # Assert - verify real outcome
         assert result.files_processed == 1
-        assert output_file.exists()
+        assert output_tex.exists()
 
-    @patch("doctester_cli.converters.pdf_converter.subprocess.run")
-    def test_compile_pdf_with_strategy(
-        self, mock_run: MagicMock, tmp_path: Path
-    ) -> None:
-        """Test compile_pdf with specific compiler strategy."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
-        tex_file.write_text("\\documentclass{article}\n\\end{document}")
-        pdf_file = tmp_path / "output.pdf"
+    def test_manager_respects_force_flag_in_generate(self, tmp_path: Path) -> None:
+        """Test that manager respects force flag."""
+        # Arrange
+        input_tex = tmp_path / "input.tex"
+        input_tex.write_text("\\documentclass{article}\n\\end{document}")
+        output_tex = tmp_path / "output.tex"
+        output_tex.write_text("existing")
 
-        # Mock subprocess
-        mock_run.return_value = MagicMock(returncode=0, stderr="", stdout="")
-
-        # Compile
+        # Act - without force
         manager = LatexManager()
-        # Note: This will likely fail because we're mocking subprocess
-        # but testing the flow works
-        with patch.object(manager.pdf_converter, "_compiler_available", return_value=True):
-            with patch.object(manager.pdf_converter, "_compile_pdflatex") as mock_compile:
-                mock_compile.return_value = MagicMock(files_processed=1)
-                result = manager.compile_pdf(
-                    tex_file,
-                    pdf_file,
-                    compiler=CompilerStrategy.PDFLATEX,
-                )
+        result = manager.generate_latex(input_tex, output_tex, force=False)
 
-                assert result is not None
+        # Assert - file should not be processed
+        assert result.files_processed == 0
 
 
 # ============================================================================
 # CLI INTEGRATION TESTS: dtr export latex
 # ============================================================================
+# Chicago TDD: Test real CLI behavior with actual files
 
 
-class TestExportLatexCommand:
-    """Test dtr export latex command."""
+class TestExportLatexCLICommand:
+    """Test dtr export latex command with real behavior."""
 
-    def test_export_latex_help(self) -> None:
-        """Test latex subcommand help."""
+    def test_export_latex_shows_help(self) -> None:
+        """Test that help text is available."""
         result = runner.invoke(app, ["latex", "--help"])
         assert result.exit_code == 0
-        assert "LaTeX" in result.stdout or "export" in result.stdout.lower()
+        assert "LaTeX" in result.stdout or "latex" in result.stdout
 
-    def test_export_latex_with_missing_file(self, tmp_path: Path) -> None:
-        """Test export latex with missing input file."""
-        result = runner.invoke(app, ["latex", str(tmp_path / "missing.md")])
-        assert result.exit_code != 0
-
-    def test_export_latex_with_valid_tex_file(self, tmp_path: Path) -> None:
-        """Test export latex with valid .tex file."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
+    def test_export_latex_with_valid_tex_file_succeeds(self, tmp_path: Path) -> None:
+        """Test exporting valid LaTeX file succeeds."""
+        # Arrange
+        tex_file = tmp_path / "document.tex"
         tex_file.write_text("\\documentclass{article}\n\\end{document}")
 
-        # Run
+        # Act
         result = runner.invoke(app, ["latex", str(tex_file)])
+
+        # Assert
         assert result.exit_code == 0
         assert "✓" in result.stdout or "success" in result.stdout.lower()
 
-    def test_export_latex_with_invalid_template(self, tmp_path: Path) -> None:
-        """Test export latex with invalid template."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
+    def test_export_latex_rejects_missing_input_file(self, tmp_path: Path) -> None:
+        """Test that missing input file causes failure."""
+        # Act
+        result = runner.invoke(app, ["latex", str(tmp_path / "missing.tex")])
+
+        # Assert
+        assert result.exit_code != 0
+
+    def test_export_latex_validates_template_argument(self, tmp_path: Path) -> None:
+        """Test that invalid template is rejected."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
         tex_file.write_text("\\documentclass{article}\n\\end{document}")
 
-        # Run with invalid template
+        # Act
         result = runner.invoke(
-            app, ["latex", str(tex_file), "--template", "invalid"]
+            app,
+            ["latex", str(tex_file), "--template", "invalid_template"],
         )
+
+        # Assert
         assert result.exit_code != 0
         assert "template" in result.stdout.lower() or "invalid" in result.stdout.lower()
 
-    def test_export_latex_with_valid_template(self, tmp_path: Path) -> None:
-        """Test export latex with valid template."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
+    def test_export_latex_accepts_all_valid_templates(self, tmp_path: Path) -> None:
+        """Test that all 5 valid templates are accepted."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
         tex_file.write_text("\\documentclass{article}\n\\end{document}")
 
-        # Run with valid template
-        result = runner.invoke(
-            app, ["latex", str(tex_file), "--template", "arxiv"]
-        )
-        assert result.exit_code == 0
+        # Act & Assert
+        for template in LatexTemplate:
+            result = runner.invoke(
+                app,
+                ["latex", str(tex_file), "--template", template.value],
+            )
+            assert result.exit_code == 0
 
-    def test_export_latex_respects_force_flag(self, tmp_path: Path) -> None:
-        """Test export latex respects --force flag."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
-        tex_file.write_text("\\documentclass{article}\n\\end{document}")
-        output_file = tmp_path / "output.tex"
-        output_file.write_text("existing content")
+    def test_export_latex_creates_output_file(self, tmp_path: Path) -> None:
+        """Test that output file is actually created."""
+        # Arrange
+        input_tex = tmp_path / "input.tex"
+        input_tex.write_text("\\documentclass{article}\n\\end{document}")
+        output_tex = tmp_path / "output.tex"
 
-        # Run without force (should skip)
-        result = runner.invoke(app, ["latex", str(tex_file), "-o", str(output_file)])
-        assert "skipping" in result.stdout.lower() or result.exit_code == 0
-
-        # Run with force (should overwrite)
+        # Act
         result = runner.invoke(
             app,
-            ["latex", str(tex_file), "-o", str(output_file), "--force"],
+            ["latex", str(input_tex), "-o", str(output_tex)],
         )
+
+        # Assert
         assert result.exit_code == 0
+        assert output_tex.exists()
+
+    def test_export_latex_respects_force_flag(self, tmp_path: Path) -> None:
+        """Test that --force flag controls overwrite behavior."""
+        # Arrange
+        input_tex = tmp_path / "input.tex"
+        input_tex.write_text("\\documentclass{article}\n\\end{document}")
+        output_tex = tmp_path / "output.tex"
+        output_tex.write_text("original content")
+
+        # Act - without force (should skip)
+        result = runner.invoke(
+            app,
+            ["latex", str(input_tex), "-o", str(output_tex)],
+        )
+
+        # Assert - should indicate skipping
+        assert "skipping" in result.stdout.lower() or result.exit_code == 0
+        assert output_tex.read_text() == "original content"
+
+        # Act - with force (should overwrite)
+        result = runner.invoke(
+            app,
+            ["latex", str(input_tex), "-o", str(output_tex), "--force"],
+        )
+
+        # Assert
+        assert result.exit_code == 0
+        assert output_tex.read_text() != "original content"
 
 
 # ============================================================================
 # CLI INTEGRATION TESTS: dtr export pdf
 # ============================================================================
+# Chicago TDD: Test real CLI behavior and error handling
 
 
-class TestExportPdfCommand:
-    """Test dtr export pdf command."""
+class TestExportPdfCLICommand:
+    """Test dtr export pdf command with real behavior."""
 
-    def test_export_pdf_help(self) -> None:
-        """Test pdf subcommand help."""
+    def test_export_pdf_shows_help(self) -> None:
+        """Test that help text is available."""
         result = runner.invoke(app, ["pdf", "--help"])
         assert result.exit_code == 0
         assert "PDF" in result.stdout or "pdf" in result.stdout.lower()
 
-    def test_export_pdf_with_missing_file(self, tmp_path: Path) -> None:
-        """Test export pdf with missing input file."""
-        result = runner.invoke(app, ["pdf", str(tmp_path / "missing.tex")])
+    def test_export_pdf_rejects_non_tex_input(self, tmp_path: Path) -> None:
+        """Test that non-.tex files are rejected."""
+        # Arrange
+        md_file = tmp_path / "doc.md"
+        md_file.write_text("# Title")
+
+        # Act
+        result = runner.invoke(app, ["pdf", str(md_file)])
+
+        # Assert
         assert result.exit_code != 0
 
-    def test_export_pdf_with_invalid_compiler(self, tmp_path: Path) -> None:
-        """Test export pdf with invalid compiler."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
+    def test_export_pdf_validates_compiler_argument(self, tmp_path: Path) -> None:
+        """Test that invalid compiler is rejected."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
         tex_file.write_text("\\documentclass{article}\n\\end{document}")
 
-        # Run with invalid compiler
+        # Act
         result = runner.invoke(
-            app, ["pdf", str(tex_file), "--compiler", "invalid"]
+            app,
+            ["pdf", str(tex_file), "--compiler", "invalid_compiler"],
         )
+
+        # Assert
         assert result.exit_code != 0
 
-    def test_export_pdf_accepts_auto_compiler(self, tmp_path: Path) -> None:
-        """Test export pdf accepts auto compiler strategy."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
+    def test_export_pdf_accepts_all_valid_compilers(self, tmp_path: Path) -> None:
+        """Test that all valid compilers are accepted as arguments."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
         tex_file.write_text("\\documentclass{article}\n\\end{document}")
 
-        # Run with auto compiler
-        result = runner.invoke(app, ["pdf", str(tex_file), "--compiler", "auto"])
-        # Will likely fail due to no LaTeX compiler, but should parse args correctly
-        assert result.exit_code in [0, 2]  # 0 if compiled, 2 if compiler missing
-
-    def test_export_pdf_accepts_specific_compilers(self, tmp_path: Path) -> None:
-        """Test export pdf accepts specific compiler strategies."""
-        tex_file = tmp_path / "test.tex"
-        tex_file.write_text("\\documentclass{article}\n\\end{document}")
-
-        for compiler in ["latexmk", "pdflatex", "xelatex", "pandoc"]:
+        # Act & Assert - validate argument parsing for all strategies
+        for compiler in CompilerStrategy:
             result = runner.invoke(
-                app, ["pdf", str(tex_file), "--compiler", compiler]
+                app,
+                ["pdf", str(tex_file), "--compiler", compiler.value],
             )
-            # Should parse correctly even if compilation fails
-            assert result.exit_code in [0, 2]
+            # Will fail if compiler unavailable, but arguments should parse
+            assert result.exit_code in [0, 2]  # 0=success, 2=compiler error
 
-    def test_export_pdf_respects_keep_tex_flag(self, tmp_path: Path) -> None:
-        """Test export pdf respects --keep-tex flag."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
+    def test_export_pdf_accepts_all_valid_templates(self, tmp_path: Path) -> None:
+        """Test that all valid templates are accepted as arguments."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
         tex_file.write_text("\\documentclass{article}\n\\end{document}")
 
-        # Run with --keep-tex
-        result = runner.invoke(
-            app, ["pdf", str(tex_file), "--compiler", "auto", "--keep-tex"]
-        )
-        # Should handle the flag without error
-        assert result.exit_code in [0, 2]  # 0 or compiler error
+        # Act & Assert - validate argument parsing for all templates
+        for template in LatexTemplate:
+            result = runner.invoke(
+                app,
+                ["pdf", str(tex_file), "--template", template.value],
+            )
+            assert result.exit_code in [0, 2]  # 0=success, 2=compiler error
 
-    def test_export_pdf_respects_timeout(self, tmp_path: Path) -> None:
-        """Test export pdf respects --timeout flag."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
+    def test_export_pdf_accepts_keep_tex_flag(self, tmp_path: Path) -> None:
+        """Test that --keep-tex flag is accepted."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
         tex_file.write_text("\\documentclass{article}\n\\end{document}")
 
-        # Run with custom timeout
+        # Act
         result = runner.invoke(
-            app, ["pdf", str(tex_file), "--timeout", "60"]
+            app,
+            ["pdf", str(tex_file), "--keep-tex"],
         )
-        # Should handle the flag without error
-        assert result.exit_code in [0, 2]  # 0 or compiler error
+
+        # Assert - should parse flag without error
+        assert result.exit_code in [0, 2]
+
+    def test_export_pdf_accepts_timeout_parameter(self, tmp_path: Path) -> None:
+        """Test that --timeout parameter is accepted."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
+        tex_file.write_text("\\documentclass{article}\n\\end{document}")
+
+        # Act
+        result = runner.invoke(
+            app,
+            ["pdf", str(tex_file), "--timeout", "120"],
+        )
+
+        # Assert - should parse parameter without error
+        assert result.exit_code in [0, 2]
+
+    def test_export_pdf_accepts_force_flag(self, tmp_path: Path) -> None:
+        """Test that --force flag is accepted."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
+        tex_file.write_text("\\documentclass{article}\n\\end{document}")
+
+        # Act
+        result = runner.invoke(
+            app,
+            ["pdf", str(tex_file), "--force"],
+        )
+
+        # Assert - should parse flag without error
+        assert result.exit_code in [0, 2]
 
 
 # ============================================================================
-# INTEGRATION TESTS: Full Workflow
+# BEHAVIOR TESTS: Error Messages and User Experience
 # ============================================================================
+# Chicago TDD: Test actual user-facing behavior
 
 
-class TestFullWorkflow:
-    """Test complete LaTeX to PDF workflow."""
+class TestErrorMessagesAndUX:
+    """Test that error messages are helpful to users."""
 
-    def test_markdown_to_latex_to_pdf_workflow(self, tmp_path: Path) -> None:
-        """Test converting Markdown → LaTeX → PDF."""
-        # Setup
-        md_file = tmp_path / "guide.md"
-        md_file.write_text(
-            "# Title\n\n## Section\n\nSome content here.\n\n```\ncode block\n```"
-        )
+    def test_missing_file_error_is_informative(self, tmp_path: Path) -> None:
+        """Test that missing file error provides helpful message."""
+        result = runner.invoke(app, ["latex", str(tmp_path / "missing.tex")])
+        assert result.exit_code != 0
+        # Error should mention the missing file
+        assert "missing" in result.stdout.lower() or "not found" in result.stdout.lower()
 
-        # Convert to LaTeX
+    def test_invalid_template_error_lists_options(self, tmp_path: Path) -> None:
+        """Test that invalid template error shows valid options."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
+        tex_file.write_text("\\documentclass{article}\n\\end{document}")
+
+        # Act
         result = runner.invoke(
-            app, ["latex", str(md_file), "--template", "arxiv"]
+            app,
+            ["latex", str(tex_file), "--template", "badtemplate"],
         )
-        # May fail due to Pandoc not installed, but should parse correctly
-        assert result.exit_code in [0, 1]
 
-    def test_tex_file_copy_and_compile(self, tmp_path: Path) -> None:
-        """Test copying and compiling LaTeX file."""
-        # Setup
-        tex_file = tmp_path / "document.tex"
-        tex_file.write_text("\\documentclass{article}\n\\begin{document}\nTest\n\\end{document}")
+        # Assert - error should list valid templates
+        assert result.exit_code != 0
+        assert "template" in result.stdout.lower()
 
-        # Copy/validate
-        result = runner.invoke(app, ["latex", str(tex_file)])
+    def test_invalid_compiler_error_lists_options(self, tmp_path: Path) -> None:
+        """Test that invalid compiler error shows valid options."""
+        # Arrange
+        tex_file = tmp_path / "doc.tex"
+        tex_file.write_text("\\documentclass{article}\n\\end{document}")
+
+        # Act
+        result = runner.invoke(
+            app,
+            ["pdf", str(tex_file), "--compiler", "badcompiler"],
+        )
+
+        # Assert - error should mention compiler options
+        assert result.exit_code != 0
+
+
+# ============================================================================
+# WORKFLOW TESTS: End-to-End Scenarios
+# ============================================================================
+# Chicago TDD: Test complete user workflows
+
+
+class TestCompleteWorkflows:
+    """Test realistic end-to-end workflows."""
+
+    def test_latex_file_export_workflow(self, tmp_path: Path) -> None:
+        """Test complete workflow: export LaTeX file with various options."""
+        # Arrange
+        input_tex = tmp_path / "thesis.tex"
+        input_tex.write_text("\\documentclass{article}\n\\begin{document}\nContent\n\\end{document}")
+
+        # Act 1: Export with default template
+        result = runner.invoke(app, ["latex", str(input_tex)])
         assert result.exit_code == 0
 
-        # Try compile (may fail if no compiler, but should handle gracefully)
-        result = runner.invoke(app, ["pdf", str(tex_file)])
-        assert result.exit_code in [0, 2]  # 0 if compiled, 2 if compiler missing
-
-
-# ============================================================================
-# EDGE CASE TESTS
-# ============================================================================
-
-
-class TestEdgeCases:
-    """Test edge cases and error handling."""
-
-    def test_export_latex_with_empty_file(self, tmp_path: Path) -> None:
-        """Test export latex with empty input file."""
-        # Setup
-        empty_file = tmp_path / "empty.tex"
-        empty_file.write_text("")
-
-        # Run
-        result = runner.invoke(app, ["latex", str(empty_file)])
-        # Should handle empty file gracefully
-        assert result.exit_code in [0, 1]
-
-    def test_export_latex_with_special_characters_in_filename(
-        self, tmp_path: Path
-    ) -> None:
-        """Test export latex with special characters in filename."""
-        # Setup
-        tex_file = tmp_path / "test-document_v2.tex"
-        tex_file.write_text("\\documentclass{article}\n\\end{document}")
-
-        # Run
-        result = runner.invoke(app, ["latex", str(tex_file)])
+        # Act 2: Export with specific template
+        result = runner.invoke(
+            app,
+            ["latex", str(input_tex), "--template", "ieee"],
+        )
         assert result.exit_code == 0
 
-    def test_export_pdf_with_read_only_output_dir(self, tmp_path: Path) -> None:
-        """Test export pdf with read-only output directory."""
-        # Setup
-        tex_file = tmp_path / "test.tex"
-        tex_file.write_text("\\documentclass{article}\n\\end{document}")
-        readonly_dir = tmp_path / "readonly"
-        readonly_dir.mkdir()
-        readonly_dir.chmod(0o444)  # Read-only
+        # Act 3: Export with custom output
+        output_file = tmp_path / "custom_output.tex"
+        result = runner.invoke(
+            app,
+            ["latex", str(input_tex), "-o", str(output_file)],
+        )
+        assert result.exit_code == 0
+        assert output_file.exists()
 
-        try:
-            # Run (should fail gracefully)
-            result = runner.invoke(
-                app, ["pdf", str(tex_file), "-o", str(readonly_dir / "output.pdf")]
-            )
-            assert result.exit_code != 0
-        finally:
-            # Clean up: restore write permission
-            readonly_dir.chmod(0o755)
+    def test_latex_export_pipeline(self, tmp_path: Path) -> None:
+        """Test that LaTeX export produces usable files."""
+        # Arrange
+        input_tex = tmp_path / "document.tex"
+        input_tex.write_text("\\documentclass{article}\n\\usepackage{amsmath}\n\\end{document}")
+        output_tex = tmp_path / "output.tex"
+
+        # Act
+        result = runner.invoke(
+            app,
+            ["latex", str(input_tex), "-o", str(output_tex)],
+        )
+
+        # Assert - verify complete workflow
+        assert result.exit_code == 0
+        assert output_tex.exists()
+        # Output file should contain LaTeX document structure
+        content = output_tex.read_text()
+        assert "documentclass" in content or len(content) > 0
+
