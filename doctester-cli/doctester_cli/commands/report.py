@@ -10,9 +10,72 @@ from doctester_cli.reporters.html_reporter import HtmlReporter
 from doctester_cli.reporters.markdown_reporter import MarkdownReporter
 from doctester_cli.reporters.summary_reporter import SummaryReporter
 from doctester_cli.model import ReportConfig
+from doctester_cli.cli_errors import (
+    FileNotFoundError_,
+    DirectoryExpectedError,
+    InvalidFormatError,
+    PermissionDeniedError,
+)
 
 console = Console()
 app = typer.Typer(help="Generate reports from exports")
+
+# Valid report formats
+VALID_FORMATS = ["markdown", "html"]
+
+
+def validate_export_dir(path: Path) -> Path:
+    """Validate that export directory exists and is a directory."""
+    if not path.exists():
+        raise typer.BadParameter(
+            f"Export directory not found: {path}\nCheck that the path exists and is accessible"
+        )
+    if not path.is_dir():
+        raise typer.BadParameter(
+            f"Expected a directory, got file: {path}\nCheck that you're pointing to a directory, not a file"
+        )
+    return path
+
+
+def validate_output_path(path: Optional[Path]) -> Optional[Path]:
+    """Validate that output file path is writable."""
+    if path is None:
+        return None
+
+    # Check if parent directory exists
+    parent = path.parent
+    if not parent.exists():
+        raise typer.BadParameter(
+            f"Output directory does not exist: {parent}\nCheck that the parent directory exists and is accessible"
+        )
+
+    # Check if parent directory is writable
+    if not parent.is_dir():
+        raise typer.BadParameter(
+            f"Expected a directory, got file: {parent}\nCheck that the parent path is a directory"
+        )
+
+    try:
+        # Test write permissions
+        if not parent.stat().st_mode & 0o200:
+            raise typer.BadParameter(
+                f"Permission denied: cannot write to {parent}\nCheck file permissions and try again"
+            )
+    except PermissionError:
+        raise typer.BadParameter(
+            f"Permission denied: cannot write to {parent}\nCheck file permissions and try again"
+        )
+
+    return path
+
+
+def validate_report_format(format: str) -> str:
+    """Validate report format is supported."""
+    if format not in VALID_FORMATS:
+        raise typer.BadParameter(
+            f"Invalid format: {format}\nValid formats are: {', '.join(VALID_FORMATS)}"
+        )
+    return format
 
 
 @app.command()
@@ -20,19 +83,21 @@ def sum(
     export_dir: Path = typer.Argument(
         ...,
         help="DocTester export directory (target/site/doctester)",
-        exists=True,
+        callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(
         None,
         "--output",
         "-o",
         help="Output file (default: summary.md)",
+        callback=lambda x: validate_output_path(x),
     ),
     format: str = typer.Option(
         "markdown",
         "--format",
         "-f",
-        help="Output format (markdown, html, json)",
+        help="Output format (markdown, html)",
+        callback=lambda x: validate_report_format(x),
     ),
 ) -> None:
     """
@@ -73,13 +138,14 @@ def cov(
     export_dir: Path = typer.Argument(
         ...,
         help="DocTester export directory",
-        exists=True,
+        callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(
         None,
         "--output",
         "-o",
         help="Output file (default: coverage.html)",
+        callback=lambda x: validate_output_path(x),
     ),
 ) -> None:
     """
@@ -118,13 +184,14 @@ def log(
     export_dir: Path = typer.Argument(
         ...,
         help="DocTester export directory",
-        exists=True,
+        callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(
         None,
         "--output",
         "-o",
         help="Output file (default: changelog.md)",
+        callback=lambda x: validate_output_path(x),
     ),
     since: Optional[str] = typer.Option(
         None,

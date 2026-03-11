@@ -1,5 +1,6 @@
 """Convert DocTester exports between formats."""
 
+import os
 from pathlib import Path
 from typing import Optional, Literal
 import typer
@@ -10,9 +11,45 @@ from doctester_cli.converters.html_converter import HtmlConverter
 from doctester_cli.converters.json_converter import JsonConverter
 from doctester_cli.converters.markdown_converter import MarkdownConverter
 from doctester_cli.model import ConversionConfig
+from doctester_cli.cli_errors import (
+    FileExpectedError,
+    InvalidFormatError,
+)
 
 console = Console()
 app = typer.Typer(help="Convert exports between formats")
+
+# Valid conversion formats
+VALID_FORMATS = ["md", "json", "html"]
+
+
+def validate_input_file(path: Path) -> Path:
+    """Validate that input file exists and is a file (not directory)."""
+    if not path.exists():
+        raise typer.BadParameter(
+            f"Input file not found: {path}\nCheck that the path exists and is accessible"
+        )
+    if not path.is_file():
+        raise typer.BadParameter(
+            f"Expected a file, got directory: {path}\nCheck that you're pointing to a file, not a directory"
+        )
+    # Check if file is readable
+    if not path.is_file() or not os.access(path, os.R_OK):
+        raise typer.BadParameter(
+            f"Input file is not readable: {path}\nCheck file permissions"
+        )
+    return path
+
+
+def validate_output_dir(path: Optional[Path]) -> Optional[Path]:
+    """Validate that output directory exists and is writable."""
+    if path is None:
+        return None
+    if path.exists() and not path.is_dir():
+        raise typer.BadParameter(
+            f"Output path is not a directory: {path}\nCheck that you're pointing to a directory"
+        )
+    return path
 
 
 @app.command()
@@ -20,13 +57,14 @@ def md(
     input_file: Path = typer.Argument(
         ...,
         help="Input HTML file or directory",
-        exists=True,
+        callback=lambda x: validate_input_file(x),
     ),
     output_dir: Optional[Path] = typer.Option(
         None,
         "--output",
         "-o",
         help="Output directory (default: current directory)",
+        callback=lambda x: validate_output_dir(x),
     ),
     recursive: bool = typer.Option(
         False,
@@ -82,13 +120,14 @@ def json(
     input_file: Path = typer.Argument(
         ...,
         help="Input HTML file or directory",
-        exists=True,
+        callback=lambda x: validate_input_file(x),
     ),
     output_dir: Optional[Path] = typer.Option(
         None,
         "--output",
         "-o",
         help="Output directory (default: current directory)",
+        callback=lambda x: validate_output_dir(x),
     ),
     pretty: bool = typer.Option(
         True,
@@ -139,13 +178,14 @@ def html(
     input_file: Path = typer.Argument(
         ...,
         help="Input Markdown file or directory",
-        exists=True,
+        callback=lambda x: validate_input_file(x),
     ),
     output_dir: Optional[Path] = typer.Option(
         None,
         "--output",
         "-o",
         help="Output directory (default: current directory)",
+        callback=lambda x: validate_output_dir(x),
     ),
     template: Optional[str] = typer.Option(
         "default",

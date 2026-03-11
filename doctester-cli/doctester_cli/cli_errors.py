@@ -1,0 +1,257 @@
+"""Custom exceptions for CLI with user-friendly error messages.
+
+Provides exceptions that display helpful messages to users instead of
+Python stack traces. These follow the 80/20 principle of error handling.
+"""
+
+
+class CLIError(Exception):
+    """Base exception for user-facing CLI errors.
+
+    Subclasses should provide clear messages about what went wrong
+    and how to fix it, without exposing Python internals.
+    """
+
+    def __init__(self, message: str, hint: str | None = None):
+        """Initialize CLI error.
+
+        Args:
+            message: User-friendly error message (what went wrong)
+            hint: Optional hint about how to fix the problem
+        """
+        self.message = message
+        self.hint = hint
+        super().__init__(message)
+
+    def format_message(self) -> str:
+        """Format error message for display to user."""
+        msg = f"❌ {self.message}"
+        if self.hint:
+            msg += f"\n💡 {self.hint}"
+        return msg
+
+
+class FileNotFoundError_(CLIError):
+    """Raised when a required file or directory is not found."""
+
+    def __init__(self, path: str, file_type: str = "file"):
+        """Initialize file not found error.
+
+        Args:
+            path: Path to the missing file/directory
+            file_type: Type of file ("file", "directory", "export")
+        """
+        message = f"{file_type.capitalize()} not found: {path}"
+        hint = f"Check that the path exists and is accessible"
+        super().__init__(message, hint)
+
+
+class InvalidPathError(CLIError):
+    """Raised when a path is invalid or inaccessible."""
+
+    def __init__(self, path: str, reason: str):
+        """Initialize invalid path error.
+
+        Args:
+            path: Invalid path
+            reason: Why the path is invalid
+        """
+        message = f"Invalid path: {path}\nReason: {reason}"
+        super().__init__(message)
+
+
+class DirectoryExpectedError(CLIError):
+    """Raised when a file is provided instead of a directory."""
+
+    def __init__(self, path: str):
+        """Initialize directory expected error.
+
+        Args:
+            path: Path to the file
+        """
+        message = f"Expected a directory, got file: {path}"
+        hint = "Check that you're pointing to a directory, not a file"
+        super().__init__(message, hint)
+
+
+class FileExpectedError(CLIError):
+    """Raised when a directory is provided instead of a file."""
+
+    def __init__(self, path: str):
+        """Initialize file expected error.
+
+        Args:
+            path: Path to the directory
+        """
+        message = f"Expected a file, got directory: {path}"
+        hint = "Check that you're pointing to a file, not a directory"
+        super().__init__(message, hint)
+
+
+class InvalidFormatError(CLIError):
+    """Raised when an invalid format is specified."""
+
+    def __init__(self, format_name: str, valid_formats: list[str]):
+        """Initialize invalid format error.
+
+        Args:
+            format_name: Name of the invalid format
+            valid_formats: List of valid format names
+        """
+        formats_str = ", ".join(valid_formats)
+        message = f"Invalid format: {format_name}"
+        hint = f"Valid formats are: {formats_str}"
+        super().__init__(message, hint)
+
+
+class PermissionDeniedError(CLIError):
+    """Raised when permission is denied for a file/directory."""
+
+    def __init__(self, path: str, operation: str = "access"):
+        """Initialize permission denied error.
+
+        Args:
+            path: Path with permission issue
+            operation: Operation that failed ("read", "write", "execute")
+        """
+        message = f"Permission denied: cannot {operation} {path}"
+        hint = "Check file permissions and try again"
+        super().__init__(message, hint)
+
+
+class InvalidArgumentError(CLIError):
+    """Raised when an argument value is invalid."""
+
+    def __init__(self, arg_name: str, value: str, reason: str):
+        """Initialize invalid argument error.
+
+        Args:
+            arg_name: Name of the argument
+            value: Invalid value
+            reason: Why the value is invalid
+        """
+        message = f"Invalid value for {arg_name}: {value}"
+        hint = f"Expected: {reason}"
+        super().__init__(message, hint)
+
+
+class EmptyDirectoryError(CLIError):
+    """Raised when an empty directory is not allowed."""
+
+    def __init__(self, path: str, what: str = "exports"):
+        """Initialize empty directory error.
+
+        Args:
+            path: Path to the empty directory
+            what: What was expected to find ("exports", "files")
+        """
+        message = f"No {what} found in: {path}"
+        hint = "Check that the directory contains the expected files"
+        super().__init__(message, hint)
+
+
+class ConversionError(CLIError):
+    """Raised when format conversion fails."""
+
+    def __init__(self, input_path: str, output_format: str, reason: str):
+        """Initialize conversion error.
+
+        Args:
+            input_path: Path to file being converted
+            output_format: Target format
+            reason: Why conversion failed
+        """
+        message = f"Failed to convert {input_path} to {output_format}"
+        hint = f"Reason: {reason}"
+        super().__init__(message, hint)
+
+
+class OutputError(CLIError):
+    """Raised when output cannot be written."""
+
+    def __init__(self, output_path: str, reason: str):
+        """Initialize output error.
+
+        Args:
+            output_path: Path where output should be written
+            reason: Why output failed
+        """
+        message = f"Cannot write output to: {output_path}"
+        hint = f"Reason: {reason}"
+        super().__init__(message, hint)
+
+
+class ArchiveError(CLIError):
+    """Raised when archive creation/reading fails."""
+
+    def __init__(self, archive_path: str, operation: str, reason: str):
+        """Initialize archive error.
+
+        Args:
+            archive_path: Path to archive
+            operation: Operation that failed ("create", "read", "extract")
+            reason: Why it failed
+        """
+        message = f"Failed to {operation} archive: {archive_path}"
+        hint = f"Reason: {reason}"
+        super().__init__(message, hint)
+
+
+class ConfigurationError(CLIError):
+    """Raised when configuration is invalid."""
+
+    def __init__(self, config_name: str, reason: str):
+        """Initialize configuration error.
+
+        Args:
+            config_name: Name of invalid configuration
+            reason: Why it's invalid
+        """
+        message = f"Invalid configuration: {config_name}"
+        hint = f"Reason: {reason}"
+        super().__init__(message, hint)
+
+
+class DiskSpaceError(CLIError):
+    """Raised when there's not enough disk space."""
+
+    def __init__(self, path: str, needed_mb: int):
+        """Initialize disk space error.
+
+        Args:
+            path: Path where disk space is needed
+            needed_mb: Megabytes needed
+        """
+        message = f"Not enough disk space for operation in {path}"
+        hint = f"Free up at least {needed_mb}MB and try again"
+        super().__init__(message, hint)
+
+
+class TimeoutError_(CLIError):
+    """Raised when an operation times out."""
+
+    def __init__(self, operation: str, timeout_seconds: int):
+        """Initialize timeout error.
+
+        Args:
+            operation: Operation that timed out
+            timeout_seconds: Timeout duration
+        """
+        message = f"Operation timed out: {operation}"
+        hint = f"Increase timeout (currently {timeout_seconds}s) or try with smaller input"
+        super().__init__(message, hint)
+
+
+class ConcurrencyError(CLIError):
+    """Raised when concurrent operations interfere."""
+
+    def __init__(self, resource: str, action: str = "access"):
+        """Initialize concurrency error.
+
+        Args:
+            resource: Resource with conflict
+            action: Action that conflicted
+        """
+        message = f"Cannot {action} {resource}: it's being used by another process"
+        hint = "Wait for the other operation to complete and try again"
+        super().__init__(message, hint)
