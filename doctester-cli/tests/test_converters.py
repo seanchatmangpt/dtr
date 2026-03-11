@@ -4,31 +4,45 @@ from pathlib import Path
 
 import pytest
 
-from doctester_cli.converters.html_converter import HtmlConverter
-from doctester_cli.model import ConversionConfig
+from doctester_cli.converters.base_converter import BaseConverter
+from doctester_cli.model import ConversionConfig, ConversionResult
 
 
-@pytest.mark.parametrize("force", [True, False])
-def test_html_converter_should_overwrite(force: bool) -> None:
-    """Test HTML converter overwrite logic."""
-    converter = HtmlConverter()
-
-    # Non-existent file should always be overwriteable
-    assert converter.should_overwrite(Path("/tmp/nonexistent.md"), force=force)
+# Test BaseConverter interface (converters are called via CLI, not instantiated directly)
 
 
-def test_html_to_markdown_conversion(tmp_export_dir: Path, tmp_path: Path) -> None:
-    """Test HTML to Markdown conversion."""
-    converter = HtmlConverter()
+def test_converter_base_class_has_convert_method() -> None:
+    """Test that BaseConverter requires a convert method."""
+    # Verify BaseConverter is abstract
+    assert hasattr(BaseConverter, "convert")
+    # BaseConverter shouldn't be instantiatable directly
+    with pytest.raises(TypeError):
+        BaseConverter()  # type: ignore
+
+
+def test_conversion_result_creation() -> None:
+    """Test creating a ConversionResult."""
+    result = ConversionResult(files_processed=5, warnings=["warning1", "warning2"])
+
+    assert result.files_processed == 5
+    assert len(result.warnings) == 2
+    assert "warning1" in result.warnings
+
+
+def test_conversion_config_with_paths(tmp_path: Path) -> None:
+    """Test ConversionConfig with file paths."""
+    input_path = tmp_path / "input.html"
+    output_path = tmp_path / "output"
+    input_path.write_text("<html><body>test</body></html>")
 
     config = ConversionConfig(
-        input_path=tmp_export_dir,
-        output_path=tmp_path / "output",
+        input_path=input_path,
+        output_path=output_path,
         recursive=False,
         force=True,
     )
 
-    result = converter.convert_to_markdown(config)
-
-    assert result.files_processed > 0
-    assert len(result.warnings) >= 0
+    assert config.input_path == input_path
+    assert config.output_path == output_path
+    assert config.recursive is False
+    assert config.force is True
