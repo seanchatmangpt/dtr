@@ -227,6 +227,11 @@ public final class MultiRenderMachine extends RenderMachine {
     }
 
     @Override
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        dispatchToAll(m -> m.sayCodeModel(method));
+    }
+
+    @Override
     public void sayCallSite() {
         dispatchToAll(RenderMachine::sayCallSite);
     }
