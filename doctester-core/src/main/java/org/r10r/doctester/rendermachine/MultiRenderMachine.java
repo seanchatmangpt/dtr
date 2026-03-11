@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * );
  * </pre>
  */
-public final class MultiRenderMachine implements RenderMachine {
+public final class MultiRenderMachine extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiRenderMachine.class);
 

@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * documentation platforms, and static site generators. No HTML/CSS/JS
  * dependencies—just clean, portable markdown.
  */
-public class RenderMachineImpl implements RenderMachine {
+public class RenderMachineImpl extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
 
