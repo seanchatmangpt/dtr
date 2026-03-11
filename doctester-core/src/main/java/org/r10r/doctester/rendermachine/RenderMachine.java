@@ -104,6 +104,33 @@ public abstract class RenderMachine implements RenderMachineCommands {
     }
 
     /**
+     * Documents a class's structure using Java reflection.
+     *
+     * <p>Default no-op implementation — override in render machines that support
+     * code model rendering (e.g., {@link RenderMachineImpl}).</p>
+     *
+     * @param clazz the class to introspect and document
+     */
+    public void sayCodeModel(Class<?> clazz) {
+        // No-op for render machines that don't support code model rendering
+    }
+
+    /** Documents current call site — no-op in base class. */
+    public void sayCallSite() {}
+
+    /** Documents annotation profile — no-op in base class. */
+    public void sayAnnotationProfile(Class<?> clazz) {}
+
+    /** Documents class hierarchy — no-op in base class. */
+    public void sayClassHierarchy(Class<?> clazz) {}
+
+    /** Documents string profile — no-op in base class. */
+    public void sayStringProfile(String text) {}
+
+    /** Documents reflective diff — no-op in base class. */
+    public void sayReflectiveDiff(Object before, Object after) {}
+
+    /**
      * Finishes documentation generation and writes output to disk.
      */
     public abstract void finishAndWriteOut();

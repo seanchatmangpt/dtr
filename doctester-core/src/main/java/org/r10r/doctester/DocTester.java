@@ -449,4 +449,67 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     public void sayCallToAction(String url) {
         renderMachine.sayCallToAction(url);
     }
+
+    /**
+     * Documents a class's structure using Java reflection — the DocTester stand-in for
+     * Project Babylon's Code Reflection API (JEP 494).
+     *
+     * <p>Renders the class's sealed hierarchy (if sealed), record components (if a record),
+     * and all public method signatures — derived directly from the bytecode, not from
+     * developer-written descriptions. The documentation cannot drift from the implementation
+     * because it IS the implementation.</p>
+     *
+     * <p>This is the most uniquely DocTester application of Project Babylon's vision:
+     * instead of a developer describing what code does, the code describes itself.</p>
+     *
+     * @param clazz the class to introspect and document
+     */
+    public final void sayCodeModel(Class<?> clazz) {
+        renderMachine.sayCodeModel(clazz);
+    }
+
+    /**
+     * Documents the current call site using {@link StackWalker}.
+     * Renders the calling class, method name, and line number as provenance metadata.
+     */
+    public final void sayCallSite() {
+        renderMachine.sayCallSite();
+    }
+
+    /**
+     * Documents all annotations on a class and its methods using reflection.
+     *
+     * @param clazz the class to inspect for annotations
+     */
+    public final void sayAnnotationProfile(Class<?> clazz) {
+        renderMachine.sayAnnotationProfile(clazz);
+    }
+
+    /**
+     * Renders the full class hierarchy (superclass chain + interfaces) as a tree.
+     *
+     * @param clazz the class whose hierarchy to render
+     */
+    public final void sayClassHierarchy(Class<?> clazz) {
+        renderMachine.sayClassHierarchy(clazz);
+    }
+
+    /**
+     * Analyzes a string and renders its structural profile using Java string APIs.
+     *
+     * @param text the string to profile
+     */
+    public final void sayStringProfile(String text) {
+        renderMachine.sayStringProfile(text);
+    }
+
+    /**
+     * Compares two objects field-by-field using reflection and renders a diff table.
+     *
+     * @param before the object representing the "before" state
+     * @param after  the object representing the "after" state (must be same type)
+     */
+    public final void sayReflectiveDiff(Object before, Object after) {
+        renderMachine.sayReflectiveDiff(before, after);
+    }
 }

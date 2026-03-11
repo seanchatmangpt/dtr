@@ -252,6 +252,40 @@ public class DocTesterContext implements RenderMachineCommands {
     }
 
     // ========================================================================
+    // Code model introspection
+    // ========================================================================
+
+    @Override
+    public void sayCodeModel(Class<?> clazz) {
+        renderMachine.sayCodeModel(clazz);
+    }
+
+    @Override
+    public void sayCallSite() {
+        renderMachine.sayCallSite();
+    }
+
+    @Override
+    public void sayAnnotationProfile(Class<?> clazz) {
+        renderMachine.sayAnnotationProfile(clazz);
+    }
+
+    @Override
+    public void sayClassHierarchy(Class<?> clazz) {
+        renderMachine.sayClassHierarchy(clazz);
+    }
+
+    @Override
+    public void sayStringProfile(String text) {
+        renderMachine.sayStringProfile(text);
+    }
+
+    @Override
+    public void sayReflectiveDiff(Object before, Object after) {
+        renderMachine.sayReflectiveDiff(before, after);
+    }
+
+    // ========================================================================
     // Accessors for internal components
     // ========================================================================
 
