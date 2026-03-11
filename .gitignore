@@ -13,3 +13,7 @@ nb-configuration.xml
 
 *~
 *.h2.db
+
+# Generated test documentation
+docs/
+doctester-core/docs/
