@@ -467,4 +467,49 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     public final void sayCodeModel(Class<?> clazz) {
         renderMachine.sayCodeModel(clazz);
     }
+
+    /**
+     * Documents the current call site using {@link StackWalker}.
+     * Renders the calling class, method name, and line number as provenance metadata.
+     */
+    public final void sayCallSite() {
+        renderMachine.sayCallSite();
+    }
+
+    /**
+     * Documents all annotations on a class and its methods using reflection.
+     *
+     * @param clazz the class to inspect for annotations
+     */
+    public final void sayAnnotationProfile(Class<?> clazz) {
+        renderMachine.sayAnnotationProfile(clazz);
+    }
+
+    /**
+     * Renders the full class hierarchy (superclass chain + interfaces) as a tree.
+     *
+     * @param clazz the class whose hierarchy to render
+     */
+    public final void sayClassHierarchy(Class<?> clazz) {
+        renderMachine.sayClassHierarchy(clazz);
+    }
+
+    /**
+     * Analyzes a string and renders its structural profile using Java string APIs.
+     *
+     * @param text the string to profile
+     */
+    public final void sayStringProfile(String text) {
+        renderMachine.sayStringProfile(text);
+    }
+
+    /**
+     * Compares two objects field-by-field using reflection and renders a diff table.
+     *
+     * @param before the object representing the "before" state
+     * @param after  the object representing the "after" state (must be same type)
+     */
+    public final void sayReflectiveDiff(Object before, Object after) {
+        renderMachine.sayReflectiveDiff(before, after);
+    }
 }

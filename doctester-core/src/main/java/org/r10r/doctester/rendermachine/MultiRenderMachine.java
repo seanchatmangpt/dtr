@@ -227,6 +227,31 @@ public final class MultiRenderMachine extends RenderMachine {
     }
 
     @Override
+    public void sayCallSite() {
+        dispatchToAll(RenderMachine::sayCallSite);
+    }
+
+    @Override
+    public void sayAnnotationProfile(Class<?> clazz) {
+        dispatchToAll(m -> m.sayAnnotationProfile(clazz));
+    }
+
+    @Override
+    public void sayClassHierarchy(Class<?> clazz) {
+        dispatchToAll(m -> m.sayClassHierarchy(clazz));
+    }
+
+    @Override
+    public void sayStringProfile(String text) {
+        dispatchToAll(m -> m.sayStringProfile(text));
+    }
+
+    @Override
+    public void sayReflectiveDiff(Object before, Object after) {
+        dispatchToAll(m -> m.sayReflectiveDiff(before, after));
+    }
+
+    @Override
     public void saySlideOnly(String text) {
         dispatchToAll(m -> m.saySlideOnly(text));
     }
