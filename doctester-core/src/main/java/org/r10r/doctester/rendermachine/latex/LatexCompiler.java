@@ -83,6 +83,12 @@ public class LatexCompiler {
 
     /**
      * Check if a binary is available in PATH.
+     *
+     * Java 26 Enhancement (JEP 530 - Primitive Types in Patterns):
+     * Uses primitive pattern matching on int exit codes for zero-success semantics.
+     *
+     * @param binary name of binary to check
+     * @return true if binary is available and returns exit code 0
      */
     private boolean isBinaryAvailable(String binary) {
         try {
@@ -90,7 +96,11 @@ public class LatexCompiler {
             pb.redirectErrorStream(true);
             Process p = pb.start();
             int exitCode = p.waitFor();
-            return exitCode == 0;
+            // JEP 530: Primitive pattern for success (exit code 0)
+            return switch (exitCode) {
+                case 0 -> true;
+                default -> false;
+            };
         } catch (Exception e) {
             return false;
         }
@@ -134,11 +144,31 @@ public class LatexCompiler {
 
         int exitCode = p.waitFor();
 
-        if (exitCode != 0) {
-            logger.debug("Compiler output:\n{}", output);
-            throw new LatexCompilationException(
-                "Compiler %s exited with code %d".formatted(compiler, exitCode)
-            );
+        // Java 26 Enhancement (JEP 530 - Primitive Types in Patterns):
+        // Use primitive pattern matching on exit codes for semantic meaning
+        switch (exitCode) {
+            case 0:
+                // Success - exit code 0 indicates successful compilation
+                logger.debug("Compilation succeeded with {}",compiler);
+                break;
+            case 1:
+                // Compilation error - typical LaTeX error (syntax, missing files, etc.)
+                logger.debug("Compiler {} error output:\n{}", compiler, output);
+                throw new LatexCompilationException(
+                    "LaTeX compilation failed (exit code 1): %s".formatted(compiler)
+                );
+            case 127:
+                // Command not found - binary is not in PATH
+                logger.error("LaTeX binary not found in PATH: {}", compiler);
+                throw new LatexCompilationException(
+                    "LaTeX binary not found: %s (exit code 127)".formatted(compiler)
+                );
+            default:
+                // Unknown exit code
+                logger.debug("Compiler %s output:\n%s", compiler, output);
+                throw new LatexCompilationException(
+                    "Compiler %s exited with unexpected code %d".formatted(compiler, exitCode)
+                );
         }
     }
 

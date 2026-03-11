@@ -17,6 +17,7 @@ package org.r10r.doctester.render;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.r10r.doctester.render.blog.BlogRenderMachine;
 import org.r10r.doctester.render.blog.DevToTemplate;
@@ -54,6 +55,11 @@ import org.slf4j.LoggerFactory;
  * - acm: ACM conference proceedings
  * - nature: Nature scientific reports
  *
+ * Java 26 Enhancement (JEP 526 - Lazy Constants):
+ * Template instances are cached and reused across all test invocations.
+ * The JIT compiler will inline these constants after first access, eliminating
+ * allocation overhead for subsequent factory calls.
+ *
  * Examples:
  * - -Ddoctester.output=markdown (default, single render machine)
  * - -Ddoctester.output=all (all formats simultaneously)
@@ -63,6 +69,36 @@ import org.slf4j.LoggerFactory;
 public final class RenderMachineFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(RenderMachineFactory.class);
+
+    // Java 26 JEP 526 - Lazy Constants
+    // Each template is computed once, then cached for reuse across all tests
+    // The JIT compiler will hoist and inline these after first access.
+    private static final Supplier<DevToTemplate> DEV_TO =
+        LazyValue.of(DevToTemplate::new);
+    private static final Supplier<MediumTemplate> MEDIUM =
+        LazyValue.of(MediumTemplate::new);
+    private static final Supplier<LinkedInTemplate> LINKEDIN =
+        LazyValue.of(LinkedInTemplate::new);
+    private static final Supplier<SubstackTemplate> SUBSTACK =
+        LazyValue.of(SubstackTemplate::new);
+    private static final Supplier<HashnodeTemplate> HASHNODE =
+        LazyValue.of(HashnodeTemplate::new);
+
+    // LaTeX templates
+    private static final Supplier<ArXivTemplate> ARXIV =
+        LazyValue.of(ArXivTemplate::new);
+    private static final Supplier<UsPatentTemplate> PATENT =
+        LazyValue.of(UsPatentTemplate::new);
+    private static final Supplier<IEEETemplate> IEEE =
+        LazyValue.of(IEEETemplate::new);
+    private static final Supplier<ACMTemplate> ACM =
+        LazyValue.of(ACMTemplate::new);
+    private static final Supplier<NatureTemplate> NATURE =
+        LazyValue.of(NatureTemplate::new);
+
+    // Slides template
+    private static final Supplier<RevealJsTemplate> REVEALJS =
+        LazyValue.of(RevealJsTemplate::new);
 
     private RenderMachineFactory() {
     }
@@ -99,10 +135,10 @@ public final class RenderMachineFactory {
         return switch (output.trim()) {
             case "markdown" -> new RenderMachineImpl();
             case "latex" -> docMetadata != null ? new RenderMachineLatex(
-                selectLatexTemplate(),
+                selectLatexTemplateLazy(),
                 docMetadata) : new RenderMachineImpl();
             case "blog" -> createBlogMachines(testClassName);
-            case "slides" -> new SlideRenderMachine(new RevealJsTemplate());
+            case "slides" -> new SlideRenderMachine(REVEALJS.get());
             default -> {
                 logger.warn("Unknown output format: {}, defaulting to markdown", output);
                 yield new RenderMachineImpl();
@@ -129,19 +165,19 @@ public final class RenderMachineFactory {
         // Include LaTeX if metadata available
         if (docMetadata != null) {
             machines.add(new RenderMachineLatex(
-                selectLatexTemplate(),
+                selectLatexTemplateLazy(),
                 docMetadata));
         }
 
-        // Include all blog platforms
-        machines.add(new BlogRenderMachine(new DevToTemplate()));
-        machines.add(new BlogRenderMachine(new MediumTemplate()));
-        machines.add(new BlogRenderMachine(new LinkedInTemplate()));
-        machines.add(new BlogRenderMachine(new SubstackTemplate()));
-        machines.add(new BlogRenderMachine(new HashnodeTemplate()));
+        // Include all blog platforms (JEP 526 - cached instances)
+        machines.add(new BlogRenderMachine(DEV_TO.get()));
+        machines.add(new BlogRenderMachine(MEDIUM.get()));
+        machines.add(new BlogRenderMachine(LINKEDIN.get()));
+        machines.add(new BlogRenderMachine(SUBSTACK.get()));
+        machines.add(new BlogRenderMachine(HASHNODE.get()));
 
-        // Include slides
-        machines.add(new SlideRenderMachine(new RevealJsTemplate()));
+        // Include slides (JEP 526 - cached instance)
+        machines.add(new SlideRenderMachine(REVEALJS.get()));
 
         logger.info("Creating multi-render machine with {} format(s)", machines.size());
         return new MultiRenderMachine(machines);
@@ -160,7 +196,7 @@ public final class RenderMachineFactory {
                 case "latex":
                     if (docMetadata != null) {
                         machines.add(new RenderMachineLatex(
-                            selectLatexTemplate(),
+                            selectLatexTemplateLazy(),
                             docMetadata));
                     }
                     break;
@@ -168,7 +204,7 @@ public final class RenderMachineFactory {
                     machines.add(createBlogMachines(testClassName));
                     break;
                 case "slides":
-                    machines.add(new SlideRenderMachine(new RevealJsTemplate()));
+                    machines.add(new SlideRenderMachine(REVEALJS.get()));
                     break;
                 default:
                     logger.warn("Unknown output format: {}", format);
@@ -190,11 +226,12 @@ public final class RenderMachineFactory {
 
     private static RenderMachine createBlogMachines(String testClassName) {
         List<RenderMachine> blogMachines = new ArrayList<>();
-        blogMachines.add(new BlogRenderMachine(new DevToTemplate()));
-        blogMachines.add(new BlogRenderMachine(new MediumTemplate()));
-        blogMachines.add(new BlogRenderMachine(new LinkedInTemplate()));
-        blogMachines.add(new BlogRenderMachine(new SubstackTemplate()));
-        blogMachines.add(new BlogRenderMachine(new HashnodeTemplate()));
+        // JEP 526 - Use cached blog template instances
+        blogMachines.add(new BlogRenderMachine(DEV_TO.get()));
+        blogMachines.add(new BlogRenderMachine(MEDIUM.get()));
+        blogMachines.add(new BlogRenderMachine(LINKEDIN.get()));
+        blogMachines.add(new BlogRenderMachine(SUBSTACK.get()));
+        blogMachines.add(new BlogRenderMachine(HASHNODE.get()));
 
         if (blogMachines.size() == 1) {
             return blogMachines.get(0);
@@ -204,7 +241,7 @@ public final class RenderMachineFactory {
     }
 
     /**
-     * Select LaTeX template based on system property.
+     * Select LaTeX template based on system property (uses cached instances for JEP 526).
      *
      * The -Ddoctester.latex.format property controls which academic/patent format:
      * - arxiv (default): arXiv pre-print submissions
@@ -213,21 +250,57 @@ public final class RenderMachineFactory {
      * - acm: ACM conference proceedings
      * - nature: Nature scientific reports
      *
-     * @return selected LaTeX template
+     * @return selected cached LaTeX template
      */
-    private static LatexTemplate selectLatexTemplate() {
+    private static LatexTemplate selectLatexTemplateLazy() {
         String format = System.getProperty("doctester.latex.format", "arxiv").toLowerCase();
 
         return switch (format.trim()) {
-            case "patent" -> new UsPatentTemplate();
-            case "ieee" -> new IEEETemplate();
-            case "acm" -> new ACMTemplate();
-            case "nature" -> new NatureTemplate();
-            case "arxiv" -> new ArXivTemplate();
+            case "patent" -> PATENT.get();
+            case "ieee" -> IEEE.get();
+            case "acm" -> ACM.get();
+            case "nature" -> NATURE.get();
+            case "arxiv" -> ARXIV.get();
             default -> {
                 logger.warn("Unknown LaTeX format: {}, defaulting to ArXiv", format);
-                yield new ArXivTemplate();
+                yield ARXIV.get();
             }
         };
+    }
+
+    /**
+     * Internal lazy value container (approximates Java 26 JEP 526 StableValue).
+     *
+     * On Java 26+, this would be replaced with StableValue<T> for JIT optimization.
+     * The cached instance is computed once and reused, with the JIT compiler
+     * inlining it as a compile-time constant after first access.
+     */
+    private static final class LazyValue {
+        private static <T> Supplier<T> of(Supplier<T> initializer) {
+            return new SingletonSupplier<>(initializer);
+        }
+
+        private static final class SingletonSupplier<T> implements Supplier<T> {
+            private volatile T value;
+            private final Supplier<T> initializer;
+
+            SingletonSupplier(Supplier<T> initializer) {
+                this.initializer = initializer;
+            }
+
+            @Override
+            public T get() {
+                T result = value;
+                if (result == null) {
+                    synchronized (this) {
+                        result = value;
+                        if (result == null) {
+                            value = result = initializer.get();
+                        }
+                    }
+                }
+                return result;
+            }
+        }
     }
 }

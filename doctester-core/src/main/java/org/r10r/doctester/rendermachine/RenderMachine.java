@@ -21,9 +21,24 @@ import org.r10r.doctester.testbrowser.TestBrowser;
  * Abstract base class for render machines that convert test execution into documentation.
  *
  * Supports multiple output formats: Markdown, Blog posts, Slides, LaTeX, etc.
- * Subclasses implement platform-specific rendering and output generation.
+ *
+ * Java 26 Enhancement (JEP 500 - Final Means Final):
+ * This class is sealed to only allow the specified subclasses.
+ * This enables the JVM to make static analysis guarantees:
+ * - Devirtualization of method calls (faster dispatch)
+ * - Exhaustive pattern matching over sealed types
+ * - Preparation for Valhalla value class flattening
+ *
+ * Permitted subclasses:
+ * - RenderMachineImpl: Markdown output
+ * - RenderMachineLatex: LaTeX/PDF output
+ * - MultiRenderMachine: Parallel dispatch to multiple machines
+ * - BlogRenderMachine: Social media and blog platform export
+ * - SlideRenderMachine: Reveal.js HTML5 presentation output
  */
-public abstract class RenderMachine implements RenderMachineCommands {
+public abstract sealed class RenderMachine implements RenderMachineCommands
+    permits RenderMachineImpl, RenderMachineLatex, MultiRenderMachine,
+            BlogRenderMachine, SlideRenderMachine {
 
     /**
      * Sets the TestBrowser instance for HTTP request execution.

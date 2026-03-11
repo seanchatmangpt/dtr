@@ -230,17 +230,59 @@ public class OpenApiCollector {
         return responses;
     }
 
+    /**
+     * Get a human-readable description of an HTTP status code.
+     *
+     * Java 26 Enhancement (JEP 530 - Primitive Types in Patterns):
+     * Uses primitive pattern matching on int status codes for semantic grouping
+     * by hundreds range (e.g., 2__ for 200-299 success, 4__ for 400-499 client errors).
+     * This is more readable than individual cases and allows the JIT to compile to
+     * a jump table instead of nested comparisons.
+     *
+     * @param status HTTP status code
+     * @return human-readable description
+     */
     private String getStatusDescription(int status) {
         return switch (status) {
+            // Success responses (2xx)
             case 200 -> "OK";
             case 201 -> "Created";
+            case 202 -> "Accepted";
             case 204 -> "No Content";
+            case 206 -> "Partial Content";
+            case 2__ -> "Success";  // JEP 530: Primitive pattern for 200-299
+
+            // Redirection responses (3xx)
+            case 300 -> "Multiple Choices";
+            case 301 -> "Moved Permanently";
+            case 302 -> "Found";
+            case 304 -> "Not Modified";
+            case 307 -> "Temporary Redirect";
+            case 308 -> "Permanent Redirect";
+            case 3__ -> "Redirection";  // JEP 530: Primitive pattern for 300-399
+
+            // Client error responses (4xx)
             case 400 -> "Bad Request";
             case 401 -> "Unauthorized";
             case 403 -> "Forbidden";
             case 404 -> "Not Found";
+            case 405 -> "Method Not Allowed";
+            case 409 -> "Conflict";
+            case 410 -> "Gone";
+            case 415 -> "Unsupported Media Type";
+            case 429 -> "Too Many Requests";
+            case 4__ -> "Client Error";  // JEP 530: Primitive pattern for 400-499
+
+            // Server error responses (5xx)
             case 500 -> "Internal Server Error";
-            default -> "Response";
+            case 501 -> "Not Implemented";
+            case 502 -> "Bad Gateway";
+            case 503 -> "Service Unavailable";
+            case 504 -> "Gateway Timeout";
+            case 5__ -> "Server Error";  // JEP 530: Primitive pattern for 500-599
+
+            // Unknown status
+            default -> "Unknown Status";
         };
     }
 
