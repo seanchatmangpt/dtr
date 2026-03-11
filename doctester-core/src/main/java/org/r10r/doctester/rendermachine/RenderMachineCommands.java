@@ -182,6 +182,27 @@ public interface RenderMachineCommands {
     void sayCodeModel(Class<?> clazz);
 
     /**
+     * Documents a method's structure using Project Babylon CodeReflection API.
+     *
+     * <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)}
+     * to introspect the method's bytecode operations — control flow, method calls, field
+     * accesses, etc. Renders a detailed breakdown of operation types and their counts.</p>
+     *
+     * <p>On Java 25 and earlier, gracefully falls back to rendering the method signature
+     * (parameters with types, return type) extracted via reflection.</p>
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * sayCodeModel(SayEvent.class.getMethod("toString"));
+     * // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.)
+     * // Java 25-: Renders String toString() signature only
+     * }</pre>
+     *
+     * @param method the method to introspect and document (must not be null)
+     */
+    void sayCodeModel(java.lang.reflect.Method method);
+
+    /**
      * Documents the current call site using {@link StackWalker}.
      *
      * <p>Blue ocean innovation: the documentation knows exactly where it was written.
