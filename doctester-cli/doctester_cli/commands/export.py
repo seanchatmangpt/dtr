@@ -34,8 +34,8 @@ def list(
 
     \b
     Examples:
-        doctester manage list target/site/doctester
-        doctester manage list target/site/doctester -d
+        dtr export list target/site/doctester
+        dtr export list target/site/doctester -d
     """
     manager = DirectoryManager()
     config = ManageConfig(
@@ -70,7 +70,7 @@ def list(
 
 
 @app.command()
-def archive(
+def save(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to archive",
@@ -96,8 +96,8 @@ def archive(
 
     \b
     Examples:
-        doctester manage archive target/site/doctester
-        doctester manage archive target/site/doctester -o exports_backup.zip -f zip
+        dtr export save target/site/doctester
+        dtr export save target/site/doctester -o exports_backup.zip -f zip
     """
     if output_file is None:
         output_file = Path(f"doctester_export.{format}")
@@ -119,7 +119,7 @@ def archive(
 
 
 @app.command()
-def cleanup(
+def clean(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to clean",
@@ -144,8 +144,8 @@ def cleanup(
 
     \b
     Examples:
-        doctester manage cleanup target/site/doctester
-        doctester manage cleanup target/site/doctester --keep 3 --no-dry-run
+        dtr export clean target/site/doctester
+        dtr export clean target/site/doctester --keep 3 --no-dry-run
     """
     manager = DirectoryManager()
     config = ManageConfig(
@@ -175,7 +175,7 @@ def cleanup(
 
 
 @app.command()
-def validate(
+def check(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to validate",
@@ -189,7 +189,7 @@ def validate(
 
     \b
     Examples:
-        doctester manage validate target/site/doctester
+        dtr export check target/site/doctester
     """
     manager = DirectoryManager()
     config = ManageConfig(export_path=export_dir)

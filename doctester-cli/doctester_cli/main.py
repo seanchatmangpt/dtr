@@ -1,10 +1,10 @@
 """Main entry point for the DocTester CLI.
 
 Provides comprehensive commands to manage DocTester documentation exports:
-- Convert between formats (HTML → Markdown, JSON, etc.)
-- Generate reports and dashboards
-- Manage export directories
-- Publish to various platforms (GitHub, S3, GCS, etc.)
+- fmt: Convert between formats (HTML → Markdown, JSON, etc.)
+- export: Manage export directories (list, save, clean, check)
+- report: Generate reports and dashboards (sum, cov, log)
+- push: Publish to various platforms (gh, s3, gcs, local)
 """
 
 import logging
@@ -13,7 +13,7 @@ import typer
 from rich.console import Console
 
 from doctester_cli import __version__
-from doctester_cli.commands import convert, manage, publish, report
+from doctester_cli.commands import fmt, export, push, report
 
 # Configure logging
 logging.basicConfig(
@@ -29,10 +29,10 @@ app = typer.Typer(
 )
 
 # Add sub-command groups
-app.add_typer(convert.app, name="convert", help="Convert exports between formats")
+app.add_typer(fmt.app, name="fmt", help="Convert exports between formats")
+app.add_typer(export.app, name="export", help="Manage export directories")
 app.add_typer(report.app, name="report", help="Generate reports from exports")
-app.add_typer(manage.app, name="manage", help="Manage export directories")
-app.add_typer(publish.app, name="publish", help="Publish exports to platforms")
+app.add_typer(push.app, name="push", help="Publish exports to platforms")
 
 
 @app.command()

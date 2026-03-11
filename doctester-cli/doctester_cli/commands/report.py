@@ -16,7 +16,7 @@ app = typer.Typer(help="Generate reports from exports")
 
 
 @app.command()
-def summary(
+def sum(
     export_dir: Path = typer.Argument(
         ...,
         help="DocTester export directory (target/site/doctester)",
@@ -42,8 +42,8 @@ def summary(
 
     \b
     Examples:
-        doctester report summary target/site/doctester
-        doctester report summary target/site/doctester -o report.html -f html
+        dtr report sum target/site/doctester
+        dtr report sum target/site/doctester -o report.html -f html
     """
     if output_file is None:
         output_file = Path(f"summary.{get_extension(format)}")
@@ -69,7 +69,7 @@ def summary(
 
 
 @app.command()
-def coverage(
+def cov(
     export_dir: Path = typer.Argument(
         ...,
         help="DocTester export directory",
@@ -89,8 +89,8 @@ def coverage(
 
     \b
     Examples:
-        doctester report coverage target/site/doctester
-        doctester report coverage target/site/doctester -o coverage.html
+        dtr report cov target/site/doctester
+        dtr report cov target/site/doctester -o coverage.html
     """
     if output_file is None:
         output_file = Path("coverage.html")
@@ -114,7 +114,7 @@ def coverage(
 
 
 @app.command()
-def changelog(
+def log(
     export_dir: Path = typer.Argument(
         ...,
         help="DocTester export directory",
@@ -139,8 +139,8 @@ def changelog(
 
     \b
     Examples:
-        doctester report changelog target/site/doctester
-        doctester report changelog target/site/doctester --since v1.0.0
+        dtr report log target/site/doctester
+        dtr report log target/site/doctester --since v1.0.0
     """
     if output_file is None:
         output_file = Path("changelog.md")

@@ -42,63 +42,63 @@ The CLI is available as both `dtr` (shorthand) and `doctester` (full name):
 ### Convert HTML to Markdown
 
 ```bash
-dtr convert html-to-markdown target/site/doctester -o ./markdown_docs -r
+dtr fmt md target/site/doctester -o ./markdown_docs -r
 ```
 
 ### Generate a Summary Report
 
 ```bash
-dtr report summary target/site/doctester
+dtr report sum target/site/doctester
 ```
 
 ### List Exports
 
 ```bash
-dtr manage list target/site/doctester -d
+dtr export list target/site/doctester -d
 ```
 
 ### Publish to GitHub Pages
 
 ```bash
-dtr publish github-pages target/site/doctester --repo owner/repo
+dtr push gh target/site/doctester --repo owner/repo
 ```
 
 ## Commands
 
-### Convert Commands
+### Format Commands (`fmt`)
 
 ```bash
-doctester convert html-to-markdown <file>    # HTML → Markdown
-doctester convert html-to-json <file>       # HTML → JSON
-doctester convert markdown-to-html <file>   # Markdown → HTML
-doctester convert list-formats              # Show supported formats
+dtr fmt md <file>                  # Convert HTML → Markdown
+dtr fmt json <file>                # Convert HTML → JSON
+dtr fmt html <file>                # Convert Markdown → HTML
+dtr fmt --help                     # Show available formats
 ```
 
-### Report Commands
+### Report Commands (`report`)
 
 ```bash
-doctester report summary <export_dir>       # Generate summary report
-doctester report coverage <export_dir>      # Generate coverage report
-doctester report changelog <export_dir>     # Generate changelog
+dtr report sum <export_dir>        # Generate summary report
+dtr report cov <export_dir>        # Generate coverage report
+dtr report log <export_dir>        # Generate changelog
 ```
 
-### Manage Commands
+### Export Commands (`export`)
 
 ```bash
-doctester manage list <export_dir>          # List all exports
-doctester manage archive <export_dir>       # Create archive (tar.gz/zip)
-doctester manage cleanup <export_dir>       # Remove old exports
-doctester manage validate <export_dir>      # Validate export integrity
+dtr export list <export_dir>       # List all exports
+dtr export save <export_dir>       # Create archive (tar.gz/zip)
+dtr export clean <export_dir>      # Remove old exports
+dtr export check <export_dir>      # Validate export integrity
 ```
 
-### Publish Commands
+### Push Commands (`push`)
 
 ```bash
-doctester publish github-pages <dir> --repo owner/repo
-doctester publish s3 <dir> --bucket my-bucket
-doctester publish gcs <dir> --bucket my-bucket
-doctester publish local <dir> --target /path/to/docs
-doctester publish list-platforms            # Show supported platforms
+dtr push gh <dir> --repo owner/repo           # Push to GitHub Pages
+dtr push s3 <dir> --bucket my-bucket          # Push to AWS S3
+dtr push gcs <dir> --bucket my-bucket         # Push to Google Cloud Storage
+dtr push local <dir> --target /path/to/docs   # Push to local directory
+dtr push --help                               # Show available platforms
 ```
 
 ## Options
@@ -130,25 +130,26 @@ doctester publish list-platforms            # Show supported platforms
 mvnd clean verify
 
 # 2. Convert HTML to Markdown
-doctester convert html-to-markdown target/site/doctester -o docs/api -r
+dtr fmt md target/site/doctester -o docs/api -r
 
 # 3. Generate coverage report
-doctester report coverage target/site/doctester -o coverage.html
+dtr report cov target/site/doctester -o coverage.html
 
 # 4. Archive exports
-doctester manage archive target/site/doctester
+dtr export save target/site/doctester
 
 # 5. Publish to GitHub Pages
 export GITHUB_TOKEN=your_token_here
-doctester publish github-pages target/site/doctester --repo myorg/myrepo
+dtr push gh target/site/doctester --repo myorg/myrepo
 ```
 
 ### CI/CD Integration
 
 ```bash
 # In your CI/CD pipeline
-doctester publish local target/site/doctester --target ./build/docs
-doctester publish s3 ./build/docs --bucket my-docs --region us-west-2
+dtr export check target/site/doctester          # Validate first
+dtr push local target/site/doctester --target ./build/docs
+dtr push s3 ./build/docs --bucket my-docs --region us-west-2
 ```
 
 ## Architecture

@@ -18,7 +18,7 @@ def test_help_command() -> None:
     """Test help command."""
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
-    assert "convert" in result.stdout
+    assert "fmt" in result.stdout
+    assert "export" in result.stdout
     assert "report" in result.stdout
-    assert "manage" in result.stdout
-    assert "publish" in result.stdout
+    assert "push" in result.stdout

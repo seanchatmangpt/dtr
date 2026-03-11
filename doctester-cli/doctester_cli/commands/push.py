@@ -17,7 +17,7 @@ app = typer.Typer(help="Publish exports to platforms")
 
 
 @app.command()
-def github_pages(
+def gh(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to publish",
@@ -49,8 +49,8 @@ def github_pages(
 
     \b
     Examples:
-        doctester publish github-pages target/site/doctester --repo myorg/myrepo
-        doctester publish github-pages target/site/doctester \\
+        dtr push gh target/site/doctester --repo myorg/myrepo
+        dtr push gh target/site/doctester \\
             --repo myorg/myrepo --branch docs --token ghp_xxx
     """
     publisher = GithubPublisher()
@@ -111,8 +111,8 @@ def s3(
 
     \b
     Examples:
-        doctester publish s3 target/site/doctester --bucket my-docs
-        doctester publish s3 target/site/doctester \\
+        dtr push s3 target/site/doctester --bucket my-docs
+        dtr push s3 target/site/doctester \\
             --bucket my-docs --prefix api-docs/ --public
     """
     publisher = S3Publisher()
@@ -172,8 +172,8 @@ def gcs(
 
     \b
     Examples:
-        doctester publish gcs target/site/doctester --bucket my-docs
-        doctester publish gcs target/site/doctester \\
+        dtr push gcs target/site/doctester --bucket my-docs
+        dtr push gcs target/site/doctester \\
             --bucket my-docs --project my-gcp-project --prefix api-docs/
     """
     publisher = GcsPublisher()
@@ -218,8 +218,8 @@ def local(
 
     \b
     Examples:
-        doctester publish local target/site/doctester --target ./docs
-        doctester publish local target/site/doctester --target /var/www/html
+        dtr push local target/site/doctester --target ./docs
+        dtr push local target/site/doctester --target /var/www/html
     """
     publisher = LocalPublisher()
     config = PublishConfig(
@@ -238,33 +238,3 @@ def local(
         except Exception as e:
             console.print(f"[red]✗[/red] Publishing failed: {e}")
             raise typer.Exit(1)
-
-
-@app.command()
-def list_platforms() -> None:
-    """List supported publishing platforms."""
-    console.print("[bold cyan]Supported Publishing Platforms[/bold cyan]")
-    console.print("""
-[bold]GitHub Pages[/bold]
-  doctester publish github-pages <dir> --repo owner/repo
-  - Deploys to gh-pages branch
-  - Requires GITHUB_TOKEN
-
-[bold]AWS S3[/bold]
-  doctester publish s3 <dir> --bucket my-bucket
-  - Static website hosting
-  - Optional public access
-  - Requires AWS credentials
-
-[bold]Google Cloud Storage[/bold]
-  doctester publish gcs <dir> --bucket my-bucket
-  - Cloud-hosted documentation
-  - Fine-grained access control
-  - Requires GCP authentication
-
-[bold]Local Directory[/bold]
-  doctester publish local <dir> --target /path/to/docs
-  - Copy to another directory
-  - Useful for CI/CD pipelines
-  - No credentials required
-""")

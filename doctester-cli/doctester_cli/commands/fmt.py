@@ -16,7 +16,7 @@ app = typer.Typer(help="Convert exports between formats")
 
 
 @app.command()
-def html_to_markdown(
+def md(
     input_file: Path = typer.Argument(
         ...,
         help="Input HTML file or directory",
@@ -46,8 +46,8 @@ def html_to_markdown(
 
     \b
     Examples:
-        doctester convert html-to-markdown test_output.html
-        doctester convert html-to-markdown ./docs -o ./markdown_docs -r
+        dtr fmt md test_output.html
+        dtr fmt md ./docs -o ./markdown_docs -r
     """
     if output_dir is None:
         output_dir = Path.cwd()
@@ -78,7 +78,7 @@ def html_to_markdown(
 
 
 @app.command()
-def html_to_json(
+def json(
     input_file: Path = typer.Argument(
         ...,
         help="Input HTML file or directory",
@@ -107,8 +107,8 @@ def html_to_json(
 
     \b
     Examples:
-        doctester convert html-to-json test_output.html
-        doctester convert html-to-json ./docs -o ./json_export -r
+        dtr fmt json test_output.html
+        dtr fmt json ./docs -o ./json_export -r
     """
     if output_dir is None:
         output_dir = Path.cwd()
@@ -135,7 +135,7 @@ def html_to_json(
 
 
 @app.command()
-def markdown_to_html(
+def html(
     input_file: Path = typer.Argument(
         ...,
         help="Input Markdown file or directory",
@@ -165,8 +165,8 @@ def markdown_to_html(
 
     \b
     Examples:
-        doctester convert markdown-to-html docs.md
-        doctester convert markdown-to-html ./markdown_docs -o ./html_docs -t github -r
+        dtr fmt html docs.md
+        dtr fmt html ./markdown_docs -o ./html_docs -t github -r
     """
     if output_dir is None:
         output_dir = Path.cwd()
@@ -190,28 +190,3 @@ def markdown_to_html(
         except Exception as e:
             console.print(f"[red]✗[/red] Conversion failed: {e}")
             raise typer.Exit(1)
-
-
-@app.command()
-def list_formats() -> None:
-    """List supported conversion formats."""
-    console.print("[bold cyan]Supported Formats[/bold cyan]")
-    console.print("""
-[bold]Input Formats:[/bold]
-  • HTML        - DocTester generated HTML documentation
-  • Markdown    - Standard Markdown files
-  • JSON        - Structured JSON exports
-
-[bold]Output Formats:[/bold]
-  • HTML        - Bootstrap-styled HTML (multiple templates)
-  • Markdown    - GitHub-flavored Markdown
-  • JSON        - Pretty-printed or compact JSON
-  • PDF         - (coming soon)
-
-[bold]Supported Conversions:[/bold]
-  • HTML → Markdown
-  • HTML → JSON
-  • Markdown → HTML
-  • JSON → HTML
-  • JSON → Markdown
-""")
