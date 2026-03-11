@@ -1,11 +1,11 @@
-# DocTester — Java 21-25 Living Documentation
+# DocTester — Java 25 Living Documentation
 
-DocTester is a **Markdown documentation generator** that writes living docs as your Java tests execute. Every test run regenerates documentation from live behavior, keeping docs in sync with reality.
+DocTester is a **Markdown documentation generator** that writes living docs as your Java 25 tests execute. Every test run regenerates documentation from live behavior, keeping docs in sync with reality.
 
 **Current version:** `1.1.12-SNAPSHOT`
 **License:** Apache 2.0
 **Maven:** `org.r10r:doctester-core`
-**Java:** 21 LTS+ (25 recommended with `--enable-preview`)
+**Java:** 25 LTS with `--enable-preview`
 
 ---
 
@@ -22,6 +22,7 @@ package example;
 
 import org.r10r.doctester.DocTester;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 public class FirstDocTest extends DocTester {
 
@@ -45,7 +46,7 @@ public class FirstDocTest extends DocTester {
             {"Keyboard", "$79.99", "No"}
         });
 
-        sayJson(products.get(0));
+        sayJson(products.getFirst());
     }
 }
 ```
@@ -64,9 +65,9 @@ target/site/doctester/FirstDocTest.md
 
 ---
 
-### Document Sealed Classes with Pattern Matching
+### Document Sealed Classes with Exhaustive Pattern Matching
 
-Learn how sealed classes and exhaustive pattern matching create type-safe documentation.
+Learn how sealed classes force exhaustive pattern matching in Java 25.
 
 ```java
 @Test
@@ -93,15 +94,15 @@ void documentSealedResults() {
     );
 
     sayNote("Sealed classes force exhaustive pattern matching. " +
-            "The compiler verifies all subtypes are handled.");
+            "The compiler verifies all subtypes are handled—no default case needed.");
 }
 ```
 
 ---
 
-### Use Virtual Threads for Concurrent Testing
+### Spawn Virtual Threads for Concurrent Documentation
 
-Spawn lightweight virtual threads to document concurrent behavior.
+Lightweight virtual threads in Java 25 enable effortless concurrent testing.
 
 ```java
 @Test
@@ -109,10 +110,10 @@ void documentConcurrentWork() throws InterruptedException {
     sayNextSection("Concurrent Task Execution");
 
     int threadCount = 50;
-    AtomicInteger completed = new AtomicInteger(0);
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    var completed = new java.util.concurrent.atomic.AtomicInteger(0);
+    var latch = new java.util.concurrent.CountDownLatch(threadCount);
 
-    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 try {
@@ -125,28 +126,29 @@ void documentConcurrentWork() throws InterruptedException {
         }
     }
 
-    latch.await(10, TimeUnit.SECONDS);
+    latch.await(10, java.util.concurrent.TimeUnit.SECONDS);
 
     sayJson(Map.of(
         "total_threads", threadCount,
         "completed", completed.get(),
         "success_rate", "%.0f%%".formatted(100.0 * completed.get() / threadCount)
     ));
+
+    sayNote("Virtual threads are managed by the JVM, not the OS. " +
+            "Spawn thousands without exhausting system resources.");
 }
 ```
 
 ---
 
-## How-To Guides — Solve Specific Tasks
+### Use Text Blocks for Readable Multi-Line Code
 
-### How to Document a Multi-Line SQL Query
-
-**Goal:** Show a SQL query in your documentation with syntax highlighting.
+Java 25 text blocks make complex strings readable without escape sequences.
 
 ```java
 @Test
-void documentDatabaseQueries() {
-    sayNextSection("User Statistics Query");
+void documentTextBlocks() {
+    sayNextSection("SQL Queries with Text Blocks");
 
     String query = """
         SELECT u.id, u.name, COUNT(a.id) as article_count
@@ -158,86 +160,177 @@ void documentDatabaseQueries() {
         """;
 
     sayCode(query, "sql");
+
+    say("Text blocks preserve indentation and eliminate escape sequences:");
+
+    String json = """
+        {
+          "status": "success",
+          "timestamp": "2026-03-11T00:00:00Z",
+          "data": null
+        }
+        """;
+
+    sayCode(json, "json");
 }
 ```
 
-**Output:** A fenced code block with SQL syntax highlighting in your Markdown.
-
 ---
 
-### How to Document a Data Structure as JSON
+### Pattern Matching with Records and Guards
 
-**Goal:** Show how a record/object serializes to JSON.
+Java 25 pattern matching destructures records and enables guards (when clauses).
 
 ```java
 @Test
-void documentJsonFormat() {
+void documentPatternMatching() {
+    record User(String name, int age) {}
+    record Order(User customer, double amount) {}
+
+    sayNextSection("Pattern Matching with Guards");
+
+    var orders = List.of(
+        new Order(new User("Alice", 25), 150.00),
+        new Order(new User("Bob", 17), 50.00),
+        new Order(new User("Charlie", 30), 500.00)
+    );
+
+    sayUnorderedList(orders.stream()
+        .map(order -> switch (order) {
+            case Order(var user, var amount) when user.age() >= 21 && amount > 200 ->
+                "Premium order: %s ($%.2f)".formatted(user.name(), amount);
+            case Order(var user, var amount) when user.age() < 21 ->
+                "Underage customer: %s ($%.2f)".formatted(user.name(), amount);
+            case Order(var user, var amount) ->
+                "Standard order: %s ($%.2f)".formatted(user.name(), amount);
+        })
+        .toList()
+    );
+
+    sayNote("Pattern matching with guards (when clauses) replaces nested if-else chains. " +
+            "Java 25 supports record deconstruction, guards, and exhaustiveness checking.");
+}
+```
+
+---
+
+### SequencedCollections for Ordered Access
+
+Java 25 SequencedCollections provide clear, safe first/last element access.
+
+```java
+@Test
+void documentSequencedCollections() {
+    sayNextSection("SequencedCollections for First/Last Access");
+
+    var items = new java.util.LinkedList<>(List.of("first", "second", "third", "fourth", "fifth"));
+
+    sayKeyValue(Map.of(
+        "First item", items.getFirst(),
+        "Last item", items.getLast(),
+        "Total count", String.valueOf(items.size())
+    ));
+
+    say("Reversed iteration:");
+    sayUnorderedList(
+        items.reversed().stream()
+            .map(s -> "→ " + s)
+            .toList()
+    );
+
+    sayNote("SequencedCollections make intent explicit. " +
+            "getFirst() is safer and clearer than get(0) or get(size()-1).");
+}
+```
+
+---
+
+## How-To Guides — Solve Specific Tasks
+
+### How to Compare Java 25 Features
+
+**Goal:** Show a comparison table for different Java language features.
+
+```java
+@Test
+void compareJava25Features() {
+    sayTable(new String[][] {
+        {"Feature", "Stable?", "Use Case"},
+        {"Records", "Yes", "Immutable value objects"},
+        {"Sealed classes", "Yes", "Type-safe hierarchies"},
+        {"Pattern matching", "Yes", "Safe type extraction"},
+        {"Virtual threads", "Yes", "Lightweight concurrency"},
+        {"Text blocks", "Yes", "Readable multi-line strings"},
+        {"Switch expressions", "Yes", "Exhaustive logic"},
+        {"Primitive patterns", "Preview", "Pattern matching on primitives"}
+    });
+}
+```
+
+**Output:** A Markdown table in your generated documentation.
+
+---
+
+### How to Serialize Objects to JSON
+
+**Goal:** Show how a Java 25 record serializes to JSON format.
+
+```java
+@Test
+void documentJsonSerialization() {
     record Author(String name, String email) {}
     record Article(long id, String title, Author author) {}
 
     sayNextSection("Article JSON Format");
 
-    var article = new Article(1L, "Java 25 Guide",
-        new Author("Alice", "alice@example.com"));
+    var article = new Article(
+        1L,
+        "Mastering Java 25",
+        new Author("Alice Chen", "alice@example.com")
+    );
 
     sayJson(article);
 }
 ```
 
-**Output:** Pretty-printed JSON in a code block.
+**Output:** Pretty-printed JSON code block in your documentation.
 
 ---
 
-### How to Compare Features Across Versions
+### How to Summarize Test Assertions
 
-**Goal:** Create a comparison table for API versions or Java features.
-
-```java
-@Test
-void compareVersions() {
-    sayTable(new String[][] {
-        {"Feature", "Java 21", "Java 25"},
-        {"Virtual Threads", "✅", "✅"},
-        {"Records", "✅", "✅"},
-        {"Pattern Matching", "🔄 Preview", "✅"},
-        {"Sealed Classes", "✅", "✅"}
-    });
-}
-```
-
-**Output:** A Markdown table with clear formatting.
-
----
-
-### How to Summarize Test Results
-
-**Goal:** Document which assertions passed and which failed.
+**Goal:** Document which assertions passed or failed.
 
 ```java
 @Test
-void summarizeResults() {
+void summarizeTestResults() {
     sayAssertions(Map.of(
-        "Data loaded", "✓ PASS",
-        "Validation passed", "✓ PASS",
-        "Duplicate check", "✗ FAIL — found 2 duplicates"
+        "Data loaded successfully", "✓ PASS",
+        "All records have IDs", "✓ PASS",
+        "No duplicate entries", "✗ FAIL — 3 duplicates found",
+        "Timestamp format valid", "✓ PASS"
     ));
 }
 ```
 
+**Output:** A Check/Result table showing test outcomes.
+
 ---
 
-### How to Highlight Critical Information
+### How to Highlight Critical Warnings
 
-**Goal:** Add warnings and notes to your documentation.
+**Goal:** Alert readers to important constraints or gotchas.
 
 ```java
 @Test
-void provideWarningsAndNotes() {
-    sayWarning("Virtual threads are not suitable for CPU-bound workloads. " +
-               "Use them for I/O-bound operations.");
+void addWarningsAndNotes() {
+    sayWarning("Virtual threads are for I/O-bound workloads only. " +
+               "Do not use for CPU-intensive tasks—they will block carrier threads.");
 
-    sayNote("Text blocks (triple quotes) eliminate escape sequences " +
-            "and preserve formatting automatically.");
+    sayNote("Records are immutable by design. All fields are final and cannot be reassigned after construction.");
+
+    sayNote("Pattern matching with primitives is a preview feature. " +
+            "Compile with --enable-preview to use primitive type patterns.");
 }
 ```
 
@@ -247,27 +340,83 @@ void provideWarningsAndNotes() {
 
 ### say* Methods
 
-| Method | Purpose | Example Output |
-|--------|---------|-----------------|
-| `say(String)` | Paragraph | Text with **bold**, *italic*, `code` |
-| `sayNextSection(String)` | Section heading | # Heading (H1) |
-| `sayRaw(String)` | Raw Markdown/HTML | Custom content (unescaped) |
-| `sayTable(String[][])` | Data table | Markdown table |
-| `sayCode(String, String)` | Syntax-highlighted code | ``` java code ```|
+| Method | Purpose | Output |
+|--------|---------|--------|
+| `say(String)` | Paragraph text | Markdown paragraph with formatting |
+| `sayNextSection(String)` | Section heading | # Heading (H1 + TOC entry) |
+| `sayRaw(String)` | Raw Markdown/HTML | Custom unescaped content |
+| `sayTable(String[][])` | Data table | Markdown table with headers |
+| `sayCode(String, String)` | Syntax-highlighted code | ``` language code ``` |
 | `sayWarning(String)` | Warning callout | > [!WARNING] message |
 | `sayNote(String)` | Info callout | > [!NOTE] message |
-| `sayKeyValue(Map)` | Key-value pairs | 2-column table |
+| `sayKeyValue(Map)` | Key-value pairs | 2-column metadata table |
 | `sayUnorderedList(List)` | Bullet list | - item 1<br>- item 2 |
-| `sayOrderedList(List)` | Numbered list | 1. item 1<br>2. item 2 |
+| `sayOrderedList(List)` | Numbered list | 1. item<br>2. item |
 | `sayJson(Object)` | JSON serialization | Pretty-printed JSON code block |
 | `sayAssertions(Map)` | Test results | Check/Result table |
 
-### Output Format
+### Java 25 Compiler Setup
 
-All `say*` methods generate **pure Markdown**:
+**Required flags:**
+```bash
+-source 25
+-target 25
+--enable-preview
+```
+
+**Maven compiler plugin:**
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.13.0</version>
+    <configuration>
+        <release>25</release>
+        <compilerArgs>--enable-preview</compilerArgs>
+    </configuration>
+</plugin>
+```
+
+**Surefire for test execution:**
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.5.2</version>
+    <configuration>
+        <argLine>--enable-preview</argLine>
+    </configuration>
+</plugin>
+```
+
+### Maven & Java Toolchain
+
+**Requirements:**
+- Java 25 LTS (openjdk or Oracle JDK)
+- Maven 4.0.0-rc-5+
+- `mvnd` daemon (optional but recommended)
+- `--enable-preview` flag enabled
+
+**Verify your setup:**
+```bash
+java -version                                        # openjdk version "25.0.2"
+mvnd --version                                       # Maven 4.0.0+
+echo $JAVA_HOME                                      # /usr/lib/jvm/java-25-openjdk-amd64
+```
+
+**Build commands:**
+```bash
+mvnd clean verify                                    # Full build and test
+mvnd test -Dtest=FirstDocTest                        # Run specific test
+mvnd --stop                                          # Stop Maven daemon
+```
+
+### Generated Documentation
+
+All `say*` methods output **pure Markdown**:
 - **Portable:** Works on GitHub, GitLab, Gitea, and all Markdown renderers
-- **Version-control friendly:** Clean text diffs
-- **Tool-agnostic:** No custom CSS or JavaScript
+- **Version-control friendly:** Clean text diffs, easy to review
+- **Tool-agnostic:** No custom CSS, JavaScript, or runtime dependencies
 
 Generated docs appear in:
 ```
@@ -277,186 +426,182 @@ target/site/doctester/
 └── assets/
 ```
 
-### Maven & Java Setup
-
-**Toolchain:**
-- Java 21+ (25 recommended)
-- Maven 4.0.0-rc-5+
-- `--enable-preview` flag (for Java 25 preview features)
-
-**Verify:**
-```bash
-java -version              # openjdk version "25.0.2" or higher
-mvnd --version             # Maven 4.0.0+
-echo $JAVA_HOME            # /usr/lib/jvm/java-25-openjdk-amd64
-```
-
-**Build commands:**
-```bash
-mvnd clean verify
-mvnd test -Dtest=YourDocTest
-mvnd --stop                # Stop Maven daemon
-```
-
 ---
 
-## Explanation — Concepts & Philosophy
+## Explanation — Java 25 Concepts
 
 ### Why Records?
 
-**Traditional classes** require constructors, getters, equals, hashCode, toString:
+**Traditional classes** require boilerplate for value objects:
 
 ```java
-// Old way: 20+ lines
-public class User {
+// Verbose: 25+ lines
+public class Product {
     private final String name;
-    private final String email;
+    private final double price;
 
-    public User(String name, String email) {
+    public Product(String name, double price) {
         this.name = name;
-        this.email = email;
+        this.price = price;
     }
 
-    public String getName() { return name; }
-    public String getEmail() { return email; }
+    public String name() { return name; }
+    public double price() { return price; }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof User u)) return false;
-        return name.equals(u.name) && email.equals(u.email);
+        if (!(o instanceof Product p)) return false;
+        return name.equals(p.name) && price == p.price;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, email);
+        return Objects.hash(name, price);
     }
 
     @Override
     public String toString() {
-        return "User[name=%s, email=%s]".formatted(name, email);
+        return "Product[name=%s, price=%s]".formatted(name, price);
     }
 }
 ```
 
-**Records** are one-liners:
+**Java 25 records** eliminate all boilerplate:
 
 ```java
-// New way: 1 line
-record User(String name, String email) {}
+// Concise: 1 line
+record Product(String name, double price) {}
 ```
 
-Records automatically provide:
-- Final fields (immutable)
-- Canonical constructor
-- `equals()`, `hashCode()`, `toString()`
-- Compact record syntax for validation
+Records provide:
+- **Immutability:** All fields are final
+- **Canonical constructor:** Auto-generated with parameter validation via compact constructor
+- **Accessor methods:** `name()`, `price()` (not getters)
+- **Equality:** Auto-generated `equals()`, `hashCode()`
+- **String representation:** Auto-generated `toString()`
 
-**In documentation:** Records make test data concise and readable.
+**In DocTests:** Records make test data clearer and more concise.
 
 ---
 
 ### Why Sealed Classes?
 
-**Inheritance without sealing** is open-ended:
+**Unrestricted inheritance** allows anyone to extend your types:
 
 ```java
-interface Animal { }
-class Dog implements Animal { }
-class Cat implements Animal { }
-// Anyone can add Horse, Fish, etc. later
-```
-
-**Sealed classes** are explicit about permitted subtypes:
-
-```java
-sealed interface Animal permits Dog, Cat {
-    final class Dog implements Animal { }
-    final class Cat implements Animal { }
-    // No other types allowed
+sealed interface Payment {
+    // Anyone can add CreditCard, PayPal, Crypto, etc.
 }
 ```
 
-**Benefit:** Pattern matching is exhaustive—the compiler verifies all subtypes are handled:
+**Sealed classes** restrict implementations to known subtypes:
 
 ```java
-String sound = switch (animal) {
-    case Dog d -> "Woof";
-    case Cat c -> "Meow";
-    // No 'default' needed; compiler ensures completeness
+sealed interface Payment permits CreditCard, PayPal, BankTransfer {
+    record CreditCard(String cardNumber) implements Payment {}
+    record PayPal(String email) implements Payment {}
+    record BankTransfer(String iban) implements Payment {}
+}
+```
+
+**Benefit:** Pattern matching is exhaustive—the compiler forces you to handle all cases:
+
+```java
+String method = switch (payment) {
+    case CreditCard(var card) -> "Credit card ending in " + card.substring(card.length() - 4);
+    case PayPal(var email) -> "PayPal: " + email;
+    case BankTransfer(var iban) -> "Bank transfer: " + iban;
+    // No 'default' needed; compiler verifies completeness
 };
 ```
 
-**In documentation:** Sealed hierarchies document all possible result types without surprises.
+**In DocTests:** Sealed classes document all possible result types without surprises or missing cases.
 
 ---
 
 ### Why Virtual Threads?
 
-**OS threads** are expensive:
+**OS threads** are heavyweight and limited:
 
 ```java
-// Old way: Limited to ~1000 threads per process
-ExecutorService pool = Executors.newFixedThreadPool(10);
-for (int i = 0; i < 10; i++) {
-    pool.submit(() -> blockingWork());  // Tied up OS thread
+// Old way: Only ~1000 threads per JVM process
+ExecutorService pool = Executors.newFixedThreadPool(100);
+for (int i = 0; i < 100; i++) {
+    pool.submit(() -> blockingWork());  // Each tied to an OS thread
 }
 ```
 
-**Virtual threads** are lightweight:
+**Virtual threads** are lightweight and abundant:
 
 ```java
-// New way: Spawn thousands trivially
+// New way: Spawn 100,000 without resource exhaustion
 try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    for (int i = 0; i < 10000; i++) {
-        executor.submit(() -> blockingWork());  // Minimal overhead
+    for (int i = 0; i < 100_000; i++) {
+        executor.submit(() -> blockingWork());  // Managed by JVM, not OS
     }
 }
 ```
 
 Virtual threads:
-- Run on a small pool of OS threads (carrier threads)
-- Automatically park when blocking (transparent async)
-- No callback hell or reactive frameworks required
-- Ideal for I/O-bound workloads (database queries, files, network)
+- Run on a small pool of carrier threads (OS threads)
+- Automatically park when blocking (transparent, no callbacks)
+- Resume on a carrier thread when ready (no await/async needed)
+- Ideal for I/O-bound workloads (database queries, files, network calls)
+- No special APIs—use `Thread.sleep()`, blocking I/O, locks normally
 
-**In documentation:** Document concurrent behavior without exhausting resources.
+**Java 25 guarantee:** Virtual threads are stable and production-ready.
+
+**In DocTests:** Document concurrent behavior without spawning hundreds of OS threads.
 
 ---
 
 ### Why Pattern Matching?
 
-**Explicit casting** is verbose:
+**Type checks with explicit casting** are verbose:
 
 ```java
-Object payload = response;
-if (payload instanceof String) {
-    String str = (String) payload;  // Manual cast
+Object value = getResult();
+if (value instanceof String) {
+    String str = (String) value;  // Manual cast after instanceof check
     if (!str.isBlank()) {
         // use str
     }
 }
 ```
 
-**Pattern matching** combines checking and extraction:
+**Pattern matching** combines the check and extraction:
 
 ```java
-Object payload = response;
-if (payload instanceof String str && !str.isBlank()) {
-    // str is already extracted and available
+Object value = getResult();
+if (value instanceof String str && !str.isBlank()) {
+    // str is extracted; no separate cast needed
 }
 ```
 
-Pattern matching applies to records too:
+**Record pattern deconstruction** in Java 25:
 
 ```java
-record User(String name, String email) {}
+record User(String name, int age) {}
 
-if (user instanceof User(var name, var email)) {
-    // name and email are extracted from the record
+if (user instanceof User(var name, var age) && age >= 21) {
+    // name and age are extracted from the record pattern
 }
 ```
 
-**In documentation:** Cleaner, more readable code examples.
+**In switch expressions:**
+
+```java
+String label = switch (user) {
+    case User(var name, var age) when age >= 18 -> "Adult: " + name;
+    case User(var name, var _) -> "Minor: " + name;  // _ = unnamed pattern
+};
+```
+
+Java 25 pattern matching:
+- Eliminates redundant variable declarations
+- Guards (when clauses) enable conditional logic
+- Exhaustive checking by the compiler
+- Works with records, sealed classes, and primitives (preview)
 
 ---
 
@@ -465,20 +610,24 @@ if (user instanceof User(var name, var email)) {
 **String concatenation** obscures readability:
 
 ```java
-String query = "SELECT u.id, u.name "
+String sql = "SELECT u.id, u.name, COUNT(a.id) as cnt "
     + "FROM users u "
+    + "LEFT JOIN articles a ON u.id = a.user_id "
     + "WHERE u.active = true "
-    + "ORDER BY u.name;";
+    + "GROUP BY u.id "
+    + "ORDER BY cnt DESC;";
 ```
 
-**Text blocks** preserve formatting:
+**Text blocks** preserve formatting exactly:
 
 ```java
-String query = """
-    SELECT u.id, u.name
+String sql = """
+    SELECT u.id, u.name, COUNT(a.id) as cnt
     FROM users u
+    LEFT JOIN articles a ON u.id = a.user_id
     WHERE u.active = true
-    ORDER BY u.name;
+    GROUP BY u.id
+    ORDER BY cnt DESC;
     """;
 ```
 
@@ -488,7 +637,7 @@ Text blocks:
 - Make multi-line strings readable as-is
 - Perfect for SQL, JSON, HTML, configuration
 
-**In documentation:** Show examples exactly as they appear.
+**In DocTests:** Show examples exactly as they appear in production.
 
 ---
 
@@ -499,6 +648,7 @@ Text blocks:
 ```java
 import org.r10r.doctester.DocTester;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 public class MyDocTest extends DocTester {
 
@@ -522,20 +672,20 @@ mvnd test -Dtest=MyDocTest
 
 ---
 
-### Java 21-25 Features at a Glance
+### Java 25 Core Features
 
-| Feature | Java | Purpose |
-|---------|------|---------|
-| Records | 16+ | Immutable value objects |
-| Sealed classes | 17+ | Restricted inheritance hierarchies |
-| Pattern matching | 16+ (preview), 21+ (stable) | Safe type extraction |
-| Virtual threads | 19 (preview), 21+ (stable) | Lightweight concurrency |
-| Text blocks | 15+ | Readable multi-line strings |
-| Switch expressions | 14+ | Functional switch logic |
-| SequencedCollections | 21+ | First/last element access |
-| var type inference | 10+ | Local variable type inference |
-| Optional | 8+ | Explicit null handling |
-| Streams & lambdas | 8+ | Functional data processing |
+| Feature | Purpose | Java 25 Status |
+|---------|---------|---|
+| Records | Immutable value objects | Stable |
+| Sealed classes | Restricted inheritance hierarchies | Stable |
+| Pattern matching | Safe type extraction with guards | Stable |
+| Virtual threads | Lightweight concurrency | Stable |
+| Text blocks | Readable multi-line strings | Stable |
+| Switch expressions | Functional switch logic | Stable |
+| SequencedCollections | First/last element access | Stable |
+| Primitive type patterns | Pattern matching on int, long, etc. | Preview |
+| Unnamed patterns | Wildcard patterns with `_` | Preview |
+| var type inference | Local variable type inference | Stable |
 
 ---
 
@@ -573,8 +723,8 @@ doctester/
 
 ## Contributing
 
-1. Write tests with `say*` documentation methods
-2. Use Java 21+ idioms (records, sealed classes, pattern matching)
+1. Write tests using Java 25 idioms (records, sealed classes, pattern matching, virtual threads)
+2. Document with `say*` methods
 3. Ensure all tests pass: `mvnd clean verify`
 4. Update this README
 
