@@ -70,7 +70,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ValidateAndStressTest extends DocTester {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
-    private static final String OUTPUT_DIR = "target/docs";
+    private static final String OUTPUT_DIR = "docs/test";
     private static final String OUTPUT_FILE = OUTPUT_DIR + "/"
             + ValidateAndStressTest.class.getName() + ".md";
 
