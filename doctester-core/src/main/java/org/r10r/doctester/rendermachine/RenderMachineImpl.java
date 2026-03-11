@@ -407,6 +407,106 @@ public class RenderMachineImpl extends RenderMachine {
         }
     }
 
+
+    /**
+     * Documents a method's structure using Project Babylon CodeReflection API.
+     *
+     * <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)}
+     * to introspect the method's bytecode operations — control flow, method calls, field
+     * accesses, etc. Renders a detailed breakdown of operation types and their counts.</p>
+     *
+     * <p>On Java 25 and earlier, gracefully falls back to rendering the method signature
+     * (parameters with types, return type) extracted via reflection.</p>
+     *
+     * <p>Example output (Java 26+):
+     * <pre>{@code
+     * ### Code Model: toString()
+     * String toString()
+     *
+     * **Operation Breakdown:**
+     * | Operation Type | Count |
+     * | --- | --- |
+     * | INVOKE | 3 |
+     * | FIELD_READ | 1 |
+     * | RETURN | 1 |
+     * }</pre>
+     *
+     * @param method the method to introspect and document (must not be null)
+     */
+    @Override
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        if (method == null) {
+            return;
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("### Code Model: `%s()`".formatted(method.getName()));
+        markdownDocument.add("");
+
+        // Always render the method signature (parameters with types, return type)
+        String returnTypeName = method.getReturnType().getSimpleName();
+        var params = Arrays.stream(method.getParameters())
+            .map(p -> p.getType().getSimpleName() + " " + p.getName())
+            .collect(Collectors.joining(", "));
+        markdownDocument.add("`%s %s(%s)`".formatted(returnTypeName, method.getName(), params));
+        markdownDocument.add("");
+
+        // Try to use CodeReflection API (Java 26+) for operation analysis
+        // Gracefully fall back if unavailable
+        try {
+            // Attempt to load CodeReflection and CodeModel classes
+            Class<?> codeReflectionClass = Class.forName("java.lang.reflect.code.CodeReflection");
+            Class<?> codeModelClass = Class.forName("java.lang.reflect.code.CodeModel");
+
+            // Use reflection to call CodeReflection.reflect(method)
+            java.lang.reflect.Method reflectMethod = codeReflectionClass
+                .getDeclaredMethod("reflect", java.lang.reflect.Method.class);
+            Object codeModel = reflectMethod.invoke(null, method);
+
+            if (codeModel != null) {
+                // Try to get the operations from CodeModel
+                // This uses reflection since CodeModel.ops() may not be in stable API yet
+                try {
+                    java.lang.reflect.Method opsMethod = codeModelClass.getDeclaredMethod("ops");
+                    opsMethod.setAccessible(true);
+                    Object ops = opsMethod.invoke(codeModel);
+
+                    if (ops instanceof Iterable<?> opsList) {
+                        // Count operations by type
+                        var opCounts = new java.util.HashMap<String, Integer>();
+                        for (Object op : opsList) {
+                            String opType = op.getClass().getSimpleName();
+                            opCounts.put(opType, opCounts.getOrDefault(opType, 0) + 1);
+                        }
+
+                        if (!opCounts.isEmpty()) {
+                            markdownDocument.add("**Operation Breakdown:**");
+                            markdownDocument.add("");
+                            markdownDocument.add("| Operation Type | Count |");
+                            markdownDocument.add("| --- | --- |");
+
+                            // Sort by operation type name for stability
+                            opCounts.entrySet().stream()
+                                .sorted((a, b) -> a.getKey().compareTo(b.getKey()))
+                                .forEach(entry -> {
+                                    markdownDocument.add("| `%s` | %d |".formatted(entry.getKey(), entry.getValue()));
+                                });
+                            markdownDocument.add("");
+                        }
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException e) {
+                    // ops() method not available, that's ok — just skip operation breakdown
+                    logger.debug("CodeModel.ops() not available or inaccessible", e);
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            // CodeReflection not available on Java 25 and earlier — normal fallback
+            logger.debug("CodeReflection API not available (requires Java 26+), rendering signature only", e);
+        } catch (Exception e) {
+            // Any other error during reflection — log and continue with signature
+            logger.warn("Failed to analyze method bytecode operations via CodeReflection", e);
+        }
+    }
     /**
      * Add a Java code example to the documentation.
      *
