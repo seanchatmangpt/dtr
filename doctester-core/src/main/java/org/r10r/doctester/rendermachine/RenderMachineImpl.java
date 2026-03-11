@@ -21,10 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Modifier;
-import java.lang.StringTemplate;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import static java.lang.StringTemplate.STR;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Collections;
@@ -46,8 +44,6 @@ import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.lang.StringTemplate.STR;
 
 /**
  * Markdown-based render machine for generating portable API documentation.
@@ -83,10 +79,10 @@ public class RenderMachineImpl extends RenderMachine {
     public void sayNextSection(String heading) {
         sections.add(heading);
         String anchorId = convertTextToId(heading);
-        toc.add(STR."- [\{heading}](#\{anchorId})");
+        toc.add("- [%s](#%s)".formatted(heading, anchorId));
 
         markdownDocument.add("");
-        markdownDocument.add(STR."## \{heading}");
+        markdownDocument.add("## " + heading);
     }
 
     @Override
@@ -95,7 +91,8 @@ public class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
         markdownDocument.add("### Cookies");
         for (Cookie cookie : cookies) {
-            markdownDocument.add(STR."- **\{cookie.getName()}**: `\{cookie.getValue()}` (path: \{cookie.getPath()}, domain: \{cookie.getDomain()})");
+            markdownDocument.add("- **%s**: `%s` (path: %s, domain: %s)".formatted(
+                    cookie.getName(), cookie.getValue(), cookie.getPath(), cookie.getDomain()));
         }
         return cookies;
     }
@@ -104,11 +101,11 @@ public class RenderMachineImpl extends RenderMachine {
     public Cookie sayAndGetCookieWithName(String name) {
         Cookie cookie = testBrowser.getCookieWithName(name);
         markdownDocument.add("");
-        markdownDocument.add(STR."### Cookie: \{name}");
+        markdownDocument.add("### Cookie: " + name);
         if (cookie != null) {
-            markdownDocument.add(STR."- **Value**: `\{cookie.getValue()}`");
-            markdownDocument.add(STR."- **Path**: `\{cookie.getPath()}`");
-            markdownDocument.add(STR."- **Domain**: `\{cookie.getDomain()}`");
+            markdownDocument.add("- **Value**: `%s`".formatted(cookie.getValue()));
+            markdownDocument.add("- **Path**: `%s`".formatted(cookie.getPath()));
+            markdownDocument.add("- **Domain**: `%s`".formatted(cookie.getDomain()));
         }
         return cookie;
     }
@@ -130,10 +127,10 @@ public class RenderMachineImpl extends RenderMachine {
         try {
             Assert.assertThat(reason, actual, matcher);
             markdownDocument.add("");
-            markdownDocument.add(STR."✓ \{message}");
+            markdownDocument.add("✓ " + message);
         } catch (AssertionError e) {
             markdownDocument.add("");
-            markdownDocument.add(STR."✗ **FAILED**: \{message}");
+            markdownDocument.add("✗ **FAILED**: " + message);
             markdownDocument.add("");
             markdownDocument.add("```");
             markdownDocument.add(convertStackTraceToString(e));
@@ -177,7 +174,7 @@ public class RenderMachineImpl extends RenderMachine {
     @Override
     public void sayCode(String code, String language) {
         markdownDocument.add("");
-        markdownDocument.add(STR."```\{language != null && !language.isEmpty() ? language : ""}");
+        markdownDocument.add("```" + (language != null && !language.isEmpty() ? language : ""));
         if (code != null) {
             for (String line : code.split("\n")) {
                 markdownDocument.add(line);
@@ -191,7 +188,7 @@ public class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
         if (message != null && !message.isEmpty()) {
             markdownDocument.add("> [!WARNING]");
-            markdownDocument.add(STR."> \{message}");
+            markdownDocument.add("> " + message);
         }
     }
 
@@ -200,7 +197,7 @@ public class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
         if (message != null && !message.isEmpty()) {
             markdownDocument.add("> [!NOTE]");
-            markdownDocument.add(STR."> \{message}");
+            markdownDocument.add("> " + message);
         }
     }
 
@@ -217,7 +214,7 @@ public class RenderMachineImpl extends RenderMachine {
         for (Entry<String, String> entry : pairs.entrySet()) {
             String key = entry.getKey() != null ? entry.getKey() : "";
             String value = entry.getValue() != null ? entry.getValue() : "";
-            markdownDocument.add(STR."| `\{key}` | `\{value}` |");
+            markdownDocument.add("| `" + key + "` | `" + value + "` |");
         }
     }
 
@@ -229,7 +226,7 @@ public class RenderMachineImpl extends RenderMachine {
 
         markdownDocument.add("");
         for (String item : items) {
-            markdownDocument.add(STR."- \{item != null ? item : ""}");
+            markdownDocument.add("- " + (item != null ? item : ""));
         }
     }
 
@@ -242,7 +239,7 @@ public class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
         for (int i = 0; i < items.size(); i++) {
             String item = items.get(i);
-            markdownDocument.add(STR."\{i + 1}. \{item != null ? item : ""}");
+            markdownDocument.add((i + 1) + ". " + (item != null ? item : ""));
         }
     }
 
@@ -280,23 +277,23 @@ public class RenderMachineImpl extends RenderMachine {
         for (Entry<String, String> entry : assertions.entrySet()) {
             String check = entry.getKey() != null ? entry.getKey() : "";
             String result = entry.getValue() != null ? entry.getValue() : "";
-            markdownDocument.add(STR."| \{check} | `\{result}` |");
+            markdownDocument.add("| " + check + " | `" + result + "` |");
         }
     }
 
     @Override
     public void sayCite(String citationKey) {
-        markdownDocument.add(STR."[cite: \{citationKey}]");
+        markdownDocument.add("[cite: " + citationKey + "]");
     }
 
     @Override
     public void sayCite(String citationKey, String pageRef) {
-        markdownDocument.add(STR."[cite: \{citationKey}, p. \{pageRef}]");
+        markdownDocument.add("[cite: " + citationKey + ", p. " + pageRef + "]");
     }
 
     @Override
     public void sayFootnote(String text) {
-        markdownDocument.add(STR."[^1]: \{text}");
+        markdownDocument.add("[^1]: " + text);
     }
 
     @Override
@@ -310,7 +307,7 @@ public class RenderMachineImpl extends RenderMachine {
         String docFileName = ref.docTestClassName();
         String anchor = ref.anchor();
         // Render as markdown link: [See ApiControllerDocTest#user-creation](../OtherTest.md#anchor)
-        markdownDocument.add(STR."[\{linkText}](../\{docFileName}.md#\{anchor})");
+        markdownDocument.add("[%s](../%s.md#%s)".formatted(linkText, docFileName, anchor));
     }
 
     @Override
@@ -340,7 +337,7 @@ public class RenderMachineImpl extends RenderMachine {
     @Override
     public void sayCodeModel(Class<?> clazz) {
         markdownDocument.add("");
-        markdownDocument.add(STR."### Code Model: `\{clazz.getSimpleName()}`");
+        markdownDocument.add("### Code Model: `" + clazz.getSimpleName() + "`");
         markdownDocument.add("");
 
         // Guarded switch expression for class kind detection
@@ -351,7 +348,7 @@ public class RenderMachineImpl extends RenderMachine {
             case Class<?> c when c.isEnum()      -> "enum";
             default                              -> "class";
         };
-        markdownDocument.add(STR."**Kind**: `\{kind}`");
+        markdownDocument.add("**Kind**: `" + kind + "`");
         markdownDocument.add("");
 
         // Sealed hierarchy — getPermittedSubclasses() is the reflection API for sealed types
@@ -364,7 +361,7 @@ public class RenderMachineImpl extends RenderMachine {
                     case Class<?> c when c.isInterface() -> "interface";
                     default                              -> "class";
                 };
-                markdownDocument.add(STR."- `\{permittedKind} \{permitted.getSimpleName()}`");
+                markdownDocument.add("- `" + permittedKind + " " + permitted.getSimpleName() + "`");
             }
             markdownDocument.add("");
         }
@@ -377,7 +374,9 @@ public class RenderMachineImpl extends RenderMachine {
                 markdownDocument.add("**Record components:**");
                 for (var component : components) {
                     markdownDocument.add(
-                        STR."- `\{component.getType().getSimpleName()} \{component.getName()}`");
+                        "- `%s %s`".formatted(
+                            component.getType().getSimpleName(),
+                            component.getName()));
                 }
                 markdownDocument.add("");
             }
@@ -396,10 +395,13 @@ public class RenderMachineImpl extends RenderMachine {
             markdownDocument.add("```java");
             for (var method : publicMethods) {
                 var params = Arrays.stream(method.getParameters())
-                    .map(p -> STR."\{p.getType().getSimpleName()} \{p.getName()}")
+                    .map(p -> p.getType().getSimpleName() + " " + p.getName())
                     .collect(Collectors.joining(", "));
                 markdownDocument.add(
-                    STR."\{method.getReturnType().getSimpleName()} \{method.getName()}(\{params})");
+                    "%s %s(%s)".formatted(
+                        method.getReturnType().getSimpleName(),
+                        method.getName(),
+                        params));
             }
             markdownDocument.add("```");
         }
@@ -416,7 +418,7 @@ public class RenderMachineImpl extends RenderMachine {
     public void sayJavaCode(String javaCode, String description) {
         markdownDocument.add("");
         if (description != null && !description.isEmpty()) {
-            markdownDocument.add(STR."**\{description}**");
+            markdownDocument.add("**" + description + "**");
         }
         markdownDocument.add("");
         markdownDocument.add("```java");
@@ -445,7 +447,7 @@ public class RenderMachineImpl extends RenderMachine {
     private void createTestDocumentationFile() {
         List<String> doc = new ArrayList<>();
 
-        doc.add(STR."# \{fileName}");
+        doc.add("# " + fileName);
         doc.add("");
 
         if (!toc.isEmpty()) {
@@ -485,7 +487,7 @@ public class RenderMachineImpl extends RenderMachine {
         for (File file : files) {
             String name = file.getName();
             String baseName = name.substring(0, name.length() - 3); // remove .md
-            index.add(STR."- [\{baseName}](\{name})");
+            index.add("- [%s](%s)".formatted(baseName, name));
         }
 
         writeMarkdownFile(index, INDEX_FILE);
@@ -518,10 +520,10 @@ public class RenderMachineImpl extends RenderMachine {
         String httpMethod = request.httpRequestType;
         String url = request.uri.toString();
         markdownDocument.add("```");
-        markdownDocument.add(STR."\{httpMethod} \{url}");
+        markdownDocument.add(httpMethod + " " + url);
 
         for (Entry<String, String> header : request.headers.entrySet()) {
-            markdownDocument.add(STR."\{header.getKey()}: \{header.getValue()}");
+            markdownDocument.add(header.getKey() + ": " + header.getValue());
         }
 
         if (request.payload != null) {
@@ -534,13 +536,13 @@ public class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
         markdownDocument.add("### Response");
         markdownDocument.add("");
-        markdownDocument.add(STR."**Status**: `\{response.httpStatus}`");
+        markdownDocument.add("**Status**: `" + response.httpStatus + "`");
         markdownDocument.add("");
 
         if (!response.headers.isEmpty()) {
             markdownDocument.add("**Headers**:");
             for (Entry<String, String> header : response.headers.entrySet()) {
-                markdownDocument.add(STR."- `\{header.getKey()}: \{header.getValue()}`");
+                markdownDocument.add("- `" + header.getKey() + ": " + header.getValue() + "`");
             }
             markdownDocument.add("");
         }
@@ -571,9 +573,10 @@ public class RenderMachineImpl extends RenderMachine {
                 .findFirst())
             .ifPresent(frame -> {
                 markdownDocument.add(
-                    STR."**Generated by:** `\{frame.getClassName()}.\{frame.getMethodName()}()` at line \{frame.getLineNumber()}");
+                    "**Generated by:** `%s.%s()` at line %d".formatted(
+                        frame.getClassName(), frame.getMethodName(), frame.getLineNumber()));
                 if (frame.getFileName() != null) {
-                    markdownDocument.add(STR."**Source file:** `\{frame.getFileName()}`");
+                    markdownDocument.add("**Source file:** `%s`".formatted(frame.getFileName()));
                 }
             });
     }
@@ -581,14 +584,14 @@ public class RenderMachineImpl extends RenderMachine {
     @Override
     public void sayAnnotationProfile(Class<?> clazz) {
         markdownDocument.add("");
-        markdownDocument.add(STR."### Annotation Profile: `\{clazz.getSimpleName()}`");
+        markdownDocument.add("### Annotation Profile: `" + clazz.getSimpleName() + "`");
         markdownDocument.add("");
 
         var classAnnotations = clazz.getAnnotations();
         if (classAnnotations.length > 0) {
             markdownDocument.add("**Class-level annotations:**");
             for (var a : classAnnotations) {
-                markdownDocument.add(STR."- `@\{a.annotationType().getSimpleName()}`");
+                markdownDocument.add("- `@" + a.annotationType().getSimpleName() + "`");
             }
             markdownDocument.add("");
         }
@@ -605,9 +608,9 @@ public class RenderMachineImpl extends RenderMachine {
             markdownDocument.add("| --- | --- |");
             for (var method : annotatedMethods) {
                 var annotations = Arrays.stream(method.getAnnotations())
-                    .map(a -> STR."`@\{a.annotationType().getSimpleName()}`")
+                    .map(a -> "`@" + a.annotationType().getSimpleName() + "`")
                     .collect(Collectors.joining(", "));
-                markdownDocument.add(STR."| `\{method.getName()}()` | \{annotations} |");
+                markdownDocument.add("| `%s()` | %s |".formatted(method.getName(), annotations));
             }
         } else {
             markdownDocument.add("*(No method-level annotations found)*");
@@ -617,7 +620,7 @@ public class RenderMachineImpl extends RenderMachine {
     @Override
     public void sayClassHierarchy(Class<?> clazz) {
         markdownDocument.add("");
-        markdownDocument.add(STR."### Class Hierarchy: `\{clazz.getSimpleName()}`");
+        markdownDocument.add("### Class Hierarchy: `" + clazz.getSimpleName() + "`");
         markdownDocument.add("");
 
         // Build the superclass chain from Object → clazz
@@ -633,7 +636,7 @@ public class RenderMachineImpl extends RenderMachine {
         for (int i = 0; i < chain.size(); i++) {
             String indent = "  ".repeat(i);
             String prefix = i == 0 ? "" : "↳ ";
-            markdownDocument.add(STR."\{indent}\{prefix}`\{chain.get(i).getSimpleName()}`");
+            markdownDocument.add(indent + prefix + "`" + chain.get(i).getSimpleName() + "`");
         }
 
         // Implemented interfaces
@@ -642,7 +645,7 @@ public class RenderMachineImpl extends RenderMachine {
             markdownDocument.add("");
             markdownDocument.add("**Implements:**");
             for (var iface : interfaces) {
-                markdownDocument.add(STR."- `\{iface.getSimpleName()}`");
+                markdownDocument.add("- `" + iface.getSimpleName() + "`");
             }
         }
     }
@@ -669,14 +672,14 @@ public class RenderMachineImpl extends RenderMachine {
 
         markdownDocument.add("| Metric | Value |");
         markdownDocument.add("| --- | --- |");
-        markdownDocument.add(STR."| Total length | `\{text.length()}` |");
-        markdownDocument.add(STR."| Words | `\{words}` |");
-        markdownDocument.add(STR."| Lines | `\{lines}` |");
-        markdownDocument.add(STR."| Unique characters | `\{uniqueChars}` |");
-        markdownDocument.add(STR."| Letters | `\{letters}` |");
-        markdownDocument.add(STR."| Digits | `\{digits}` |");
-        markdownDocument.add(STR."| Whitespace | `\{spaces}` |");
-        markdownDocument.add(STR."| Non-ASCII (Unicode) | `\{nonAscii}` |");
+        markdownDocument.add("| Total length | `%d` |".formatted(text.length()));
+        markdownDocument.add("| Words | `%d` |".formatted(words));
+        markdownDocument.add("| Lines | `%d` |".formatted(lines));
+        markdownDocument.add("| Unique characters | `%d` |".formatted(uniqueChars));
+        markdownDocument.add("| Letters | `%d` |".formatted(letters));
+        markdownDocument.add("| Digits | `%d` |".formatted(digits));
+        markdownDocument.add("| Whitespace | `%d` |".formatted(spaces));
+        markdownDocument.add("| Non-ASCII (Unicode) | `%d` |".formatted(nonAscii));
     }
 
     @Override
@@ -689,11 +692,12 @@ public class RenderMachineImpl extends RenderMachine {
 
         if (!before.getClass().equals(after.getClass())) {
             markdownDocument.add("> [!WARNING]");
-            markdownDocument.add(STR."> Cannot diff objects of different types: `\{before.getClass().getSimpleName()}` vs `\{after.getClass().getSimpleName()}`");
+            markdownDocument.add("> Cannot diff objects of different types: `%s` vs `%s`".formatted(
+                before.getClass().getSimpleName(), after.getClass().getSimpleName()));
             return;
         }
 
-        markdownDocument.add(STR."### Reflective Diff: `\{before.getClass().getSimpleName()}`");
+        markdownDocument.add("### Reflective Diff: `" + before.getClass().getSimpleName() + "`");
         markdownDocument.add("");
         markdownDocument.add("| Field | Before | After | Changed |");
         markdownDocument.add("| --- | --- | --- | --- |");
@@ -708,7 +712,11 @@ public class RenderMachineImpl extends RenderMachine {
                 boolean changed = !java.util.Objects.equals(beforeVal, afterVal);
                 if (changed) anyChanged = true;
                 String status = changed ? "**changed**" : "";
-                markdownDocument.add(STR."| `\{field.getName()}` | `\{beforeVal != null ? beforeVal.toString() : "null"}` | `\{afterVal != null ? afterVal.toString() : "null"}` | \{status} |");
+                markdownDocument.add("| `%s` | `%s` | `%s` | %s |".formatted(
+                    field.getName(),
+                    beforeVal != null ? beforeVal.toString() : "null",
+                    afterVal != null ? afterVal.toString() : "null",
+                    status));
             } catch (IllegalAccessException e) {
                 // skip inaccessible fields
             }
