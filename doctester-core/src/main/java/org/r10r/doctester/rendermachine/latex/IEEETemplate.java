@@ -330,4 +330,13 @@ public record IEEETemplate(String mode) implements LatexTemplate {
 
         return sb.toString();
     }
+
+    @Override
+    public String formatFootnote(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+
+        return "\\footnote{" + escapeLatex(text) + "}";
+    }
 }

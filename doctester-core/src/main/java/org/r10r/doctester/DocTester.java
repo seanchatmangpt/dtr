@@ -35,6 +35,8 @@ import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.TestBrowserImpl;
 import org.r10r.doctester.testbrowser.Url;
+import org.r10r.doctester.crossref.DocTestRef;
+import org.r10r.doctester.crossref.CrossReferenceIndex;
 
 public abstract class DocTester implements TestBrowser, RenderMachineCommands {
 
@@ -248,6 +250,39 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     @Override
     public final void sayAssertions(Map<String, String> assertions) {
         renderMachine.sayAssertions(assertions);
+    }
+
+    @Override
+    public final void sayRef(DocTestRef ref) {
+        if (ref != null) {
+            CrossReferenceIndex.getInstance().register(ref);
+        }
+        renderMachine.sayRef(ref);
+    }
+
+    /**
+     * Convenience method to create and render a reference to another DocTest's section.
+     *
+     * @param docTestClass the target DocTest class
+     * @param anchor the section/anchor name within that DocTest
+     */
+    public final void sayRef(Class<?> docTestClass, String anchor) {
+        sayRef(DocTestRef.of(docTestClass, anchor));
+    }
+
+    @Override
+    public final void sayFootnote(String text) {
+        renderMachine.sayFootnote(text);
+    }
+
+    @Override
+    public final void sayCite(String citationKey) {
+        renderMachine.sayCite(citationKey);
+    }
+
+    @Override
+    public final void sayCite(String citationKey, String pageRef) {
+        renderMachine.sayCite(citationKey, pageRef);
     }
 
     // //////////////////////////////////////////////////////////////////////////

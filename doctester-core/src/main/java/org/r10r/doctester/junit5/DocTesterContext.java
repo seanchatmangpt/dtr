@@ -23,6 +23,7 @@ import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.Url;
+import org.r10r.doctester.crossref.DocTestRef;
 
 import java.util.List;
 import java.util.Map;
@@ -155,6 +156,26 @@ public class DocTesterContext implements RenderMachineCommands {
     @Override
     public void sayAssertions(Map<String, String> assertions) {
         renderMachine.sayAssertions(assertions);
+    }
+
+    @Override
+    public void sayCite(String citationKey) {
+        renderMachine.sayCite(citationKey);
+    }
+
+    @Override
+    public void sayCite(String citationKey, String pageRef) {
+        renderMachine.sayCite(citationKey, pageRef);
+    }
+
+    @Override
+    public void sayFootnote(String text) {
+        renderMachine.sayFootnote(text);
+    }
+
+    @Override
+    public void sayRef(DocTestRef ref) {
+        renderMachine.sayRef(ref);
     }
 
     // ========================================================================

@@ -28,6 +28,8 @@ import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.cookie.Cookie;
+import org.r10r.doctester.bibliography.BibliographyManager;
+import org.r10r.doctester.crossref.DocTestRef;
 import org.r10r.doctester.metadata.DocMetadata;
 import org.r10r.doctester.rendermachine.RenderMachine;
 import org.r10r.doctester.testbrowser.Request;
@@ -189,6 +191,47 @@ public class RenderMachineLatex implements RenderMachine {
 
         texDocument.add("");
         texDocument.add(template.formatAssertions(assertions));
+    }
+
+    @Override
+    public void sayCite(String citationKey) {
+        if (citationKey == null || citationKey.isEmpty()) {
+            return;
+        }
+
+        texDocument.add("\\cite{" + citationKey + "}");
+    }
+
+    @Override
+    public void sayCite(String citationKey, String pageRef) {
+        if (citationKey == null || citationKey.isEmpty()) {
+            return;
+        }
+
+        texDocument.add("\\cite[p. " + pageRef + "]{" + citationKey + "}");
+    }
+
+    @Override
+    public void sayFootnote(String text) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+
+        texDocument.add("\\footnote{" + template.escapeLatex(text) + "}");
+    }
+
+    @Override
+    public void sayRef(DocTestRef ref) {
+        if (ref == null) {
+            return;
+        }
+
+        texDocument.add("");
+        // Generate LaTeX \ref{} command for two-pass compilation
+        // The reference resolver will have mapped the anchor to a LaTeX label
+        String anchor = ref.anchor();
+        String label = "sec:" + convertTextToLatexLabel(anchor);
+        texDocument.add("See Section \\ref{" + label + "}");
     }
 
     @Override
@@ -412,5 +455,20 @@ public class RenderMachineLatex implements RenderMachine {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Convert an anchor text to a valid LaTeX label format.
+     * Converts spaces to hyphens and removes invalid characters.
+     *
+     * @param text the anchor text
+     * @return LaTeX label format
+     */
+    private String convertTextToLatexLabel(String text) {
+        return text.toLowerCase()
+                .replaceAll("\\s+", "-")
+                .replaceAll("[^a-z0-9-]", "")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
     }
 }

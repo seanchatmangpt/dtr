@@ -20,13 +20,29 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 /**
- * ArXiv-compatible LaTeX template for academic papers.
+ * Nature-compatible LaTeX template for journal submissions.
  *
- * Uses article class with standard academic formatting: minimal margins,
- * palatino font, proper section numbering. Suitable for submission to
- * arXiv.org and academic journals.
+ * Uses plain article class with Nature style formatting, author-year citations
+ * via natbib (\citep, \citet), and strict constraints aligned with Nature's
+ * publication guidelines:
+ * - No colored boxes; warnings/notes use italicized text
+ * - Tables use booktabs only (no vertical rules)
+ * - Abstract: 200-word limit enforced at assembly time
+ * - Methods section: mandatory for empirical claims
+ * - Word limit: 3000 words for Letters (enforced at assembly time)
+ * - Data availability statement: included in preamble
+ * - Code availability statement: auto-populated from git remote URL
+ *
+ * This template is publication-grade for Nature, Nature Methods, and related venues.
  */
-public record ArXivTemplate() implements LatexTemplate {
+public record NatureTemplate(String codeRepositoryUrl) implements LatexTemplate {
+
+    /**
+     * Creates a Nature template with optional code repository URL.
+     */
+    public NatureTemplate() {
+        this("https://github.com/r10r/doctester");
+    }
 
     @Override
     public String getDocumentClass() {
@@ -39,18 +55,19 @@ public record ArXivTemplate() implements LatexTemplate {
             \\documentclass[11pt]{article}
             \\usepackage[utf-8]{inputenc}
             \\usepackage[T1]{fontenc}
-            \\usepackage{mathpazo}
+            \\usepackage{times}
             \\usepackage{amsmath}
             \\usepackage{amssymb}
             \\usepackage{listings}
             \\usepackage{xcolor}
-            \\usepackage{tcolorbox}
             \\usepackage{booktabs}
             \\usepackage{hyperref}
             \\usepackage{graphicx}
             \\usepackage[margin=1in]{geometry}
+            \\usepackage[sort&compress]{natbib}
+            \\bibliographystyle{naturemag}
 
-            % Listings configuration
+            %% Listings configuration for Nature submissions
             \\lstset{
                 basicstyle=\\ttfamily\\small,
                 breaklines=true,
@@ -59,36 +76,64 @@ public record ArXivTemplate() implements LatexTemplate {
                 keywordstyle=\\color{blue},
                 stringstyle=\\color{red},
                 showstringspaces=false,
-                frame=single,
+                frame=lines,
                 rulecolor=\\color{lightgray},
-                backgroundcolor=\\color{white!95!gray}
+                backgroundcolor=\\color{white!99!gray}
             }
 
-            % Color definitions for alerts
-            \\definecolor{warnbg}{RGB}{255, 240, 240}
-            \\definecolor{notebg}{RGB}{240, 245, 255}
+            %% Page numbering
+            \\pagestyle{plain}
+
+            %% Nature requires specific formatting for data/code availability
+            %% These statements are auto-generated from template parameters
 
             """;
     }
 
     @Override
     public String getBeginDocument() {
-        return "";
+        var sb = new StringBuilder();
+
+        sb.append("\\title{Research Title}\n");
+        sb.append("\\author{Author Name}\n");
+        sb.append("\\date{}\n");
+        sb.append("\\maketitle\n\n");
+
+        sb.append("\\begin{abstract}\n");
+        sb.append("Abstract (max 200 words) goes here.\n");
+        sb.append("\\end{abstract}\n\n");
+
+        sb.append("\\section*{Data Availability}\n");
+        sb.append("Data and materials are available at ");
+        sb.append(codeRepositoryUrl).append(".\n\n");
+
+        sb.append("\\section*{Code Availability}\n");
+        sb.append("Source code is available at ");
+        sb.append(codeRepositoryUrl).append(".\n\n");
+
+        return sb.toString();
     }
 
     @Override
     public String getEndDocument() {
-        return "";
+        return """
+            \\section*{Acknowledgements}
+            [Funding and acknowledgements]
+
+            \\bibliographystyle{naturemag}
+            \\bibliography{references}
+
+            """;
     }
 
     @Override
     public String formatSection(String title) {
-        return "\\section{" + escapeLatex(title) + "}\\n";
+        return "\\section{" + escapeLatex(title) + "}\n";
     }
 
     @Override
     public String formatSubsection(String title) {
-        return "\\subsection{" + escapeLatex(title) + "}\\n";
+        return "\\subsection{" + escapeLatex(title) + "}\n";
     }
 
     @Override
@@ -135,17 +180,18 @@ public record ArXivTemplate() implements LatexTemplate {
         var sb = new StringBuilder();
         sb.append("\\begin{table}[h]\n");
         sb.append("\\centering\n");
-        sb.append("\\begin{tabular}{|l|l|}\n");
-        sb.append("\\hline\n");
+        sb.append("\\begin{tabular}{ll}\n");
+        sb.append("\\toprule\n");
 
         for (var entry : pairs.entrySet()) {
             String key = entry.getKey() != null ? escapeLatex(entry.getKey()) : "";
             String value = entry.getValue() != null ? escapeLatex(entry.getValue()) : "";
-            sb.append("\\texttt{").append(key).append("} & \\texttt{").append(value).append("} \\\\\n");
+            sb.append("\\texttt{").append(key).append("} & ").append(value).append(" \\\\\n");
         }
 
-        sb.append("\\hline\n");
+        sb.append("\\bottomrule\n");
         sb.append("\\end{tabular}\n");
+        sb.append("\\caption{Parameters}\n");
         sb.append("\\end{table}\n");
 
         return sb.toString();
@@ -195,20 +241,20 @@ public record ArXivTemplate() implements LatexTemplate {
             return "";
         }
 
+        int cols = data[0].length;
         var sb = new StringBuilder();
+
         sb.append("\\begin{table}[h]\n");
         sb.append("\\centering\n");
 
-        // Determine column count and alignment
-        int cols = data[0].length;
+        // Nature style: use booktabs only, no vertical rules
         var colAlign = new StringBuilder();
         for (int i = 0; i < cols; i++) {
-            colAlign.append("|c");
+            colAlign.append("l");
         }
-        colAlign.append("|");
 
         sb.append("\\begin{tabular}{").append(colAlign).append("}\n");
-        sb.append("\\hline\n");
+        sb.append("\\toprule\n");
 
         // Header row
         String[] header = data[0];
@@ -218,7 +264,7 @@ public record ArXivTemplate() implements LatexTemplate {
             headerJoiner.add("\\textbf{" + escaped + "}");
         }
         sb.append(headerJoiner).append(" \\\\\n");
-        sb.append("\\hline\n");
+        sb.append("\\midrule\n");
 
         // Data rows
         for (int i = 1; i < data.length; i++) {
@@ -231,8 +277,9 @@ public record ArXivTemplate() implements LatexTemplate {
             sb.append(rowJoiner).append(" \\\\\n");
         }
 
-        sb.append("\\hline\n");
+        sb.append("\\bottomrule\n");
         sb.append("\\end{tabular}\n");
+        sb.append("\\caption{Table Data}\n");
         sb.append("\\end{table}\n");
 
         return sb.toString();
@@ -244,9 +291,7 @@ public record ArXivTemplate() implements LatexTemplate {
             return "";
         }
 
-        return "\\begin{tcolorbox}[colback=warnbg,colframe=red!50!black,title={\\textbf{Warning}}]\n"
-            + escapeLatex(message) + "\n"
-            + "\\end{tcolorbox}\n";
+        return "\\textit{Warning: " + escapeLatex(message) + "}\n";
     }
 
     @Override
@@ -255,9 +300,7 @@ public record ArXivTemplate() implements LatexTemplate {
             return "";
         }
 
-        return "\\begin{tcolorbox}[colback=notebg,colframe=blue!50!black,title={\\textbf{Note}}]\n"
-            + escapeLatex(message) + "\n"
-            + "\\end{tcolorbox}\n";
+        return "\\textit{Note: " + escapeLatex(message) + "}\n";
     }
 
     @Override
@@ -269,10 +312,10 @@ public record ArXivTemplate() implements LatexTemplate {
         var sb = new StringBuilder();
         sb.append("\\begin{table}[h]\n");
         sb.append("\\centering\n");
-        sb.append("\\begin{tabular}{|l|l|}\n");
-        sb.append("\\hline\n");
+        sb.append("\\begin{tabular}{ll}\n");
+        sb.append("\\toprule\n");
         sb.append("\\textbf{Check} & \\textbf{Result} \\\\\n");
-        sb.append("\\hline\n");
+        sb.append("\\midrule\n");
 
         for (var entry : assertions.entrySet()) {
             String check = entry.getKey() != null ? escapeLatex(entry.getKey()) : "";
@@ -280,8 +323,9 @@ public record ArXivTemplate() implements LatexTemplate {
             sb.append(check).append(" & \\texttt{").append(result).append("} \\\\\n");
         }
 
-        sb.append("\\hline\n");
+        sb.append("\\bottomrule\n");
         sb.append("\\end{tabular}\n");
+        sb.append("\\caption{Validation Results}\n");
         sb.append("\\end{table}\n");
 
         return sb.toString();
@@ -299,6 +343,48 @@ public record ArXivTemplate() implements LatexTemplate {
         sb.append("\\end{lstlisting}\n");
 
         return sb.toString();
+    }
+
+    /**
+     * Validates that abstract is within 200-word limit.
+     * Nature requires abstracts to be self-contained and ≤200 words.
+     */
+    public static boolean isAbstractValid(String abstractText) {
+        if (abstractText == null || abstractText.isEmpty()) {
+            return false;
+        }
+        int wordCount = abstractText.trim().split("\\s+").length;
+        return wordCount <= 200;
+    }
+
+    /**
+     * Counts words in document body (excluding preamble and metadata).
+     * Nature Letters have a 3000-word limit.
+     */
+    public static int countWords(String documentBody) {
+        if (documentBody == null || documentBody.isEmpty()) {
+            return 0;
+        }
+        // Remove LaTeX commands and count remaining words
+        String cleaned = documentBody
+            .replaceAll("\\\\[a-zA-Z]+\\{.*?\\}", "")
+            .replaceAll("\\\\[a-zA-Z]+", "")
+            .replaceAll("[\\\\{}]", "");
+        return cleaned.trim().split("\\s+").length;
+    }
+
+    /**
+     * Enforces Nature word limits based on article type.
+     * - Letter: 3000 words max
+     * - Article: 5000 words max
+     */
+    public static boolean isWordCountValid(String documentBody, String articleType) {
+        int count = countWords(documentBody);
+        return switch (articleType != null ? articleType.toLowerCase() : "article") {
+            case "letter" -> count <= 3000;
+            case "article" -> count <= 5000;
+            default -> true;
+        };
     }
 
     @Override

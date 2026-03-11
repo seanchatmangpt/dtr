@@ -23,6 +23,7 @@ import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
+import org.r10r.doctester.crossref.DocTestRef;
 import org.hamcrest.Matcher;
 
 import org.slf4j.Logger;
@@ -145,6 +146,34 @@ public final class MultiRenderMachine implements RenderMachine {
     public void sayAssertions(Map<String, String> assertions) {
         for (RenderMachine machine : machines) {
             machine.sayAssertions(assertions);
+        }
+    }
+
+    @Override
+    public void sayCite(String citationKey) {
+        for (RenderMachine machine : machines) {
+            machine.sayCite(citationKey);
+        }
+    }
+
+    @Override
+    public void sayCite(String citationKey, String pageRef) {
+        for (RenderMachine machine : machines) {
+            machine.sayCite(citationKey, pageRef);
+        }
+    }
+
+    @Override
+    public void sayFootnote(String text) {
+        for (RenderMachine machine : machines) {
+            machine.sayFootnote(text);
+        }
+    }
+
+    @Override
+    public void sayRef(DocTestRef ref) {
+        for (RenderMachine machine : machines) {
+            machine.sayRef(ref);
         }
     }
 

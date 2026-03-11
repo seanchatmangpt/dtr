@@ -23,7 +23,7 @@ package org.r10r.doctester.rendermachine.latex;
  *
  * Phase 2.1.0 ships with ArXiv and USPTO templates only.
  */
-public sealed interface LatexTemplate permits ArXivTemplate, UsPatentTemplate {
+public sealed interface LatexTemplate permits ArXivTemplate, UsPatentTemplate, IEEETemplate, ACMTemplate, NatureTemplate {
 
     /**
      * LaTeX document class (e.g., "article", "report", custom).
@@ -108,4 +108,10 @@ public sealed interface LatexTemplate permits ArXivTemplate, UsPatentTemplate {
      * Format JSON/pretty-printed content in a code block.
      */
     String formatJson(String jsonString);
+
+    /**
+     * Format a footnote in LaTeX.
+     * Text is escaped to prevent syntax errors.
+     */
+    String formatFootnote(String text);
 }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hc.client5.http.cookie.Cookie;
+import org.r10r.doctester.crossref.DocTestRef;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.hamcrest.Matcher;
@@ -113,6 +114,38 @@ public interface RenderMachineCommands {
      * @param assertions A map where keys are check descriptions and values are results.
      */
     public void sayAssertions(Map<String, String> assertions);
+
+    /**
+     * Renders a cross-reference to another DocTest's section.
+     *
+     * The reference is resolved using the CrossReferenceIndex and rendered
+     * as a markdown link in Markdown mode or a LaTeX \ref{} command in LaTeX mode.
+     *
+     * @param ref the cross-reference to another DocTest section
+     */
+    public void sayRef(DocTestRef ref);
+
+    /**
+     * Renders a citation reference using BibTeX citation key.
+     *
+     * @param citationKey The BibTeX citation key to reference.
+     */
+    public void sayCite(String citationKey);
+
+    /**
+     * Renders a citation reference with page number specification.
+     *
+     * @param citationKey The BibTeX citation key to reference.
+     * @param pageRef The page reference (e.g., "42" or "pp. 10-15").
+     */
+    public void sayCite(String citationKey, String pageRef);
+
+    /**
+     * Renders a footnote with the given text.
+     *
+     * @param text The footnote content.
+     */
+    public void sayFootnote(String text);
 
     /**
      * @return all cookies saved by this TestBrowser.
