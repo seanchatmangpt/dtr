@@ -2,7 +2,7 @@
 
 DocTester is a **Markdown documentation generator** that writes living docs as your Java 25 tests execute. Every test run regenerates documentation from live behavior, keeping docs in sync with reality.
 
-**Current version:** `1.1.12-SNAPSHOT`
+**Current version:** `2.0.0`
 **License:** Apache 2.0
 **Maven:** `org.r10r:doctester-core`
 **Java:** 25 LTS with `--enable-preview`
@@ -714,7 +714,7 @@ doctester/
 <dependency>
     <groupId>org.r10r</groupId>
     <artifactId>doctester-core</artifactId>
-    <version>1.1.12-SNAPSHOT</version>
+    <version>2.0.0</version>
     <scope>test</scope>
 </dependency>
 ```
