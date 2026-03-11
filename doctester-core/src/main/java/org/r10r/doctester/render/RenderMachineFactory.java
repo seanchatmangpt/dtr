@@ -31,6 +31,11 @@ import org.r10r.doctester.rendermachine.RenderMachine;
 import org.r10r.doctester.rendermachine.RenderMachineImpl;
 import org.r10r.doctester.rendermachine.latex.RenderMachineLatex;
 import org.r10r.doctester.rendermachine.latex.ArXivTemplate;
+import org.r10r.doctester.rendermachine.latex.UsPatentTemplate;
+import org.r10r.doctester.rendermachine.latex.IEEETemplate;
+import org.r10r.doctester.rendermachine.latex.ACMTemplate;
+import org.r10r.doctester.rendermachine.latex.NatureTemplate;
+import org.r10r.doctester.rendermachine.latex.LatexTemplate;
 import org.r10r.doctester.metadata.DocMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +43,21 @@ import org.slf4j.LoggerFactory;
 /**
  * Factory for creating configured render machine instances.
  *
- * Supports selecting output format(s) via Maven system property:
- * -Ddoctester.output=markdown,blog,slides,latex,all
+ * Supports selecting output format(s) via Maven system properties:
+ * - -Ddoctester.output=markdown,blog,slides,latex,all
+ * - -Ddoctester.latex.format=arxiv|patent|ieee|acm|nature (for LaTeX output)
+ *
+ * LaTeX Format Selection:
+ * - arxiv (default): arXiv pre-print submissions
+ * - patent: USPTO patent exhibit format
+ * - ieee: IEEE journal articles
+ * - acm: ACM conference proceedings
+ * - nature: Nature scientific reports
  *
  * Examples:
  * - -Ddoctester.output=markdown (default, single render machine)
  * - -Ddoctester.output=all (all formats simultaneously)
+ * - -Ddoctester.output=latex -Ddoctester.latex.format=patent (USPTO patents)
  * - -Ddoctester.output=blog,slides (blog posts + slides only)
  */
 public final class RenderMachineFactory {
@@ -85,7 +99,7 @@ public final class RenderMachineFactory {
         return switch (output.trim()) {
             case "markdown" -> new RenderMachineImpl();
             case "latex" -> docMetadata != null ? new RenderMachineLatex(
-                new ArXivTemplate(),
+                selectLatexTemplate(),
                 docMetadata) : new RenderMachineImpl();
             case "blog" -> createBlogMachines(testClassName);
             case "slides" -> new SlideRenderMachine(new RevealJsTemplate());
@@ -115,7 +129,7 @@ public final class RenderMachineFactory {
         // Include LaTeX if metadata available
         if (docMetadata != null) {
             machines.add(new RenderMachineLatex(
-                new ArXivTemplate(),
+                selectLatexTemplate(),
                 docMetadata));
         }
 
@@ -146,7 +160,7 @@ public final class RenderMachineFactory {
                 case "latex":
                     if (docMetadata != null) {
                         machines.add(new RenderMachineLatex(
-                            new ArXivTemplate(),
+                            selectLatexTemplate(),
                             docMetadata));
                     }
                     break;
@@ -187,5 +201,33 @@ public final class RenderMachineFactory {
         }
 
         return new MultiRenderMachine(blogMachines);
+    }
+
+    /**
+     * Select LaTeX template based on system property.
+     *
+     * The -Ddoctester.latex.format property controls which academic/patent format:
+     * - arxiv (default): arXiv pre-print submissions
+     * - patent: USPTO patent exhibit format
+     * - ieee: IEEE journal articles
+     * - acm: ACM conference proceedings
+     * - nature: Nature scientific reports
+     *
+     * @return selected LaTeX template
+     */
+    private static LatexTemplate selectLatexTemplate() {
+        String format = System.getProperty("doctester.latex.format", "arxiv").toLowerCase();
+
+        return switch (format.trim()) {
+            case "patent" -> new UsPatentTemplate();
+            case "ieee" -> new IEEETemplate();
+            case "acm" -> new ACMTemplate();
+            case "nature" -> new NatureTemplate();
+            case "arxiv" -> new ArXivTemplate();
+            default -> {
+                logger.warn("Unknown LaTeX format: {}, defaulting to ArXiv", format);
+                yield new ArXivTemplate();
+            }
+        };
     }
 }
