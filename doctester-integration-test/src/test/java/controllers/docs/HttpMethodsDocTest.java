@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -49,6 +51,14 @@ public class HttpMethodsDocTest extends NinjaApiDoctester {
         say("GET retrieves data without modifying server state. "
             + "It is safe and idempotent.");
 
+        var getTable = new String[][] {
+            {"Property", "Value"},
+            {"Safe", "Yes — does not modify server state"},
+            {"Idempotent", "Yes — same result on repeated calls"},
+            {"Cacheable", "Yes — responses may be cached by proxies"}
+        };
+        sayTable(getTable);
+
         Response response = sayAndMakeRequest(
             Request.GET().url(testServerUrl().path(ARTICLES_URL)));
 
@@ -63,6 +73,14 @@ public class HttpMethodsDocTest extends NinjaApiDoctester {
 
         say("POST sends a request body to create a new resource. "
             + "It is neither safe nor idempotent.");
+
+        var postUseCases = List.of(
+            "Create new resources (new article, new comment, new user)",
+            "Submit form data with side effects (user registration, payment)",
+            "Trigger server actions (start a job, send a notification)",
+            "Upload files with metadata"
+        );
+        sayUnorderedList(postUseCases);
 
         makeRequest(
             Request.POST()
@@ -82,6 +100,10 @@ public class HttpMethodsDocTest extends NinjaApiDoctester {
 
         sayAndAssertThat("POST returns 200 OK", response.httpStatus, equalTo(200));
 
+        sayNote("POST is not idempotent. Sending the same POST twice may create " +
+            "two separate resources. Callers must handle retries carefully, or use " +
+            "idempotency keys (custom headers) to make POST retryable.");
+
         say("Always set a Content-Type header on POST requests with a body. "
             + "Use contentTypeApplicationJson() or contentTypeApplicationXml().");
     }
@@ -92,6 +114,14 @@ public class HttpMethodsDocTest extends NinjaApiDoctester {
         sayNextSection("DELETE — Remove Resources");
 
         say("DELETE removes a resource permanently. It is idempotent.");
+
+        var deleteTable = new String[][] {
+            {"Aspect", "Semantics"},
+            {"Safe", "No — modifies server state by deleting"},
+            {"Idempotent", "Yes — same result on repeated calls"},
+            {"Typical responses", "204 No Content (success), 404 Not Found (already deleted)"}
+        };
+        sayTable(deleteTable);
 
         Response list = sayAndMakeRequest(
             Request.GET().url(testServerUrl().path(ARTICLES_URL)));
@@ -115,8 +145,9 @@ public class HttpMethodsDocTest extends NinjaApiDoctester {
         sayAndAssertThat("204 has no response body",
             deleteResponse.payload, nullValue());
 
-        say("Attempting to DELETE the same ID again returns an error "
-            + "because the resource no longer exists:");
+        sayWarning("Attempting to DELETE the same ID again returns an error " +
+            "because the resource no longer exists. Although DELETE is idempotent, " +
+            "404 differs from the first response (204), which may confuse retry logic.");
 
         Response secondDelete = sayAndMakeRequest(
             Request.DELETE()
@@ -134,9 +165,18 @@ public class HttpMethodsDocTest extends NinjaApiDoctester {
         say("HEAD is identical to GET but the server omits the response body. "
             + "Use it to check existence or read headers without downloading payload.");
 
+        var headComparison = new HashMap<String, String>();
+        headComparison.put("GET", "Returns full response (headers + body)");
+        headComparison.put("HEAD", "Returns only headers, empty body; same status as GET");
+        headComparison.put("HEAD Use Cases", "Check existence, read Content-Length, validate caches");
+        sayKeyValue(headComparison);
+
         say("Note: the Ninja Framework used in this demo does not implement "
             + "HEAD route matching, so 404 is returned. On a standards-compliant "
             + "server, HEAD returns the same headers as GET with an empty body.");
+
+        sayNote("HEAD is idempotent and cacheable, making it ideal for " +
+            "lightweight checks without downloading large payloads.");
 
         Response response = sayAndMakeRequest(
             Request.HEAD().url(testServerUrl()));
@@ -153,6 +193,23 @@ public class HttpMethodsDocTest extends NinjaApiDoctester {
         say("addHeader(name, value) adds arbitrary headers. "
             + "Chain calls to accumulate multiple headers. "
             + "The request panel shows all headers sent.");
+
+        var headerTable = new String[][] {
+            {"Header", "Purpose"},
+            {"Accept", "Tells server which response format is expected (application/json, text/html)"},
+            {"Content-Type", "Declares the format of the request body (application/json, application/xml)"},
+            {"Authorization", "Provides credentials or tokens for authentication"},
+            {"X-Request-ID", "Custom header for request tracking and correlation"}
+        };
+        sayTable(headerTable);
+
+        var codeSnippet = """
+            Request.GET()
+                .url(testServerUrl().path(ARTICLES_URL))
+                .addHeader("Accept", "application/json")
+                .addHeader("X-Request-ID", "doctest-demo-001")
+                .addHeader("X-Client-Version", "1.0.0");""";
+        sayCode(codeSnippet, "java");
 
         Response response = sayAndMakeRequest(
             Request.GET()
