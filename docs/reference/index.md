@@ -2,6 +2,12 @@
 
 Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DocTester's API. Use it when you need to look up a specific method, class, or configuration option.
 
+## Quick Reference (80/20 Fast Path)
+
+| Topic | Description |
+|---|---|
+| [80/20 Quick Reference](80-20-quick-reference.md) | One-page cheat sheet — print or bookmark this |
+
 ## Java 25 Language Features
 
 | Topic | Description |
@@ -9,6 +15,12 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 | [Virtual Threads API](virtual-threads-reference.md) | Complete reference for virtual thread executors and futures |
 | [Records and Sealed Classes](records-sealed-reference.md) | Records, sealed types, pattern matching syntax and semantics |
 | [Java 25 Features](java25-features-reference.md) | Comprehensive guide to all Java 25 language features |
+
+## Real-Time Protocols
+
+| Topic | Description |
+|---|---|
+| [Real-Time Protocols](realtime-protocols-reference.md) | WebSockets, gRPC, Server-Sent Events — APIs, lifecycle, error handling |
 
 ## DocTester Classes
 

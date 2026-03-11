@@ -16,6 +16,7 @@
 package org.r10r.doctester.rendermachine;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.testbrowser.Request;
@@ -47,6 +48,71 @@ public interface RenderMachineCommands {
      * @param rawMarkdown Raw content to inject (e.g., markdown tables, code blocks, or HTML).
      */
     public void sayRaw(String rawMarkdown);
+
+    /**
+     * Renders a markdown table from a 2D string array.
+     * The first row is treated as table headers.
+     *
+     * @param data A 2D array where each row is a list of cells. First row becomes TH.
+     */
+    public void sayTable(String[][] data);
+
+    /**
+     * Renders a code block with optional syntax highlighting language hint.
+     *
+     * @param code The code content.
+     * @param language The programming language for syntax highlighting (e.g., "java", "sql", "json").
+     */
+    public void sayCode(String code, String language);
+
+    /**
+     * Renders a warning callout box (GitHub-style [!WARNING] alert).
+     *
+     * @param message The warning message.
+     */
+    public void sayWarning(String message);
+
+    /**
+     * Renders an info callout box (GitHub-style [!NOTE] alert).
+     *
+     * @param message The info message.
+     */
+    public void sayNote(String message);
+
+    /**
+     * Renders key-value pairs in a readable format.
+     *
+     * @param pairs A map of keys to values.
+     */
+    public void sayKeyValue(Map<String, String> pairs);
+
+    /**
+     * Renders an unordered (bullet) list.
+     *
+     * @param items List of strings to render as bullet points.
+     */
+    public void sayUnorderedList(List<String> items);
+
+    /**
+     * Renders an ordered (numbered) list.
+     *
+     * @param items List of strings to render as numbered items.
+     */
+    public void sayOrderedList(List<String> items);
+
+    /**
+     * Serializes an object to JSON and renders it in a code block.
+     *
+     * @param object The object to serialize (will be rendered as pretty-printed JSON).
+     */
+    public void sayJson(Object object);
+
+    /**
+     * Renders assertion results in a table format with Check and Result columns.
+     *
+     * @param assertions A map where keys are check descriptions and values are results.
+     */
+    public void sayAssertions(Map<String, String> assertions);
 
     /**
      * @return all cookies saved by this TestBrowser.

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
@@ -51,6 +52,7 @@ public class RenderMachineImpl implements RenderMachine {
 
     private static final String BASE_DIR = "target/docs";
     private static final String INDEX_FILE = "README";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     final List<String> sections = new ArrayList<>();
     final List<String> toc = new ArrayList<>();
@@ -128,6 +130,148 @@ public class RenderMachineImpl implements RenderMachine {
             markdownDocument.add(convertStackTraceToString(e));
             markdownDocument.add("```");
             throw e;
+        }
+    }
+
+    @Override
+    public void sayTable(String[][] data) {
+        if (data == null || data.length == 0) {
+            return;
+        }
+
+        markdownDocument.add("");
+
+        // Generate header row with separator
+        String[] header = data[0];
+        StringBuilder headerRow = new StringBuilder("|");
+        StringBuilder separator = new StringBuilder("|");
+
+        for (String cell : header) {
+            headerRow.append(" ").append(cell).append(" |");
+            separator.append(" --- |");
+        }
+
+        markdownDocument.add(headerRow.toString());
+        markdownDocument.add(separator.toString());
+
+        // Add data rows
+        for (int i = 1; i < data.length; i++) {
+            String[] row = data[i];
+            StringBuilder rowStr = new StringBuilder("|");
+            for (String cell : row) {
+                rowStr.append(" ").append(cell == null ? "" : cell).append(" |");
+            }
+            markdownDocument.add(rowStr.toString());
+        }
+    }
+
+    @Override
+    public void sayCode(String code, String language) {
+        markdownDocument.add("");
+        markdownDocument.add("```" + (language != null && !language.isEmpty() ? language : ""));
+        if (code != null) {
+            for (String line : code.split("\n")) {
+                markdownDocument.add(line);
+            }
+        }
+        markdownDocument.add("```");
+    }
+
+    @Override
+    public void sayWarning(String message) {
+        markdownDocument.add("");
+        if (message != null && !message.isEmpty()) {
+            markdownDocument.add("> [!WARNING]");
+            markdownDocument.add("> " + message);
+        }
+    }
+
+    @Override
+    public void sayNote(String message) {
+        markdownDocument.add("");
+        if (message != null && !message.isEmpty()) {
+            markdownDocument.add("> [!NOTE]");
+            markdownDocument.add("> " + message);
+        }
+    }
+
+    @Override
+    public void sayKeyValue(Map<String, String> pairs) {
+        if (pairs == null || pairs.isEmpty()) {
+            return;
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("| Key | Value |");
+        markdownDocument.add("| --- | --- |");
+
+        for (Entry<String, String> entry : pairs.entrySet()) {
+            String key = entry.getKey() != null ? entry.getKey() : "";
+            String value = entry.getValue() != null ? entry.getValue() : "";
+            markdownDocument.add("| `" + key + "` | `" + value + "` |");
+        }
+    }
+
+    @Override
+    public void sayUnorderedList(List<String> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        markdownDocument.add("");
+        for (String item : items) {
+            markdownDocument.add("- " + (item != null ? item : ""));
+        }
+    }
+
+    @Override
+    public void sayOrderedList(List<String> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        markdownDocument.add("");
+        for (int i = 0; i < items.size(); i++) {
+            String item = items.get(i);
+            markdownDocument.add((i + 1) + ". " + (item != null ? item : ""));
+        }
+    }
+
+    @Override
+    public void sayJson(Object object) {
+        if (object == null) {
+            return;
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("```json");
+        try {
+            String jsonString = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(object);
+            for (String line : jsonString.split("\n")) {
+                markdownDocument.add(line);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to serialize object to JSON", e);
+            markdownDocument.add(object.toString());
+        }
+        markdownDocument.add("```");
+    }
+
+    @Override
+    public void sayAssertions(Map<String, String> assertions) {
+        if (assertions == null || assertions.isEmpty()) {
+            return;
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("| Check | Result |");
+        markdownDocument.add("| --- | --- |");
+
+        for (Entry<String, String> entry : assertions.entrySet()) {
+            String check = entry.getKey() != null ? entry.getKey() : "";
+            String result = entry.getValue() != null ? entry.getValue() : "";
+            markdownDocument.add("| " + check + " | `" + result + "` |");
         }
     }
 

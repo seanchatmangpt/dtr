@@ -4,6 +4,12 @@ Explanation is **understanding-oriented**. These documents discuss concepts, des
 
 ## Available Explanations
 
+### DocTester 80/20 Design Patterns
+
+| Document | What it explains |
+|---|---|
+| [80/20 Design Patterns](80-20-design-patterns.md) | Why DocTester works the way it does — the philosophy behind the core methods |
+
 ### Java 25 Design Philosophy
 
 | Document | What it explains |
@@ -11,6 +17,12 @@ Explanation is **understanding-oriented**. These documents discuss concepts, des
 | [Java 25 Design Philosophy](java25-design-philosophy.md) | How virtual threads, records, sealed classes, and pattern matching work together |
 | [Why Virtual Threads Matter](virtual-threads-philosophy.md) | The design philosophy behind virtual threads and why they change concurrency in Java |
 | [Why Records and Sealed Classes](records-sealed-philosophy.md) | How records eliminate boilerplate and sealed classes enforce type safety |
+
+### Real-Time Protocol Design
+
+| Document | What it explains |
+|---|---|
+| [Real-Time Protocol Philosophy](realtime-protocols-philosophy.md) | When to use WebSockets, gRPC, or SSE; evolution, trade-offs, design goals |
 
 ### DocTester and Testing Philosophy
 
