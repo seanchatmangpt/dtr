@@ -13,7 +13,16 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 | [Text Blocks for Multiline Strings](text-blocks.md) | Write HTML, JSON, SQL, and templates naturally without escapes |
 | [Switch Expressions](switch-expressions.md) | Replace if/else chains with exhaustive, type-safe matching |
 
-### API Testing
+### Real-Time Protocols
+
+| Guide | Task |
+|---|---|
+| [Connect to WebSocket Servers](websockets-connection.md) | Establish connections, manage lifecycle, send/receive messages |
+| [Handle gRPC Unary Calls](grpc-unary.md) | Make request/response RPC calls, retry, timeout |
+| [Handle gRPC Streaming](grpc-streaming.md) | Server streaming, client streaming, bidirectional streaming |
+| [Subscribe to SSE Streams](sse-subscription.md) | Connect, parse events, filter by type |
+
+### REST API Testing
 
 | Guide | Task |
 |---|---|

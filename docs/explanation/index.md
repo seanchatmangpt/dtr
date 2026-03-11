@@ -12,6 +12,12 @@ Explanation is **understanding-oriented**. These documents discuss concepts, des
 | [Why Virtual Threads Matter](virtual-threads-philosophy.md) | The design philosophy behind virtual threads and why they change concurrency in Java |
 | [Why Records and Sealed Classes](records-sealed-philosophy.md) | How records eliminate boilerplate and sealed classes enforce type safety |
 
+### Real-Time Protocol Design
+
+| Document | What it explains |
+|---|---|
+| [Real-Time Protocol Philosophy](realtime-protocols-philosophy.md) | When to use WebSockets, gRPC, or SSE; evolution, trade-offs, design goals |
+
 ### DocTester and Testing Philosophy
 
 | Document | What it explains |

@@ -10,6 +10,12 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 | [Records and Sealed Classes](records-sealed-reference.md) | Records, sealed types, pattern matching syntax and semantics |
 | [Java 25 Features](java25-features-reference.md) | Comprehensive guide to all Java 25 language features |
 
+## Real-Time Protocols
+
+| Topic | Description |
+|---|---|
+| [Real-Time Protocols](realtime-protocols-reference.md) | WebSockets, gRPC, Server-Sent Events — APIs, lifecycle, error handling |
+
 ## DocTester Classes
 
 | Class | Description |
