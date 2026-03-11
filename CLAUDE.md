@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-DocTester is a Java testing framework that generates Bootstrap-styled HTML documentation while running JUnit tests. It provides a fluent API for making HTTP requests, asserting responses, and automatically rendering the results as living API documentation.
+DocTester is a Java testing framework that generates portable **Markdown documentation** while running JUnit tests. It provides a fluent API for making HTTP requests, asserting responses, and automatically rendering the results as living API documentation. Generated docs work on GitHub, GitLab, and all Markdown platforms without any special rendering.
 
-**Current version:** `1.1.12-SNAPSHOT`
+**Current version:** `2.5.0-SNAPSHOT`
 **License:** Apache 2.0
 **Maven coordinates:** `org.r10r:doctester-core`
 
@@ -39,11 +39,13 @@ doctester/
 │       │   │   ├── Url.java              # Fluent URL builder
 │       │   │   ├── HttpConstants.java    # Header/content-type constants
 │       │   │   └── PayloadUtils.java     # JSON/XML pretty-print utilities
-│       │   └── rendermachine/            # HTML documentation generator
+│       │   └── rendermachine/            # Markdown documentation generator
 │       │       ├── RenderMachine.java         # Interface (extends RenderMachineCommands)
 │       │       ├── RenderMachineCommands.java  # say* API contract
-│       │       ├── RenderMachineImpl.java      # Bootstrap HTML generation
-│       │       └── RenderMachineHtml.java      # HTML template constants
+│       │       ├── RenderMachineImpl.java      # Markdown generation + file I/O
+│       │       ├── RenderMachineFactory.java  # Multi-format renderer selector
+│       │       ├── MultiRenderMachine.java    # Composite renderer for multiple formats
+│       │       └── latex/                     # LaTeX/PDF documentation (academic/patents)
 │       └── test/java/org/r10r/doctester/
 │           ├── DocTesterTest.java
 │           ├── DocTesterLifecycleTest.java
@@ -110,7 +112,7 @@ mvnd --stop
 
 ## Architecture — How DocTester Works
 
-DocTester bridges JUnit 4 test execution with HTML documentation generation via three layers:
+DocTester bridges JUnit 4/5 test execution with Markdown documentation generation via three layers:
 
 ### 1. Request Layer (`testbrowser/`)
 ```
@@ -131,21 +133,22 @@ Request.GET()                     <- Fluent builder
 
 ### 3. Documentation Layer (`rendermachine/`)
 - `RenderMachineImpl` captures every `say*` call and HTTP exchange
-- Generates Bootstrap 3-styled HTML to `target/site/doctester/<TestClassName>.html`
+- Generates clean Markdown to `docs/test/<TestClassName>.md`
 - Maintains a table of contents from `sayNextSection()` headings
-- Produces an index page at `target/site/doctester/index.html` after all tests
-- Copies Bootstrap 3.0.0 and jQuery 1.9.0 assets from classpath resources
+- Produces an index README at `docs/test/README.md` after all tests
+- Pure Markdown output—no dependencies on Bootstrap, jQuery, or custom CSS
+- Supports multi-format rendering: Markdown, LaTeX/PDF (academic/patents), HTML (via RenderMachineFactory)
 
 ### Lifecycle
 ```
 @Test method runs
-  → sayNextSection() / say()      → RenderMachine buffers HTML
+  → sayNextSection() / say()      → RenderMachine buffers Markdown
   → sayAndMakeRequest(request)    → TestBrowserImpl executes HTTP → RenderMachine logs request+response
-  → sayAndAssertThat(...)         → Hamcrest assertion → green/red panel in HTML
+  → sayAndAssertThat(...)         → Assertion result → Markdown table entry
   ↓
-TestWatcher.finished()            → RenderMachine.finishAndWriteOut() writes <TestClass>.html
+TestWatcher.finished()            → RenderMachine.finishAndWriteOut() writes <TestClass>.md
   ↓
-@AfterClass / finishDocTest()     → Index page generated with links to all docs
+@AfterClass / finishDocTest()     → Index README.md generated with links to all docs
 ```
 
 ---
@@ -159,14 +162,14 @@ Extend this in your test classes. Provides:
 |--------|---------|
 | `say(String text)` | Render a paragraph in the doc |
 | `sayNextSection(String title)` | Render H1 heading + TOC entry |
-| `sayRaw(String html)` | Inject raw HTML |
+| `sayRaw(String markdown)` | Inject raw Markdown |
 | `sayAndMakeRequest(Request)` | Execute HTTP and document request+response → returns `Response` |
 | `makeRequest(Request)` | Execute HTTP silently (no documentation) → returns `Response` |
 | `sayAndAssertThat(String, T, Matcher<T>)` | Assert with Hamcrest + document result |
 | `sayAndGetCookies()` | Document and return current cookies |
 | `sayAndGetCookieWithName(String)` | Document and return named cookie |
 | `testServerUrl()` | **Must override** — returns base `Url` for the test server |
-| `finishDocTest()` | Static — call in `@AfterClass` to generate index page |
+| `finishDocTest()` | Static — call in `@AfterClass` to generate README.md index page |
 
 ### `Request` (fluent builder)
 ```java
@@ -371,7 +374,7 @@ class MyApiDocTest extends DocTester {
 
     @AfterClass
     public static void afterClass() {
-        finishDocTest();  // generates index.html
+        finishDocTest();  // generates docs/test/README.md
     }
 
     @Override
@@ -483,16 +486,34 @@ if (payload instanceof JsonNode node && !node.isNull()) {
 - `--enable-preview` must be in both compiler config AND surefire `<argLine>`
 
 ### Plugin Versions (root POM)
-| Plugin | Version |
-|--------|---------|
-| `maven-compiler-plugin` | 3.13.0 |
-| `maven-surefire-plugin` | 3.5.2 |
-| `maven-enforcer-plugin` | 3.5.0 |
-| `central-publishing-maven-plugin` | (release profile) |
-| `maven-source-plugin` | (release profile) |
-| `maven-javadoc-plugin` | (release profile) |
-| `maven-gpg-plugin` | (release profile) |
-| `maven-license-plugin` | (license profile) |
+| Plugin | Version | Notes |
+|--------|---------|-------|
+| `maven-compiler-plugin` | 3.13.0 | Java 25, --enable-preview, <release>25</release> |
+| `maven-surefire-plugin` | 3.5.3 | JUnit 5/Jupiter support, --enable-preview in argLine |
+| `maven-enforcer-plugin` | 3.5.0 | Enforces Java 25+ and Maven 4.0.0-rc-3+ |
+| `central-publishing-maven-plugin` | 0.6.0 | (release profile) |
+| `maven-source-plugin` | 3.3.1 | (release profile) |
+| `maven-javadoc-plugin` | 3.11.2 | (release profile) |
+| `maven-gpg-plugin` | 3.2.7 | (release profile) |
+| `maven-license-plugin` | 1.6.0 | (license profile) |
+
+**Surefire configuration for Markdown documentation:**
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.5.3</version>
+    <configuration>
+        <!-- Enable Java 25 preview features for tests -->
+        <argLine>--enable-preview</argLine>
+        <!-- Optional: customize DocTester output directory via system property -->
+        <systemPropertyVariables>
+            <doctester.output.dir>${project.basedir}/../docs/test</doctester.output.dir>
+            <doctester.format>markdown</doctester.format>
+        </systemPropertyVariables>
+    </configuration>
+</plugin>
+```
 
 ---
 
@@ -511,22 +532,40 @@ mvnd.threads=4
 
 ---
 
-## HTML Documentation Output
+## Markdown Documentation Output
 
-Generated docs land in `target/site/doctester/` (relative to the module under test):
+Generated docs land in `docs/test/` (repository root):
 
 ```
-target/site/doctester/
-├── index.html                    # Index linking all doc-tests
-├── <TestClassName>.html          # Per-test-class documentation
-├── bootstrap/
-│   ├── css/bootstrap.min.css
-│   └── js/bootstrap.min.js
-├── jquery/jquery-1.9.0.min.js
-└── custom_doctester_stylesheet.css  # Optional custom CSS (place in src/main/resources)
+docs/test/
+├── README.md                     # Index linking all doc-tests
+├── FirstDocTest.md               # Per-test-class documentation
+├── ApiControllerDocTest.md
+├── DomainTest.md
+└── (all generated .md files)
 ```
 
-Custom CSS: put `custom_doctester_stylesheet.css` in `src/main/resources/` of the module running the tests. It is automatically copied and linked.
+**Key properties for configuring output:**
+```xml
+<!-- In pom.xml or settings.xml: control documentation output directory -->
+<properties>
+    <doctester.output.dir>docs/test</doctester.output.dir>  <!-- Default: docs/test -->
+    <doctester.format>markdown</doctester.format>           <!-- markdown, latex, html, or comma-separated list -->
+</properties>
+```
+
+**Customizing formats:** DocTester supports multi-format output via `RenderMachineFactory`. To generate both Markdown and LaTeX/PDF:
+```xml
+<properties>
+    <doctester.format>markdown,latex</doctester.format>
+</properties>
+```
+
+**Advantages:**
+- **Pure Markdown:** No HTML/CSS/JavaScript dependencies—works everywhere
+- **Version-control friendly:** Clean text diffs, easy to review in pull requests
+- **GitHub-native:** Renders directly on GitHub without special configuration
+- **Portable:** Copy to any documentation platform (GitLab, Gitea, Notion, etc.)
 
 ---
 

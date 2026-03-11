@@ -66,6 +66,11 @@ the specific language governing permissions and limitations under the License. -
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- DocTester documentation output configuration -->
+        <doctester.output.dir>docs/test</doctester.output.dir>
+        <doctester.format>markdown</doctester.format>
+
         <!-- NetBeans editor settings -->
         <org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>4</org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>
         <org-netbeans-modules-editor-indent.CodeStyle.project.tab-size>4</org-netbeans-modules-editor-indent.CodeStyle.project.tab-size>
@@ -312,6 +317,11 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.5.3</version>
                     <configuration>
                         <argLine>--enable-preview</argLine>
+                        <!-- DocTester documentation output configuration passed to test runtime -->
+                        <systemPropertyVariables>
+                            <doctester.output.dir>${doctester.output.dir}</doctester.output.dir>
+                            <doctester.format>${doctester.format}</doctester.format>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
 
