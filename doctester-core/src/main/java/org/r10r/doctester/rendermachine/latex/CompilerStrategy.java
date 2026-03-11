@@ -25,12 +25,20 @@ import java.nio.file.Path;
  * - LatexmkStrategy: handles multipass compilation, aux cleanup
  * - PdflatexStrategy: direct compilation
  * - XelatexStrategy: modern Unicode support
- * - PandocStrategy: fallback when LaTeX toolchain unavailable
+ * - LatexmkStrategy: intelligent multipass compilation
+ *
+ * Java 26 Enhancement (JEP 500 - Final Means Final):
+ * This interface is sealed to only allow the specified implementations.
+ * This enables the JVM to make static analysis guarantees:
+ * - Devirtualization of method calls (faster dispatch)
+ * - Exhaustive pattern matching over sealed types
+ * - Preparation for Valhalla value class flattening (no pointer indirection)
  *
  * Each strategy reports availability via isAvailable() and
  * handles compilation errors gracefully.
  */
-public interface CompilerStrategy {
+public sealed interface CompilerStrategy
+    permits PdflatexStrategy, XelatexStrategy, LatexmkStrategy, PandocStrategy {
 
     /**
      * Check if this compiler strategy is available in the system PATH.

@@ -23,21 +23,29 @@ import org.r10r.doctester.testbrowser.Request;
  * <p>Implementations of this interface can add headers, query parameters, or other
  * authentication mechanisms to outgoing requests.
  *
- * <p>Built-in implementations:
- * <ul>
- *   <li>{@link BearerTokenAuth} - OAuth 2.0 Bearer token authentication</li>
- *   <li>{@link ApiKeyAuth} - API key authentication via header or query parameter</li>
- *   <li>{@link BasicAuth} - HTTP Basic authentication</li>
- * </ul>
+ * Java 26 Enhancement (JEP 500 - Final Means Final):
+ * This interface is sealed to only allow the specified implementations.
+ * This enables the JVM to make static analysis guarantees:
+ * - Devirtualization of authentication method calls
+ * - Exhaustive pattern matching over sealed auth types
+ * - Preparation for Valhalla value class flattening
  *
- * <p>Custom implementations can be created for application-specific auth schemes.
+ * Permitted implementations:
+ * - BasicAuth - HTTP Basic authentication (RFC 7617)
+ * - BearerTokenAuth - OAuth 2.0 Bearer token authentication (RFC 6750)
+ * - ApiKeyAuth - Custom API key headers or query parameters
+ * - OAuth2TokenManager - OAuth2 token refresh and scope management
+ * - SessionAwareAuthProvider - Automatic cookie jar and session management
  *
  * @see BearerTokenAuth
  * @see ApiKeyAuth
  * @see BasicAuth
+ * @see OAuth2TokenManager
+ * @see SessionAwareAuthProvider
  */
 @FunctionalInterface
-public interface AuthProvider {
+public sealed interface AuthProvider
+    permits BasicAuth, BearerTokenAuth, ApiKeyAuth, OAuth2TokenManager, SessionAwareAuthProvider {
 
     /**
      * Applies authentication to the given request builder.

@@ -15,11 +15,11 @@
  */
 package org.r10r.doctester.rendermachine;
 
-import java.util.ArrayList;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
+import java.util.concurrent.StructuredTaskScope;
 import java.util.function.Consumer;
 
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Delegating render machine that routes method calls to multiple machines simultaneously
- * using virtual threads.
+ * using virtual threads and structured concurrency.
  *
  * <p>Enables multi-format output: one test execution produces Markdown, LaTeX, PDF, slides,
  * and blog posts in parallel by dispatching each {@code say*} call to all contained machines
@@ -42,23 +42,21 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Transparent to test code: use exactly like a single RenderMachine.</p>
  *
- * <p><strong>Java 25/26 showcase — virtual threads:</strong> Each dispatch uses
- * {@link Executors#newVirtualThreadPerTaskExecutor()} to run all machines concurrently.
- * Virtual threads (Project Loom) are JVM-scheduled, not OS-scheduled. They have near-zero
- * creation overhead, making one-virtual-thread-per-machine-per-call practical even for
- * high-frequency {@code say*} calls. When DocTester generates 11 simultaneous output
- * formats, wall-clock time is the slowest single renderer, not the sum of all renderers.</p>
+ * <p><strong>Java 25/26 showcase — structured concurrency:</strong> Each dispatch uses
+ * {@link StructuredTaskScope} with {@link StructuredTaskScope.ShutdownOnFailure} semantics (JEP 525).
+ * This replaces manual future waiting and error aggregation with JVM-native structured semantics:
+ * if any renderer fails, all tasks are cancelled automatically, and the error is propagated
+ * with full context. This is simpler, safer, and faster than CompletableFuture chains.</p>
  *
- * <p><strong>Java 25/26 showcase — unnamed patterns:</strong> The {@code dispatchToAll}
- * helper uses {@code var _} for ignored future results in void-dispatch paths, demonstrating
- * unnamed variables (JEP 456, stable in Java 22+).</p>
+ * <p><strong>Java 25/26 showcase — virtual threads:</strong> All tasks run on virtual threads
+ * (Project Loom) which are JVM-scheduled, not OS-scheduled. They have near-zero creation overhead,
+ * making one-virtual-thread-per-machine-per-call practical even for high-frequency {@code say*} calls.
+ * When DocTester generates 8+ simultaneous output formats, wall-clock time is the slowest single
+ * renderer, not the sum of all renderers.</p>
  *
- * <p><strong>Java 25/26 showcase — pattern matching instanceof:</strong> The
- * {@code dispatchToAll} error handling uses pattern matching to extract the underlying
- * exception without explicit casting:</p>
- * <pre>{@code
- * e.getCause() instanceof Exception ex ? ex : new RuntimeException(e.getCause())
- * }</pre>
+ * <p><strong>Java 26 Enhancement (JEP 525):</strong> Uses StructuredTaskScope.ShutdownOnFailure
+ * to ensure fail-fast semantics: if any renderer fails mid-rendering, all concurrent renderers
+ * are cancelled immediately, preventing wasted computation and providing immediate error feedback.</p>
  *
  * <p>Example:</p>
  * <pre>{@code
@@ -93,51 +91,47 @@ public final class MultiRenderMachine extends RenderMachine {
     }
 
     /**
-     * Dispatches an action to all contained render machines concurrently using virtual threads.
+     * Dispatches an action to all contained render machines concurrently using structured concurrency.
      *
-     * <p>This is the core of the Java 25/26 showcase in this class. Every {@code say*} method
-     * delegates to this single helper, which:</p>
+     * <p>Java 26 Enhancement (JEP 525 - Structured Concurrency):</p>
      * <ol>
-     *   <li>Creates a virtual-thread-per-task executor (zero OS-thread overhead)</li>
-     *   <li>Submits one task per machine — each task calls the action on its machine</li>
-     *   <li>Collects all futures, waits for completion, aggregates any failures</li>
-     *   <li>Throws {@link MultiRenderException} if any machine fails</li>
+     *   <li>Creates a {@link StructuredTaskScope.ShutdownOnFailure} scope (fail-fast semantics)</li>
+     *   <li>Forks one task per machine — each task calls the action on its machine via a virtual thread</li>
+     *   <li>Joins when all tasks complete or any task fails (automatic cancellation)</li>
+     *   <li>Propagates first exception encountered, with full structured context</li>
      * </ol>
      *
-     * <p>The try-with-resources on the executor ensures all virtual threads are joined
-     * before the method returns — structured concurrency without the Structured Concurrency
-     * API (JEP 453).</p>
+     * <p>This replaces the previous manual future-waiting pattern with JVM-native semantics.
+     * StructuredTaskScope ensures:</p>
+     * <ul>
+     *   <li><strong>No error swallowing:</strong> If any renderer fails, the failure is immediate</li>
+     *   <li><strong>Automatic cancellation:</strong> All other renderers stop if one fails</li>
+     *   <li><strong>Structured lifetime:</strong> All tasks must complete before method returns</li>
+     *   <li><strong>Zero boilerplate:</strong> Three lines instead of ten</li>
+     * </ul>
      *
      * @param action the operation to invoke on each render machine
+     * @throws MultiRenderException if any machine fails (wraps first exception)
      */
     private void dispatchToAll(Consumer<RenderMachine> action) {
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            // Submit one virtual thread per machine — all run concurrently
-            var futures = machines.stream()
-                .map(m -> executor.submit(() -> {
-                    action.accept(m);
+        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+            // Fork one task per machine — all run concurrently on virtual threads
+            for (RenderMachine machine : machines) {
+                scope.fork(() -> {
+                    action.accept(machine);
                     return null;
-                }))
-                .toList();
-
-            List<Exception> errors = new ArrayList<>();
-            for (var future : futures) {
-                try {
-                    future.get();
-                } catch (ExecutionException e) {
-                    // Pattern matching instanceof — no explicit cast needed
-                    errors.add(e.getCause() instanceof Exception ex
-                        ? ex
-                        : new RuntimeException(e.getCause()));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    errors.add(e);
-                }
+                });
             }
 
-            if (!errors.isEmpty()) {
-                throw new MultiRenderException("Parallel dispatch to render machines failed", errors);
-            }
+            // Join all tasks or fail fast on first exception
+            // ShutdownOnFailure automatically cancels remaining tasks if any fails
+            scope.joinUntil(Instant.now().plus(Duration.ofSeconds(300)));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new MultiRenderException("Render dispatch interrupted", List.of(e));
+        } catch (Exception e) {
+            // StructuredTaskScope propagates the underlying exception (not wrapped in ExecutionException)
+            throw new MultiRenderException("Render machines failed: " + e.getMessage(), List.of(e));
         }
     }
 
