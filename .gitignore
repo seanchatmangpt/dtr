@@ -14,6 +14,7 @@ nb-configuration.xml
 *~
 *.h2.db
 
-# Generated test documentation
+# Generated Markdown documentation from DocTester runs
+# DocTester outputs to docs/test/ directory during test execution
 docs/
 doctester-core/docs/

@@ -261,6 +261,11 @@ public class DocTesterContext implements RenderMachineCommands {
     }
 
     @Override
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        renderMachine.sayCodeModel(method);
+    }
+
+    @Override
     public void sayCallSite() {
         renderMachine.sayCallSite();
     }

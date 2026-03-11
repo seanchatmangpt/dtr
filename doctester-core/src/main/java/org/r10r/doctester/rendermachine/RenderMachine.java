@@ -115,6 +115,18 @@ public abstract class RenderMachine implements RenderMachineCommands {
         // No-op for render machines that don't support code model rendering
     }
 
+    /**
+     * Documents a method's structure using reflection/CodeReflection API.
+     *
+     * <p>Default no-op implementation — override in render machines that support
+     * method introspection (e.g., {@link RenderMachineImpl}).</p>
+     *
+     * @param method the method to introspect and document
+     */
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        // No-op for render machines that don't support method code model rendering
+    }
+
     /** Documents current call site — no-op in base class. */
     public void sayCallSite() {}
 

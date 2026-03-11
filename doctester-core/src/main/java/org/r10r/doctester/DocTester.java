@@ -469,6 +469,20 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     }
 
     /**
+     * Documents a method's structure using Project Babylon CodeReflection API.
+     *
+     * <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)}
+     * to introspect the method's bytecode operations. On Java 25 and earlier, renders
+     * the method signature extracted via reflection.</p>
+     *
+     * @param method the method to introspect and document
+     */
+    @Override
+    public final void sayCodeModel(java.lang.reflect.Method method) {
+        renderMachine.sayCodeModel(method);
+    }
+
+    /**
      * Documents the current call site using {@link StackWalker}.
      * Renders the calling class, method name, and line number as provenance metadata.
      */
