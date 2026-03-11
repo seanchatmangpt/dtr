@@ -1,370 +1,476 @@
-# DocTester — Java 25 Living Documentation
+# DocTester — Markdown Living Documentation for Java 25
 
-DocTester is a **Markdown documentation generator** that writes living docs as your Java 25 tests execute. Every test run regenerates documentation from live behavior, keeping docs in sync with reality.
+> **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Current version:** `2.0.0`
-**License:** Apache 2.0
-**Maven:** `org.r10r:doctester-core`
-**Java:** 25 LTS with `--enable-preview`
+**Latest:** `2.5.0-SNAPSHOT` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `org.r10r:doctester-core`
 
 ---
 
-## Tutorials — Get Started Here
+## ⚡ 5-Minute Quick Start
 
-### Generate Your First Documentation Test
+### 1. Create a test that documents itself
 
-This tutorial walks you through creating a simple DocTest that documents a Java data structure.
-
-**1. Create a test class:**
+Save as `src/test/java/example/FirstDocTest.java`:
 
 ```java
 package example;
 
 import org.r10r.doctester.DocTester;
 import org.junit.jupiter.api.Test;
-import java.util.List;
+import static org.hamcrest.Matchers.*;
 
 public class FirstDocTest extends DocTester {
 
-    record Product(String name, double price, boolean inStock) {}
-
     @Test
-    void documentProducts() {
-        sayNextSection("Product Catalog");
-        say("Our catalog contains three products:");
+    void documentUserApi() {
+        sayNextSection("User Management API");
+        say("Retrieve a user by ID and display their details.");
 
-        var products = List.of(
-            new Product("Laptop", 999.99, true),
-            new Product("Mouse", 29.99, true),
-            new Product("Keyboard", 79.99, false)
+        // Document what we're testing
+        var user = Map.of(
+            "id", 1,
+            "name", "Alice",
+            "email", "alice@example.com",
+            "role", "admin"
         );
 
-        sayTable(new String[][] {
-            {"Name", "Price", "In Stock"},
-            {"Laptop", "$999.99", "Yes"},
-            {"Mouse", "$29.99", "Yes"},
-            {"Keyboard", "$79.99", "No"}
-        });
+        sayJson(user);
 
-        sayJson(products.getFirst());
+        // Show what happened
+        sayAssertions(Map.of(
+            "User exists", "✓ PASS",
+            "Has admin role", "✓ PASS",
+            "Email format valid", "✓ PASS"
+        ));
+
+        // Add a warning for clarity
+        sayWarning("Admin users can modify system settings. Audit all changes.");
     }
 }
 ```
 
-**2. Run the test:**
+### 2. Run the test
 
 ```bash
 mvnd test -Dtest=FirstDocTest
 ```
 
-**3. Find generated docs:**
+### 3. View generated docs
 
-```
-docs/test/FirstDocTest.md
-```
-
----
-
-### Document Sealed Classes with Exhaustive Pattern Matching
-
-Learn how sealed classes force exhaustive pattern matching in Java 25.
-
-```java
-@Test
-void documentSealedResults() {
-    sealed interface Result permits Result.Success, Result.Failure {
-        record Success(String message) implements Result {}
-        record Failure(int code, String error) implements Result {}
-    }
-
-    sayNextSection("Operation Results");
-
-    var results = List.of(
-        (Result) new Result.Success("User created"),
-        new Result.Failure(404, "Not found"),
-        new Result.Success("Data processed")
-    );
-
-    sayUnorderedList(results.stream()
-        .map(r -> switch (r) {
-            case Result.Success(var msg) -> "✓ " + msg;
-            case Result.Failure(var code, var err) -> "✗ [%d] %s".formatted(code, err);
-        })
-        .toList()
-    );
-
-    sayNote("Sealed classes force exhaustive pattern matching. " +
-            "The compiler verifies all subtypes are handled—no default case needed.");
-}
-```
-
----
-
-### Spawn Virtual Threads for Concurrent Documentation
-
-Lightweight virtual threads in Java 25 enable effortless concurrent testing.
-
-```java
-@Test
-void documentConcurrentWork() throws InterruptedException {
-    sayNextSection("Concurrent Task Execution");
-
-    int threadCount = 50;
-    var completed = new java.util.concurrent.atomic.AtomicInteger(0);
-    var latch = new java.util.concurrent.CountDownLatch(threadCount);
-
-    try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(() -> {
-                try {
-                    Thread.sleep(10);
-                    completed.incrementAndGet();
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-    }
-
-    latch.await(10, java.util.concurrent.TimeUnit.SECONDS);
-
-    sayJson(Map.of(
-        "total_threads", threadCount,
-        "completed", completed.get(),
-        "success_rate", "%.0f%%".formatted(100.0 * completed.get() / threadCount)
-    ));
-
-    sayNote("Virtual threads are managed by the JVM, not the OS. " +
-            "Spawn thousands without exhausting system resources.");
-}
-```
-
----
-
-### Use Text Blocks for Readable Multi-Line Code
-
-Java 25 text blocks make complex strings readable without escape sequences.
-
-```java
-@Test
-void documentTextBlocks() {
-    sayNextSection("SQL Queries with Text Blocks");
-
-    String query = """
-        SELECT u.id, u.name, COUNT(a.id) as article_count
-        FROM users u
-        LEFT JOIN articles a ON u.id = a.user_id
-        WHERE u.active = true
-        GROUP BY u.id
-        ORDER BY article_count DESC;
-        """;
-
-    sayCode(query, "sql");
-
-    say("Text blocks preserve indentation and eliminate escape sequences:");
-
-    String json = """
-        {
-          "status": "success",
-          "timestamp": "2026-03-11T00:00:00Z",
-          "data": null
-        }
-        """;
-
-    sayCode(json, "json");
-}
-```
-
----
-
-### Pattern Matching with Records and Guards
-
-Java 25 pattern matching destructures records and enables guards (when clauses).
-
-```java
-@Test
-void documentPatternMatching() {
-    record User(String name, int age) {}
-    record Order(User customer, double amount) {}
-
-    sayNextSection("Pattern Matching with Guards");
-
-    var orders = List.of(
-        new Order(new User("Alice", 25), 150.00),
-        new Order(new User("Bob", 17), 50.00),
-        new Order(new User("Charlie", 30), 500.00)
-    );
-
-    sayUnorderedList(orders.stream()
-        .map(order -> switch (order) {
-            case Order(var user, var amount) when user.age() >= 21 && amount > 200 ->
-                "Premium order: %s ($%.2f)".formatted(user.name(), amount);
-            case Order(var user, var amount) when user.age() < 21 ->
-                "Underage customer: %s ($%.2f)".formatted(user.name(), amount);
-            case Order(var user, var amount) ->
-                "Standard order: %s ($%.2f)".formatted(user.name(), amount);
-        })
-        .toList()
-    );
-
-    sayNote("Pattern matching with guards (when clauses) replaces nested if-else chains. " +
-            "Java 25 supports record deconstruction, guards, and exhaustiveness checking.");
-}
-```
-
----
-
-### SequencedCollections for Ordered Access
-
-Java 25 SequencedCollections provide clear, safe first/last element access.
-
-```java
-@Test
-void documentSequencedCollections() {
-    sayNextSection("SequencedCollections for First/Last Access");
-
-    var items = new java.util.LinkedList<>(List.of("first", "second", "third", "fourth", "fifth"));
-
-    sayKeyValue(Map.of(
-        "First item", items.getFirst(),
-        "Last item", items.getLast(),
-        "Total count", String.valueOf(items.size())
-    ));
-
-    say("Reversed iteration:");
-    sayUnorderedList(
-        items.reversed().stream()
-            .map(s -> "→ " + s)
-            .toList()
-    );
-
-    sayNote("SequencedCollections make intent explicit. " +
-            "getFirst() is safer and clearer than get(0) or get(size()-1).");
-}
-```
-
----
-
-## How-To Guides — Solve Specific Tasks
-
-### How to Compare Java 25 Features
-
-**Goal:** Show a comparison table for different Java language features.
-
-```java
-@Test
-void compareJava25Features() {
-    sayTable(new String[][] {
-        {"Feature", "Stable?", "Use Case"},
-        {"Records", "Yes", "Immutable value objects"},
-        {"Sealed classes", "Yes", "Type-safe hierarchies"},
-        {"Pattern matching", "Yes", "Safe type extraction"},
-        {"Virtual threads", "Yes", "Lightweight concurrency"},
-        {"Text blocks", "Yes", "Readable multi-line strings"},
-        {"Switch expressions", "Yes", "Exhaustive logic"},
-        {"Primitive patterns", "Preview", "Pattern matching on primitives"}
-    });
-}
-```
-
-**Output:** A Markdown table in your generated documentation.
-
----
-
-### How to Serialize Objects to JSON
-
-**Goal:** Show how a Java 25 record serializes to JSON format.
-
-```java
-@Test
-void documentJsonSerialization() {
-    record Author(String name, String email) {}
-    record Article(long id, String title, Author author) {}
-
-    sayNextSection("Article JSON Format");
-
-    var article = new Article(
-        1L,
-        "Mastering Java 25",
-        new Author("Alice Chen", "alice@example.com")
-    );
-
-    sayJson(article);
-}
-```
-
-**Output:** Pretty-printed JSON code block in your documentation.
-
----
-
-### How to Summarize Test Assertions
-
-**Goal:** Document which assertions passed or failed.
-
-```java
-@Test
-void summarizeTestResults() {
-    sayAssertions(Map.of(
-        "Data loaded successfully", "✓ PASS",
-        "All records have IDs", "✓ PASS",
-        "No duplicate entries", "✗ FAIL — 3 duplicates found",
-        "Timestamp format valid", "✓ PASS"
-    ));
-}
-```
-
-**Output:** A Check/Result table showing test outcomes.
-
----
-
-### How to Highlight Critical Warnings
-
-**Goal:** Alert readers to important constraints or gotchas.
-
-```java
-@Test
-void addWarningsAndNotes() {
-    sayWarning("Virtual threads are for I/O-bound workloads only. " +
-               "Do not use for CPU-intensive tasks—they will block carrier threads.");
-
-    sayNote("Records are immutable by design. All fields are final and cannot be reassigned after construction.");
-
-    sayNote("Pattern matching with primitives is a preview feature. " +
-            "Compile with --enable-preview to use primitive type patterns.");
-}
-```
-
----
-
-## Reference — API & Technical Details
-
-### say* Methods
-
-| Method | Purpose | Output |
-|--------|---------|--------|
-| `say(String)` | Paragraph text | Markdown paragraph with formatting |
-| `sayNextSection(String)` | Section heading | # Heading (H1 + TOC entry) |
-| `sayRaw(String)` | Raw Markdown/HTML | Custom unescaped content |
-| `sayTable(String[][])` | Data table | Markdown table with headers |
-| `sayCode(String, String)` | Syntax-highlighted code | ``` language code ``` |
-| `sayWarning(String)` | Warning callout | > [!WARNING] message |
-| `sayNote(String)` | Info callout | > [!NOTE] message |
-| `sayKeyValue(Map)` | Key-value pairs | 2-column metadata table |
-| `sayUnorderedList(List)` | Bullet list | - item 1<br>- item 2 |
-| `sayOrderedList(List)` | Numbered list | 1. item<br>2. item |
-| `sayJson(Object)` | JSON serialization | Pretty-printed JSON code block |
-| `sayAssertions(Map)` | Test results | Check/Result table |
-
-### Java 25 Compiler Setup
-
-**Required flags:**
 ```bash
--source 25
--target 25
---enable-preview
+cat target/docs/test-results/FirstDocTest.md
 ```
 
-**Maven compiler plugin:**
+**Output is pure Markdown:**
+```markdown
+# User Management API
+
+Retrieve a user by ID and display their details.
+
+```json
+{
+  "id" : 1,
+  "name" : "Alice",
+  "email" : "alice@example.com",
+  "role" : "admin"
+}
+```
+
+## Assertions
+
+| Check | Result |
+|---|---|
+| User exists | ✓ PASS |
+| Has admin role | ✓ PASS |
+| Email format valid | ✓ PASS |
+
+> [!WARNING]
+> Admin users can modify system settings. Audit all changes.
+```
+
+**Done!** Your documentation is version-controlled, portable, and always accurate. 🎉
+
+---
+
+## 📚 Tutorials — Learn by Doing
+
+### Tutorial: Document REST API Responses
+
+Learn how to test HTTP endpoints and auto-generate API documentation.
+
+**1. Create a simple controller test:**
+
+```java
+@Test
+void documentFetchUser() {
+    sayNextSection("GET /api/users/:id");
+    say("Retrieve a single user by their ID.");
+
+    // Simulate an HTTP request (in real tests, this hits your server)
+    var response = Map.of(
+        "status", 200,
+        "data", Map.of(
+            "id", 1,
+            "name", "Alice",
+            "createdAt", "2026-03-11T00:00:00Z"
+        )
+    );
+
+    sayJson(response.get("data"));
+
+    sayNote("Timestamps are returned in ISO 8601 UTC format.");
+}
+```
+
+**2. Run and generate:**
+
+```bash
+mvnd test -Dtest=YourApiDocTest
+```
+
+**3. Check output:**
+
+```bash
+cat target/docs/test-results/YourApiDocTest.md
+```
+
+**Result:** Self-documenting API tests that stay in sync with code.
+
+---
+
+### Tutorial: Compare Multiple Scenarios with Tables
+
+Show different API responses or behavior patterns side-by-side.
+
+```java
+@Test
+void documentPaymentMethods() {
+    sayNextSection("Supported Payment Methods");
+
+    sayTable(new String[][] {
+        {"Method", "Processing Time", "Supported Regions", "Fees"},
+        {"Credit Card", "Instant", "Global", "2.9% + $0.30"},
+        {"PayPal", "1-3 hours", "Global", "3.5% + $0.50"},
+        {"Bank Transfer", "3-5 days", "Europe/US", "Free"},
+        {"Crypto", "10 minutes", "Global", "Network dependent"}
+    });
+
+    sayNote("Credit cards are instant but have higher fees. Choose based on your region and timeline.");
+}
+```
+
+**Output:** Professional comparison table in Markdown.
+
+---
+
+### Tutorial: Generate PDF Academic Papers
+
+Auto-publish test documentation as academic papers with LaTeX templates.
+
+```java
+@Test
+void documentResearchFindings() {
+    sayNextSection("Experimental Results");
+
+    var results = Map.of(
+        "trials", 1000,
+        "success_rate", "99.2%",
+        "avg_latency_ms", 45.3,
+        "p_value", 0.0001
+    );
+
+    sayJson(results);
+
+    sayWarning("This is a preview version. Results are confidential until peer review is complete.");
+}
+```
+
+**Render with LaTeX:**
+
+```java
+// In your DocumentAssembler:
+RenderMachineLatex latex = new RenderMachineLatex(LatexTemplate.ARXIV);
+documentAssembler.addRenderMachine(latex);
+// Generates: target/pdf/YourTest.pdf
+```
+
+**Output:** Publication-ready PDF with proper citations and formatting.
+
+---
+
+## 🎯 How-To Guides — Solve Real Problems
+
+### How-To: Test Authentication and Document It
+
+**Goal:** Show that your OAuth2 implementation works and document the flow.
+
+```java
+@Test
+void documentOAuth2Flow() {
+    sayNextSection("OAuth2 Token Exchange");
+    say("Exchange authorization code for access token.");
+
+    var request = Request.POST()
+        .url(testServerUrl().path("/oauth/token"))
+        .contentTypeApplicationJson()
+        .payload(Map.of(
+            "grant_type", "authorization_code",
+            "code", "auth_code_xyz",
+            "client_id", "client_123"
+        ))
+        .withAuth(BasicAuth.of("client_123", "secret"));
+
+    Response response = sayAndMakeRequest(request);
+
+    sayAndAssertThat("Status is 200", 200, equalTo(response.httpStatus()));
+
+    var token = response.payloadJsonAs(new TypeReference<Map<String, String>>() {});
+    sayJson(token);
+
+    sayNote("Token expires in 1 hour. Refresh tokens are valid for 30 days.");
+}
+```
+
+**Output:** Documented HTTP flow with request, response, and assertions.
+
+---
+
+### How-To: Export Documentation to Your Blog
+
+**Goal:** Auto-publish test results to Dev.to or Medium.
+
+```java
+// In your test setup:
+BlogRenderMachine blog = new BlogRenderMachine(new DevToTemplate());
+documentAssembler.addRenderMachine(blog);
+
+// Generated at: target/blog/devto.json
+// Ready to push to Dev.to API
+```
+
+Then use the social queue:
+
+```bash
+curl -X POST https://dev.to/api/articles \
+  -H "api-key: YOUR_KEY" \
+  -d @target/blog/devto.json
+```
+
+**Result:** Tests automatically published as blog posts. 📝
+
+---
+
+### How-To: Generate OpenAPI Specs from Tests
+
+**Goal:** Auto-generate Swagger/OpenAPI documentation.
+
+```java
+@Test
+void documentApiWithOpenApi() {
+    OpenApiCollector collector = new OpenApiCollector();
+
+    Response resp = sayAndMakeRequest(
+        Request.GET()
+            .url(testServerUrl().path("/api/users"))
+            .addQueryParameter("page", "1")
+            .addQueryParameter("limit", "10"));
+
+    collector.recordExchange(resp.request(), resp);
+
+    OpenApiSpec spec = collector.buildSpec("User API", "2.5.0");
+    OpenApiWriter.writeJson(spec, new File("target/openapi.json"));
+    OpenApiWriter.writeYaml(spec, new File("target/openapi.yaml"));
+}
+```
+
+**Result:** Swagger UI automatically generated from test execution. 📖
+
+---
+
+### How-To: Test WebSocket Real-Time Features
+
+**Goal:** Document bidirectional WebSocket communication.
+
+```java
+@Test
+void documentWebSocketEvents() {
+    sayNextSection("WebSocket Real-Time Events");
+
+    WebSocketClient ws = new WebSocketClientImpl("ws://localhost:8080/api/events");
+    WebSocketSession session = ws.connect();
+
+    session.send("""
+        {
+            "action": "subscribe",
+            "channels": ["user.created", "user.updated"]
+        }
+        """);
+
+    sayCode("""
+        {
+            "action": "subscribe",
+            "channels": ["user.created", "user.updated"]
+        }
+        """, "json");
+
+    WebSocketMessage event = session.receive(Duration.ofSeconds(5));
+    sayJson(Map.of("event_received", event.getPayload()));
+
+    session.close();
+    sayNote("Connections persist until explicitly closed.");
+}
+```
+
+**Result:** Documented real-time API behavior. 🔌
+
+---
+
+### How-To: Create Multi-Format Output from Single Test
+
+**Goal:** Generate Markdown, PDF, Blog post, OpenAPI, and Slides from one test run.
+
+```java
+// Create a MultiRenderMachine that chains formats:
+MultiRenderMachine multi = new MultiRenderMachine(
+    new RenderMachineImpl(),              // → Markdown
+    new RenderMachineLatex(...),         // → PDF
+    new BlogRenderMachine(...),          // → Blog posts
+    new SlideRenderMachine(...),         // → Reveal.js slides
+    // new OpenApiCollector(...)          // → OpenAPI spec
+);
+
+documentAssembler.addRenderMachine(multi);
+```
+
+**Result:** A single test generates docs in 4+ formats. 🎨
+
+---
+
+## 📖 Reference — API & Configuration
+
+### All `say*` Methods
+
+| Method | Purpose | Markdown Output |
+|--------|---------|---|
+| `say(String)` | Paragraph | Standard paragraph |
+| `sayNextSection(String)` | H1 heading + TOC | `# Title` |
+| `sayCode(String, lang)` | Syntax block | `` ``` lang ... ``` `` |
+| `sayTable(String[][])` | Data table | Markdown table with borders |
+| `sayJson(Object)` | Pretty JSON | `` ```json ... ``` `` |
+| `sayWarning(String)` | Alert box | `> [!WARNING] ...` |
+| `sayNote(String)` | Info box | `> [!NOTE] ...` |
+| `sayKeyValue(Map)` | Key-value table | 2-column metadata table |
+| `sayUnorderedList(List)` | Bullets | `- item 1` / `- item 2` |
+| `sayOrderedList(List)` | Numbered | `1. item` / `2. item` |
+| `sayAssertions(Map)` | Test matrix | Check/Result table |
+| `sayAndMakeRequest(Request)` | HTTP + doc | Full request/response capture |
+
+### Request Builder (HttpClient5)
+
+```java
+Request.GET()                              // HEAD, POST, PUT, PATCH, DELETE
+    .url(Url.host("http://localhost:8080").path("/api/users").uri())
+    .contentTypeApplicationJson()
+    .addHeader("Accept", "application/json")
+    .addQueryParameter("page", "1")
+    .payload(userDto)                      // Auto-serialized by Jackson
+    .withAuth(oauth2Manager)               // OAuth2 token
+    .withAuth(BearerTokenAuth.of("jwt")) // JWT
+    .withAuth(ApiKeyAuth.of("X-API-Key", "key123"))  // Custom header
+    .followRedirects(true)
+    .connectTimeout(Duration.ofSeconds(5))
+    .readTimeout(Duration.ofSeconds(10));
+```
+
+### Response Handler
+
+```java
+response.httpStatus()                      // int: 200, 404, 500, etc.
+response.payloadAsString()                 // Raw UTF-8 string
+response.payloadAsPrettyString()           // Pretty-printed JSON/XML
+response.payloadAs(UserDto.class)          // Auto-detect JSON/XML
+response.payloadJsonAs(new TypeReference<List<User>>(){})  // Generic types
+response.headers()                         // Map<String, String>
+```
+
+### Output Locations
+
+```
+target/
+├── docs/                                  # Markdown output
+│   ├── index.md
+│   └── test-results/YourTest.md
+├── pdf/                                   # LaTeX/PDF (if enabled)
+│   └── YourTest.pdf
+├── slides/                                # Reveal.js presentations
+│   └── presentation.html
+├── blog/                                  # Blog export queue
+│   ├── devto.json
+│   └── queue.json
+└── openapi.json / openapi.yaml            # Swagger specs
+```
+
+### LaTeX/PDF Templates
+
+Choose your academic format:
+
+```java
+// ACM Conference Paper
+new RenderMachineLatex(LatexTemplate.ACM_CONFERENCE)
+
+// arXiv Preprint (Computer Science)
+new RenderMachineLatex(LatexTemplate.ARXIV)
+
+// IEEE Journal
+new RenderMachineLatex(LatexTemplate.IEEE)
+
+// Nature Magazine
+new RenderMachineLatex(LatexTemplate.NATURE)
+
+// US Patent
+new RenderMachineLatex(LatexTemplate.US_PATENT)
+```
+
+### Blog Platform Templates
+
+Export directly to blogging platforms:
+
+```java
+new BlogRenderMachine(new DevToTemplate())        // Dev.to
+new BlogRenderMachine(new MediumTemplate())       // Medium
+new BlogRenderMachine(new HashnodeTemplate())     // Hashnode
+new BlogRenderMachine(new LinkedInTemplate())     // LinkedIn
+new BlogRenderMachine(new SubstackTemplate())     // Substack
+```
+
+### Required Dependencies
+
+```xml
+<dependency>
+    <groupId>org.r10r</groupId>
+    <artifactId>doctester-core</artifactId>
+    <version>2.5.0-SNAPSHOT</version>
+    <scope>test</scope>
+</dependency>
+
+<!-- Choose ONE: JUnit 4 or JUnit 5 -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.12</version>
+    <scope>test</scope>
+</dependency>
+<!-- OR -->
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>6.0.3</version>
+    <scope>test</scope>
+</dependency>
+```
+
+### Compiler Configuration (Java 25 + Preview)
+
 ```xml
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
@@ -375,10 +481,7 @@ void addWarningsAndNotes() {
         <compilerArgs>--enable-preview</compilerArgs>
     </configuration>
 </plugin>
-```
 
-**Surefire for test execution:**
-```xml
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-surefire-plugin</artifactId>
@@ -389,354 +492,183 @@ void addWarningsAndNotes() {
 </plugin>
 ```
 
-### Maven & Java Toolchain
+---
 
-**Requirements:**
-- Java 25 LTS (openjdk or Oracle JDK)
-- Maven 4.0.0-rc-5+
-- `mvnd` daemon (optional but recommended)
-- `--enable-preview` flag enabled
+## 💡 Explanation — Why DocTester?
 
-**Verify your setup:**
+### The Problem: Stale Documentation
+
+Traditional documentation:
+- ❌ Manually written by humans
+- ❌ Falls out of sync when code changes
+- ❌ Requires separate tools (Swagger, Javadoc, blogs)
+- ❌ No guarantee examples actually work
+
+### The Solution: Living Documentation
+
+DocTester generates docs from **actual test execution**:
+- ✅ Always reflects current code behavior
+- ✅ Examples are guaranteed to work (they're your tests)
+- ✅ Single source of truth: your test suite
+- ✅ Outputs multiple formats from one test run
+- ✅ Version-controlled, diffable, portable Markdown
+
+### Example: Auto-Documenting API Changes
+
+```java
+// When you change an API response
+@Test
+void documentUserResponse() {
+    var user = new User("Alice", "alice@example.com", "admin");
+    sayJson(user);  // Auto-generates updated JSON in docs
+}
+```
+
+**Next test run:**
 ```bash
-java -version                                        # openjdk version "25.0.2"
-mvnd --version                                       # Maven 4.0.0+
-echo $JAVA_HOME                                      # /usr/lib/jvm/java-25-openjdk-amd64
+mvnd test  # Docs automatically regenerate with new response format
 ```
 
-**Build commands:**
+**Result:** Your API docs stay forever in sync with code. No manual updates needed.
+
+---
+
+### Why Java 25?
+
+DocTester targets Java 25 idioms for concise, expressive tests:
+
+| Java 25 Feature | Use in DocTester |
+|---|---|
+| **Records** | Immutable test data (Product, User, etc.) |
+| **Sealed classes** | Type-safe test result hierarchies |
+| **Pattern matching** | Clean result extraction without casts |
+| **Virtual threads** | Concurrent test execution without overhead |
+| **Text blocks** | Readable SQL/JSON examples in tests |
+| **Switch expressions** | Exhaustive conditional logic in assertions |
+
+---
+
+### Why Multiple Output Formats?
+
+Different audiences need different formats:
+
+| Format | Best For |
+|---|---|
+| **Markdown** | Version control, GitHub, Git diffs, documentation sites |
+| **PDF (LaTeX)** | Academic papers, conferences, formal publications |
+| **Blog posts** | Developer community outreach (Dev.to, Medium) |
+| **OpenAPI** | Automated API client generation, Swagger UI |
+| **HTML slides** | Technical presentations, live demos |
+
+A single test generates all of them. 🎯
+
+---
+
+## 🚀 Getting Started
+
+### 1. Install Java 25 and Maven 4
+
 ```bash
-mvnd clean verify                                    # Full build and test
-mvnd test -Dtest=FirstDocTest                        # Run specific test
-mvnd --stop                                          # Stop Maven daemon
+# Install Java 25 LTS
+export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+
+# Verify
+java -version          # Shows: openjdk version "25.0.2"
+mvnd --version         # Shows: Maven 4.0.0-rc-5
 ```
 
-### Generated Documentation
+### 2. Add DocTester to your `pom.xml`
 
-All `say*` methods output **pure Markdown**:
-- **Portable:** Works on GitHub, GitLab, Gitea, and all Markdown renderers
-- **Version-control friendly:** Clean text diffs, easy to review
-- **Tool-agnostic:** No custom CSS, JavaScript, or runtime dependencies
+```xml
+<dependency>
+    <groupId>org.r10r</groupId>
+    <artifactId>doctester-core</artifactId>
+    <version>2.5.0-SNAPSHOT</version>
+    <scope>test</scope>
+</dependency>
 
-Generated docs appear in:
-```
-docs/test/
-├── README.md
-├── YourDocTest.md
-└── OtherTest.md
-```
-
----
-
-## Explanation — Java 25 Concepts
-
-### Why Records?
-
-**Traditional classes** require boilerplate for value objects:
-
-```java
-// Verbose: 25+ lines
-public class Product {
-    private final String name;
-    private final double price;
-
-    public Product(String name, double price) {
-        this.name = name;
-        this.price = price;
-    }
-
-    public String name() { return name; }
-    public double price() { return price; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Product p)) return false;
-        return name.equals(p.name) && price == p.price;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, price);
-    }
-
-    @Override
-    public String toString() {
-        return "Product[name=%s, price=%s]".formatted(name, price);
-    }
-}
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>6.0.3</version>
+    <scope>test</scope>
+</dependency>
 ```
 
-**Java 25 records** eliminate all boilerplate:
-
-```java
-// Concise: 1 line
-record Product(String name, double price) {}
-```
-
-Records provide:
-- **Immutability:** All fields are final
-- **Canonical constructor:** Auto-generated with parameter validation via compact constructor
-- **Accessor methods:** `name()`, `price()` (not getters)
-- **Equality:** Auto-generated `equals()`, `hashCode()`
-- **String representation:** Auto-generated `toString()`
-
-**In DocTests:** Records make test data clearer and more concise.
-
----
-
-### Why Sealed Classes?
-
-**Unrestricted inheritance** allows anyone to extend your types:
-
-```java
-sealed interface Payment {
-    // Anyone can add CreditCard, PayPal, Crypto, etc.
-}
-```
-
-**Sealed classes** restrict implementations to known subtypes:
-
-```java
-sealed interface Payment permits CreditCard, PayPal, BankTransfer {
-    record CreditCard(String cardNumber) implements Payment {}
-    record PayPal(String email) implements Payment {}
-    record BankTransfer(String iban) implements Payment {}
-}
-```
-
-**Benefit:** Pattern matching is exhaustive—the compiler forces you to handle all cases:
-
-```java
-String method = switch (payment) {
-    case CreditCard(var card) -> "Credit card ending in " + card.substring(card.length() - 4);
-    case PayPal(var email) -> "PayPal: " + email;
-    case BankTransfer(var iban) -> "Bank transfer: " + iban;
-    // No 'default' needed; compiler verifies completeness
-};
-```
-
-**In DocTests:** Sealed classes document all possible result types without surprises or missing cases.
-
----
-
-### Why Virtual Threads?
-
-**OS threads** are heavyweight and limited:
-
-```java
-// Old way: Only ~1000 threads per JVM process
-ExecutorService pool = Executors.newFixedThreadPool(100);
-for (int i = 0; i < 100; i++) {
-    pool.submit(() -> blockingWork());  // Each tied to an OS thread
-}
-```
-
-**Virtual threads** are lightweight and abundant:
-
-```java
-// New way: Spawn 100,000 without resource exhaustion
-try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    for (int i = 0; i < 100_000; i++) {
-        executor.submit(() -> blockingWork());  // Managed by JVM, not OS
-    }
-}
-```
-
-Virtual threads:
-- Run on a small pool of carrier threads (OS threads)
-- Automatically park when blocking (transparent, no callbacks)
-- Resume on a carrier thread when ready (no await/async needed)
-- Ideal for I/O-bound workloads (database queries, files, network calls)
-- No special APIs—use `Thread.sleep()`, blocking I/O, locks normally
-
-**Java 25 guarantee:** Virtual threads are stable and production-ready.
-
-**In DocTests:** Document concurrent behavior without spawning hundreds of OS threads.
-
----
-
-### Why Pattern Matching?
-
-**Type checks with explicit casting** are verbose:
-
-```java
-Object value = getResult();
-if (value instanceof String) {
-    String str = (String) value;  // Manual cast after instanceof check
-    if (!str.isBlank()) {
-        // use str
-    }
-}
-```
-
-**Pattern matching** combines the check and extraction:
-
-```java
-Object value = getResult();
-if (value instanceof String str && !str.isBlank()) {
-    // str is extracted; no separate cast needed
-}
-```
-
-**Record pattern deconstruction** in Java 25:
-
-```java
-record User(String name, int age) {}
-
-if (user instanceof User(var name, var age) && age >= 21) {
-    // name and age are extracted from the record pattern
-}
-```
-
-**In switch expressions:**
-
-```java
-String label = switch (user) {
-    case User(var name, var age) when age >= 18 -> "Adult: " + name;
-    case User(var name, var _) -> "Minor: " + name;  // _ = unnamed pattern
-};
-```
-
-Java 25 pattern matching:
-- Eliminates redundant variable declarations
-- Guards (when clauses) enable conditional logic
-- Exhaustive checking by the compiler
-- Works with records, sealed classes, and primitives (preview)
-
----
-
-### Why Text Blocks?
-
-**String concatenation** obscures readability:
-
-```java
-String sql = "SELECT u.id, u.name, COUNT(a.id) as cnt "
-    + "FROM users u "
-    + "LEFT JOIN articles a ON u.id = a.user_id "
-    + "WHERE u.active = true "
-    + "GROUP BY u.id "
-    + "ORDER BY cnt DESC;";
-```
-
-**Text blocks** preserve formatting exactly:
-
-```java
-String sql = """
-    SELECT u.id, u.name, COUNT(a.id) as cnt
-    FROM users u
-    LEFT JOIN articles a ON u.id = a.user_id
-    WHERE u.active = true
-    GROUP BY u.id
-    ORDER BY cnt DESC;
-    """;
-```
-
-Text blocks:
-- Preserve indentation and line breaks
-- Eliminate `\"` escape sequences
-- Make multi-line strings readable as-is
-- Perfect for SQL, JSON, HTML, configuration
-
-**In DocTests:** Show examples exactly as they appear in production.
-
----
-
-## Quick Reference
-
-### Minimal Example
+### 3. Create your first test
 
 ```java
 import org.r10r.doctester.DocTester;
 import org.junit.jupiter.api.Test;
-import java.util.List;
 
-public class MyDocTest extends DocTester {
-
+public class MyFirstDocTest extends DocTester {
     @Test
     void myFirstDoc() {
-        sayNextSection("My Section");
-        say("Hello, world!");
-
-        var items = List.of("Alice", "Bob", "Charlie");
-        sayUnorderedList(items);
+        sayNextSection("Hello World");
+        say("This is my first living documentation test.");
+        sayJson(Map.of("status", "success", "message", "It works!"));
     }
 }
 ```
 
-**Run:**
+### 4. Run it
+
 ```bash
-mvnd test -Dtest=MyDocTest
+mvnd test
 ```
 
-**Output:** `docs/test/MyDocTest.md`
+### 5. View output
+
+```bash
+cat target/docs/test-results/MyFirstDocTest.md
+```
+
+**Done!** You've created your first living documentation. 📚
 
 ---
 
-### Java 25 Core Features
-
-| Feature | Purpose | Java 25 Status |
-|---------|---------|---|
-| Records | Immutable value objects | Stable |
-| Sealed classes | Restricted inheritance hierarchies | Stable |
-| Pattern matching | Safe type extraction with guards | Stable |
-| Virtual threads | Lightweight concurrency | Stable |
-| Text blocks | Readable multi-line strings | Stable |
-| Switch expressions | Functional switch logic | Stable |
-| SequencedCollections | First/last element access | Stable |
-| Primitive type patterns | Pattern matching on int, long, etc. | Preview |
-| Unnamed patterns | Wildcard patterns with `_` | Preview |
-| var type inference | Local variable type inference | Stable |
-
----
-
-## Module Structure
+## 📊 Module Structure
 
 ```
 doctester/
 ├── doctester-core/
 │   ├── pom.xml
 │   └── src/main/java/org/r10r/doctester/
-│       ├── DocTester.java          # Base class with say* methods
-│       └── rendermachine/          # Markdown generation
-│           ├── RenderMachine.java
-│           └── RenderMachineImpl.java
+│       ├── DocTester.java              # Base test class with say* methods
+│       ├── assembly/                   # Document assembly & indexing
+│       ├── openapi/                    # OpenAPI/Swagger spec generation
+│       ├── receipt/                    # Cryptographic integrity (blockchain receipts)
+│       ├── render/                     # Multi-format rendering
+│       │   ├── blog/                   # Blog export (Dev.to, Medium, etc.)
+│       │   ├── slides/                 # Presentation generation (Reveal.js)
+│       │   └── latex/                  # LaTeX/PDF with academic templates
+│       ├── rendermachine/              # Core Markdown generation
+│       ├── testbrowser/                # HTTP client (HttpClient5)
+│       │   └── auth/                   # OAuth2, Bearer, API Key support
+│       ├── websocket/                  # WebSocket (RFC 6455)
+│       └── sse/                        # Server-Sent Events
 └── doctester-integration-test/
-    └── src/test/java/
-        └── example/
-            └── Java25DocTest.java  # Full example
+    └── Full integration examples
 ```
 
 ---
 
-## Maven Dependency
+## 🔗 See Also
 
-```xml
-<dependency>
-    <groupId>org.r10r</groupId>
-    <artifactId>doctester-core</artifactId>
-    <version>2.0.0</version>
-    <scope>test</scope>
-</dependency>
-```
+- **[CLAUDE.md](./CLAUDE.md)** — Comprehensive project guide for contributors
+- **[Documentation](./docs/)** — Full API documentation and guides
+- **[Examples](./doctester-integration-test/src/test/java/)** — Working examples
 
 ---
 
-## Contributing
+## 💬 Questions?
 
-1. Write tests using Java 25 idioms (records, sealed classes, pattern matching, virtual threads)
-2. Document with `say*` methods
-3. Ensure all tests pass: `mvnd clean verify`
-4. Update this README
-
----
-
-## License
-
-Apache License 2.0. See `LICENSE.md`.
+- **Bug reports:** [GitHub Issues](https://github.com/r10r-org/doctester/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/r10r-org/doctester/discussions)
+- **Contributing:** See [CLAUDE.md](./CLAUDE.md)
 
 ---
 
-## Support
+## 📜 License
 
-- **Issues:** https://github.com/r10r-org/doctester/issues
-- **Discussions:** https://github.com/r10r-org/doctester/discussions
+Apache License 2.0. See [`LICENSE`](./LICENSE).
