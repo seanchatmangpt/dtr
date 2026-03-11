@@ -60,7 +60,7 @@ mvnd test -Dtest=FirstDocTest
 **3. Find generated docs:**
 
 ```
-target/site/doctester/FirstDocTest.md
+docs/test/FirstDocTest.md
 ```
 
 ---
@@ -420,10 +420,10 @@ All `say*` methods output **pure Markdown**:
 
 Generated docs appear in:
 ```
-target/site/doctester/
-├── index.html
+docs/test/
+├── README.md
 ├── YourDocTest.md
-└── assets/
+└── OtherTest.md
 ```
 
 ---
@@ -668,7 +668,7 @@ public class MyDocTest extends DocTester {
 mvnd test -Dtest=MyDocTest
 ```
 
-**Output:** `target/site/doctester/MyDocTest.md`
+**Output:** `docs/test/MyDocTest.md`
 
 ---
 

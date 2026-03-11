@@ -50,7 +50,7 @@ public class RenderMachineImpl implements RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
 
-    private static final String BASE_DIR = "target/docs";
+    private static final String BASE_DIR = "docs/test";
     private static final String INDEX_FILE = "README";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
