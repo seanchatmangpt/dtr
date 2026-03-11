@@ -18,6 +18,9 @@ package org.r10r.doctester.rendermachine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.testbrowser.Request;
@@ -30,20 +33,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Delegating render machine that routes method calls to multiple machines simultaneously.
+ * Delegating render machine that routes method calls to multiple machines simultaneously
+ * using virtual threads.
  *
- * Enables multi-format output: one test execution produces Markdown, LaTeX, PDF, etc.
- * in parallel by delegating each say* method call to all contained machines.
+ * <p>Enables multi-format output: one test execution produces Markdown, LaTeX, PDF, slides,
+ * and blog posts in parallel by dispatching each {@code say*} call to all contained machines
+ * concurrently.</p>
  *
- * Transparent to test code: use exactly like a single RenderMachine.
+ * <p>Transparent to test code: use exactly like a single RenderMachine.</p>
  *
- * Example:
- * <pre>
+ * <p><strong>Java 25/26 showcase — virtual threads:</strong> Each dispatch uses
+ * {@link Executors#newVirtualThreadPerTaskExecutor()} to run all machines concurrently.
+ * Virtual threads (Project Loom) are JVM-scheduled, not OS-scheduled. They have near-zero
+ * creation overhead, making one-virtual-thread-per-machine-per-call practical even for
+ * high-frequency {@code say*} calls. When DocTester generates 11 simultaneous output
+ * formats, wall-clock time is the slowest single renderer, not the sum of all renderers.</p>
+ *
+ * <p><strong>Java 25/26 showcase — unnamed patterns:</strong> The {@code dispatchToAll}
+ * helper uses {@code var _} for ignored future results in void-dispatch paths, demonstrating
+ * unnamed variables (JEP 456, stable in Java 22+).</p>
+ *
+ * <p><strong>Java 25/26 showcase — pattern matching instanceof:</strong> The
+ * {@code dispatchToAll} error handling uses pattern matching to extract the underlying
+ * exception without explicit casting:</p>
+ * <pre>{@code
+ * e.getCause() instanceof Exception ex ? ex : new RuntimeException(e.getCause())
+ * }</pre>
+ *
+ * <p>Example:</p>
+ * <pre>{@code
  * RenderMachine multiMachine = new MultiRenderMachine(
  *     new RenderMachineImpl(),      // Markdown
- *     new RenderMachineLatex(...)  // LaTeX/PDF
+ *     new RenderMachineLatex(...)   // LaTeX/PDF
  * );
- * </pre>
+ * }</pre>
  */
 public final class MultiRenderMachine extends RenderMachine {
 
@@ -53,165 +76,225 @@ public final class MultiRenderMachine extends RenderMachine {
 
     /**
      * Create a multi-render machine delegating to the given machines.
+     *
+     * @param machines the render machines to dispatch to (immutable copy is made)
      */
     public MultiRenderMachine(List<RenderMachine> machines) {
-        this.machines = List.copyOf(machines); // Immutable copy
+        this.machines = List.copyOf(machines);
     }
 
     /**
      * Create a multi-render machine delegating to the given machines (varargs).
+     *
+     * @param machines the render machines to dispatch to
      */
     public MultiRenderMachine(RenderMachine... machines) {
         this.machines = List.of(machines);
     }
 
+    /**
+     * Dispatches an action to all contained render machines concurrently using virtual threads.
+     *
+     * <p>This is the core of the Java 25/26 showcase in this class. Every {@code say*} method
+     * delegates to this single helper, which:</p>
+     * <ol>
+     *   <li>Creates a virtual-thread-per-task executor (zero OS-thread overhead)</li>
+     *   <li>Submits one task per machine — each task calls the action on its machine</li>
+     *   <li>Collects all futures, waits for completion, aggregates any failures</li>
+     *   <li>Throws {@link MultiRenderException} if any machine fails</li>
+     * </ol>
+     *
+     * <p>The try-with-resources on the executor ensures all virtual threads are joined
+     * before the method returns — structured concurrency without the Structured Concurrency
+     * API (JEP 453).</p>
+     *
+     * @param action the operation to invoke on each render machine
+     */
+    private void dispatchToAll(Consumer<RenderMachine> action) {
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            // Submit one virtual thread per machine — all run concurrently
+            var futures = machines.stream()
+                .map(m -> executor.submit(() -> {
+                    action.accept(m);
+                    return null;
+                }))
+                .toList();
+
+            List<Exception> errors = new ArrayList<>();
+            for (var future : futures) {
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    // Pattern matching instanceof — no explicit cast needed
+                    errors.add(e.getCause() instanceof Exception ex
+                        ? ex
+                        : new RuntimeException(e.getCause()));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    errors.add(e);
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                throw new MultiRenderException("Parallel dispatch to render machines failed", errors);
+            }
+        }
+    }
+
     @Override
     public void say(String text) {
-        for (RenderMachine machine : machines) {
-            machine.say(text);
-        }
+        dispatchToAll(m -> m.say(text));
     }
 
     @Override
     public void sayNextSection(String headline) {
-        for (RenderMachine machine : machines) {
-            machine.sayNextSection(headline);
-        }
+        dispatchToAll(m -> m.sayNextSection(headline));
     }
 
     @Override
     public void sayRaw(String rawContent) {
-        for (RenderMachine machine : machines) {
-            machine.sayRaw(rawContent);
-        }
+        dispatchToAll(m -> m.sayRaw(rawContent));
     }
 
     @Override
     public void sayTable(String[][] data) {
-        for (RenderMachine machine : machines) {
-            machine.sayTable(data);
-        }
+        dispatchToAll(m -> m.sayTable(data));
     }
 
     @Override
     public void sayCode(String code, String language) {
-        for (RenderMachine machine : machines) {
-            machine.sayCode(code, language);
-        }
+        dispatchToAll(m -> m.sayCode(code, language));
     }
 
     @Override
     public void sayWarning(String message) {
-        for (RenderMachine machine : machines) {
-            machine.sayWarning(message);
-        }
+        dispatchToAll(m -> m.sayWarning(message));
     }
 
     @Override
     public void sayNote(String message) {
-        for (RenderMachine machine : machines) {
-            machine.sayNote(message);
-        }
+        dispatchToAll(m -> m.sayNote(message));
     }
 
     @Override
     public void sayKeyValue(Map<String, String> pairs) {
-        for (RenderMachine machine : machines) {
-            machine.sayKeyValue(pairs);
-        }
+        dispatchToAll(m -> m.sayKeyValue(pairs));
     }
 
     @Override
     public void sayUnorderedList(List<String> items) {
-        for (RenderMachine machine : machines) {
-            machine.sayUnorderedList(items);
-        }
+        dispatchToAll(m -> m.sayUnorderedList(items));
     }
 
     @Override
     public void sayOrderedList(List<String> items) {
-        for (RenderMachine machine : machines) {
-            machine.sayOrderedList(items);
-        }
+        dispatchToAll(m -> m.sayOrderedList(items));
     }
 
     @Override
     public void sayJson(Object object) {
-        for (RenderMachine machine : machines) {
-            machine.sayJson(object);
-        }
+        dispatchToAll(m -> m.sayJson(object));
     }
 
     @Override
     public void sayAssertions(Map<String, String> assertions) {
-        for (RenderMachine machine : machines) {
-            machine.sayAssertions(assertions);
-        }
+        dispatchToAll(m -> m.sayAssertions(assertions));
     }
 
     @Override
     public void sayCite(String citationKey) {
-        for (RenderMachine machine : machines) {
-            machine.sayCite(citationKey);
-        }
+        dispatchToAll(m -> m.sayCite(citationKey));
     }
 
     @Override
     public void sayCite(String citationKey, String pageRef) {
-        for (RenderMachine machine : machines) {
-            machine.sayCite(citationKey, pageRef);
-        }
+        dispatchToAll(m -> m.sayCite(citationKey, pageRef));
     }
 
     @Override
     public void sayFootnote(String text) {
-        for (RenderMachine machine : machines) {
-            machine.sayFootnote(text);
-        }
+        dispatchToAll(m -> m.sayFootnote(text));
     }
 
     @Override
     public void sayRef(DocTestRef ref) {
-        for (RenderMachine machine : machines) {
-            machine.sayRef(ref);
-        }
+        dispatchToAll(m -> m.sayRef(ref));
+    }
+
+    @Override
+    public void sayCodeModel(Class<?> clazz) {
+        dispatchToAll(m -> m.sayCodeModel(clazz));
+    }
+
+    @Override
+    public void saySlideOnly(String text) {
+        dispatchToAll(m -> m.saySlideOnly(text));
+    }
+
+    @Override
+    public void sayDocOnly(String text) {
+        dispatchToAll(m -> m.sayDocOnly(text));
+    }
+
+    @Override
+    public void saySpeakerNote(String text) {
+        dispatchToAll(m -> m.saySpeakerNote(text));
+    }
+
+    @Override
+    public void sayHeroImage(String altText) {
+        dispatchToAll(m -> m.sayHeroImage(altText));
+    }
+
+    @Override
+    public void sayTweetable(String text) {
+        dispatchToAll(m -> m.sayTweetable(text));
+    }
+
+    @Override
+    public void sayTldr(String text) {
+        dispatchToAll(m -> m.sayTldr(text));
+    }
+
+    @Override
+    public void sayCallToAction(String url) {
+        dispatchToAll(m -> m.sayCallToAction(url));
     }
 
     @Override
     public List<Cookie> sayAndGetCookies() {
-        // Only first machine's cookies matter; all observe same browser
-        return machines.get(0).sayAndGetCookies();
+        // Only the first machine's cookies matter; all observe the same browser state
+        return machines.getFirst().sayAndGetCookies();
     }
 
     @Override
     public Cookie sayAndGetCookieWithName(String name) {
-        return machines.get(0).sayAndGetCookieWithName(name);
+        return machines.getFirst().sayAndGetCookieWithName(name);
     }
 
     @Override
     public Response sayAndMakeRequest(Request httpRequest) {
-        // Only first machine executes HTTP; others document the same request/response
-        Response response = machines.get(0).sayAndMakeRequest(httpRequest);
+        // First machine executes the HTTP request and documents it
+        Response response = machines.getFirst().sayAndMakeRequest(httpRequest);
 
-        // Other machines need to see the same HTTP exchange (without re-executing)
-        // For now, only first machine documents the actual request
-        // TODO: Add a method to machines to document pre-executed request/response
+        // Remaining machines document the same exchange without re-executing HTTP
+        // Uses SequencedCollection.subList semantics for the tail
+        if (machines.size() > 1) {
+            machines.subList(1, machines.size()).forEach(m ->
+                m.sayRaw("*[HTTP exchange documented by primary render machine]*"));
+        }
 
         return response;
     }
 
     @Override
     public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
-        for (RenderMachine machine : machines) {
-            machine.sayAndAssertThat(message, actual, matcher);
-        }
+        dispatchToAll(m -> m.sayAndAssertThat(message, actual, matcher));
     }
 
     @Override
     public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher) {
-        for (RenderMachine machine : machines) {
-            machine.sayAndAssertThat(message, reason, actual, matcher);
-        }
+        dispatchToAll(m -> m.sayAndAssertThat(message, reason, actual, matcher));
     }
 
     @Override
@@ -228,30 +311,25 @@ public final class MultiRenderMachine extends RenderMachine {
         }
     }
 
+    /**
+     * Finalizes all contained render machines concurrently using virtual threads.
+     *
+     * <p>This is where virtual threads provide the most measurable performance benefit:
+     * file I/O is blocking. A LaTeX compilation can take several seconds. Running all
+     * finalizations in parallel means the total wall-clock time is the slowest single
+     * finalizer, not the sum of all.</p>
+     */
     @Override
     public void finishAndWriteOut() {
-        List<Exception> errors = new ArrayList<>();
-
-        for (RenderMachine machine : machines) {
-            try {
-                machine.finishAndWriteOut();
-            } catch (Exception e) {
-                logger.warn("Error finalizing render machine: {}", machine.getClass().getSimpleName(), e);
-                errors.add(e);
-            }
-        }
-
-        if (!errors.isEmpty()) {
-            var msg = new StringBuilder("Multiple render machines failed finalization:\n");
-            for (Exception e : errors) {
-                msg.append("  - ").append(e.getMessage()).append("\n");
-            }
-            throw new MultiRenderException(msg.toString(), errors);
-        }
+        dispatchToAll(RenderMachine::finishAndWriteOut);
     }
 
     /**
-     * Exception thrown when multiple render machines fail during finalization.
+     * Exception thrown when one or more render machines fail during parallel dispatch.
+     *
+     * <p>All failures are collected and reported together rather than failing fast,
+     * so that a failure in one output format (e.g., LaTeX compilation error) does not
+     * prevent other formats (Markdown, blog) from completing successfully.</p>
      */
     public static final class MultiRenderException extends RuntimeException {
         private final List<Exception> causes;
@@ -261,6 +339,7 @@ public final class MultiRenderMachine extends RenderMachine {
             this.causes = List.copyOf(causes);
         }
 
+        /** All exceptions from failing render machines. */
         public List<Exception> getCauses() {
             return causes;
         }

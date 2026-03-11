@@ -252,6 +252,15 @@ public class DocTesterContext implements RenderMachineCommands {
     }
 
     // ========================================================================
+    // Code model introspection
+    // ========================================================================
+
+    @Override
+    public void sayCodeModel(Class<?> clazz) {
+        renderMachine.sayCodeModel(clazz);
+    }
+
+    // ========================================================================
     // Accessors for internal components
     // ========================================================================
 

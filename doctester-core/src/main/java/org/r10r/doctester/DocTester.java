@@ -449,4 +449,22 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     public void sayCallToAction(String url) {
         renderMachine.sayCallToAction(url);
     }
+
+    /**
+     * Documents a class's structure using Java reflection — the DocTester stand-in for
+     * Project Babylon's Code Reflection API (JEP 494).
+     *
+     * <p>Renders the class's sealed hierarchy (if sealed), record components (if a record),
+     * and all public method signatures — derived directly from the bytecode, not from
+     * developer-written descriptions. The documentation cannot drift from the implementation
+     * because it IS the implementation.</p>
+     *
+     * <p>This is the most uniquely DocTester application of Project Babylon's vision:
+     * instead of a developer describing what code does, the code describes itself.</p>
+     *
+     * @param clazz the class to introspect and document
+     */
+    public final void sayCodeModel(Class<?> clazz) {
+        renderMachine.sayCodeModel(clazz);
+    }
 }

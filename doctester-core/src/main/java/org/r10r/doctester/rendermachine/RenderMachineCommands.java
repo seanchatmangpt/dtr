@@ -159,4 +159,25 @@ public interface RenderMachineCommands {
     public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher);
 
     public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher);
+
+    /**
+     * Documents a class's structure using Java reflection — the DocTester stand-in for
+     * Project Babylon's Code Reflection API (JEP 494).
+     *
+     * <p>Renders the class's sealed hierarchy (if sealed), record components (if a record),
+     * and all public method signatures — derived directly from the class bytecode, not from
+     * developer-written descriptions. The documentation cannot drift from the implementation
+     * because it IS the implementation.</p>
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * sayCodeModel(SayEvent.class);
+     * // Renders: sealed interface with all 13 permitted record subtypes
+     * // Each subtype's components, each method's signature
+     * // All extracted from bytecode via reflection
+     * }</pre>
+     *
+     * @param clazz the class to introspect and document
+     */
+    void sayCodeModel(Class<?> clazz);
 }

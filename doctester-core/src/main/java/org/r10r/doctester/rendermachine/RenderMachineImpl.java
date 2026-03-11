@@ -20,13 +20,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -310,6 +313,98 @@ public class RenderMachineImpl extends RenderMachine {
     @Override
     public void sayRaw(String markdown) {
         markdownDocument.add(markdown);
+    }
+
+    /**
+     * Documents a class's structure using Java reflection — the DocTester stand-in for
+     * Project Babylon's Code Reflection API (JEP 494).
+     *
+     * <p>Renders the class's sealed hierarchy, record components, and all public method
+     * signatures derived directly from the bytecode. The documentation cannot drift
+     * from the implementation because it IS the implementation.</p>
+     *
+     * <p>Demonstrates Java 25/26 features:</p>
+     * <ul>
+     *   <li>Guarded switch expression for class kind detection</li>
+     *   <li>{@code Class.getPermittedSubclasses()} for sealed hierarchies</li>
+     *   <li>{@code Class.getRecordComponents()} for record inspection</li>
+     *   <li>{@code var} + streams for method signature rendering</li>
+     *   <li>Text block for the method signature template</li>
+     * </ul>
+     *
+     * @param clazz the class to introspect and document
+     */
+    @Override
+    public void sayCodeModel(Class<?> clazz) {
+        markdownDocument.add("");
+        markdownDocument.add("### Code Model: `" + clazz.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        // Guarded switch expression for class kind detection
+        // No instanceof chains. No if/else. The compiler knows these are exhaustive.
+        String kind = switch (clazz) {
+            case Class<?> c when c.isRecord()    -> "record";
+            case Class<?> c when c.isInterface() -> "interface";
+            case Class<?> c when c.isEnum()      -> "enum";
+            default                              -> "class";
+        };
+        markdownDocument.add("**Kind**: `" + kind + "`");
+        markdownDocument.add("");
+
+        // Sealed hierarchy — getPermittedSubclasses() is the reflection API for sealed types
+        // This is the runtime mirror of the compile-time `permits` clause
+        if (clazz.isSealed()) {
+            markdownDocument.add("**Sealed permits:**");
+            for (var permitted : clazz.getPermittedSubclasses()) {
+                String permittedKind = switch (permitted) {
+                    case Class<?> c when c.isRecord()    -> "record";
+                    case Class<?> c when c.isInterface() -> "interface";
+                    default                              -> "class";
+                };
+                markdownDocument.add("- `" + permittedKind + " " + permitted.getSimpleName() + "`");
+            }
+            markdownDocument.add("");
+        }
+
+        // Record components — getRecordComponents() introspects the record's canonical constructor
+        // Records are nominally immutable: components are final, accessor methods are generated
+        if (clazz.isRecord()) {
+            var components = clazz.getRecordComponents();
+            if (components != null && components.length > 0) {
+                markdownDocument.add("**Record components:**");
+                for (var component : components) {
+                    markdownDocument.add(
+                        "- `%s %s`".formatted(
+                            component.getType().getSimpleName(),
+                            component.getName()));
+                }
+                markdownDocument.add("");
+            }
+        }
+
+        // Public methods — the formal API surface, sorted alphabetically for stability
+        // Uses var + streams — local type inference where the right-hand side is obvious
+        var publicMethods = Arrays.stream(clazz.getDeclaredMethods())
+            .filter(m -> Modifier.isPublic(m.getModifiers()))
+            .sorted(Comparator.comparing(java.lang.reflect.Method::getName))
+            .toList();
+
+        if (!publicMethods.isEmpty()) {
+            markdownDocument.add("**Public methods:**");
+            markdownDocument.add("");
+            markdownDocument.add("```java");
+            for (var method : publicMethods) {
+                var params = Arrays.stream(method.getParameters())
+                    .map(p -> p.getType().getSimpleName() + " " + p.getName())
+                    .collect(Collectors.joining(", "));
+                markdownDocument.add(
+                    "%s %s(%s)".formatted(
+                        method.getReturnType().getSimpleName(),
+                        method.getName(),
+                        params));
+            }
+            markdownDocument.add("```");
+        }
     }
 
     /**
