@@ -1,8 +1,45 @@
 """Data models for DocTester CLI."""
 
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Any
+
+
+class LatexTemplate(str, Enum):
+    """LaTeX document templates (mirrors Java sealed interface).
+
+    These enums must match the Java LatexTemplate sealed interface:
+    - ARXIV: ArXivTemplate - academic papers
+    - PATENT: UsPatentTemplate - patent/USPTO format
+    - IEEE: IEEETemplate - IEEE journal/conference
+    - ACM: ACMTemplate - ACM conference papers
+    - NATURE: NatureTemplate - Nature journal format
+    """
+
+    ARXIV = "arxiv"
+    PATENT = "patent"
+    IEEE = "ieee"
+    ACM = "acm"
+    NATURE = "nature"
+
+
+class CompilerStrategy(str, Enum):
+    """LaTeX to PDF compiler strategies.
+
+    Mirrors Java LatexCompiler fallback chain and CompilerStrategy sealed interface.
+    - AUTO: Try chain in order: latexmk → pdflatex → xelatex → pandoc
+    - LATEXMK: Recommended (multipass, aux cleanup)
+    - PDFLATEX: Direct compilation
+    - XELATEX: Modern Unicode support
+    - PANDOC: Fallback (reduced fidelity)
+    """
+
+    AUTO = "auto"
+    LATEXMK = "latexmk"
+    PDFLATEX = "pdflatex"
+    XELATEX = "xelatex"
+    PANDOC = "pandoc"
 
 
 @dataclass
@@ -105,3 +142,27 @@ class PublishResult:
     files_count: int = 0
     status: str = "success"
     warnings: list[str] = field(default_factory=list)
+
+
+@dataclass
+class LatexExportConfig:
+    """Configuration for LaTeX export operations."""
+
+    input_path: Path
+    output_path: Path | None = None
+    template: LatexTemplate = LatexTemplate.ARXIV
+    validate_syntax: bool = True
+    force: bool = False
+
+
+@dataclass
+class PdfExportConfig:
+    """Configuration for PDF export (LaTeX compilation)."""
+
+    input_path: Path
+    output_path: Path | None = None
+    template: LatexTemplate = LatexTemplate.ARXIV
+    compiler_strategy: CompilerStrategy = CompilerStrategy.AUTO
+    keep_tex: bool = False
+    compilation_timeout: int = 300
+    force: bool = False

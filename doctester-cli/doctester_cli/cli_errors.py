@@ -297,3 +297,49 @@ class PomNotFoundError(CLIError):
         message = f"pom.xml not found in {path}"
         hint = "Make sure you're in the root directory of a Maven project"
         super().__init__(message, hint)
+
+
+class LatexCompilationError(CLIError):
+    """Raised when LaTeX compilation fails."""
+
+    def __init__(self, compiler: str, exit_code: int, details: str | None = None):
+        """Initialize LaTeX compilation error.
+
+        Args:
+            compiler: Name of the LaTeX compiler that failed
+            exit_code: Exit code from compiler
+            details: Optional compilation error details/log excerpt
+        """
+        message = f"LaTeX compilation failed with {compiler} (exit code {exit_code})"
+        hint = "Check your LaTeX syntax or ensure texlive/miktex is installed"
+        super().__init__(message, hint)
+        self.details = details
+
+
+class NoLatexCompilerError(CLIError):
+    """Raised when no LaTeX compiler is found in PATH."""
+
+    def __init__(self):
+        """Initialize no LaTeX compiler error."""
+        message = "No LaTeX compiler found in PATH"
+        hint = (
+            "Install texlive: apt-get install texlive-latex-base\n"
+            "Or install miktex: https://miktex.org/download"
+        )
+        super().__init__(message, hint)
+
+
+class LatexTemplateMissingError(CLIError):
+    """Raised for invalid LaTeX template selection."""
+
+    def __init__(self, template_name: str, valid_templates: list[str]):
+        """Initialize LaTeX template missing error.
+
+        Args:
+            template_name: Name of the invalid template
+            valid_templates: List of valid template names
+        """
+        templates_str = ", ".join(valid_templates)
+        message = f"Unknown LaTeX template: {template_name}"
+        hint = f"Valid templates are: {templates_str}"
+        super().__init__(message, hint)

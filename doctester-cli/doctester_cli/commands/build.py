@@ -22,12 +22,16 @@ from doctester_cli.managers.maven_manager import (
     MavenRunner,
     MavenBuildConfig,
 )
+from doctester_cli.managers.latex_manager import LatexManager
 from doctester_cli.cli_errors import (
     CLIError,
     PomNotFoundError,
     MavenNotFoundError,
     MavenBuildFailedError,
+    LatexCompilationError,
+    NoLatexCompilerError,
 )
+from doctester_cli.model import CompilerStrategy
 
 console = Console()
 app = typer.Typer(
@@ -188,12 +192,53 @@ def build_command(
         # Run format conversion if requested
         if export:
             console.print(
-                "[cyan]📝 Running format conversion (fmt md)...[/cyan]"
+                "[cyan]📝 Running LaTeX/PDF compilation...[/cyan]"
             )
-            # TODO: Import and call fmt.markdown_converter with export_dir
-            console.print(
-                "[yellow]Note: Auto-export feature coming in next release[/yellow]"
-            )
+
+            # Find generated .tex files from Maven output
+            latex_dir = export_dir.parent / "latex"
+            if latex_dir.exists():
+                tex_files = list(latex_dir.glob("*.tex"))
+
+                if tex_files:
+                    console.print(
+                        f"[cyan]Found {len(tex_files)} LaTeX file(s). Compiling to PDF...[/cyan]"
+                    )
+                    latex_manager = LatexManager()
+                    compiled_count = 0
+
+                    for tex_file in tex_files:
+                        try:
+                            pdf_output = tex_file.parent / f"{tex_file.stem}.pdf"
+                            latex_manager.compile_pdf(
+                                tex_file,
+                                pdf_output,
+                                compiler=CompilerStrategy.AUTO,
+                            )
+                            console.print(
+                                f"[green]✓[/green] Generated PDF: {pdf_output.name}"
+                            )
+                            compiled_count += 1
+                        except (LatexCompilationError, NoLatexCompilerError) as e:
+                            console.print(
+                                f"[yellow]⚠️  PDF compilation skipped: {tex_file.name} - {e.message}[/yellow]"
+                            )
+                            continue
+
+                    if compiled_count > 0:
+                        console.print(
+                            f"[green]✅ Compiled {compiled_count} PDF(s)[/green]"
+                        )
+                else:
+                    console.print(
+                        "[yellow]ℹ️  No LaTeX files found. "
+                        "Run build with -Ddoctester.output=latex to generate LaTeX.[/yellow]"
+                    )
+            else:
+                console.print(
+                    "[yellow]ℹ️  No LaTeX files found. "
+                    "Run build with -Ddoctester.output=latex to generate LaTeX.[/yellow]"
+                )
 
     except FileNotFoundError as e:
         raise typer.BadParameter(str(e))
