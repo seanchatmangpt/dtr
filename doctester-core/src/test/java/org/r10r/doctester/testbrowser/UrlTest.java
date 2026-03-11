@@ -17,8 +17,8 @@ package org.r10r.doctester.testbrowser;
 
 import org.r10r.doctester.testbrowser.Url;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *

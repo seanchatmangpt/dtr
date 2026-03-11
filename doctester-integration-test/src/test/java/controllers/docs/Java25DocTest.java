@@ -20,7 +20,7 @@ import controllers.utils.NinjaApiDoctester;
 import models.Article;
 import models.ArticleDto;
 import models.ArticlesDto;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 

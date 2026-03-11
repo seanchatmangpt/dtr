@@ -20,176 +20,141 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.hamcrest.Matcher;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.html.HtmlEscapers;
-import com.google.common.io.Files;
-import com.google.common.io.Resources;
-import java.io.FileFilter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collections;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Markdown-based render machine for generating portable API documentation.
+ *
+ * Converts test execution into clean markdown files suitable for GitHub,
+ * documentation platforms, and static site generators. No HTML/CSS/JS
+ * dependencies—just clean, portable markdown.
+ */
 public class RenderMachineImpl implements RenderMachine {
 
-    private final static Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
 
-    private final String BASE_DIR = "target/site/doctester";
+    private static final String BASE_DIR = "target/docs";
+    private static final String INDEX_FILE = "README";
 
-    public final String CUSTOM_DOCTESTER_STYLESHEET_LOCATION_WITHOUT_FILENAME = "org/doctester";
-
-    public final String CUSTOM_DOCTESTER_STYLESHEET_FILENAME = "custom_doctester_stylesheet.css";
-
-    public final String CUSTOM_DOCTESTER_STYLESHEET_LOCATION
-            = CUSTOM_DOCTESTER_STYLESHEET_LOCATION_WITHOUT_FILENAME
-            + "/"
-            + CUSTOM_DOCTESTER_STYLESHEET_FILENAME;
-
-    private final String INDEX_FILE_WITHOUT_SUFFIX = "index";
-
-    List<String> htmlDocument;
-
-    List<String> headerTitle;
-    List<String> headerId;
-
-    private TestBrowser testBrowser = null;
-
-    private String fileName = null;
+    final List<String> sections = new ArrayList<>();
+    final List<String> toc = new ArrayList<>();
+    List<String> markdownDocument = new ArrayList<>();
+    private TestBrowser testBrowser;
+    private String fileName;
 
     public RenderMachineImpl() {
-        headerTitle = Lists.newArrayList();
-        headerId = Lists.newArrayList();
-        htmlDocument = Lists.newArrayList();
-
     }
 
     @Override
-    public void say(String textAsParagraph) {
-
-        htmlDocument.add("<p>");
-        htmlDocument.add(textAsParagraph);
-        htmlDocument.add("</p>");
-
+    public void say(String text) {
+        markdownDocument.add("");
+        markdownDocument.add(text);
     }
 
     @Override
-    public void sayNextSection(String textAsH1) {
+    public void sayNextSection(String heading) {
+        sections.add(heading);
+        String anchorId = convertTextToId(heading);
+        toc.add("- [%s](#%s)".formatted(heading, anchorId));
 
-        headerTitle.add(textAsH1);
-
-        String h1WithId = "<h1 id=\"%s\">";
-        String textAsH1Id = convertTextToId(textAsH1);
-
-        htmlDocument.add(String.format(h1WithId, textAsH1Id));
-        htmlDocument.add(textAsH1);
-        htmlDocument.add("</h1>");
-
-    }
-
-    public String convertTextToId(String textAsH1) {
-
-        String textAsH1Converted = textAsH1.toLowerCase();
-        textAsH1Converted = textAsH1Converted.replaceAll("\\W", "");
-
-        return textAsH1Converted;
-
+        markdownDocument.add("");
+        markdownDocument.add("## " + heading);
     }
 
     @Override
     public List<Cookie> sayAndGetCookies() {
         List<Cookie> cookies = testBrowser.getCookies();
-
-        htmlDocument.add("<p>");
-
+        markdownDocument.add("");
+        markdownDocument.add("### Cookies");
         for (Cookie cookie : cookies) {
-
-            htmlDocument.add("<b>Cookies</b><br/>");
-            printCookie(cookie);
-
+            markdownDocument.add("- **%s**: `%s` (path: %s, domain: %s)".formatted(
+                    cookie.getName(), cookie.getValue(), cookie.getPath(), cookie.getDomain()));
         }
-
-        htmlDocument.add("</p>");
-
         return cookies;
     }
 
     @Override
     public Cookie sayAndGetCookieWithName(String name) {
-
         Cookie cookie = testBrowser.getCookieWithName(name);
-        htmlDocument.add("<b>Cookie</b><br/>");
-        printCookie(cookie);
-
-        return cookie;
-
-    }
-
-    @Override
-    public Response sayAndMakeRequest(Request httpRequest) {
-
-        Response httpResponse = testBrowser.makeRequest(httpRequest);
-
-        printHttpRequestAndHttpResponse(httpRequest, httpResponse);
-
-        return httpResponse;
-
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message,
-            T actual,
-            Matcher<? super T> matcher) {
-
-        sayAndAssertThat(message, "", actual, matcher);
-
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message,
-            String reason,
-            T actual,
-            Matcher<? super T> matcher) {
-
-        try {
-
-            Assert.assertThat(reason, actual, matcher);
-
-            htmlDocument.add("<div class=\"alert alert-success\">");
-            htmlDocument.add(message);
-            htmlDocument.add("</div>");
-
-        } catch (AssertionError assertionError) {
-
-            htmlDocument.add("<div class=\"alert alert-danger\">");
-            htmlDocument.add(convertStackTraceIntoHtml(assertionError));
-            htmlDocument.add("</div>");
-
-            throw assertionError;
+        markdownDocument.add("");
+        markdownDocument.add("### Cookie: " + name);
+        if (cookie != null) {
+            markdownDocument.add("- **Value**: `%s`".formatted(cookie.getValue()));
+            markdownDocument.add("- **Path**: `%s`".formatted(cookie.getPath()));
+            markdownDocument.add("- **Domain**: `%s`".formatted(cookie.getDomain()));
         }
-
+        return cookie;
     }
 
     @Override
-    public void sayRaw(String rawHtml) {
-        htmlDocument.add(rawHtml);
+    public Response sayAndMakeRequest(Request request) {
+        Response response = testBrowser.makeRequest(request);
+        formatHttpExchange(request, response);
+        return response;
+    }
 
+    @Override
+    public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
+        sayAndAssertThat(message, "", actual, matcher);
+    }
+
+    @Override
+    public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher) {
+        try {
+            Assert.assertThat(reason, actual, matcher);
+            markdownDocument.add("");
+            markdownDocument.add("✓ " + message);
+        } catch (AssertionError e) {
+            markdownDocument.add("");
+            markdownDocument.add("✗ **FAILED**: " + message);
+            markdownDocument.add("");
+            markdownDocument.add("```");
+            markdownDocument.add(convertStackTraceToString(e));
+            markdownDocument.add("```");
+            throw e;
+        }
+    }
+
+    @Override
+    public void sayRaw(String markdown) {
+        markdownDocument.add(markdown);
+    }
+
+    /**
+     * Add a Java code example to the documentation.
+     *
+     * Useful for showing the test code that generates the HTTP requests/responses.
+     *
+     * @param javaCode the Java code to include (as a string)
+     * @param description optional description of what the code does
+     */
+    public void sayJavaCode(String javaCode, String description) {
+        markdownDocument.add("");
+        if (description != null && !description.isEmpty()) {
+            markdownDocument.add("**" + description + "**");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("```java");
+        for (String line : javaCode.split("\n")) {
+            markdownDocument.add(line);
+        }
+        markdownDocument.add("```");
     }
 
     @Override
@@ -197,284 +162,148 @@ public class RenderMachineImpl implements RenderMachine {
         this.testBrowser = testBrowser;
     }
 
-    private void printCookie(Cookie cookie) {
-
-        htmlDocument.add("Name: " + cookie.getName() + "<br/>");
-        htmlDocument.add("Path: " + cookie.getPath() + "<br/>");
-        htmlDocument.add("Domain: " + cookie.getDomain() + "<br/>");
-        htmlDocument.add("Value: " + cookie.getValue() + "<br/>");
-
+    @Override
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     @Override
     public void finishAndWriteOut() {
-
-        copyAllAssetsLikeJQueryAndBootstrapFromResourcesToDoctesterOutputDirectory();
-
-        copyCustomUserSuppliedCssIfItExists();
-
-        doCreateHtmlPageforThisDoctest();
-        doCreateIndexPage();
-
+        createTestDocumentationFile();
+        createIndexFile();
     }
 
-    @Override
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    private void createTestDocumentationFile() {
+        List<String> doc = new ArrayList<>();
 
-    }
+        doc.add("# " + fileName);
+        doc.add("");
 
-    private void doCreateHtmlPageforThisDoctest() {
-
-        List<String> navbarElements = Lists.newArrayList();
-        for (String string : headerTitle) {
-            navbarElements.add(String.format(
-                    RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_ELEMENT,
-                    convertTextToId(string),
-                    string));
+        if (!toc.isEmpty()) {
+            doc.add("## Table of Contents");
+            doc.add("");
+            doc.addAll(toc);
+            doc.add("");
         }
 
-        // Compose sections lazily with Iterables.concat — no new backing list, no joined String
-        Iterable<String> sections = Iterables.concat(
-                Arrays.asList(
-                        RenderMachineHtml.HTML_BEGIN,
-                        String.format(RenderMachineHtml.HTML_HEAD, fileName),
-                        RenderMachineHtml.BODY_BEGIN,
-                        String.format(RenderMachineHtml.BOOTSTRAP_HEADER, fileName),
-                        RenderMachineHtml.BOOTSTRAP_CONTAINER_BEGIN,
-                        RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_BEGIN),
-                navbarElements,
-                Arrays.asList(
-                        RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_END,
-                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_BEGIN),
-                htmlDocument,
-                Arrays.asList(
-                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_END,
-                        RenderMachineHtml.BOOTSTRAP_CONTAINER_END,
-                        RenderMachineHtml.BODY_END,
-                        RenderMachineHtml.HTML_END));
+        doc.addAll(markdownDocument);
 
-        writeOutHtmlStringsIntoFile(sections, fileName);
+        doc.add("");
+        doc.add("---");
+        doc.add("*Generated by [DocTester](http://www.doctester.org)*");
 
+        writeMarkdownFile(doc, fileName);
     }
 
-    private void doCreateIndexPage() {
+    private void createIndexFile() {
+        File dir = new File(BASE_DIR);
+        File[] files = dir.listFiles((d, name) -> name.endsWith(".md") && !name.equals(INDEX_FILE + ".md"));
 
-        File[] files = collectAllDoctestsToCreateIndexFile(BASE_DIR);
+        if (files == null || files.length == 0) {
+            return;
+        }
 
-        List<String> fileLinks = Lists.newArrayList();
+        Arrays.sort(files, (a, b) -> a.getName().compareTo(b.getName()));
+
+        List<String> index = new ArrayList<>();
+        index.add("# API Documentation");
+        index.add("");
+        index.add("Generated by [DocTester](http://www.doctester.org)");
+        index.add("");
+        index.add("## Tests");
+        index.add("");
+
         for (File file : files) {
-            fileLinks.add(String.format("<a href=\"%s\">%s</a>", file.getName(), file.getName()));
-            fileLinks.add(RenderMachineHtml.HTML_NEWLINE);
+            String name = file.getName();
+            String baseName = name.substring(0, name.length() - 3); // remove .md
+            index.add("- [%s](%s)".formatted(baseName, name));
         }
 
-        Iterable<String> sections = Iterables.concat(
-                Arrays.asList(
-                        RenderMachineHtml.HTML_BEGIN,
-                        String.format(RenderMachineHtml.HTML_HEAD, INDEX_FILE_WITHOUT_SUFFIX),
-                        RenderMachineHtml.BODY_BEGIN,
-                        String.format(RenderMachineHtml.BOOTSTRAP_HEADER, INDEX_FILE_WITHOUT_SUFFIX),
-                        RenderMachineHtml.BOOTSTRAP_CONTAINER_BEGIN,
-                        RenderMachineHtml.BOOTSTRAP_LEFT_NAVBAR_EMPTY,
-                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_BEGIN),
-                fileLinks,
-                Arrays.asList(
-                        RenderMachineHtml.BOOTSTRAP_RIGHT_CONTENT_END,
-                        RenderMachineHtml.BOOTSTRAP_CONTAINER_END,
-                        RenderMachineHtml.BODY_END,
-                        RenderMachineHtml.HTML_END));
-
-        writeOutHtmlStringsIntoFile(sections, INDEX_FILE_WITHOUT_SUFFIX);
-
+        writeMarkdownFile(index, INDEX_FILE);
     }
 
-    private File[] collectAllDoctestsToCreateIndexFile(String baseDirectoryForCollectingDoctesterHtmlFiles) {
+    private void writeMarkdownFile(List<String> lines, String fileNameWithoutExtension) {
+        File outputDir = new File(BASE_DIR);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
 
-        File[] files = new File(baseDirectoryForCollectingDoctesterHtmlFiles).listFiles(new FileFilter() {
-
-            @Override
-            public boolean accept(File pathname) {
-
-                if (!pathname.getName().endsWith(".html")) {
-                    return false;
-                } else if (pathname.getName().equals(INDEX_FILE_WITHOUT_SUFFIX + ".html")) {
-                    return false;
-                } else {
-                    return true;
-                }
-
-            }
-        });
-
-        return files;
-
-    }
-
-    private void writeOutHtmlStringsIntoFile(
-            Iterable<String> htmlLines,
-            String fileNameWithoutSuffix) {
-
-        File outputFile = new File(BASE_DIR + File.separator + fileNameWithoutSuffix + ".html");
+        File outputFile = new File(BASE_DIR + File.separator + fileNameWithoutExtension + ".md");
 
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.UTF_8))) {
-
-            for (String line : htmlLines) {
+            for (String line : lines) {
                 writer.write(line);
                 writer.write('\n');
             }
-
         } catch (IOException e) {
-            logger.error("An error ocurred while writing out html to file", e);
+            logger.error("Error writing markdown file: {}", outputFile, e);
         }
-
     }
 
-    private void printHttpRequestAndHttpResponse(Request httpRequest, Response response) {
+    private void formatHttpExchange(Request request, Response response) {
+        markdownDocument.add("");
+        markdownDocument.add("### Request");
+        markdownDocument.add("");
 
-        htmlDocument.add("<div class=\"panel panel-default\">");
-        htmlDocument.add("<div class=\"panel-body\">");
+        String httpMethod = request.httpRequestType;
+        String url = request.uri.toString();
+        markdownDocument.add("```");
+        markdownDocument.add(httpMethod + " " + url);
 
-        htmlDocument.add("<div class=\"panel panel-info\">");
-
-        htmlDocument.add("<div class=\"panel-heading\">");
-        htmlDocument.add("<h3 class=\"panel-title\">Http Request</h3>");
-        htmlDocument.add("</div>");
-
-        htmlDocument.add("<div class=\"panel-body\">");
-        htmlDocument.add("<dl class=\"dl-horizontal\">");
-        htmlDocument.add("<dt>Type</dt><dd>" + httpRequest.httpRequestType + "</dd>");
-        htmlDocument.add("<dt>Url</dt><dd>" + httpRequest.uri.toString() + "</dd>");
-
-        htmlDocument.addAll(getHtmlFormattedHeaders(httpRequest.headers));
-
-        if (httpRequest.formParameters != null) {
-            htmlDocument.add("<dt>Parameters</dt><dd>" + httpRequest.formParameters.toString() + "</dd>");
-        } else if (httpRequest.payload != null) {
-            htmlDocument.add("<dt>Content</dt><dd><div class=\"http-request-body\"><pre>" + HtmlEscapers.htmlEscaper().escape(httpRequest.payloadAsPrettyString()) + "</pre></div></dd>");
+        for (Entry<String, String> header : request.headers.entrySet()) {
+            markdownDocument.add(header.getKey() + ": " + header.getValue());
         }
 
-        htmlDocument.add("</dl>");
+        if (request.payload != null) {
+            markdownDocument.add("");
+            markdownDocument.add(request.payloadAsPrettyString());
+        }
 
-        htmlDocument.add("</div>");
-        htmlDocument.add("</div>");
+        markdownDocument.add("```");
 
-        htmlDocument.add("<div class=\"panel panel-info\">");
+        markdownDocument.add("");
+        markdownDocument.add("### Response");
+        markdownDocument.add("");
+        markdownDocument.add("**Status**: `" + response.httpStatus + "`");
+        markdownDocument.add("");
 
-        htmlDocument.add("<div class=\"panel-heading\">");
-        htmlDocument.add("<h3 class=\"panel-title\">Http Response</h3>");
-        htmlDocument.add("</div>");
+        if (!response.headers.isEmpty()) {
+            markdownDocument.add("**Headers**:");
+            for (Entry<String, String> header : response.headers.entrySet()) {
+                markdownDocument.add("- `" + header.getKey() + ": " + header.getValue() + "`");
+            }
+            markdownDocument.add("");
+        }
 
-        htmlDocument.add("<div class=\"panel-body\">");
-        htmlDocument.add("<dl class=\"dl-horizontal\">");
-        htmlDocument.add("<dt>Status</dt><dd>" + response.httpStatus + "</dd>");
-
-        htmlDocument.addAll(getHtmlFormattedHeaders(response.headers));
-
-        if (response.payload == null) {
-            htmlDocument.add("<dt>Content</dt><dd>No Body content.</dd>");
+        if (response.payload != null) {
+            markdownDocument.add("**Body**:");
+            markdownDocument.add("");
+            markdownDocument.add("```json");
+            markdownDocument.add(response.payloadAsPrettyString());
+            markdownDocument.add("```");
         } else {
-            htmlDocument.add("<dt>Content</dt><dd><div class=\"http-response-body\"><pre>" + HtmlEscapers.htmlEscaper().escape(response.payloadAsPrettyString()) + "</pre></div></dd>");
+            markdownDocument.add("*(No response body)*");
+        }
+    }
+
+    public String convertTextToId(String text) {
+        return text.toLowerCase()
+                .replaceAll("[^a-z0-9]", "");
+    }
+
+    private String convertStackTraceToString(Throwable throwable) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(throwable.getClass().getName());
+        if (throwable.getMessage() != null) {
+            sb.append(": ").append(throwable.getMessage());
+        }
+        sb.append('\n');
+
+        for (StackTraceElement element : throwable.getStackTrace()) {
+            sb.append("  at ").append(element).append('\n');
         }
 
-        htmlDocument.add("</dl>");
-        htmlDocument.add("</div>");
-
-        htmlDocument.add("</div>");
-
-        htmlDocument.add("</div>");
-        htmlDocument.add("</div>");
-
+        return sb.toString();
     }
-
-    private List<String> getHtmlFormattedHeaders(Map<String, String> headers) {
-
-        List<String> htmlStuff = Lists.newArrayList();
-
-        if (!headers.isEmpty()) {
-
-            htmlStuff.add("<dt>Header</dt>");
-            htmlStuff.add("<dd>");
-
-            htmlStuff.add("<div class=\"panel-body\">");
-            htmlStuff.add("<dl class=\"dl-horizontal\">");
-
-            for (Entry<String, String> header : headers.entrySet()) {
-
-                htmlStuff.add("<dt>" + header.getKey() + "</dt>");
-                htmlStuff.add("<dd><div class=\"http-response-body\">" + header.getValue() + "</div></dd>");
-
-            }
-
-            htmlStuff.add("</dl>");
-            htmlStuff.add("</div>");
-            htmlStuff.add("</dd>");
-
-        }
-
-        return htmlStuff;
-
-    }
-
-    private void copyResourceIfItExists(String resource, String targetFileForResource) {
-
-        try {
-            URL url = this.getClass().getClassLoader().getResource(
-                    resource);
-
-            if (url == null) {
-                logger.info("Did not find resource {}.", resource);
-                return;
-            }
-
-            File targetFile = new File(targetFileForResource);
-
-            Files.createParentDirs(targetFile);
-
-            Resources.copy(url, new FileOutputStream(targetFile));
-
-        } catch (IOException ex) {
-            logger.error("Something went wrong copying resource {}", resource, ex);
-        }
-
-    }
-
-    public void copyAllAssetsLikeJQueryAndBootstrapFromResourcesToDoctesterOutputDirectory() {
-
-        for (String resource : RenderMachineHtml.RESOURCES_TO_COPY) {
-            copyResourceIfItExists(resource, BASE_DIR + File.separator + resource);
-        }
-
-        copyCustomUserSuppliedCssIfItExists();
-
-    }
-
-    public void copyCustomUserSuppliedCssIfItExists() {
-
-        String baseDirWithCustomCssFileName = BASE_DIR
-                + File.separator
-                + CUSTOM_DOCTESTER_STYLESHEET_FILENAME;
-
-        copyResourceIfItExists(
-                CUSTOM_DOCTESTER_STYLESHEET_LOCATION,
-                baseDirWithCustomCssFileName);
-
-    }
-
-    public static String convertStackTraceIntoHtml(Throwable throwable) {
-
-        StringWriter sw = new StringWriter();
-
-        throwable.printStackTrace(new PrintWriter(sw));
-
-        String exceptionAsStringRaw = sw.toString();
-
-        String exceptionAsStringHtmlEscaped
-                = HtmlEscapers.htmlEscaper().escape(exceptionAsStringRaw);
-        exceptionAsStringHtmlEscaped = exceptionAsStringHtmlEscaped.replaceAll("\n", "<br/>");
-
-        return exceptionAsStringHtmlEscaped;
-
-    }
-
 }

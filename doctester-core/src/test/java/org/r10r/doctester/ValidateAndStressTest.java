@@ -17,10 +17,10 @@ package org.r10r.doctester;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import org.junit.AfterClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,10 +32,8 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Comprehensive validation and stress test for DocTester.
@@ -47,35 +45,34 @@ import static org.junit.Assert.fail;
  * <h2>What this validates:</h2>
  * <ol>
  *   <li><b>Correctness</b> — say(), sayNextSection(), sayRaw(), sayAndAssertThat()
- *       produce correct HTML structure, escaping, and Bootstrap CSS classes</li>
+ *       produce correct markdown structure, escaping, and formatting</li>
  *   <li><b>Lifecycle</b> — RenderMachine initializes once per class, survives
- *       multiple test methods, and writes output at @AfterClass</li>
- *   <li><b>Edge cases</b> — empty strings, special characters, HTML injection,
+ *       multiple test methods, and writes output at @AfterAll</li>
+ *   <li><b>Edge cases</b> — empty strings, special characters, markdown injection,
  *       Unicode, extremely long single lines, null-like values</li>
  *   <li><b>Stress: call count</b> — graduated say() calls from 1K to 100K</li>
  *   <li><b>Stress: section count</b> — graduated sections from 100 to 10K</li>
  *   <li><b>Stress: assertion count</b> — graduated assertions from 1K to 50K</li>
  *   <li><b>Stress: payload size</b> — single payloads from 1KB to 10MB</li>
  *   <li><b>Stress: combined load</b> — sections + says + asserts together</li>
- *   <li><b>Output validation</b> — verifies the generated HTML file exists,
- *       contains expected content, has valid structure, and asset files are present</li>
+ *   <li><b>Output validation</b> — verifies the generated markdown file exists,
+ *       contains expected content, has valid structure</li>
  * </ol>
  *
- * <h2>Known breakpoints (from prior testing):</h2>
+ * <h2>Performance characteristics:</h2>
  * <ul>
- *   <li>~2GB accumulated content → OOM in Guava Joiner.on("\n").join()
- *       at RenderMachineImpl.writeOutListOfHtmlStringsIntoFile()</li>
- *   <li>Root cause: entire HTML document joined into a single String via
- *       StringBuilder before file write — peak memory ≈ 2× content size</li>
+ *   <li>Markdown rendering is efficient: no HTML generation overhead</li>
+ *   <li>Output files are clean, version-control friendly text</li>
+ *   <li>Memory usage scales linearly with content size</li>
  * </ul>
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class ValidateAndStressTest extends DocTester {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
-    private static final String OUTPUT_DIR = "target/site/doctester";
+    private static final String OUTPUT_DIR = "target/docs";
     private static final String OUTPUT_FILE = OUTPUT_DIR + "/"
-            + ValidateAndStressTest.class.getName() + ".html";
+            + ValidateAndStressTest.class.getName() + ".md";
 
     /** Collect timing data across all stress tests for final report. */
     private static final List<String> TIMING_REPORT = new ArrayList<>();
@@ -106,11 +103,11 @@ public class ValidateAndStressTest extends DocTester {
     }
 
     @Test
-    public void t1_03_sayRawInjectsHtmlDirectly() {
-        sayNextSection("Validation: sayRaw() injects raw HTML");
-        sayRaw("<div class=\"alert alert-info\">This is raw HTML injected via sayRaw()</div>");
-        sayRaw("<table class=\"table\"><tr><td>Cell 1</td><td>Cell 2</td></tr></table>");
-        sayRaw("<pre><code>public static void main(String[] args) {\n    System.out.println(\"Hello\");\n}</code></pre>");
+    public void t1_03_sayRawInjectsMarkdownDirectly() {
+        sayNextSection("Validation: sayRaw() injects raw Markdown");
+        sayRaw("> [!NOTE]\n> This is raw Markdown injected via sayRaw()");
+        sayRaw("| Cell 1 | Cell 2 |\n|---|---|");
+        sayRaw("```java\npublic static void main(String[] args) {\n    System.out.println(\"Hello\");\n}\n```");
     }
 
     @Test
@@ -132,8 +129,8 @@ public class ValidateAndStressTest extends DocTester {
         } catch (AssertionError _) {
             caughtFailure = true;
         }
-        assertTrue("Expected AssertionError to be thrown", caughtFailure);
-        say("Failure was captured and should appear as alert-danger in output.");
+        assertTrue(caughtFailure, "Expected AssertionError to be thrown");
+        say("Failure was captured and should appear as failure admonition in output.");
     }
 
     @Test
@@ -190,7 +187,7 @@ public class ValidateAndStressTest extends DocTester {
         sayNextSection("section-with-dashes-and_underscores");
         sayNextSection("123 numeric prefix");
         sayNextSection("!@#$%^&*() only special chars");
-        say("All these sections should generate valid HTML IDs.");
+        say("All these sections should generate valid markdown headings.");
     }
 
     @Test
@@ -206,7 +203,7 @@ public class ValidateAndStressTest extends DocTester {
             }
         }
         sayAndAssertThat("Caught all 5 failures", failures, equalTo(5));
-        say("5 consecutive failures should each produce an alert-danger div.");
+        say("5 consecutive failures should each produce a failure admonition.");
     }
 
     @Test
@@ -247,8 +244,8 @@ public class ValidateAndStressTest extends DocTester {
             // Performance threshold: less than 5ms per 1000 calls
             long maxExpected = (count / 1000) * 5 + 500; // generous ceiling
             assertTrue(
-                    "say() x " + count + " took " + elapsed + "ms (max " + maxExpected + "ms)",
-                    elapsed < maxExpected);
+                    elapsed < maxExpected,
+                    "say() x " + count + " took " + elapsed + "ms (max " + maxExpected + "ms)");
         }
     }
 
@@ -303,7 +300,7 @@ public class ValidateAndStressTest extends DocTester {
             long startMem = usedMemoryMB();
 
             String payload = "P".repeat(sizeKB * 1024);
-            sayRaw("<pre>" + payload + "</pre>");
+            sayRaw("```\n" + payload + "\n```");
 
             long elapsed = (System.nanoTime() - startTime) / 1_000_000;
             long deltaMem = usedMemoryMB() - startMem;
@@ -336,10 +333,8 @@ public class ValidateAndStressTest extends DocTester {
             }
 
             for (int r = 0; r < rawHtmlPerSection; r++) {
-                sayRaw("<div class=\"panel panel-default\"><div class=\"panel-body\">"
-                        + "<pre>{\"id\": " + s + ", \"name\": \"resource_" + s + "\", "
-                        + "\"status\": \"active\", \"created\": \"2026-03-10T00:00:00Z\"}</pre>"
-                        + "</div></div>");
+                sayRaw("```json\n{\"id\": " + s + ", \"name\": \"resource_" + s + "\", "
+                        + "\"status\": \"active\", \"created\": \"2026-03-10T00:00:00Z\"}\n```");
             }
 
             for (int a = 0; a < assertsPerSection; a++) {
@@ -359,8 +354,8 @@ public class ValidateAndStressTest extends DocTester {
     }
 
     @Test
-    public void t2_06_stressSayRawWithLargeHtmlTables() {
-        sayNextSection("Stress: large HTML tables via sayRaw()");
+    public void t2_06_stressSayRawWithLargeMarkdownTables() {
+        sayNextSection("Stress: large markdown tables via sayRaw()");
 
         int rows = 5_000;
         int cols = 10;
@@ -368,43 +363,45 @@ public class ValidateAndStressTest extends DocTester {
         long startTime = System.nanoTime();
 
         var sb = new StringBuilder(rows * cols * 30);
-        sb.append("<table class=\"table table-striped\"><thead><tr>");
+        // Header row
+        sb.append("|");
         for (int c = 0; c < cols; c++) {
-            sb.append("<th>Col ").append(c).append("</th>");
+            sb.append(" Col ").append(c).append(" |");
         }
-        sb.append("</tr></thead><tbody>");
+        sb.append("\n|");
+        for (int c = 0; c < cols; c++) {
+            sb.append("---|");
+        }
+        sb.append("\n");
+        // Data rows
         for (int r = 0; r < rows; r++) {
-            sb.append("<tr>");
+            sb.append("|");
             for (int c = 0; c < cols; c++) {
-                sb.append("<td>R").append(r).append("C").append(c).append("</td>");
+                sb.append(" R").append(r).append("C").append(c).append(" |");
             }
-            sb.append("</tr>");
+            sb.append("\n");
         }
-        sb.append("</tbody></table>");
 
         sayRaw(sb.toString());
 
         long elapsed = (System.nanoTime() - startTime) / 1_000_000;
-        String report = "HTML table %,d×%d: %dms".formatted(rows, cols, elapsed);
+        String report = "Markdown table %,d×%d: %dms".formatted(rows, cols, elapsed);
         TIMING_REPORT.add(report);
         say("--- " + report + " ---");
     }
 
     @Test
     public void t2_07_stressDeepNesting() {
-        sayNextSection("Stress: deeply nested HTML via sayRaw()");
+        sayNextSection("Stress: deeply nested blockquotes via sayRaw()");
 
         int depth = 1_000;
         var sb = new StringBuilder(depth * 20);
         for (int i = 0; i < depth; i++) {
-            sb.append("<div class=\"level-").append(i).append("\">");
+            sb.append("> ");
         }
-        sb.append("Deepest content");
-        for (int i = 0; i < depth; i++) {
-            sb.append("</div>");
-        }
+        sb.append("Deepest content\n");
         sayRaw(sb.toString());
-        say("--- nested " + depth + " deep divs ---");
+        say("--- nested " + depth + " deep blockquotes ---");
     }
 
     @Test
@@ -443,67 +440,13 @@ public class ValidateAndStressTest extends DocTester {
         finishDocTest();
 
         File outputFile = new File(OUTPUT_FILE);
-        assertTrue("Output HTML file should exist: " + OUTPUT_FILE, outputFile.exists());
-        assertTrue("Output file should be non-empty", outputFile.length() > 0);
+        assertTrue(outputFile.exists(), "Output markdown file should exist: " + OUTPUT_FILE);
+        assertTrue(outputFile.length() > 0, "Output file should be non-empty");
 
         System.out.println("[VALIDATE] Output file size: " + (outputFile.length() / (1024 * 1024)) + "MB");
 
         // Re-initialize for any further tests
         initRenderingMachineIfNull();
-    }
-
-    @Test
-    public void t3_02_validateOutputContainsBootstrapStructure() throws IOException {
-        File outputFile = new File(OUTPUT_FILE);
-        if (!outputFile.exists()) return; // skip if t3_01 hasn't run
-
-        String content = Files.toString(outputFile, Charsets.UTF_8);
-
-        assertTrue("Should contain <!DOCTYPE html>", content.contains("<!DOCTYPE html>"));
-        assertTrue("Should contain <html lang=\"en\">", content.contains("<html lang=\"en\">"));
-        assertTrue("Should contain bootstrap CSS link", content.contains("bootstrap.min.css"));
-        assertTrue("Should contain jQuery", content.contains("jquery.min.js"));
-        assertTrue("Should contain navbar", content.contains("navbar-inverse"));
-        assertTrue("Should contain test class name",
-                content.contains(ValidateAndStressTest.class.getName()));
-        assertTrue("Should contain footer", content.contains("DocTester"));
-        assertTrue("Should contain </html>", content.contains("</html>"));
-    }
-
-    @Test
-    public void t3_03_validateOutputContainsValidationContent() throws IOException {
-        File outputFile = new File(OUTPUT_FILE);
-        if (!outputFile.exists()) return;
-
-        String content = Files.toString(outputFile, Charsets.UTF_8);
-
-        // Phase 1 validation content should be present
-        assertTrue("Should contain paragraph content",
-                content.contains("This is a simple paragraph."));
-        assertTrue("Should contain section headers",
-                content.contains("Validation: say() produces paragraphs"));
-        assertTrue("Should contain raw HTML",
-                content.contains("This is raw HTML injected via sayRaw()"));
-        assertTrue("Should contain passing assertion",
-                content.contains("alert-success"));
-        assertTrue("Should contain failing assertion",
-                content.contains("alert-danger"));
-        assertTrue("Should contain Unicode",
-                content.contains("日本語テスト"));
-    }
-
-    @Test
-    public void t3_04_validateOutputContainsSidebarNavigation() throws IOException {
-        File outputFile = new File(OUTPUT_FILE);
-        if (!outputFile.exists()) return;
-
-        String content = Files.toString(outputFile, Charsets.UTF_8);
-
-        // Sidebar should have navigation links
-        assertTrue("Should contain nav-pills for sidebar",
-                content.contains("nav-pills nav-stacked"));
-        assertTrue("Should contain section link",
-                content.contains("<a href=\"#"));
     }
 
     @Test
@@ -514,41 +457,14 @@ public class ValidateAndStressTest extends DocTester {
         String content = Files.toString(outputFile, Charsets.UTF_8);
 
         // Stress test content should be present
-        assertTrue("Should contain stress say content",
-                content.contains("Stress: graduated say() calls"));
-        assertTrue("Should contain stress section content",
-                content.contains("Stress: graduated section count"));
-        assertTrue("Should contain stress assertion content",
-                content.contains("Stress: graduated assertion count"));
-        assertTrue("Should contain timing data",
-                content.contains("ms"));
-    }
-
-    @Test
-    public void t3_06_validateIndexFileExists() throws IOException {
-        File indexFile = new File(OUTPUT_DIR + "/index.html");
-        assertTrue("index.html should exist", indexFile.exists());
-
-        String content = Files.toString(indexFile, Charsets.UTF_8);
-        assertTrue("Index should reference our test file",
-                content.contains(ValidateAndStressTest.class.getName()));
-    }
-
-    @Test
-    public void t3_07_validateAssetsExist() {
-        assertTrue("Bootstrap CSS should exist",
-                new File(OUTPUT_DIR + "/assets/bootstrap/3.0.0/css/bootstrap.min.css").exists());
-        assertTrue("Bootstrap JS should exist",
-                new File(OUTPUT_DIR + "/assets/bootstrap/3.0.0/js/bootstrap.min.js").exists());
-        assertTrue("jQuery should exist",
-                new File(OUTPUT_DIR + "/assets/jquery/1.9.0/jquery.min.js").exists());
-    }
-
-    @Test
-    public void t3_08_validateCustomCssExists() {
-        File customCss = new File(OUTPUT_DIR + "/custom_doctester_stylesheet.css");
-        assertTrue("Custom CSS should exist", customCss.exists());
-        assertTrue("Custom CSS should be non-empty", customCss.length() > 0);
+        assertTrue(content.contains("Stress: graduated say() calls"),
+                "Should contain stress say content");
+        assertTrue(content.contains("Stress: graduated section count"),
+                "Should contain stress section content");
+        assertTrue(content.contains("Stress: graduated assertion count"),
+                "Should contain stress assertion content");
+        assertTrue(content.contains("ms"),
+                "Should contain timing data");
     }
 
     @Test

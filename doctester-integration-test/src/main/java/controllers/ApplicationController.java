@@ -16,6 +16,7 @@
 
 package controllers;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,6 @@ import models.Article;
 import ninja.Result;
 import ninja.Results;
 
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -64,7 +64,7 @@ public class ApplicationController {
 
         List<Article> olderPosts = articleDao.getOlderArticlesForFrontPage();
 
-        Map<String, Object> map = Maps.newHashMap();
+        Map<String, Object> map = new HashMap<>();
         map.put("frontArticle", frontPost);
         map.put("olderArticles", olderPosts);
 

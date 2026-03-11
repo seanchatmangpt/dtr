@@ -18,22 +18,23 @@ package controllers;
 
 import controllers.utils.NinjaTest;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ApplicationControllerTest extends NinjaTest {
-    
-    @Before
+
+    @BeforeEach
     public void setup() {
 
         makeRequest(Request.GET().url(testServerUrl().path("setup")));
-        
+
     }
 
 
@@ -43,10 +44,10 @@ public class ApplicationControllerTest extends NinjaTest {
 		// /redirect will send a location: redirect in the headers
 		Response result = makeRequest(Request.HEAD().url(testServerUrl().path("/")));
 
-		assertThat(result.headers, CoreMatchers.notNullValue());
-		assertThat(result.payload, CoreMatchers.nullValue());
+		assertThat(result.headers, notNullValue());
+		assertThat(result.payload, nullValue());
 
-		assertThat(result.httpStatus, CoreMatchers.equalTo(404)); //ninja server not yet supporting HEAD
+		assertThat(result.httpStatus, equalTo(404)); //ninja server not yet supporting HEAD
 
 	}
 

@@ -17,7 +17,7 @@ package org.r10r.doctester.testbrowser;
 
 import java.util.List;
 
-import org.apache.http.cookie.Cookie;
+import org.apache.hc.client5.http.cookie.Cookie;
 
 public interface TestBrowser {
 
@@ -29,8 +29,8 @@ public interface TestBrowser {
     /**
      * Get cookie with a specific name.
      *
-     * @param name Name of the cookie
-     * @return The value of the cookie or null if not there
+     * @param name Name of the cookie (must not be null)
+     * @return The cookie with the specified name, or {@code null} if no such cookie exists
      */
     public abstract Cookie getCookieWithName(String name);
 

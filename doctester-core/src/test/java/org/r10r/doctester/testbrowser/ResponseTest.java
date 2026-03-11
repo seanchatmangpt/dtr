@@ -17,26 +17,26 @@ package org.r10r.doctester.testbrowser;
 
 import org.r10r.doctester.testbrowser.HttpConstants;
 import org.r10r.doctester.testbrowser.Response;
-import com.google.common.collect.Maps;
 import org.r10r.doctester.testbrowser.testmodels.ArticlesDto;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  *
  * @author ra
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ResponseTest {
 
-    @Before
+    @BeforeEach
     public void init() {
 
     }
@@ -47,7 +47,7 @@ public class ResponseTest {
     @Test
     public void testPayloadAsXml() {
 
-        Map<String, String> headers = Maps.newHashMap();
+        Map<String, String> headers = new HashMap<>();
         headers.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.APPLICATION_XML_WITH_CHARSET_UTF_8);
 
         Response response = new Response(headers, 200, ARTICLES_XML);
@@ -64,7 +64,7 @@ public class ResponseTest {
     @Test
     public void testPayloadAsJson() {
 
-        Map<String, String> headers = Maps.newHashMap();
+        Map<String, String> headers = new HashMap<>();
         headers.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.APPLICATION_JSON_WITH_CHARSET_UTF8);
 
         Response response = new Response(headers, 200, ARTICLES_JSON);
@@ -80,7 +80,7 @@ public class ResponseTest {
     @Test
     public void testJsonPayloadAsPrettyString() {
 
-        Map<String, String> headers = Maps.newHashMap();
+        Map<String, String> headers = new HashMap<>();
         headers.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.APPLICATION_JSON_WITH_CHARSET_UTF8);
 
         Response response = new Response(headers, 200, ARTICLES_JSON);

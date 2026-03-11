@@ -17,47 +17,51 @@
 package controllers.utils;
 
 import java.util.List;
-import ninja.utils.NinjaConstant;
-import ninja.utils.NinjaTestBrowser;
-import ninja.utils.NinjaTestServer;
-import org.apache.http.cookie.Cookie;
+import java.util.Optional;
 
-import org.r10r.doctester.DocTester;
+import ninja.utils.NinjaMode;
+import ninja.standalone.NinjaJetty;
+import ninja.utils.NinjaConstant;
+import ninja.utils.NinjaTestServer;
+import org.apache.hc.client5.http.cookie.Cookie;
+
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.TestBrowser;
 import org.r10r.doctester.testbrowser.TestBrowserImpl;
 import org.r10r.doctester.testbrowser.Url;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class NinjaTest implements TestBrowser {
-	
+
 	public NinjaTestServer ninjaTestServer;
-    
+
     /** A persistent HttpClient that stores cookies to make requests */
 	public TestBrowser ninjaTestBrowser;
 
     public NinjaTest() {
     }
 
-    @Before
+    @BeforeEach
     public void startServerInTestMode() {
         System.setProperty(NinjaConstant.MODE_KEY_NAME, NinjaConstant.MODE_TEST);
-        ninjaTestServer = new NinjaTestServer();
+        ninjaTestServer = NinjaTestServer.builder()
+            .ninjaMode(NinjaMode.test)
+            .standaloneClass(NinjaJetty.class)
+            .port(0) // use random port
+            .build();
         ninjaTestBrowser = new TestBrowserImpl();
     }
 
-    @After
+    @AfterEach
     public void shutdownServer() {
     	System.clearProperty(NinjaConstant.MODE_KEY_NAME);
         ninjaTestServer.shutdown();
     }
-    
+
     public final Url testServerUrl() {
-        
        return Url.host(ninjaTestServer.getServerAddress());
-        
     }
 
     @Override

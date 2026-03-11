@@ -21,12 +21,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Renders one or more informational callout boxes in the generated HTML documentation.
+ * Renders one or more informational callout boxes in the generated Markdown documentation.
  *
- * <p>Each element in {@link #value()} is emitted as a separate Bootstrap
- * {@code alert-info} panel immediately after any {@link DocDescription} paragraphs
- * and before any {@link DocWarning} boxes. HTML in the values is rendered verbatim,
- * so inline markup such as {@code <code>} or {@code <a href="...">} is supported.
+ * <p>Each element in {@link #value()} is emitted as a separate GitHub-flavored
+ * NOTE admonition immediately after any {@link DocDescription} paragraphs
+ * and before any {@link DocWarning} boxes. Markdown formatting in the values
+ * is rendered verbatim, so inline markup such as backticks or links is supported.
  *
  * <p>Rendering order within a test method (all annotations optional):
  * <ol>
@@ -37,12 +37,18 @@ import java.lang.annotation.Target;
  *   <li>{@link DocCode} — code example blocks</li>
  * </ol>
  *
- * <p>Example:
+ * <p>Example output:
+ * <pre>{@code
+ * > [!NOTE]
+ * > Requires the `Accept: application/json` header.
+ * }</pre>
+ *
+ * <p>Example usage:
  * <pre>{@code
  * @Test
  * @DocSection("User API")
  * @DocDescription("Returns all active users.")
- * @DocNote("Requires the <code>Accept: application/json</code> header.")
+ * @DocNote("Requires the `Accept: application/json` header.")
  * public void testGetUsers() { ... }
  * }</pre>
  */
@@ -52,8 +58,8 @@ public @interface DocNote {
 
     /**
      * One or more informational callout texts. Each element produces a separate
-     * {@code <div class="alert alert-info">} block in the output HTML.
-     * HTML markup is allowed.
+     * GitHub-flavored {@code > [!NOTE]} admonition block in the output Markdown.
+     * Markdown formatting is allowed.
      */
     String[] value();
 }

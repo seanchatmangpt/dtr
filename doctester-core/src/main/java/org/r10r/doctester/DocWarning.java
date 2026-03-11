@@ -21,11 +21,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Renders one or more warning callout boxes in the generated HTML documentation.
+ * Renders one or more warning callout boxes in the generated Markdown documentation.
  *
- * <p>Each element in {@link #value()} is emitted as a separate Bootstrap
- * {@code alert-warning} panel, rendered after any {@link DocNote} boxes
- * and before any {@link DocCode} blocks. HTML in the values is rendered verbatim.
+ * <p>Each element in {@link #value()} is emitted as a separate GitHub-flavored
+ * WARNING admonition, rendered after any {@link DocNote} boxes
+ * and before any {@link DocCode} blocks. Markdown formatting in the values
+ * is rendered verbatim.
  *
  * <p>Rendering order within a test method (all annotations optional):
  * <ol>
@@ -36,11 +37,17 @@ import java.lang.annotation.Target;
  *   <li>{@link DocCode} — code example blocks</li>
  * </ol>
  *
- * <p>Example:
+ * <p>Example output:
+ * <pre>{@code
+ * > [!WARNING]
+ * > This operation is **irreversible**. The user record is permanently removed.
+ * }</pre>
+ *
+ * <p>Example usage:
  * <pre>{@code
  * @Test
  * @DocSection("Delete User")
- * @DocWarning("This operation is <strong>irreversible</strong>. The user record is permanently removed.")
+ * @DocWarning("This operation is **irreversible**. The user record is permanently removed.")
  * public void testDeleteUser() { ... }
  * }</pre>
  */
@@ -50,8 +57,8 @@ public @interface DocWarning {
 
     /**
      * One or more warning texts. Each element produces a separate
-     * {@code <div class="alert alert-warning">} block in the output HTML.
-     * HTML markup is allowed.
+     * GitHub-flavored {@code > [!WARNING]} admonition block in the output Markdown.
+     * Markdown formatting is allowed.
      */
     String[] value();
 }

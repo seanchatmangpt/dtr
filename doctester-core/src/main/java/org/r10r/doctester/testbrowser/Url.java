@@ -17,13 +17,12 @@ package org.r10r.doctester.testbrowser;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 /**
  *
@@ -46,7 +45,7 @@ public class Url {
 
     private Url() {
         simpleUrlBuilder = new StringBuilder();
-        queryParameters = Maps.newHashMap();
+        queryParameters = new HashMap<>();
 
     }
 
@@ -126,7 +125,9 @@ public class Url {
 
         try {
 
-            URIBuilder uriBuilder = new URIBuilder(simpleUrlBuilder.toString());
+            // In HttpClient 5, URIBuilder constructor takes a String but may handle it differently
+            // We create a base URI first, then build upon it
+            URIBuilder uriBuilder = new URIBuilder(new URI(simpleUrlBuilder.toString()));
 
             for (Map.Entry<String, String> queryParameter : queryParameters.entrySet()) {
 

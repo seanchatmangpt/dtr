@@ -16,33 +16,35 @@
 
 package controllers;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import ninja.NinjaFluentLeniumTest;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ApplicationControllerFluentLeniumTest extends NinjaFluentLeniumTest {
-    
-    @Before
+
+    @BeforeEach
     public void setup() {
-        
+
         goTo(getServerAddress() + "setup");
-        
+
     }
 
     @Test
     public void testThatHomepageWorks() {
-        
+
         goTo(getServerAddress() + "/");
-        
-        System.out.println("title: " + title());
-        
-        assertTrue(title().contains("Home page"));
-        
-        click("#login");
-        
-        assertTrue(url().contains("login"));
+
+        String pageTitle = getDriver().getTitle();
+        System.out.println("title: " + pageTitle);
+
+        assertTrue(pageTitle.contains("Home page"));
+
+        find("#login").first().click();
+
+        assertTrue(getDriver().getCurrentUrl().contains("login"));
 
 
     }

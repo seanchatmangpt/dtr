@@ -16,13 +16,14 @@
 
 package controllers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import models.Article;
@@ -31,10 +32,8 @@ import models.ArticlesDto;
 
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.Maps;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -45,8 +44,8 @@ import com.google.gson.JsonParseException;
 import controllers.utils.NinjaTest;
 
 public class ApiControllerTest extends NinjaTest {
-    
-    @Before
+
+    @BeforeEach
     public void setup() {
     	
     	makeRequest(Request.GET().url(testServerUrl().path("setup")));
@@ -276,7 +275,7 @@ public class ApiControllerTest extends NinjaTest {
     }
 
     private void doLogin(String username, String password) {
-        Map<String, String> formParameters = Maps.newHashMap();
+        Map<String, String> formParameters = new HashMap<>();
         formParameters.put("username", username);
         formParameters.put("password", password);
 

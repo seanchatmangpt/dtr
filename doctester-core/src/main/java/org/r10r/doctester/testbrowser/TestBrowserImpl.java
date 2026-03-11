@@ -17,34 +17,42 @@ package org.r10r.doctester.testbrowser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpVersion;
-import org.apache.http.ParseException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.Cookie;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.entity.mime.FileBody;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.RuntimeErrorException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import org.apache.hc.core5.http.ParseException;
 import java.util.Map.Entry;
 
 import static org.r10r.doctester.testbrowser.HttpConstants.*;
@@ -53,17 +61,19 @@ public class TestBrowserImpl implements TestBrowser {
 
     private static Logger logger = LoggerFactory.getLogger(TestBrowserImpl.class);
 
-    private static final String HANDLE_REDIRECTS = "http.protocol.handle-redirects";
-
-    private DefaultHttpClient httpClient;
+    private CloseableHttpClient httpClient;
+    private BasicCookieStore cookieStore;
 
     public TestBrowserImpl() {
-        httpClient = new DefaultHttpClient();
+        cookieStore = new BasicCookieStore();
+        httpClient = HttpClientBuilder.create()
+                .setDefaultCookieStore(cookieStore)
+                .build();
     }
 
     @Override
     public List<Cookie> getCookies() {
-        return httpClient.getCookieStore().getCookies();
+        return cookieStore.getCookies();
     }
 
     @Override
@@ -83,8 +93,7 @@ public class TestBrowserImpl implements TestBrowser {
 
     @Override
     public void clearCookies() {
-        httpClient.getCookieStore().clear();
-
+        cookieStore.clear();
     }
 
     @Override
@@ -92,17 +101,17 @@ public class TestBrowserImpl implements TestBrowser {
 
         Response httpResponse;
 
-        if (Sets.newHashSet(HEAD, GET, DELETE).contains(httpRequest.httpRequestType)) {
+        if (Set.of(HEAD, GET, DELETE).contains(httpRequest.httpRequestType)) {
 
             httpResponse = makeHeadGetOrDeleteRequest(httpRequest);
 
-        } else if (Sets.newHashSet(POST, PUT, PATCH).contains(httpRequest.httpRequestType)) {
+        } else if (Set.of(POST, PUT, PATCH).contains(httpRequest.httpRequestType)) {
 
             httpResponse = makePatchPostOrPutRequest(httpRequest);
 
         } else {
 
-            throw new RuntimeErrorException(new Error("Your requested httpRequest.httpRequestType is not supported"));
+            throw new IllegalArgumentException("HTTP request type '" + httpRequest.httpRequestType + "' is not supported");
         }
 
         return httpResponse;
@@ -113,14 +122,11 @@ public class TestBrowserImpl implements TestBrowser {
 
         Response response;
 
-        org.apache.http.HttpResponse apacheHttpClientResponse;
+        ClassicHttpResponse apacheHttpClientResponse;
 
         try {
 
-            HttpUriRequest apacheHttpRequest;
-
-            httpClient.getParams().setParameter(
-                    CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+            ClassicHttpRequest apacheHttpRequest;
 
             if (GET.equalsIgnoreCase(request.httpRequestType)) {
 
@@ -146,15 +152,13 @@ public class TestBrowserImpl implements TestBrowser {
 
             }
 
-            setHandleRedirect(apacheHttpRequest, request.followRedirects);
+            HttpClientContext context = createHttpContext(request.followRedirects);
 
-            apacheHttpClientResponse = httpClient.execute(apacheHttpRequest);
+            apacheHttpClientResponse = httpClient.execute(apacheHttpRequest, context);
 
             response = convertFromApacheHttpResponseToDocTesterHttpResponse(apacheHttpClientResponse);
 
-            if (apacheHttpRequest instanceof HttpRequestBase) {
-                ((HttpRequestBase) apacheHttpRequest).releaseConnection();
-            }
+            EntityUtils.consumeQuietly(apacheHttpClientResponse.getEntity());
 
         } catch (IOException e) {
             logger.error("Fatal problem creating GET or DELETE request in TestBrowser", e);
@@ -166,19 +170,16 @@ public class TestBrowserImpl implements TestBrowser {
 
     private Response makePatchPostOrPutRequest(Request httpRequest) {
 
-        org.apache.http.HttpResponse apacheHttpClientResponse;
+        ClassicHttpResponse apacheHttpClientResponse;
         Response response = null;
 
         try {
 
-            httpClient.getParams().setParameter(
-                    CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-
-            HttpEntityEnclosingRequestBase apacheHttpRequest;
+            ClassicHttpRequest apacheHttpRequest;
 
             if (PATCH.equalsIgnoreCase(httpRequest.httpRequestType)) {
 
-                apacheHttpRequest = new HttpPatch(httpRequest.uri);
+                apacheHttpRequest = new org.r10r.doctester.testbrowser.HttpPatch(httpRequest.uri);
 
             } else if (POST.equalsIgnoreCase(httpRequest.httpRequestType)) {
 
@@ -202,7 +203,7 @@ public class TestBrowserImpl implements TestBrowser {
             ///////////////////////////////////////////////////////////////////
             if (httpRequest.formParameters != null) {
 
-                List<BasicNameValuePair> formparams = Lists.newArrayList();
+                List<NameValuePair> formparams = new ArrayList<>();
                 for (Entry<String, String> parameter : httpRequest.formParameters
                         .entrySet()) {
 
@@ -211,7 +212,7 @@ public class TestBrowserImpl implements TestBrowser {
                 }
 
                 // encode form parameters and add
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams);
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, StandardCharsets.UTF_8);
                 apacheHttpRequest.setEntity(entity);
 
             }
@@ -221,19 +222,18 @@ public class TestBrowserImpl implements TestBrowser {
             ///////////////////////////////////////////////////////////////////
             if (httpRequest.filesToUpload != null) {
 
-                MultipartEntity entity = new MultipartEntity(
-                        HttpMultipartMode.BROWSER_COMPATIBLE);
+                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
                 for (Map.Entry<String, File> entry : httpRequest.filesToUpload
                         .entrySet()) {
 
                     // For File parameters
-                    entity.addPart(entry.getKey(),
-                            new FileBody((File) entry.getValue()));
+                    builder.addPart(entry.getKey(),
+                            new FileBody(entry.getValue()));
 
                 }
 
-                apacheHttpRequest.setEntity(entity);
+                apacheHttpRequest.setEntity(builder.build());
 
             }
 
@@ -247,8 +247,7 @@ public class TestBrowserImpl implements TestBrowser {
 
                     String string = new ObjectMapper().writeValueAsString(httpRequest.payload);
 
-                    StringEntity entity = new StringEntity(string, "utf-8");
-                    entity.setContentType("application/json; charset=utf-8");
+                    StringEntity entity = new StringEntity(string, ContentType.APPLICATION_JSON.withCharset(StandardCharsets.UTF_8));
 
                     apacheHttpRequest.setEntity(entity);
 
@@ -257,32 +256,31 @@ public class TestBrowserImpl implements TestBrowser {
 
                     String string = new XmlMapper().writeValueAsString(httpRequest.payload);
 
-                    StringEntity entity = new StringEntity(string, "utf-8");
-                    entity.setContentType(APPLICATION_XML_WITH_CHARSET_UTF_8);
+                    StringEntity entity = new StringEntity(string, ContentType.APPLICATION_XML.withCharset(StandardCharsets.UTF_8));
 
-                    apacheHttpRequest.setEntity(new StringEntity(string, "utf-8"));
+                    apacheHttpRequest.setEntity(entity);
 
                 } else if (httpRequest.payload instanceof String) {
 
-                    StringEntity entity = new StringEntity((String) httpRequest.payload, "utf-8");
+                    StringEntity entity = new StringEntity((String) httpRequest.payload, StandardCharsets.UTF_8);
                     apacheHttpRequest.setEntity(entity);
 
                 } else {
 
-                    StringEntity entity = new StringEntity(httpRequest.payload.toString(), "utf-8");
+                    StringEntity entity = new StringEntity(httpRequest.payload.toString(), StandardCharsets.UTF_8);
                     apacheHttpRequest.setEntity(entity);
 
                 }
 
             }
 
-            setHandleRedirect(apacheHttpRequest, httpRequest.followRedirects);
+            HttpClientContext context = createHttpContext(httpRequest.followRedirects);
 
             // Here we go!
-            apacheHttpClientResponse = httpClient.execute(apacheHttpRequest);
+            apacheHttpClientResponse = httpClient.execute(apacheHttpRequest, context);
             response = convertFromApacheHttpResponseToDocTesterHttpResponse(apacheHttpClientResponse);
 
-            apacheHttpRequest.releaseConnection();
+            EntityUtils.consumeQuietly(apacheHttpClientResponse.getEntity());
 
         } catch (IOException e) {
             logger.error("Fatal problem creating PATCH, POST or PUT request in TestBrowser", e);
@@ -293,24 +291,24 @@ public class TestBrowserImpl implements TestBrowser {
 
     }
 
-    private org.r10r.doctester.testbrowser.Response convertFromApacheHttpResponseToDocTesterHttpResponse(org.apache.http.HttpResponse httpResponse) {
+    private org.r10r.doctester.testbrowser.Response convertFromApacheHttpResponseToDocTesterHttpResponse(ClassicHttpResponse httpResponse) {
 
-        Map<String, String> headers = Maps.newHashMap();
+        Map<String, String> headers = new HashMap<>();
 
-        for (Header header : httpResponse.getAllHeaders()) {
+        for (Header header : httpResponse.getHeaders()) {
 
             headers.put(header.getName(), header.getValue());
 
         }
 
-        int httpStatus = httpResponse.getStatusLine().getStatusCode();
+        int httpStatus = httpResponse.getCode();
 
         String body = null;
         HttpEntity entity = httpResponse.getEntity();
         if (entity != null) {
             try {
 
-                body = EntityUtils.toString(entity, "UTF-8");
+                body = EntityUtils.toString(entity, StandardCharsets.UTF_8);
 
             } catch (IOException | ParseException e) {
                 logger.error("Error while converting ApacheHttpClient response body to a String we can use", e);
@@ -324,15 +322,15 @@ public class TestBrowserImpl implements TestBrowser {
     }
 
     /**
-     * Tells ApacheHttpClient whether to follow redirects. See also:
-     * http://stackoverflow.com/questions/1519392/how-to-prevent-apache-http-client-from-following-a-redirect
+     * Creates an HttpClientContext with redirect configuration.
      */
-    private void setHandleRedirect(HttpUriRequest httpUriRequest, boolean handleRedirect) {
-
-        HttpParams params = new BasicHttpParams();
-        params.setParameter(HANDLE_REDIRECTS, handleRedirect);
-        httpUriRequest.setParams(params);
-
+    private HttpClientContext createHttpContext(boolean followRedirects) {
+        HttpClientContext context = new HttpClientContext();
+        RequestConfig config = RequestConfig.custom()
+                .setRedirectsEnabled(followRedirects)
+                .build();
+        context.setRequestConfig(config);
+        return context;
     }
 
 }

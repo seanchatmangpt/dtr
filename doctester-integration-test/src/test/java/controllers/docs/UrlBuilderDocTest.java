@@ -18,7 +18,7 @@ package controllers.docs;
 
 import controllers.utils.NinjaApiDoctester;
 import models.ArticlesDto;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.r10r.doctester.testbrowser.Request;
 import org.r10r.doctester.testbrowser.Response;
 import org.r10r.doctester.testbrowser.Url;

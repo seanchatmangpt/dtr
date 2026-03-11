@@ -19,8 +19,9 @@ import java.io.File;
 import java.net.URI;
 import java.util.Map;
 
-import com.google.common.collect.Maps;
 import java.io.IOException;
+import java.util.HashMap;
+import org.r10r.doctester.testbrowser.auth.AuthProvider;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -54,7 +55,7 @@ public class Request {
     private Request() {
 
         filesToUpload = null;
-        headers = Maps.newHashMap();
+        headers = new HashMap<>();
         formParameters = null;
         followRedirects = true;
 
@@ -197,6 +198,9 @@ public class Request {
      * @return This Request for chaining.
      */
     public Request url(Url url) {
+        if (url == null) {
+            throw new NullPointerException("url must not be null");
+        }
         this.uri = url.uri();
         return this;
     }
@@ -225,7 +229,7 @@ public class Request {
      */
     public Request addFileToUpload(String param, File fileToUpload) {
         if (filesToUpload == null) {
-            filesToUpload = Maps.newHashMap();
+            filesToUpload = new HashMap<>();
         }
         filesToUpload.put(param, fileToUpload);
 
@@ -242,7 +246,7 @@ public class Request {
      */
     public Request addHeader(String key, String value) {
         if (headers == null) {
-            headers = Maps.newHashMap();
+            headers = new HashMap<>();
         }
         headers.put(key, value);
         return this;
@@ -271,7 +275,7 @@ public class Request {
      */
     public Request addFormParameter(String key, String value) {
         if (formParameters == null) {
-            formParameters = Maps.newHashMap();
+            formParameters = new HashMap<>();
         }
         formParameters.put(key, value);
         return this;
@@ -313,6 +317,37 @@ public class Request {
      */
     public Request followRedirects(boolean followRedirects) {
         this.followRedirects = followRedirects;
+        return this;
+    }
+
+    /**
+     * Applies authentication to this request using the specified auth provider.
+     *
+     * @param authProvider the authentication provider to apply
+     * @return This request for chaining
+     */
+    public Request withAuth(AuthProvider authProvider) {
+        if (authProvider != null) {
+            authProvider.apply(this);
+        }
+        return this;
+    }
+
+    /**
+     * Adds a query parameter to this request's URL.
+     *
+     * @param key the parameter name
+     * @param value the parameter value
+     * @return This request for chaining
+     */
+    public Request addQueryParameter(String key, String value) {
+        // Build URL with query parameter if URI is already set
+        if (this.uri != null) {
+            this.uri = Url.host(this.uri.getScheme() + "://" + this.uri.getAuthority())
+                .path(this.uri.getPath())
+                .addQueryParameter(key, value)
+                .uri();
+        }
         return this;
     }
 

@@ -15,9 +15,7 @@
  */
 package org.r10r.doctester;
 
-import org.r10r.doctester.rendermachine.RenderMachineImpl;
-import org.r10r.doctester.rendermachine.RenderMachine;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -28,7 +26,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 /**
  * Stress tests to find DocTester breakpoints for maximum
- * doctest size and count.
+ * documentation generation size and count.
  */
 public class StressTest extends DocTester {
 
@@ -215,6 +213,6 @@ public class StressTest extends DocTester {
         say("--- joiner stress " + totalSays + " says (" + (totalSays * 3) + " list entries): "
                 + elapsed + "ms, mem=" + mem + "MB ---");
 
-        // The actual bottleneck happens during finishAndWriteOut() which runs at @AfterClass
+        // The actual bottleneck happens during finishAndWriteOut() which runs at @AfterAll
     }
 }

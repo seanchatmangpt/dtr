@@ -21,15 +21,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Renders a code example block in the generated HTML documentation.
+ * Renders a code example block in the generated Markdown documentation.
  *
  * <p>The lines in {@link #value()} are joined with newlines and emitted as a
- * HTML-escaped {@code <pre><code>} block. An optional {@link #language()} hint
- * is added as a CSS class on the {@code <code>} element (e.g. {@code "java"},
- * {@code "json"}, {@code "http"}) for use with syntax-highlighting libraries.
+ * fenced code block with triple backticks. An optional {@link #language()} hint
+ * is added after the opening backticks (e.g. {@code "java"}, {@code "json"},
+ * {@code "http"}) for syntax highlighting in Markdown renderers.
  *
- * <p>All {@code <}, {@code >}, {@code &} and {@code "} characters in the value
- * are HTML-escaped automatically — do <em>not</em> pre-escape the strings.
+ * <p>No escaping is needed — the content is placed inside a fenced code block
+ * where special characters are rendered literally.
  *
  * <p>Rendering order within a test method (all annotations optional):
  * <ol>
@@ -40,7 +40,17 @@ import java.lang.annotation.Target;
  *   <li>{@link DocCode} — code example blocks <em>(this annotation)</em></li>
  * </ol>
  *
- * <p>Example:
+ * <p>Example output:
+ * <pre>{@code
+ * ```json
+ * {
+ *   "username": "alice",
+ *   "email": "alice@example.com"
+ * }
+ * ```
+ * }</pre>
+ *
+ * <p>Example usage:
  * <pre>{@code
  * @Test
  * @DocSection("Create User — Request Shape")
@@ -62,14 +72,14 @@ public @interface DocCode {
 
     /**
      * Lines of source code to display. Each element becomes one line in the
-     * rendered {@code <pre>} block. Characters are HTML-escaped automatically.
+     * rendered fenced code block. No escaping is needed.
      */
     String[] value();
 
     /**
-     * Optional language hint added as a CSS class to the {@code <code>} element
+     * Optional language hint added after the opening triple backticks
      * (e.g. {@code "java"}, {@code "json"}, {@code "http"}, {@code "bash"}).
-     * Defaults to an empty string (no language class emitted).
+     * Defaults to an empty string (no language hint emitted).
      */
     String language() default "";
 }

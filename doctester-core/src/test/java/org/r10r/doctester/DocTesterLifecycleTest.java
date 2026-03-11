@@ -16,38 +16,31 @@
 package org.r10r.doctester;
 
 import org.r10r.doctester.DocTester;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.r10r.doctester.rendermachine.RenderMachine;
 import org.hamcrest.CoreMatchers;
 
-import static org.hamcrest.CoreMatchers.is;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertThat;
-import org.junit.BeforeClass;
-import org.mockito.Mock;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import org.mockito.Mockito;
 
 public class DocTesterLifecycleTest extends DocTester {
 
-    @Mock // A static mock to test lifecycle of class
+    // A static mock to test lifecycle of class
     public static RenderMachine renderMachineMock = Mockito.mock(RenderMachine.class);
 
-    @BeforeClass
-    public void asserThatRenderEngineHasBeenInitialized() {
-        Assert.assertNotNull(renderMachine);
+    @BeforeAll
+    public static void asserThatRenderEngineHasBeenInitialized() {
+        Assertions.assertNotNull(renderMachine);
         assertThat(renderMachine, CoreMatchers.equalTo(renderMachineMock));
     }
 
-    @AfterClass
-    public void asserThatRenderEngineHasBeenShutDownCorrectly() {
+    @AfterAll
+    public static void asserThatRenderEngineHasBeenShutDownCorrectly() {
         Mockito.verify(renderMachineMock).finishAndWriteOut();
-        Assert.assertNull(renderMachine);
+        Assertions.assertNull(renderMachine);
     }
 
     @Override

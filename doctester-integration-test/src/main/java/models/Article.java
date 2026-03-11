@@ -16,6 +16,7 @@
 
 package models;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -28,7 +29,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
 
 @Entity
 public class Article {
@@ -50,7 +50,7 @@ public class Article {
     public Article() {}
     
     public Article(User author, String title, String content) {
-        this.authorIds = Lists.newArrayList(author.id);
+        this.authorIds = new ArrayList<>(java.util.List.of(author.id));
         this.title = title;
         this.content = content;
         this.postedAt = new Date();
