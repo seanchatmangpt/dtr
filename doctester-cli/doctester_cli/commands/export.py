@@ -8,9 +8,32 @@ from rich.table import Table
 
 from doctester_cli.managers.directory_manager import DirectoryManager
 from doctester_cli.model import ManageConfig
+from doctester_cli.cli_errors import (
+    FileNotFoundError_,
+    DirectoryExpectedError,
+    InvalidFormatError,
+    InvalidArgumentError,
+    CLIError,
+)
 
 console = Console()
 app = typer.Typer(help="Manage export directories")
+
+# Valid archive formats
+VALID_ARCHIVE_FORMATS = ["tar.gz", "zip"]
+
+
+def validate_export_dir(path: Path) -> Path:
+    """Validate that export directory exists and is a directory."""
+    if not path.exists():
+        raise typer.BadParameter(
+            f"Export directory not found: {path}\nCheck that the path exists and is accessible"
+        )
+    if not path.is_dir():
+        raise typer.BadParameter(
+            f"Expected a directory, got file: {path}\nCheck that you're pointing to a directory, not a file"
+        )
+    return path
 
 
 @app.command()
@@ -18,7 +41,7 @@ def list(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to list",
-        exists=True,
+        callback=lambda x: validate_export_dir(x),
     ),
     detailed: bool = typer.Option(
         False,
@@ -64,9 +87,21 @@ def list(
 
         console.print(table)
         console.print(f"\n[blue]Total:[/blue] {len(exports)} file(s)")
+    except CLIError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
     except Exception as e:
         console.print(f"[red]✗[/red] Failed to list exports: {e}")
         raise typer.Exit(1)
+
+
+def validate_archive_format(format: str) -> str:
+    """Validate archive format is supported."""
+    if format not in VALID_ARCHIVE_FORMATS:
+        raise typer.BadParameter(
+            f"Invalid format: {format}\nValid formats are: {', '.join(VALID_ARCHIVE_FORMATS)}"
+        )
+    return format
 
 
 @app.command()
@@ -74,7 +109,7 @@ def save(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to archive",
-        exists=True,
+        callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(
         None,
@@ -87,6 +122,7 @@ def save(
         "--format",
         "-f",
         help="Archive format (tar.gz, zip)",
+        callback=lambda x: validate_archive_format(x),
     ),
 ) -> None:
     """
@@ -113,9 +149,21 @@ def save(
         result = manager.archive_exports(config)
         size = format_size(output_file.stat().st_size)
         console.print(f"[green]✓[/green] Archive created: {output_file} ({size})")
+    except CLIError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
     except Exception as e:
         console.print(f"[red]✗[/red] Archive failed: {e}")
         raise typer.Exit(1)
+
+
+def validate_keep_count(value: int) -> int:
+    """Validate keep count is positive."""
+    if value < 1:
+        raise typer.BadParameter(
+            f"Keep count must be at least 1, got {value}\nExpected: a positive integer"
+        )
+    return value
 
 
 @app.command()
@@ -123,13 +171,14 @@ def clean(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to clean",
-        exists=True,
+        callback=lambda x: validate_export_dir(x),
     ),
     keep_latest: int = typer.Option(
         5,
         "--keep",
         "-k",
         help="Number of latest exports to keep",
+        callback=lambda x: validate_keep_count(x),
     ),
     dry_run: bool = typer.Option(
         True,
@@ -169,6 +218,9 @@ def clean(
             console.print("\nRun with [code]--no-dry-run[/code] to actually delete.")
         else:
             console.print(f"\n[green]✓[/green] Cleaned up {len(result.removed_files)} file(s)")
+    except CLIError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
     except Exception as e:
         console.print(f"[red]✗[/red] Cleanup failed: {e}")
         raise typer.Exit(1)
@@ -179,7 +231,7 @@ def check(
     export_dir: Path = typer.Argument(
         ...,
         help="Export directory to validate",
-        exists=True,
+        callback=lambda x: validate_export_dir(x),
     ),
 ) -> None:
     """
@@ -211,6 +263,9 @@ def check(
             console.print("\n[green]✓[/green] All exports are valid.")
         else:
             raise typer.Exit(1)
+    except CLIError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
     except Exception as e:
         console.print(f"[red]✗[/red] Validation failed: {e}")
         raise typer.Exit(1)

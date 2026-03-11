@@ -13,6 +13,11 @@ from doctester_cli.main import app
 runner = CliRunner()
 
 
+def get_output(result) -> str:
+    """Get combined stdout and stderr from CLI result."""
+    return (result.stdout + result.stderr).lower()
+
+
 # ============================================================================
 # Export Command Error Tests
 # ============================================================================
@@ -28,14 +33,14 @@ def test_export_list_nonexistent_directory() -> None:
     # Should fail
     assert result.exit_code != 0, "Should fail with nonexistent directory"
 
-    # Should have helpful error message
-    output = result.stdout.lower()
+    # Should have helpful error message (check both stdout and stderr)
+    output = (result.stdout + result.stderr).lower()
     assert any(word in output for word in ["not found", "does not exist", "invalid", "path", "error"]), \
-        f"Error message not helpful: {result.stdout}"
+        f"Error message not helpful: {result.stdout}{result.stderr}"
 
     # Should NOT show Python stack trace to user
-    assert "traceback" not in output.lower(), "Stack trace leaked to user"
-    assert "file \"" not in output.lower(), "Python traceback visible to user"
+    assert "traceback" not in output, "Stack trace leaked to user"
+    assert "file \"" not in output, "Python traceback visible to user"
 
 
 def test_export_list_with_file_instead_of_directory() -> None:
@@ -50,12 +55,12 @@ def test_export_list_with_file_instead_of_directory() -> None:
         assert result.exit_code != 0, "Should fail when given file instead of directory"
 
         # Should indicate the problem
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["directory", "file", "invalid", "error"]), \
             f"Error message unclear: {result.stdout}"
 
         # No stack trace
-        assert "traceback" not in output.lower()
+        assert "traceback" not in output
 
 
 def test_export_list_empty_directory() -> None:
@@ -70,7 +75,7 @@ def test_export_list_empty_directory() -> None:
         assert result.exit_code in [0, 1], f"Unexpected exit code: {result.exit_code}"
 
         # Should indicate no files found
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["no exports", "empty", "found", "0"]), \
             f"Output unclear about empty directory: {result.stdout}"
 
@@ -97,7 +102,7 @@ def test_export_save_nonexistent_input_directory() -> None:
         assert not output_file.exists(), "Archive should not be created on error"
 
         # Should have helpful error
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["not found", "error", "invalid"]), \
             f"Error message not helpful: {result.stdout}"
 
@@ -123,7 +128,7 @@ def test_export_save_invalid_format() -> None:
         assert result.exit_code != 0, "Should fail with invalid format"
 
         # Should mention valid formats
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["format", "invalid", "tar.gz", "zip"]), \
             f"Should mention valid formats: {result.stdout}"
 
@@ -155,7 +160,7 @@ def test_export_clean_invalid_keep_value() -> None:
         assert len(files) == 5, "Files should not be deleted with dry-run"
 
         # Should mention the problem
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["keep", "invalid", "number", "error"]), \
             f"Error message unclear: {result.stdout}"
 
@@ -181,7 +186,7 @@ def test_fmt_md_nonexistent_file() -> None:
         assert result.exit_code != 0, "Should fail with nonexistent file"
 
         # Should have helpful error
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["not found", "error", "file"]), \
             f"Error message not helpful: {result.stdout}"
 
@@ -209,7 +214,7 @@ def test_fmt_invalid_format_option() -> None:
         assert result.exit_code != 0, "Should fail with invalid format"
 
         # Should mention valid formats
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["format", "invalid", "md", "json", "html"]), \
             f"Should list valid formats: {result.stdout}"
 
@@ -230,7 +235,7 @@ def test_fmt_md_with_directory_as_input() -> None:
         assert result.exit_code != 0, "Should fail when given directory"
 
         # Should mention it's a directory
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["directory", "file", "invalid", "error"]), \
             f"Error message unclear: {result.stdout}"
 
@@ -262,7 +267,7 @@ def test_report_sum_nonexistent_directory() -> None:
         assert not report_file.exists(), "Report should not be created on error"
 
         # Should have helpful error
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["not found", "error", "invalid"]), \
             f"Error message not helpful: {result.stdout}"
 
@@ -290,7 +295,7 @@ def test_report_cov_invalid_output_path() -> None:
             # Should fail (permission denied)
             # Note: Some systems may not enforce permission checks, skip if no error
             if result.exit_code != 0:
-                output = result.stdout.lower()
+                output = get_output(result)
                 assert any(word in output for word in ["permission", "error", "write"]), \
                     f"Error message unclear: {result.stdout}"
         finally:
@@ -322,7 +327,7 @@ def test_report_invalid_format() -> None:
         assert not report_file.exists(), "Report should not be created"
 
         # Should mention valid formats
-        output = result.stdout.lower()
+        output = get_output(result)
         assert any(word in output for word in ["format", "invalid", "markdown", "html"]), \
             f"Should mention formats: {result.stdout}"
 
@@ -343,7 +348,7 @@ def test_command_missing_required_argument() -> None:
     assert result.exit_code != 0, "Should fail without required argument"
 
     # Should explain what's missing
-    output = result.stdout.lower()
+    output = get_output(result)
     assert any(word in output for word in ["missing", "required", "argument", "path"]), \
         f"Should explain missing argument: {result.stdout}"
 
@@ -362,7 +367,7 @@ def test_command_too_many_arguments() -> None:
 
         # Should fail or warn
         # (Behavior depends on typer, but should not silently ignore)
-        assert result.exit_code != 0 or "extra" in result.stdout.lower(), \
+        assert result.exit_code != 0 or "extra" in get_output(result), \
             "Should not silently accept extra arguments"
 
 
@@ -377,7 +382,7 @@ def test_invalid_command_name() -> None:
     assert result.exit_code != 0, "Should fail with invalid command"
 
     # Should show help or error
-    output = result.stdout.lower()
+    output = get_output(result)
     assert any(word in output for word in ["command", "error", "invalid", "help"]), \
         f"Should indicate invalid command: {result.stdout}"
 
@@ -401,9 +406,9 @@ def test_export_list_permission_denied() -> None:
 
             # Should fail gracefully
             if result.exit_code != 0:
-                output = result.stdout.lower()
+                output = get_output(result)
                 # Should NOT have Python traceback
-                assert "traceback" not in output.lower(), "Python traceback visible"
+                assert "traceback" not in output, "Python traceback visible"
         finally:
             # Restore permissions for cleanup
             readonly_dir.chmod(0o755)
@@ -427,8 +432,8 @@ def test_export_list_with_special_characters_in_path() -> None:
 
         # Should succeed or give clear error
         if result.exit_code != 0:
-            output = result.stdout.lower()
-            assert "traceback" not in output.lower(), "Python traceback visible"
+            output = get_output(result)
+            assert "traceback" not in output, "Python traceback visible"
 
 
 def test_fmt_with_empty_input_file() -> None:
@@ -449,10 +454,10 @@ def test_fmt_with_empty_input_file() -> None:
         ])
 
         # Should either succeed with empty output or explain the issue
-        output = result.stdout.lower()
+        output = get_output(result)
         if result.exit_code != 0:
             # If it fails, should have helpful message
-            assert "traceback" not in output.lower(), "Python traceback visible"
+            assert "traceback" not in output, "Python traceback visible"
         else:
             # If it succeeds, should create output
             output_files = list(output_dir.glob("*.md"))
@@ -476,7 +481,7 @@ def test_export_list_help_is_available() -> None:
     assert result.exit_code == 0, "Help should always work"
 
     # Should contain help text
-    output = result.stdout.lower()
+    output = get_output(result)
     assert "usage" in output or "export" in output, "Should show usage info"
     assert any(word in output for word in ["directory", "path", "list"]), \
         "Should explain the command"
@@ -493,6 +498,6 @@ def test_fmt_help_shows_valid_formats() -> None:
     assert result.exit_code == 0, "Help should always work"
 
     # Should list formats
-    output = result.stdout.lower()
+    output = get_output(result)
     assert any(fmt in output for fmt in ["md", "json", "html", "markdown"]), \
         "Should list available formats"
