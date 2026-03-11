@@ -24,6 +24,18 @@ This test runs normally with JUnit **and** generates a polished Bootstrap HTML p
 
 ---
 
+## ⚡ Quick Start: The 80/20 Path (45 minutes)
+
+New to DocTester? Start here and get productive fast:
+
+1. **[80/20 Essentials](how-to/80-20-essentials.md)** — Master 3 methods that do 80% of the work
+2. **[Quick Reference](reference/80-20-quick-reference.md)** — One-page cheat sheet (bookmark it!)
+3. **[Design Patterns](explanation/80-20-design-patterns.md)** — Understand the philosophy
+
+These docs will take you from zero to writing working tests in under an hour. Then dive deeper into the full documentation as needed.
+
+---
+
 ## Documentation Map
 
 DocTester's documentation follows the [Diataxis](https://diataxis.fr/) framework and is organized by topic:

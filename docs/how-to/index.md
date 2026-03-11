@@ -4,6 +4,12 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 
 ## Available Guides
 
+### Getting Started (80/20 Fast Path)
+
+| Guide | Purpose |
+|---|---|
+| [80/20 Essentials](80-20-essentials.md) | Master the Core Trinity in 45 minutes — start here if you're new |
+
 ### Java 25 Language Features
 
 | Guide | Task |

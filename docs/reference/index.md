@@ -2,6 +2,12 @@
 
 Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DocTester's API. Use it when you need to look up a specific method, class, or configuration option.
 
+## Quick Reference (80/20 Fast Path)
+
+| Topic | Description |
+|---|---|
+| [80/20 Quick Reference](80-20-quick-reference.md) | One-page cheat sheet — print or bookmark this |
+
 ## Java 25 Language Features
 
 | Topic | Description |

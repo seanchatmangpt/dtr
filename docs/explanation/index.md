@@ -4,6 +4,12 @@ Explanation is **understanding-oriented**. These documents discuss concepts, des
 
 ## Available Explanations
 
+### DocTester 80/20 Design Patterns
+
+| Document | What it explains |
+|---|---|
+| [80/20 Design Patterns](80-20-design-patterns.md) | Why DocTester works the way it does — the philosophy behind the core methods |
+
 ### Java 25 Design Philosophy
 
 | Document | What it explains |
