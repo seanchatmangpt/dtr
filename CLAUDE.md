@@ -203,6 +203,135 @@ Url.host("http://localhost:8080")
 
 ---
 
+## Extended Documentation API — Rich Formatting
+
+DocTester now includes 9 additional `say*` methods for powerful, flexible documentation generation **beyond HTTP testing**. These methods render to clean, portable **Markdown**, suitable for GitHub, documentation platforms, and static site generators.
+
+### Methods Reference
+
+| Method | Output | Use Case |
+|--------|--------|----------|
+| **`sayTable(String[][])`** | Markdown table | API response matrices, feature comparisons |
+| **`sayCode(String, String)`** | Fenced code block | Database queries, gRPC payloads, config examples |
+| **`sayWarning(String)`** | `> [!WARNING]` alert | Deprecation notices, caveats, side effects |
+| **`sayNote(String)`** | `> [!NOTE]` alert | Tips, clarifications, context |
+| **`sayKeyValue(Map<String, String>)`** | 2-column table | Headers, env vars, metadata |
+| **`sayUnorderedList(List<String>)`** | Bullet list | Prerequisites, features, checklists |
+| **`sayOrderedList(List<String>)`** | Numbered list | Steps, workflows, sequences |
+| **`sayJson(Object)`** | JSON code block | Payload preview, configuration display |
+| **`sayAssertions(Map<String, String>)`** | Check/Result table | Validation logs, batch results |
+
+### How-To: Common Documentation Patterns
+
+**1. Document an API response structure:**
+```java
+sayNextSection("User Response Schema");
+say("The GET /users endpoint returns a paginated list of users.");
+
+sayJson(Map.of(
+    "id", 1,
+    "name", "Alice",
+    "email", "alice@example.com",
+    "createdAt", "2026-03-11T00:00:00Z"
+));
+
+sayNote("All timestamps are in ISO 8601 format (UTC).");
+```
+
+**2. Show database query examples:**
+```java
+sayNextSection("Database Examples");
+sayCode("SELECT u.id, u.name, COUNT(a.id) as article_count " +
+        "FROM users u LEFT JOIN articles a ON u.id = a.user_id " +
+        "WHERE u.active = true GROUP BY u.id;", "sql");
+```
+
+**3. Compare API versions:**
+```java
+sayTable(new String[][] {
+    {"Feature", "v1", "v2", "v3"},
+    {"Authentication", "API Key", "OAuth2", "OAuth2 + OIDC"},
+    {"Pagination", "offset/limit", "cursor", "cursor"},
+    {"Rate Limiting", "None", "10k/hour", "1k/min per scope"}
+});
+```
+
+**4. Explain prerequisites:**
+```java
+sayNextSection("Setup Requirements");
+sayUnorderedList(Arrays.asList(
+    "Java 25+ (OpenJDK or Oracle JDK)",
+    "Maven 4.0.0+",
+    "PostgreSQL 14+ (or H2 for testing)",
+    "Docker (for integration tests)"
+));
+
+sayWarning("DocTester requires Java 25+ with --enable-preview flag active.");
+```
+
+**5. Document a workflow:**
+```java
+sayNextSection("User Creation Workflow");
+sayOrderedList(Arrays.asList(
+    "Submit POST /users with name and email",
+    "System validates email uniqueness",
+    "Account activated via email confirmation link",
+    "User can log in with email and password"
+));
+```
+
+**6. Summarize test assertions:**
+```java
+sayAssertions(Map.of(
+    "Status code is 200", "✓ PASS",
+    "Response time < 100ms", "✓ PASS",
+    "JSON schema matches", "✓ PASS",
+    "CORS headers present", "✗ FAIL — missing Access-Control-Allow-Origin"
+));
+```
+
+### Explanation: When to Use Each Method
+
+- **`sayTable()`**: Use when comparing data side-by-side (e.g., version features, response fields, test results across scenarios).
+- **`sayCode()`**: Use for multi-line code examples, SQL queries, configuration files, or any syntax-highlighted content.
+- **`sayWarning()`**: Highlight breaking changes, security concerns, or critical gotchas that users *must* know.
+- **`sayNote()`**: Provide helpful context, tips, or clarifications that enhance understanding but aren't critical.
+- **`sayKeyValue()`**: Document metadata in a clean, scannable format (headers, env variables, configuration).
+- **`sayUnorderedList()`**: Enumerate features, prerequisites, or options where order doesn't matter.
+- **`sayOrderedList()`**: Document sequential steps, workflows, or procedures.
+- **`sayJson()`**: Show JSON payloads, configuration objects, or data structures in pretty-printed form.
+- **`sayAssertions()`**: Summarize test results or validation checks in a table format.
+
+### Reference: Complete Markdown Output
+
+All methods generate **pure Markdown**, not HTML. This makes documentation:
+- **Portable**: Works on GitHub, GitLab, Gitea, standard Markdown renderers
+- **Version-control friendly**: Clean text diffs in git
+- **Tool-agnostic**: No dependency on Bootstrap, jQuery, or custom CSS
+
+Example markdown output from `sayJson()`:
+```markdown
+
+\`\`\`json
+{
+  "name" : "Alice",
+  "age" : 30,
+  "active" : true
+}
+\`\`\`
+```
+
+Example output from `sayTable()`:
+```markdown
+
+| Name | Status | Score |
+| --- | --- |
+| Alice | Active | 95 |
+| Bob | Inactive | 87 |
+```
+
+---
+
 ## Testing Patterns
 
 Tests extend `DocTester` and use the `say*` fluent API:
