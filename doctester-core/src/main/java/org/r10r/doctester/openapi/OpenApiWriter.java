@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets;
  */
 public final class OpenApiWriter {
 
-    private static final String BASE_DIR = "docs/test";
+    private static final String BASE_DIR = "target/site/doctester";
 
     private OpenApiWriter() {
         // Utility class
