@@ -119,7 +119,7 @@ public class ApiDocTest {
 
 Documents are now generated as `.md` files instead of `.html`. To access generated documentation:
 - Before: `target/site/doctester/ApiDocTest.html`
-- After: `target/site/doctester/ApiDocTest.md`
+- After: `docs/test/ApiDocTest.md`
 
 Convert to HTML using Pandoc, Jekyll, or other Markdown converters as needed.
 
@@ -152,8 +152,8 @@ See `pom.xml` for complete dependency tree. Key updates:
 ## Documentation
 
 Comprehensive documentation is now generated as Markdown and available at:
-- `target/site/doctester/index.md` (index of all tests)
-- `target/site/doctester/ApiDocTest.md` (per-test documentation)
+- `docs/test/README.md` (index of all tests)
+- `docs/test/ApiDocTest.md` (per-test documentation)
 - `docs/` (architecture and API reference)
 
 ## Bug Fixes

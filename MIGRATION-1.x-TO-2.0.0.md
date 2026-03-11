@@ -15,7 +15,7 @@ DocTester 2.0.0 is a major release with **breaking changes** that modernize the 
 | Aspect | 1.x | 2.0.0 | Breaking? |
 |--------|-----|-------|-----------|
 | Output Format | Bootstrap HTML | Markdown (portable) | **YES** |
-| Output Location | `target/site/doctester/` | `target/docs/` | **YES** |
+| Output Location | `target/site/doctester/` | `docs/test/` | **YES** |
 | Java Version | 1.8+ | **25 (LTS only)** | **YES** |
 | Annotations | Manual method calls | `@DocSection`, `@DocDescription`, etc. | No (optional) |
 | WebSocket Support | None | Full support | No (new) |
@@ -40,7 +40,7 @@ target/site/doctester/
 
 **Version 2.0.0:**
 ```
-target/docs/
+docs/test/
 ├── README.md          (index)
 ├── ApiControllerDocTest.md
 └── (OpenAPI specs if generated)
@@ -49,7 +49,7 @@ target/docs/
 **Why:** Markdown is portable, version-control friendly, and works natively on GitHub. No external CSS/JS dependencies.
 
 **Migration Impact:**
-- Update CI/CD to look for docs in `target/docs/` instead of `target/site/doctester/`
+- Update CI/CD to look for docs in `docs/test/` instead of `target/site/doctester/`
 - If you deploy HTML docs, render Markdown via a static site generator (Jekyll, MkDocs, Hugo, etc.)
 - No Javadoc configuration needed—Markdown integrates directly into your README
 
@@ -83,7 +83,7 @@ export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 
 ### 3. Output Directory Structure
 
-All documentation is now written to `target/docs/` at the module level:
+All documentation is now written to `docs/test/` at the module level:
 
 **Version 1.x:**
 ```
@@ -94,10 +94,10 @@ mvnd test -pl doctester-core
 **Version 2.0.0:**
 ```
 mvnd test -pl doctester-core
-# → target/docs/ created in doctester-core/
+# → docs/test/ created in doctester-core/
 ```
 
-**For multi-module projects:** Each module gets its own `target/docs/` directory. Consider merging them in your build or documentation pipeline.
+**For multi-module projects:** Each module gets its own `docs/test/` directory. Consider merging them in your build or documentation pipeline.
 
 ### 4. Bootstrap/jQuery Removed
 
@@ -497,7 +497,7 @@ If you need styling, use a static site generator:
 pip install mkdocs mkdocs-material
 cd your-project
 mkdocs new docs-site
-cp target/docs/*.md docs-site/docs/
+cp docs/test/*.md docs-site/docs/
 mkdocs serve  # Live preview
 mkdocs build  # Static HTML in site/
 ```
@@ -519,7 +519,7 @@ mvn --version  # Must show "Apache Maven 4.0.0-rc-5" or higher
 mvnd clean verify
 
 # 4. Check output directory
-ls -la target/docs/
+ls -la docs/test/
 # Should show: README.md, TestClassName.md
 ```
 
@@ -536,7 +536,7 @@ target/site/doctester/
 
 **2.0.0 Output Structure:**
 ```
-target/docs/
+docs/test/
 ├── README.md              # Lists all test docs (Markdown)
 └── UserApiDocTest.md      # Clean, portable Markdown
 ```
@@ -561,7 +561,7 @@ target/docs/
 
 **Not backward compatible:**
 - HTML output format (Markdown now)
-- Output directory (`target/docs/` instead of `target/site/doctester/`)
+- Output directory (`docs/test/` instead of `target/site/doctester/`)
 - Java version requirement (25 only)
 
 ### Dependencies
@@ -621,7 +621,7 @@ java -version  # Must show "openjdk 25.x.x"
 
 **Error:**
 ```
-Tests pass, but no target/docs/ directory appears.
+Tests pass, but no docs/test/ directory appears.
 ```
 
 **Solution:**
@@ -654,8 +654,8 @@ public static void afterTests() {
 - [ ] `pom.xml` updated with `<release>25</release>` and `--enable-preview`
 - [ ] DocTester dependency updated to 2.0.0
 - [ ] Test classes compile without preview warnings
-- [ ] Tests run and output Markdown to `target/docs/`
-- [ ] CI/CD pipeline updated to use `target/docs/` path
+- [ ] Tests run and output Markdown to `docs/test/`
+- [ ] CI/CD pipeline updated to use `docs/test/` path
 - [ ] Documentation build process updated (MkDocs, Jekyll, etc.)
 - [ ] Old `target/site/doctester/` references removed from scripts
 - [ ] Team documentation updated
