@@ -255,3 +255,45 @@ class ConcurrencyError(CLIError):
         message = f"Cannot {action} {resource}: it's being used by another process"
         hint = "Wait for the other operation to complete and try again"
         super().__init__(message, hint)
+
+
+class MavenBuildFailedError(CLIError):
+    """Raised when Maven build fails."""
+
+    def __init__(self, exit_code: int, reason: str = "Unknown"):
+        """Initialize Maven build failed error.
+
+        Args:
+            exit_code: Maven exit code
+            reason: Brief explanation of failure
+        """
+        message = f"Maven build failed with exit code {exit_code}"
+        hint = f"Reason: {reason}\nRun with --verbose to see full output"
+        super().__init__(message, hint)
+
+
+class MavenNotFoundError(CLIError):
+    """Raised when Maven/mvnd not found in PATH."""
+
+    def __init__(self):
+        """Initialize Maven not found error."""
+        message = "Maven (mvnd or mvn) not found in PATH"
+        hint = (
+            "Install Maven from https://maven.apache.org/ or "
+            "mvnd from https://maven.apache.org/mvnd/"
+        )
+        super().__init__(message, hint)
+
+
+class PomNotFoundError(CLIError):
+    """Raised when pom.xml not found."""
+
+    def __init__(self, path: str):
+        """Initialize pom.xml not found error.
+
+        Args:
+            path: Directory where pom.xml was expected
+        """
+        message = f"pom.xml not found in {path}"
+        hint = "Make sure you're in the root directory of a Maven project"
+        super().__init__(message, hint)
