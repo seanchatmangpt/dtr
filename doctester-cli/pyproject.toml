@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doctester-cli"
+version = "0.1.0"
+description = "Python CLI to manage DocTester exports, conversions, and publishing"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "DocTester Contributors", email = "info@doctester.org"}
+]
+requires-python = ">=3.10"
+dependencies = [
+    "typer[all]==0.9.0",
+    "click==8.1.7",
+    "python-dotenv==1.0.0",
+    "pydantic==2.5.3",
+    "pydantic-settings==2.1.0",
+    "jinja2==3.1.2",
+    "markdown==3.5.1",
+    "beautifulsoup4==4.12.2",
+    "lxml==4.9.3",
+    "requests==2.31.0",
+    "paramiko==3.4.0",
+    "boto3==1.34.0",
+    "google-cloud-storage==2.10.0",
+    "pyyaml==6.0.1",
+    "rich==13.7.0",
+    "pathvalidate==3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "black==23.12.1",
+    "ruff==0.1.11",
+    "mypy==1.7.1",
+]
+
+[project.scripts]
+doctester = "doctester_cli.main:app"
+
+[tool.setuptools]
+packages = ["doctester_cli"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
