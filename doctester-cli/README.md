@@ -1,6 +1,8 @@
 # DocTester CLI
 
-A comprehensive Python CLI tool for managing, converting, and publishing DocTester documentation exports.
+A comprehensive, modern Python CLI tool for managing, converting, and publishing DocTester documentation exports.
+
+**Built with:** Python 3.12+ • Typer • uv • Pydantic • Rich
 
 ## Features
 
@@ -8,8 +10,25 @@ A comprehensive Python CLI tool for managing, converting, and publishing DocTest
 - **Report Generation** — Generate summaries, coverage reports, and changelogs
 - **Directory Management** — List, archive, cleanup, and validate exports
 - **Publishing** — Publish to GitHub Pages, AWS S3, Google Cloud Storage, or local directories
+- **Modern Python** — Type hints, dataclasses, fast async support with virtual threads
+- **Fast Dependency Management** — Managed with `uv` for rapid installation
 
 ## Installation
+
+### Using `uv` (Recommended)
+
+```bash
+cd doctester-cli
+uv sync
+```
+
+Install with all optional dependencies:
+
+```bash
+uv sync --all-extras
+```
+
+### Using pip
 
 ```bash
 cd doctester-cli
@@ -18,28 +37,30 @@ pip install -e .
 
 ## Quick Start
 
+The CLI is available as both `dtr` (shorthand) and `doctester` (full name):
+
 ### Convert HTML to Markdown
 
 ```bash
-doctester convert html-to-markdown target/site/doctester -o ./markdown_docs -r
+dtr convert html-to-markdown target/site/doctester -o ./markdown_docs -r
 ```
 
 ### Generate a Summary Report
 
 ```bash
-doctester report summary target/site/doctester
+dtr report summary target/site/doctester
 ```
 
 ### List Exports
 
 ```bash
-doctester manage list target/site/doctester -d
+dtr manage list target/site/doctester -d
 ```
 
 ### Publish to GitHub Pages
 
 ```bash
-doctester publish github-pages target/site/doctester --repo owner/repo
+dtr publish github-pages target/site/doctester --repo owner/repo
 ```
 
 ## Commands
@@ -143,17 +164,45 @@ Each module has a base abstract class and specific implementations.
 
 ## Development
 
-Install development dependencies:
+### Setup
+
+Install with development dependencies using `uv`:
 
 ```bash
-pip install -e ".[dev]"
+uv sync --all-extras
 ```
 
-Run tests:
+### Available Commands
+
+View all development commands:
 
 ```bash
-pytest
+make help
 ```
+
+Common commands:
+
+```bash
+make install-dev    # Install with dev dependencies
+make lint           # Run Ruff linter
+make format         # Format code
+make type-check     # Run mypy type checking
+make check          # Run all checks
+make test           # Run pytest
+make coverage       # Run tests with coverage report
+make clean          # Remove build artifacts
+```
+
+### Code Quality
+
+This project uses modern Python tooling:
+
+- **Ruff** — Fast Python linter and formatter
+- **mypy** — Static type checking (Python 3.12+)
+- **pytest** — Unit testing framework
+- **uv** — Ultra-fast Python package manager
+
+All code follows PEP 8 with 100-character line length. Import sorting is handled by Ruff's isort integration.
 
 ## License
 

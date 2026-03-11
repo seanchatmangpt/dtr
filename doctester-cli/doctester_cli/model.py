@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Dict, List, Any
+from typing import Any
 
 
 @dataclass
@@ -14,7 +14,7 @@ class ConversionConfig:
     recursive: bool = False
     force: bool = False
     pretty: bool = True
-    template: Optional[str] = None
+    template: str | None = None
 
 
 @dataclass
@@ -23,8 +23,8 @@ class ConversionResult:
 
     files_processed: int
     files_failed: int = 0
-    warnings: List[str] = field(default_factory=list)
-    errors: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -35,7 +35,7 @@ class ReportConfig:
     output_path: Path
     format: str = "markdown"
     report_type: str = "summary"
-    since: Optional[str] = None
+    since: str | None = None
 
 
 @dataclass
@@ -43,8 +43,8 @@ class ReportResult:
     """Result of a report generation operation."""
 
     output_file: Path
-    stats: Dict[str, Any] = field(default_factory=dict)
-    warnings: List[str] = field(default_factory=list)
+    stats: dict[str, Any] = field(default_factory=dict)
+    warnings: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -63,7 +63,7 @@ class ManageConfig:
 
     export_path: Path
     detailed: bool = False
-    archive_path: Optional[Path] = None
+    archive_path: Path | None = None
     archive_format: str = "tar.gz"
     keep_latest: int = 5
     dry_run: bool = True
@@ -73,9 +73,9 @@ class ManageConfig:
 class ManageResult:
     """Result of a management operation."""
 
-    removed_files: List[str] = field(default_factory=list)
-    stats: Dict[str, Any] = field(default_factory=dict)
-    issues: List[str] = field(default_factory=list)
+    removed_files: list[str] = field(default_factory=list)
+    stats: dict[str, Any] = field(default_factory=dict)
+    issues: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -84,15 +84,15 @@ class PublishConfig:
 
     export_path: Path
     platform: str
-    target: Optional[str] = None
-    branch: Optional[str] = None
-    token: Optional[str] = None
-    repo: Optional[str] = None
-    bucket: Optional[str] = None
+    target: str | None = None
+    branch: str | None = None
+    token: str | None = None
+    repo: str | None = None
+    bucket: str | None = None
     prefix: str = "docs/"
     region: str = "us-east-1"
-    project: Optional[str] = None
-    target_path: Optional[Path] = None
+    project: str | None = None
+    target_path: Path | None = None
     public: bool = False
 
 
@@ -101,7 +101,7 @@ class PublishResult:
     """Result of a publishing operation."""
 
     platform: str
-    url: Optional[str] = None
+    url: str | None = None
     files_count: int = 0
     status: str = "success"
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
