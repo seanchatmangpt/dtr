@@ -1,135 +1,174 @@
-"""Pytest configuration and fixtures."""
+"""Pytest configuration and fixtures for Chicago-style TDD.
+
+These fixtures execute REAL Maven builds and verify REAL DocTester capabilities.
+Tests fail loudly if Maven is unavailable or builds fail - no graceful skipping.
+
+Fixtures:
+- project_root: DocTester repository root (auto-detected)
+- maven_doctester_core_exports: Real HTML exports from doctester-core build
+- maven_integration_test_exports: Real API documentation from integration tests
+"""
 
 import subprocess
 from pathlib import Path
-from typing import Generator, Optional
 import os
 
 import pytest
 
 
-@pytest.fixture
-def tmp_export_dir(tmp_path: Path) -> Generator[Path, None, None]:
-    """Create a temporary export directory with sample HTML files."""
-    export_dir = tmp_path / "exports"
-    export_dir.mkdir()
+def _find_project_root() -> Path:
+    """Find DocTester project root by searching for pom.xml.
 
-    # Create sample HTML file
-    sample_html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Test Export</title>
-    </head>
-    <body>
-        <h1>Test Documentation</h1>
-        <p>This is a test export.</p>
-    </body>
-    </html>
+    Raises:
+        RuntimeError: If not in a DocTester repository
     """
-    (export_dir / "test_doc.html").write_text(sample_html)
-
-    yield export_dir
-
-
-@pytest.fixture
-def tmp_markdown_file(tmp_path: Path) -> Generator[Path, None, None]:
-    """Create a temporary Markdown file."""
-    md_file = tmp_path / "test.md"
-    md_file.write_text("""# Test Document
-
-This is a test markdown file.
-
-## Section 1
-
-Some content here.
-""")
-    yield md_file
-
-
-@pytest.fixture
-def maven_project_root() -> Optional[Path]:
-    """Get the DocTester project root (Maven project)."""
-    # Find the project root by looking for pom.xml
     current = Path.cwd()
-    for _ in range(5):  # Search up to 5 levels
+    for _ in range(5):
         if (current / "pom.xml").exists():
             return current
         current = current.parent
-    return None
+    raise RuntimeError(
+        "Cannot find DocTester project root (pom.xml). "
+        "Tests must be run from within the DocTester repository."
+    )
 
 
-@pytest.fixture
-def maven_build(maven_project_root: Optional[Path], tmp_path: Path) -> Generator[Path, None, None]:
-    """Build DocTester with Maven and return the exports directory."""
-    if not maven_project_root:
-        pytest.skip("Maven project not found (pom.xml)")
+def _run_maven_build(project_root: Path, module: str, skip_tests: bool = False) -> Path:
+    """Execute Maven build and return the exports directory.
 
-    # Set JAVA_HOME for Maven
+    This is a REAL end-to-end test:
+    1. Invokes mvnd clean verify -pl {module}
+    2. Runs all JUnit tests in the module
+    3. DocTester generates HTML exports during test execution
+    4. Verifies exports exist and are non-empty
+
+    Args:
+        project_root: Path to pom.xml root
+        module: Maven module name (e.g., 'doctester-core')
+        skip_tests: If True, builds without running tests
+
+    Returns:
+        Path to generated exports directory (target/site/doctester/)
+
+    Raises:
+        RuntimeError: If Java 25 not found, mvnd not in PATH, build fails, or exports not generated
+    """
+    # Verify Java 25 environment
     java_home = "/usr/lib/jvm/java-25-openjdk-amd64"
+    if not Path(java_home).exists():
+        raise RuntimeError(
+            f"Java 25 required but not found at {java_home}.\n"
+            f"Set: export JAVA_HOME={java_home}"
+        )
+
     env = os.environ.copy()
     env["JAVA_HOME"] = java_home
 
+    # Build Maven command
+    skip_tests_flag = "-DskipTests" if skip_tests else "-DskipTests=false"
+    cmd = ["mvnd", "clean", "verify", "-pl", module, skip_tests_flag]
+
+    # Execute Maven build
     try:
-        # Build core module with tests enabled (generates exports)
         result = subprocess.run(
-            ["mvnd", "clean", "verify", "-pl", "doctester-core", "-DskipTests=false"],
-            cwd=str(maven_project_root),
+            cmd,
+            cwd=str(project_root),
             capture_output=True,
             text=True,
-            timeout=300,
+            timeout=600,
             env=env,
         )
-
-        if result.returncode != 0:
-            pytest.skip(f"Maven build failed: {result.stderr}")
-
-        # Check for generated exports
-        export_dir = maven_project_root / "doctester-core" / "target" / "site" / "doctester"
-        if not export_dir.exists():
-            pytest.skip("DocTester exports not generated")
-
-        yield export_dir
-
     except FileNotFoundError:
-        pytest.skip("mvnd not found in PATH")
+        raise RuntimeError(
+            "mvnd (Maven Daemon) not found in PATH.\n"
+            "Install mvnd 2.x or set: PATH=/opt/mvnd/bin:$PATH"
+        )
     except subprocess.TimeoutExpired:
-        pytest.skip("Maven build timed out")
+        raise RuntimeError(f"Maven build timed out (>600s) for module: {module}")
 
-
-@pytest.fixture
-def maven_integration_test_build(maven_project_root: Optional[Path]) -> Generator[Path, None, None]:
-    """Build integration tests with Maven."""
-    if not maven_project_root:
-        pytest.skip("Maven project not found (pom.xml)")
-
-    # Set JAVA_HOME for Maven
-    java_home = "/usr/lib/jvm/java-25-openjdk-amd64"
-    env = os.environ.copy()
-    env["JAVA_HOME"] = java_home
-
-    try:
-        # Build integration test module
-        result = subprocess.run(
-            ["mvnd", "clean", "verify", "-pl", "doctester-integration-test", "-DskipTests=false"],
-            cwd=str(maven_project_root),
-            capture_output=True,
-            text=True,
-            timeout=300,
-            env=env,
+    # Verify build succeeded
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Maven build FAILED for {module}.\n\n"
+            f"Command: {' '.join(cmd)}\n"
+            f"CWD: {project_root}\n\n"
+            f"STDERR:\n{result.stderr}\n\n"
+            f"STDOUT:\n{result.stdout}"
         )
 
-        if result.returncode != 0:
-            pytest.skip(f"Maven integration test build failed: {result.stderr}")
+    # Verify exports were generated
+    export_dir = project_root / module / "target" / "site" / "doctester"
+    if not export_dir.exists():
+        raise RuntimeError(
+            f"Exports directory not found: {export_dir}\n"
+            f"Maven build succeeded but DocTester did not generate exports.\n"
+            f"Verify tests ran: mvnd test -pl {module}"
+        )
 
-        # Check for generated exports
-        export_dir = maven_project_root / "doctester-integration-test" / "target" / "site" / "doctester"
-        if not export_dir.exists():
-            pytest.skip("Integration test exports not generated")
+    # Verify exports are non-empty
+    export_files = list(export_dir.glob("*.html"))
+    if not export_files:
+        raise RuntimeError(
+            f"Exports directory is empty: {export_dir}\n"
+            f"Expected .html files but found none.\n"
+            f"Verify tests ran and generated documentation."
+        )
 
-        yield export_dir
+    return export_dir
 
-    except FileNotFoundError:
-        pytest.skip("mvnd not found in PATH")
-    except subprocess.TimeoutExpired:
-        pytest.skip("Maven integration test build timed out")
+
+@pytest.fixture(scope="session")
+def project_root() -> Path:
+    """DocTester project root directory.
+
+    Fails immediately if not in a DocTester repository.
+    Used by other fixtures to locate Maven modules and exports.
+    """
+    return _find_project_root()
+
+
+@pytest.fixture(scope="session")
+def maven_doctester_core_exports(project_root: Path) -> Path:
+    """Real Maven build of doctester-core with DocTester exports.
+
+    REAL END-TO-END TEST:
+    - Runs: mvnd clean verify -pl doctester-core -DskipTests=false
+    - Executes all JUnit tests in doctester-core
+    - DocTester generates HTML exports in target/site/doctester/
+    - Returns path to actual generated documentation
+
+    FAILS LOUDLY if:
+    - Java 25 not found
+    - mvnd not in PATH
+    - Maven build fails
+    - Exports not generated
+
+    Use in tests to verify CLI operations on REAL exports.
+    """
+    return _run_maven_build(project_root, "doctester-core", skip_tests=False)
+
+
+@pytest.fixture(scope="session")
+def maven_integration_test_exports(project_root: Path) -> Path:
+    """Real Maven build of doctester-integration-test with API documentation.
+
+    REAL END-TO-END TEST:
+    - Runs: mvnd clean verify -pl doctester-integration-test -DskipTests=false
+    - Executes integration tests against embedded Ninja framework server
+    - Tests make real HTTP calls to API endpoints
+    - DocTester generates documentation from live HTTP interactions
+    - Returns path to actual generated API documentation
+
+    This tests the FULL STACK:
+    1. Java application compiles and runs
+    2. Embedded server starts
+    3. HTTP endpoints respond
+    4. Tests execute and pass
+    5. DocTester captures and documents interactions
+    6. HTML exports are generated
+
+    FAILS LOUDLY if ANY step fails.
+
+    Use in tests to verify CLI operations on REAL integration test exports.
+    """
+    return _run_maven_build(project_root, "doctester-integration-test", skip_tests=False)

@@ -1,4 +1,11 @@
-"""Comprehensive CLI command tests with fixtures."""
+"""Unit tests for CLI commands using sample fixtures.
+
+These are NOT integration tests - they use sample HTML/Markdown fixtures
+created in tmp directories, NOT real Maven builds.
+
+For real end-to-end testing with actual Maven builds, see:
+  test_maven_integration.py
+"""
 
 from pathlib import Path
 from typer.testing import CliRunner
