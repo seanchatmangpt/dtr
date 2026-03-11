@@ -26,14 +26,23 @@ This test runs normally with JUnit **and** generates a polished Bootstrap HTML p
 
 ## Documentation Map
 
-DocTester's documentation follows the [Diataxis](https://diataxis.fr/) framework:
+DocTester's documentation follows the [Diataxis](https://diataxis.fr/) framework and is organized by topic:
+
+### By Topic
+
+| Topic | Tutorials | How-to | Reference | Explanation |
+|---|---|---|---|---|
+| **Java 25 Features** | [Virtual Threads](tutorials/virtual-threads-lightweight-concurrency.md), [Records & Sealed](tutorials/records-sealed-classes.md) | [Use Virtual Threads](how-to/use-virtual-threads.md), [Pattern Matching](how-to/pattern-matching.md), [Text Blocks](how-to/text-blocks.md), [Switch](how-to/switch-expressions.md) | [Virtual Threads API](reference/virtual-threads-reference.md), [Records & Sealed](reference/records-sealed-reference.md) | [Design Philosophy](explanation/java25-design-philosophy.md), [Virtual Threads](explanation/virtual-threads-philosophy.md), [Records & Sealed](explanation/records-sealed-philosophy.md) |
+| **API Testing** | [Your First DocTest](tutorials/your-first-doctest.md), [REST API](tutorials/testing-a-rest-api.md) | [JSON](how-to/test-json-endpoints.md), [XML](how-to/test-xml-endpoints.md), [Cookies](how-to/use-cookies.md), [Files](how-to/upload-files.md), [Query Params](how-to/test-with-query-parameters.md), [Headers](how-to/use-custom-headers.md) | [DocTester](reference/doctester-base-class.md), [Request](reference/request-api.md), [Response](reference/response-api.md) | [How it Works](explanation/how-doctester-works.md), [Philosophy](explanation/documentation-philosophy.md), [Architecture](explanation/architecture.md) |
+
+### By Learning Mode
 
 | Section | Purpose | Start here if… |
 |---|---|---|
-| [Tutorials](tutorials/index.md) | Step-by-step learning | You're new to DocTester |
+| [Tutorials](tutorials/index.md) | Step-by-step learning | You're new to Java 25 or DocTester |
 | [How-to Guides](how-to/index.md) | Task-focused recipes | You know what you want to do |
 | [Reference](reference/index.md) | Complete API docs | You need to look something up |
-| [Explanation](explanation/index.md) | Concepts & architecture | You want to understand *why* |
+| [Explanation](explanation/index.md) | Concepts & design | You want to understand *why* |
 | [Contributing](contributing/index.md) | Developer experience | You want to develop DocTester itself |
 
 ---

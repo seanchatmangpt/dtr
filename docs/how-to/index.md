@@ -4,7 +4,16 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 
 ## Available Guides
 
-### Testing
+### Java 25 Language Features
+
+| Guide | Task |
+|---|---|
+| [Use Virtual Threads with Executors](use-virtual-threads.md) | Spawn lightweight concurrent tasks, collect results, handle errors |
+| [Pattern Matching with Sealed Records](pattern-matching.md) | Deconstruct types exhaustively using pattern matching |
+| [Text Blocks for Multiline Strings](text-blocks.md) | Write HTML, JSON, SQL, and templates naturally without escapes |
+| [Switch Expressions](switch-expressions.md) | Replace if/else chains with exhaustive, type-safe matching |
+
+### API Testing
 
 | Guide | Task |
 |---|---|
