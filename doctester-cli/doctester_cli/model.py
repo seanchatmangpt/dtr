@@ -166,3 +166,57 @@ class PdfExportConfig:
     keep_tex: bool = False
     compilation_timeout: int = 300
     force: bool = False
+
+
+@dataclass
+class ValidationResult:
+    """Result of a validation check."""
+
+    name: str
+    passed: bool
+    message: str = ""
+    hint: str = ""
+
+
+@dataclass
+class PublishCheckConfig:
+    """Configuration for publish pre-flight validation."""
+
+    project_dir: Path
+    ossrh_user: str | None = None
+    ossrh_token: str | None = None
+    gpg_key: str | None = None
+    verbose: bool = False
+
+
+@dataclass
+class PublishDeployConfig:
+    """Configuration for deploying to OSSRH staging."""
+
+    project_dir: Path
+    ossrh_user: str | None = None
+    ossrh_token: str | None = None
+    gpg_key: str | None = None
+    gpg_passphrase: str | None = None
+    skip_tests: bool = False
+    dry_run: bool = False
+    auto_release: bool = False
+
+
+@dataclass
+class PublishReleaseConfig:
+    """Configuration for releasing from OSSRH staging to Maven Central."""
+
+    ossrh_user: str | None = None
+    ossrh_token: str | None = None
+    wait: bool = False
+    timeout: int = 1800  # 30 minutes
+
+
+@dataclass
+class PublishStatusConfig:
+    """Configuration for checking Maven Central availability."""
+
+    version: str | None = None
+    wait: bool = False
+    timeout: int = 1800

@@ -343,3 +343,92 @@ class LatexTemplateMissingError(CLIError):
         message = f"Unknown LaTeX template: {template_name}"
         hint = f"Valid templates are: {templates_str}"
         super().__init__(message, hint)
+
+
+class MissingGPGKeyError(CLIError):
+    """Raised when GPG key is not found."""
+
+    def __init__(self, key_id: str | None = None):
+        """Initialize missing GPG key error.
+
+        Args:
+            key_id: ID of the missing GPG key (optional)
+        """
+        if key_id:
+            message = f"GPG key not found: {key_id}"
+            hint = f"Import or create GPG key: gpg --import <keyfile>\nOr use: gpg --gen-key"
+        else:
+            message = "No GPG key found"
+            hint = "Set up GPG: gpg --gen-key\nExport public key: gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>"
+        super().__init__(message, hint)
+
+
+class InvalidCredentialsError(CLIError):
+    """Raised when OSSRH credentials are missing or invalid."""
+
+    def __init__(self, credential_type: str = "OSSRH"):
+        """Initialize invalid credentials error.
+
+        Args:
+            credential_type: Type of credential (OSSRH, GPG, etc.)
+        """
+        message = f"{credential_type} credentials not configured"
+        hint = (
+            f"Configure {credential_type} credentials in ~/.m2/settings.xml\n"
+            "Or set environment variables: OSSRH_USERNAME, OSSRH_PASSWORD"
+        )
+        super().__init__(message, hint)
+
+
+class InvalidPOMError(CLIError):
+    """Raised when pom.xml is invalid for Maven Central publishing."""
+
+    def __init__(self, missing_elements: list[str] | str, requirement: str = ""):
+        """Initialize invalid POM error.
+
+        Args:
+            missing_elements: List of missing POM elements or error message
+            requirement: What's required to fix it (optional)
+        """
+        if isinstance(missing_elements, list):
+            elements_str = ", ".join(missing_elements)
+            message = f"Invalid pom.xml: Missing required elements: {elements_str}"
+            hint = (
+                f"Add missing elements to pom.xml\n"
+                f"See PUBLISHING.md for complete pom.xml structure"
+            )
+        else:
+            message = f"Invalid pom.xml: {missing_elements}"
+            hint = f"Required for Maven Central: {requirement}" if requirement else ""
+        super().__init__(message, hint)
+
+
+class PublishValidationError(CLIError):
+    """Raised when pre-flight publish validation fails."""
+
+    def __init__(self, failures: list[str]):
+        """Initialize publish validation error.
+
+        Args:
+            failures: List of validation failures
+        """
+        failures_str = "\n".join(f"  - {f}" for f in failures)
+        message = f"Pre-flight validation failed:\n{failures_str}"
+        hint = "Run 'dtr publish check' to validate your environment before publishing"
+        super().__init__(message, hint)
+
+
+class MavenCentralNotFoundError(CLIError):
+    """Raised when artifact is not found on Maven Central after publishing."""
+
+    def __init__(self, artifact: str, version: str = ""):
+        """Initialize Maven Central not found error.
+
+        Args:
+            artifact: Artifact coordinates
+            version: Version of the artifact
+        """
+        ver_str = f" (v{version})" if version else ""
+        message = f"Artifact not found on Maven Central: {artifact}{ver_str}"
+        hint = "Artifact may still be syncing. Wait 15-30 minutes and try again."
+        super().__init__(message, hint)
