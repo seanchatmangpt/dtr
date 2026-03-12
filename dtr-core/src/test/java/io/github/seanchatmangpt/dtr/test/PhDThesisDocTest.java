@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
 import io.github.seanchatmangpt.dtr.bibliography.BibliographyManager;
+import io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.metadata.DocMetadata;
 import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
@@ -60,6 +61,11 @@ public class PhDThesisDocTest extends DtrTest {
 
     @BeforeAll
     static void registerCitations() {
+        // Reset the CrossReferenceIndex singleton before this test class runs to
+        // prevent stale references from a previously executed test class from
+        // polluting the index used by sayRef() calls in this class.
+        CrossReferenceIndex.reset();
+
         var bib = BibliographyManager.getInstance();
         bib.register("Gosling2023",
                 "Gosling, J. et al. The Java Language Specification, Java SE 21 Edition. Oracle, 2023.");
@@ -107,6 +113,10 @@ public class PhDThesisDocTest extends DtrTest {
     @AfterAll
     static void afterAll() {
         finishDocTest();
+        // Reset the CrossReferenceIndex singleton after this test class completes
+        // so that references registered during this class do not leak into
+        // subsequent test classes that may run in the same JVM.
+        CrossReferenceIndex.reset();
     }
 
     @Override

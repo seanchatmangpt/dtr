@@ -26,6 +26,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +36,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -349,5 +353,189 @@ public class RenderMachineImplTest {
             "sayTable() with pipe-containing cells must still produce a valid '| --- |' separator");
         assertTrue(output.contains("Col A"),
             "sayTable() must include the header content despite adversarial cell data");
+    }
+
+    // =========================================================================
+    // Minimal RenderMachine stubs for MultiRenderMachine tests
+    // =========================================================================
+
+    /**
+     * A no-op RenderMachine base that provides empty implementations for all
+     * required abstract and interface methods, so test subclasses can override
+     * only the methods they care about.
+     */
+    static class NoOpRenderMachine extends RenderMachine {
+        @Override public void say(String text) {}
+        @Override public void sayNextSection(String headline) {}
+        @Override public void sayRaw(String rawMarkdown) {}
+        @Override public void sayTable(String[][] data) {}
+        @Override public void sayCode(String code, String language) {}
+        @Override public void sayWarning(String message) {}
+        @Override public void sayNote(String message) {}
+        @Override public void sayKeyValue(Map<String, String> pairs) {}
+        @Override public void sayUnorderedList(List<String> items) {}
+        @Override public void sayOrderedList(List<String> items) {}
+        @Override public void sayJson(Object object) {}
+        @Override public void sayAssertions(Map<String, String> assertions) {}
+        @Override public void sayRef(io.github.seanchatmangpt.dtr.crossref.DocTestRef ref) {}
+        @Override public void sayCite(String citationKey) {}
+        @Override public void sayCite(String citationKey, String pageRef) {}
+        @Override public void sayFootnote(String text) {}
+        @Override public List<org.apache.hc.client5.http.cookie.Cookie> sayAndGetCookies() { return List.of(); }
+        @Override public org.apache.hc.client5.http.cookie.Cookie sayAndGetCookieWithName(String name) { return null; }
+        @Override public Response sayAndMakeRequest(io.github.seanchatmangpt.dtr.testbrowser.Request req) { return null; }
+        @Override public <T> void sayAndAssertThat(String message, String reason, T actual, org.hamcrest.Matcher<? super T> matcher) {}
+        @Override public <T> void sayAndAssertThat(String message, T actual, org.hamcrest.Matcher<? super T> matcher) {}
+        @Override public void sayCodeModel(Class<?> clazz) {}
+        @Override public void sayCodeModel(java.lang.reflect.Method method) {}
+        @Override public void sayCallSite() {}
+        @Override public void sayAnnotationProfile(Class<?> clazz) {}
+        @Override public void sayClassHierarchy(Class<?> clazz) {}
+        @Override public void sayStringProfile(String text) {}
+        @Override public void sayReflectiveDiff(Object before, Object after) {}
+        @Override public void setTestBrowser(TestBrowser testBrowser) {}
+        @Override public void setFileName(String fileName) {}
+        @Override public void finishAndWriteOut() {}
+    }
+
+    /** A slow machine whose say() blocks for 30 seconds to trigger timeout. */
+    static final class SlowRenderMachine extends NoOpRenderMachine {
+        @Override public void say(String text) {
+            try { Thread.sleep(30_000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+    }
+
+    /** A machine whose say() always throws to trigger MultiRenderException. */
+    static final class FailingRenderMachine extends NoOpRenderMachine {
+        @Override public void say(String text) {
+            throw new IllegalStateException("deliberate failure from FailingRenderMachine");
+        }
+    }
+
+    // =========================================================================
+    // MultiRenderMachine — timeout and failure tests
+    // =========================================================================
+
+    @Test
+    public void multiRenderMachineAllMachinesCompleteWithinTimeout() {
+        // Two fast machines that complete immediately — no exception expected
+        var machine1 = new RenderMachineImpl();
+        machine1.setFileName("Multi1");
+        var machine2 = new RenderMachineImpl();
+        machine2.setFileName("Multi2");
+
+        var multi = new MultiRenderMachine(List.of(machine1, machine2), 10);
+
+        // Must not throw — all tasks finish well within 10 seconds
+        multi.say("Hello from multi machine");
+        multi.sayNextSection("Shared Section");
+
+        String out1 = String.join("\n", machine1.markdownDocument);
+        String out2 = String.join("\n", machine2.markdownDocument);
+        assertTrue(out1.contains("Hello from multi machine"),
+            "Machine 1 must receive dispatched say() call");
+        assertTrue(out2.contains("Hello from multi machine"),
+            "Machine 2 must receive dispatched say() call");
+        assertTrue(out1.contains("## Shared Section"),
+            "Machine 1 must receive dispatched sayNextSection() call");
+        assertTrue(out2.contains("## Shared Section"),
+            "Machine 2 must receive dispatched sayNextSection() call");
+    }
+
+    @Test
+    public void multiRenderMachineTimeoutThrowsRuntimeExceptionWithTimedOutMessage() {
+        var multi = new MultiRenderMachine(List.of(new SlowRenderMachine()), 1);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> multi.say("trigger timeout"),
+            "A machine that hangs past the timeout must cause a RuntimeException");
+        assertNotNull(ex.getMessage(),
+            "Timeout RuntimeException must have a non-null message");
+        assertTrue(ex.getMessage().contains("timed out"),
+            "Timeout exception message must contain 'timed out', was: " + ex.getMessage());
+    }
+
+    @Test
+    public void multiRenderMachineFailingMachineIncludesClassNameInMessage() {
+        var multi = new MultiRenderMachine(List.of(new FailingRenderMachine()), 10);
+
+        MultiRenderMachine.MultiRenderException ex = assertThrows(
+            MultiRenderMachine.MultiRenderException.class,
+            () -> multi.say("trigger failure"),
+            "A machine that throws must cause a MultiRenderException");
+        assertTrue(ex.getMessage().contains("FailingRenderMachine"),
+            "MultiRenderException message must contain the failing machine's class name, was: " + ex.getMessage());
+        assertFalse(ex.getCauses().isEmpty(),
+            "MultiRenderException must contain at least one cause");
+    }
+
+    // =========================================================================
+    // RenderMachineImpl output file verification
+    // =========================================================================
+
+    @Test
+    public void generatedMdFileIsValidUtf8() throws Exception {
+        renderMachine.sayNextSection("UTF-8 Test");
+        renderMachine.say("Japanese: \u65e5\u672c\u8a9e \uD83D\uDE80");
+        renderMachine.finishAndWriteOut();
+
+        File outputFile = new File("docs/test/TestExample.md");
+        assertTrue(outputFile.exists(), "Output .md file must exist after finishAndWriteOut()");
+
+        byte[] rawBytes = Files.readAllBytes(outputFile.toPath());
+        // Decoding as UTF-8 must not produce replacement characters (U+FFFD)
+        String decoded = new String(rawBytes, StandardCharsets.UTF_8);
+        assertFalse(decoded.contains("\uFFFD"),
+            "Output file must be valid UTF-8 — no replacement characters");
+        assertTrue(decoded.contains("\u65e5\u672c\u8a9e"),
+            "Japanese characters must survive the UTF-8 write/read round-trip");
+    }
+
+    @Test
+    public void generatedMdFileContainsExpectedH1HeadingFormat() throws Exception {
+        renderMachine.finishAndWriteOut();
+
+        File outputFile = new File("docs/test/TestExample.md");
+        assertTrue(outputFile.exists(), "Output .md file must exist after finishAndWriteOut()");
+
+        byte[] rawBytes = Files.readAllBytes(outputFile.toPath());
+        String content = new String(rawBytes, StandardCharsets.UTF_8);
+
+        // H1 heading must be exactly "# TestExample\n\n" at the top of the document
+        assertTrue(content.startsWith("# TestExample\n"),
+            "Output file must start with '# <FileName>' H1 heading");
+        // There must be a blank line after the H1
+        assertTrue(content.startsWith("# TestExample\n\n"),
+            "Output file must have an empty line after the H1 heading");
+    }
+
+    @Test
+    public void generatedMdFileContainsProperMarkdownTableFormat() throws Exception {
+        renderMachine.sayTable(new String[][] {
+            {"col1", "col2"},
+            {"v1",   "v2"}
+        });
+        renderMachine.finishAndWriteOut();
+
+        File outputFile = new File("docs/test/TestExample.md");
+        assertTrue(outputFile.exists(), "Output .md file must exist after finishAndWriteOut()");
+
+        byte[] rawBytes = Files.readAllBytes(outputFile.toPath());
+        String content = new String(rawBytes, StandardCharsets.UTF_8);
+
+        assertTrue(content.contains("| col1 | col2 |"),
+            "Output file must contain a pipe-formatted table header row");
+        assertTrue(content.contains("| --- |"),
+            "Output file must contain the markdown table separator row '| --- |'");
+    }
+
+    @Test
+    public void generatedMdFileIsNotEmptyAfterFinishAndWriteOut() throws Exception {
+        renderMachine.say("Some content");
+        renderMachine.finishAndWriteOut();
+
+        File outputFile = new File("docs/test/TestExample.md");
+        assertTrue(outputFile.exists(), "Output .md file must exist after finishAndWriteOut()");
+        assertTrue(outputFile.length() > 0,
+            "Output .md file must not be empty after finishAndWriteOut()");
     }
 }

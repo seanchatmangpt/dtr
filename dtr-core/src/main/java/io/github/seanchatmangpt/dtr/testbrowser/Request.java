@@ -17,11 +17,15 @@ package io.github.seanchatmangpt.dtr.testbrowser;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import java.io.IOException;
-import java.util.HashMap;
 import io.github.seanchatmangpt.dtr.testbrowser.auth.AuthProvider;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -388,17 +392,32 @@ public class Request {
     /**
      * Adds a query parameter to this request's URL.
      *
-     * @param key the parameter name
-     * @param value the parameter value
+     * <p>The key and value are percent-encoded per RFC 3986 (spaces become {@code %20},
+     * not {@code +}). Any query parameters already present in the URI are preserved.</p>
+     *
+     * @param key the parameter name (must not be null)
+     * @param value the parameter value (must not be null)
      * @return This request for chaining
      */
     public Request addQueryParameter(String key, String value) {
-        // Build URL with query parameter if URI is already set
+        Objects.requireNonNull(key, "key must not be null");
+        Objects.requireNonNull(value, "value must not be null");
         if (this.uri != null) {
-            this.uri = Url.host(this.uri.getScheme() + "://" + this.uri.getAuthority())
-                .path(this.uri.getPath())
-                .addQueryParameter(key, value)
-                .uri();
+            try {
+                // URIBuilder preserves existing query parameters and handles encoding correctly.
+                // Replace '+' with '%20' so that spaces satisfy RFC 3986 rather than
+                // application/x-www-form-urlencoded conventions.
+                String encodedKey = URLEncoder.encode(key, StandardCharsets.UTF_8)
+                        .replace("+", "%20");
+                String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8)
+                        .replace("+", "%20");
+                URIBuilder builder = new URIBuilder(this.uri);
+                builder.addParameter(encodedKey, encodedValue);
+                this.uri = builder.build();
+            } catch (java.net.URISyntaxException e) {
+                throw new IllegalStateException(
+                        "Failed to add query parameter to URI: " + this.uri, e);
+            }
         }
         return this;
     }

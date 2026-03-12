@@ -612,6 +612,95 @@ class DtrExtensionTest {
     }
 
     // =========================================================================
+    // Unit Tests - DtrContext.setTestServerUrl
+    // =========================================================================
+
+    @Nested
+    @DisplayName("DtrContext.setTestServerUrl()")
+    class DtrContextSetTestServerUrlTests {
+
+        private DtrContext buildContext(String initialUrl) {
+            RenderMachineImpl rm = new RenderMachineImpl();
+            rm.setFileName("DtrContextTest");
+            TestBrowser tb = new TestBrowserImpl();
+            return new DtrContext(rm, tb, initialUrl);
+        }
+
+        @Test
+        @DisplayName("setTestServerUrl stores the URL and testServerUrl() returns a Url for that base")
+        void setTestServerUrlStoresUrl() {
+            var ctx = buildContext("http://localhost:8080");
+
+            ctx.setTestServerUrl("http://example.com:8080");
+
+            var url = ctx.testServerUrl();
+            assertNotNull(url, "testServerUrl() must not return null after setTestServerUrl()");
+            assertTrue(url.toString().contains("example.com"),
+                "testServerUrl() must reflect the URL set via setTestServerUrl()");
+        }
+
+        @Test
+        @DisplayName("setTestServerUrl replaces a previously set URL")
+        void setTestServerUrlReplacesPreviousUrl() {
+            var ctx = buildContext("http://localhost:8080");
+
+            ctx.setTestServerUrl("http://first.example.com");
+            ctx.setTestServerUrl("http://second.example.com");
+
+            var url = ctx.testServerUrl();
+            assertTrue(url.toString().contains("second.example.com"),
+                "testServerUrl() must reflect the most recently set URL");
+            assertFalse(url.toString().contains("first.example.com"),
+                "testServerUrl() must not reflect the previously set URL");
+        }
+
+        @Test
+        @DisplayName("setTestServerUrl with null throws IllegalArgumentException")
+        void setTestServerUrlNullThrows() {
+            var ctx = buildContext("http://localhost:8080");
+
+            org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> ctx.setTestServerUrl(null),
+                "setTestServerUrl(null) must throw IllegalArgumentException");
+        }
+
+        @Test
+        @DisplayName("setTestServerUrl with empty string throws IllegalArgumentException")
+        void setTestServerUrlEmptyStringThrows() {
+            var ctx = buildContext("http://localhost:8080");
+
+            org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> ctx.setTestServerUrl(""),
+                "setTestServerUrl(\"\") must throw IllegalArgumentException");
+        }
+
+        @Test
+        @DisplayName("setTestServerUrl with blank string throws IllegalArgumentException")
+        void setTestServerUrlBlankStringThrows() {
+            var ctx = buildContext("http://localhost:8080");
+
+            org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> ctx.setTestServerUrl("   "),
+                "setTestServerUrl(blank) must throw IllegalArgumentException");
+        }
+
+        @Test
+        @DisplayName("testServerUrl() returns Url.host() of the constructor-supplied URL by default")
+        void testServerUrlDefaultFromConstructor() {
+            var ctx = buildContext("http://api.example.com:9090");
+
+            var url = ctx.testServerUrl();
+
+            assertNotNull(url, "testServerUrl() must not return null");
+            assertTrue(url.toString().contains("api.example.com"),
+                "testServerUrl() must reflect the URL passed to the constructor");
+        }
+    }
+
+    // =========================================================================
     // Cleanup
     // =========================================================================
 

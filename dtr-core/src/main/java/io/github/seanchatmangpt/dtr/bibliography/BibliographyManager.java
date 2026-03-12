@@ -15,9 +15,9 @@
  */
 package io.github.seanchatmangpt.dtr.bibliography;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Singleton manager for registering and retrieving bibliography entries.
@@ -39,7 +39,7 @@ public class BibliographyManager {
     private final Map<String, String> entries;
 
     private BibliographyManager() {
-        this.entries = new HashMap<>();
+        this.entries = new ConcurrentHashMap<>();
     }
 
     /**

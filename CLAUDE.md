@@ -1,6 +1,6 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 26 | **Version:** 2.5.0-SNAPSHOT
+**Project:** Markdown documentation generator for Java 25 | **Version:** 2.5.0
 
 ---
 
@@ -11,7 +11,7 @@
 - ✅ Use actual DTR code (RenderMachine + say* methods)
 - ✅ Measure with System.nanoTime() on real execution
 - ✅ Report: metric + units + Java version + iterations + environment
-- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26.0.2)" NOT "6667x faster"
+- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
 - ✅ JUnit 5 tests with DtrContext
@@ -19,8 +19,8 @@
 - ❌ Never bypass with standalone generators
 
 ### 3. Toolchain (Non-Negotiable)
-- Java 26: `/usr/lib/jvm/java-26-openjdk-amd64`
-- Maven 4.0.0-rc-5+: `/opt/apache-maven-4.0.0-rc-5/bin/mvn`
+- Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
+- Maven 4.0.0-rc-3+: `/opt/apache-maven-4.0.0-rc-3/bin/mvn`
 - mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred)
 - Flag: `--enable-preview` in `.mvn/maven.config`
 
@@ -126,7 +126,7 @@ ctx.sayAndAssertThat("Status", actual, is(200)); // Assert + document result
 
 ---
 
-## 🚀 JAVA 26 FEATURES (Use These)
+## 🚀 JAVA 25 FEATURES (Use These)
 
 ```java
 // Records (immutable data)
@@ -155,7 +155,7 @@ String html = """
 ## ✅ BEFORE CODING
 
 1. `java -version` → 25.0.2+
-2. `mvnd --version` → Maven 4.0.0-rc-5+
+2. `mvnd --version` → Maven 4.0.0-rc-3+
 3. `.mvn/maven.config` contains `--enable-preview`
 4. Proxy running (if needed): `python3 maven-proxy-auth.py &`
 5. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
@@ -180,10 +180,10 @@ ps aux | grep maven-proxy      # Check proxy running
 - `dtr-core/` — Core library
 - `dtr-integration-test/` — Integration tests
 - `.mvn/maven.config` — Build flags (--enable-preview)
-- `pom.xml` — `<release>26</release>`
+- `pom.xml` — `<release>25</release>`
 
 ---
 
-**Last Updated:** March 11, 2026
-**Branch:** claude/fix-latex-errors-rzhxB
+**Last Updated:** March 12, 2026
+**Branch:** claude/audit-codebase-quality-yjLpu
 **Rule:** Always measure real, report real, use real DTR code.

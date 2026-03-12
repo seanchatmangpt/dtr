@@ -1,8 +1,8 @@
-# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 26
+# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 25+
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 26 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
+**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 25+ (with `--enable-preview`) | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
 
 ---
 
@@ -15,11 +15,11 @@ Save as `src/test/java/example/FirstDocTest.java`:
 ```java
 package example;
 
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.*;
 
-public class FirstDocTest extends DocTester {
+public class FirstDocTest extends DtrTest {
 
     @Test
     void documentUserApi() {
@@ -89,6 +89,34 @@ Retrieve a user by ID and display their details.
 ```
 
 **Done!** Your documentation is version-controlled, portable, and always accurate. 🎉
+
+---
+
+## Architecture
+
+DTR has four main components:
+
+- **DtrTest / DtrExtension** — Test lifecycle integration. `DtrTest` is a base class; `DtrExtension` is a JUnit 5 extension for parameter injection. Both wire up the documentation pipeline around each test method.
+- **DtrContext** — The documentation API surface. Exposes all `say*` methods and HTTP request/response utilities that tests call to record documentation events.
+- **RenderMachine** — The rendering pipeline. Captures `say*` events as they occur and formats them into structured output. `MultiRenderMachine` dispatches to multiple engines in parallel.
+- **Output engines** — Format-specific writers: Markdown (`.md`), LaTeX (`.tex`), HTML (`.html`), JSON (`.json`), and more.
+
+```
+JUnit 5 Test
+    │
+    ▼
+DtrContext.say*()          ← your test calls these
+    │
+    ▼
+RenderMachine              ← captures & formats events
+    │
+    ├──► Markdown (.md)
+    ├──► LaTeX (.tex)
+    ├──► HTML (.html)
+    └──► JSON (.json)
+```
+
+Output lands in `target/docs/test-results/` by default.
 
 ---
 
@@ -566,10 +594,10 @@ A single test generates all of them. 🎯
 
 ## 🚀 Getting Started
 
-### 1. Install Java 25 and Maven 4
+### 1. Install Java 25+ and Maven 4
 
 ```bash
-# Install Java 25 LTS
+# Install Java 25+ (LTS) with --enable-preview
 export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 
 # Verify
@@ -598,10 +626,10 @@ mvnd --version         # Shows: Maven 4.0.0-rc-5
 ### 3. Create your first test
 
 ```java
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 import org.junit.jupiter.api.Test;
 
-public class MyFirstDocTest extends DocTester {
+public class MyFirstDocTest extends DtrTest {
     @Test
     void myFirstDoc() {
         sayNextSection("Hello World");
@@ -634,7 +662,7 @@ dtr/
 ├── dtr-core/
 │   ├── pom.xml
 │   └── src/main/java/io/github/seanchatmangpt/dtr/
-│       ├── DocTester.java              # Base test class with say* methods
+│       ├── DtrTest.java                # Base test class with say* methods
 │       ├── assembly/                   # Document assembly & indexing
 │       ├── openapi/                    # OpenAPI/Swagger spec generation
 │       ├── receipt/                    # Cryptographic integrity (blockchain receipts)
@@ -649,6 +677,69 @@ dtr/
 │       └── sse/                        # Server-Sent Events
 └── dtr-integration-test/
     └── Full integration examples
+```
+
+---
+
+## Glossary
+
+**DtrTest** — Base class for documentation tests. Extend this to get `say*` methods injected directly into your test class without parameter declarations.
+
+**DtrExtension** — JUnit 5 extension (`@ExtendWith(DtrExtension.class)`). Use this with a `DtrContext ctx` parameter on your test method instead of extending `DtrTest`. Preferred when you cannot or do not want to extend a base class.
+
+**DtrContext** — The documentation API. Provides all `say*` methods plus request/response utilities (`sayAndMakeRequest`, `sayAndAssertThat`). The single object your tests interact with.
+
+**RenderMachine** — The rendering pipeline. Captures `say*` events in order and formats them into a complete output document. Each format (Markdown, LaTeX, HTML, JSON) has its own implementation.
+
+**MultiRenderMachine** — Dispatches to multiple render machines in parallel. Use this to generate Markdown, LaTeX, and blog exports from a single test run.
+
+**say\* methods** — The documentation API: `sayNextSection`, `say`, `sayCode`, `sayTable`, `sayJson`, `sayWarning`, `sayNote`, `sayKeyValue`, `sayUnorderedList`, `sayOrderedList`, `sayAssertions`, `sayAndMakeRequest`. Each call both records a documentation event and (for assertion/request methods) executes the underlying operation.
+
+**Living Documentation** — Documentation generated directly from passing tests. It is always accurate because the documentation only exists when the tests pass. If behavior changes, the next test run regenerates the docs to match.
+
+---
+
+## Troubleshooting
+
+### "0 tests run" in Maven output
+
+Add `junit-jupiter-engine` to your test dependencies. Surefire 3.x requires it explicitly — `junit-jupiter` alone is not sufficient.
+
+```xml
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-engine</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+### "cannot find symbol: class DocTester"
+
+Use `DtrTest` (not `DocTester`). The correct import is:
+
+```java
+import io.github.seanchatmangpt.dtr.DtrTest;
+```
+
+`DocTester` was the class name in the original doctester project. DTR uses `DtrTest`.
+
+### "Documentation file not written"
+
+DTR throws `RuntimeException` when file writes fail. Check that the `dtr.output.dir` system property is set and the target directory is writable. By default, output goes to `target/docs/test-results/` — ensure your build has write access there.
+
+### "Too many authentication attempts" from Maven Central
+
+Run the proxy before your Maven command:
+
+```bash
+python3 maven-proxy-auth.py &
+```
+
+Then add to `.mvn/jvm.config`:
+
+```
+-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128
+-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
 ```
 
 ---

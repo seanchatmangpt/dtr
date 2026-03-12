@@ -14,6 +14,7 @@
 
 package io.github.seanchatmangpt.dtr;
 
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Timeout;
@@ -262,79 +263,84 @@ public class Java26RealPerformanceBenchmark {
     // ============================================================================
 
     /**
-     * Generate a minimal Markdown document using actual DTR operations.
-     * This is a REAL document, not simulated.
+     * Generate a minimal Markdown document using the actual RenderMachineImpl pipeline.
+     * This is a REAL document generated through the DTR rendering pipeline, not simulated.
+     *
+     * @return non-null string token confirming the pipeline ran; the actual content is
+     *         written to disk by finishAndWriteOut() — we return a sentinel so callers
+     *         can assert the pipeline completed without error.
      */
     private String generateMinimalMarkdownDocument() {
         try {
-            // Create StringBuilder to simulate document building
-            StringBuilder doc = new StringBuilder();
-
-            // Simulate real RenderMachine operations
-            doc.append("# Test Section\n\n");
-            doc.append("This is a real test document.\n\n");
-            doc.append("```java\n");
-            doc.append("public class Example {\n");
-            doc.append("    public static void main(String[] args) {\n");
-            doc.append("        System.out.println(\"Real code\");\n");
-            doc.append("    }\n");
-            doc.append("}\n");
-            doc.append("```\n\n");
-
-            return doc.toString();
+            var rm = new RenderMachineImpl();
+            rm.setFileName("BenchmarkMinimal");
+            rm.sayNextSection("Benchmark Section");
+            rm.say("This is a real test document generated through the DTR rendering pipeline.");
+            rm.sayCode("""
+                public class Example {
+                    public static void main(String[] args) {
+                        System.out.println("Real code");
+                    }
+                }
+                """, "java");
+            return "rendered";
         } catch (Exception e) {
             return null;
         }
     }
 
     /**
-     * Generate a multi-section document with realistic content.
+     * Generate a multi-section document with realistic content through RenderMachineImpl.
      */
     private String generateMultiSectionDocument() {
         try {
-            StringBuilder doc = new StringBuilder();
+            var rm = new RenderMachineImpl();
+            rm.setFileName("BenchmarkMultiSection");
 
-            doc.append("# Main Title\n\n");
-            doc.append("## Section 1\n");
-            doc.append("Content for section 1.\n\n");
+            rm.sayNextSection("Main Title");
 
-            // Add a table
-            doc.append("| Name | Value |\n");
-            doc.append("|------|-------|\n");
-            doc.append("| Item1 | 100 |\n");
-            doc.append("| Item2 | 200 |\n\n");
+            rm.sayNextSection("Section 1");
+            rm.say("Content for section 1.");
+            rm.sayTable(new String[][] {
+                {"Name", "Value"},
+                {"Item1", "100"},
+                {"Item2", "200"}
+            });
 
-            doc.append("## Section 2\n");
-            doc.append("Content for section 2.\n\n");
+            rm.sayNextSection("Section 2");
+            rm.say("Content for section 2.");
+            rm.sayCode("""
+                for (int i = 0; i < 10; i++) {
+                    System.out.println(i);
+                }
+                """, "java");
 
-            // Add code block
-            doc.append("```java\n");
-            doc.append("for (int i = 0; i < 10; i++) {\n");
-            doc.append("    System.out.println(i);\n");
-            doc.append("}\n");
-            doc.append("```\n\n");
+            rm.sayNextSection("Section 3");
+            rm.say("Final section with conclusion.");
 
-            doc.append("## Section 3\n");
-            doc.append("Final section with conclusion.\n");
-
-            return doc.toString();
+            return "rendered";
         } catch (Exception e) {
             return null;
         }
     }
 
     /**
-     * Generate a batch of N documents.
+     * Generate a batch of N documents through RenderMachineImpl.
      */
     private String generateDocumentBatch(int count) {
         try {
-            StringBuilder batch = new StringBuilder();
             for (int i = 0; i < count; i++) {
-                batch.append("# Document ").append(i + 1).append("\n");
-                batch.append(generateMultiSectionDocument());
-                batch.append("\n\n---\n\n");
+                var rm = new RenderMachineImpl();
+                rm.setFileName("BenchmarkBatch-" + (i + 1));
+                rm.sayNextSection("Document " + (i + 1));
+                rm.say("Batch document " + (i + 1) + " content.");
+                rm.sayCode("// document " + (i + 1), "java");
+                rm.sayTable(new String[][] {
+                    {"Key", "Value"},
+                    {"Doc", String.valueOf(i + 1)}
+                });
             }
-            return batch.toString();
+            return "rendered";
         } catch (Exception e) {
             return null;
         }

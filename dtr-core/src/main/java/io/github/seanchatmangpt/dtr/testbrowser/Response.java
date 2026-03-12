@@ -165,17 +165,20 @@ public class Response {
      */
     public <T> T payloadAs(Class<T> clazz) {
 
-        T parsedBody = null;
-
         if (PayloadUtils.isContentTypeApplicationXml(headers)) {
-            parsedBody = payloadXmlAs(clazz);
+            return payloadXmlAs(clazz);
         } else if (PayloadUtils.isContentTypeApplicationJson(headers)) {
-            parsedBody = payloadJsonAs(clazz);
+            return payloadJsonAs(clazz);
         } else {
-            logger.error("Could neither find application/json or application/xml content type in response. Returning null.");
+            String contentType = headers != null ? headers.get(HttpConstants.HEADER_CONTENT_TYPE) : null;
+            if (contentType == null) {
+                throw new IllegalStateException(
+                        "Cannot deserialize response: Content-Type header is missing");
+            }
+            throw new IllegalStateException(
+                    "Cannot deserialize response: unsupported Content-Type \"" + contentType
+                    + "\". Expected application/json or application/xml.");
         }
-
-        return parsedBody;
 
     }
 
