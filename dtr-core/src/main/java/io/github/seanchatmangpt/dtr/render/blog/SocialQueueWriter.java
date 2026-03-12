@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public final class SocialQueueWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(SocialQueueWriter.class);
-    private static final String QUEUE_DIR = "target/site/doctester/social";
+    private static final String QUEUE_DIR = "target/site/dtr/social";
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private SocialQueueWriter() {

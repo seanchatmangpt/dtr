@@ -29,13 +29,13 @@ public enum OutputFormat {
 
     /**
      * OpenAPI 3.1 specification in JSON format.
-     * Output file: {@code target/site/doctester/openapi.json}
+     * Output file: {@code target/site/dtr/openapi.json}
      */
     OPENAPI_JSON("json"),
 
     /**
      * OpenAPI 3.1 specification in YAML format.
-     * Output file: {@code target/site/doctester/openapi.yaml}
+     * Output file: {@code target/site/dtr/openapi.yaml}
      */
     OPENAPI_YAML("yaml"),
 

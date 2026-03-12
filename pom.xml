@@ -71,9 +71,9 @@ the specific language governing permissions and limitations under the License. -
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- DocTester documentation output configuration -->
-        <doctester.output.dir>docs/test</doctester.output.dir>
-        <doctester.format>markdown</doctester.format>
+        <!-- DTR documentation output configuration -->
+        <dtr.output.dir>docs/test</dtr.output.dir>
+        <dtr.format>markdown</dtr.format>
 
         <!-- NetBeans editor settings -->
         <org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>4</org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>
@@ -324,10 +324,10 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.5.3</version>
                     <configuration>
                         <argLine>--enable-preview</argLine>
-                        <!-- DocTester documentation output configuration passed to test runtime -->
+                        <!-- DTR documentation output configuration passed to test runtime -->
                         <systemPropertyVariables>
-                            <doctester.output.dir>${doctester.output.dir}</doctester.output.dir>
-                            <doctester.format>${doctester.format}</doctester.format>
+                            <dtr.output.dir>${dtr.output.dir}</dtr.output.dir>
+                            <dtr.format>${dtr.format}</dtr.format>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>

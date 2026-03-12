@@ -48,7 +48,7 @@ public final class BlogRenderMachine extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(BlogRenderMachine.class);
 
-    private static final String BASE_DIR = "target/site/doctester/blog";
+    private static final String BASE_DIR = "target/site/dtr/blog";
     private final BlogTemplate template;
     private final StringBuilder buffer = new StringBuilder();
     private final List<String> tweetables = new ArrayList<>();
@@ -387,7 +387,7 @@ public final class BlogRenderMachine extends RenderMachine {
                     java.time.LocalDate.now().toString(),
                     wordCount,
                     fileName,
-                    "https://github.com/r10r/doctester",
+                    "https://github.com/seanchatmangpt/dtr",
                     Arrays.asList("api", "testing", "documentation")
                 );
 
