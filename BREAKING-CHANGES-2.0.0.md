@@ -507,8 +507,8 @@ Contact the team if you have a custom `RenderMachine` implementation.
 - **Migration Guide:** [MIGRATION-1.x-TO-2.0.0.md](MIGRATION-1.x-TO-2.0.0.md)
 - **Updated README:** [README-2.0.0.md](README-2.0.0.md)
 - **Full Documentation:** [docs/](docs/)
-- **GitHub Issues:** [Report problems](https://github.com/r10r-org/doctester/issues)
-- **GitHub Discussions:** [Ask questions](https://github.com/r10r-org/doctester/discussions)
+- **GitHub Issues:** [Report problems](https://github.com/seanchatmangpt/doctester/issues)
+- **GitHub Discussions:** [Ask questions](https://github.com/seanchatmangpt/doctester/discussions)
 
 ---
 

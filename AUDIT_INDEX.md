@@ -262,7 +262,7 @@ AUDIT_SUMMARY.md (5 min) ← Executive overview
 - **Audit Conducted:** March 10, 2026
 - **Reviewed By:** Code Quality Audit Team
 - **For Questions:** See CLAUDE.md in repository for contacts
-- **GitHub Issues:** https://github.com/r10r-org/doctester/issues
+- **GitHub Issues:** https://github.com/seanchatmangpt/doctester/issues
 
 ---
 

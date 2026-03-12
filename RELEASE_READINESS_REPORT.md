@@ -308,7 +308,7 @@ No production code deprecations.
 ## Contact & Support
 
 For questions or issues:
-- GitHub Issues: https://github.com/r10r-org/doctester/issues
+- GitHub Issues: https://github.com/seanchatmangpt/doctester/issues
 - Email: ra@r10r.org
 - Documentation: See CLAUDE.md in repository
 

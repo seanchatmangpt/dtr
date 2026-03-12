@@ -1,6 +1,6 @@
 # Reference: TestBrowser Interface
 
-**Package:** `org.r10r.doctester.testbrowser`
+**Package:** `io.github.seanchatmangpt.dtr.doctester.testbrowser`
 **File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowser.java`
 
 `TestBrowser` is the HTTP client interface used by `DocTester`. The default implementation is `TestBrowserImpl` (Apache HttpClient 4). Override `getTestBrowser()` in your `DocTester` subclass to supply a custom implementation.

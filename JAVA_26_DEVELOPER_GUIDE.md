@@ -1412,7 +1412,7 @@ https://bugs.openjdk.org/browse/JDK
 Component: "Specification" (for JEP issues)
 ```
 
-Or report to DTR GitHub: https://github.com/r10r-org/doctester/issues
+Or report to DTR GitHub: https://github.com/seanchatmangpt/doctester/issues
 
 ---
 
@@ -1450,8 +1450,8 @@ Or report to DTR GitHub: https://github.com/r10r-org/doctester/issues
 
 ### DTR Resources
 
-- **Project:** https://github.com/r10r-org/doctester
-- **Issues:** https://github.com/r10r-org/doctester/issues
+- **Project:** https://github.com/seanchatmangpt/doctester
+- **Issues:** https://github.com/seanchatmangpt/doctester/issues
 - **Documentation:** [CLAUDE.md](./CLAUDE.md) (this repository)
 
 ### Performance & JVM Tuning
@@ -1488,7 +1488,7 @@ Java 26 (GA: March 17, 2026) introduces 10 JEPs that improve DTR in three ways:
 1. Reassess JVM tuning based on latest GC improvements
 2. Adopt new features as they mature
 
-For questions or issues, refer to the [OpenJDK JEP tracker](https://openjdk.org/jeps/0) or [DocTester GitHub](https://github.com/r10r-org/doctester/issues).
+For questions or issues, refer to the [OpenJDK JEP tracker](https://openjdk.org/jeps/0) or [DocTester GitHub](https://github.com/seanchatmangpt/doctester/issues).
 
 ---
 

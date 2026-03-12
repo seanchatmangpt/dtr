@@ -1,6 +1,6 @@
 # Reference: DTR Base Class
 
-**Package:** `org.r10r.doctester`
+**Package:** `io.github.seanchatmangpt.dtr.doctester`
 **File:** `dtr-core/src/main/java/org/r10r/doctester/DTR.java`
 
 `DocTester` is the abstract JUnit base class your test classes extend. It orchestrates both HTTP execution (via `TestBrowser`) and HTML documentation generation (via `RenderMachine`).

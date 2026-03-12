@@ -2,7 +2,7 @@
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0-SNAPSHOT` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `org.r10r:dtr-core`
+**Latest:** `2.5.0-SNAPSHOT` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
 
 ---
 
@@ -15,7 +15,7 @@ Save as `src/test/java/example/FirstDocTest.java`:
 ```java
 package example;
 
-import org.r10r.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.*;
 
@@ -447,7 +447,7 @@ new BlogRenderMachine(new SubstackTemplate())     // Substack
 
 ```xml
 <dependency>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
     <version>2.5.0-SNAPSHOT</version>
     <scope>test</scope>
@@ -581,7 +581,7 @@ mvnd --version         # Shows: Maven 4.0.0-rc-5
 
 ```xml
 <dependency>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
     <version>2.5.0-SNAPSHOT</version>
     <scope>test</scope>
@@ -598,7 +598,7 @@ mvnd --version         # Shows: Maven 4.0.0-rc-5
 ### 3. Create your first test
 
 ```java
-import org.r10r.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
 import org.junit.jupiter.api.Test;
 
 public class MyFirstDocTest extends DocTester {
@@ -663,8 +663,8 @@ dtr/
 
 ## 💬 Questions?
 
-- **Bug reports:** [GitHub Issues](https://github.com/r10r-org/doctester/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/r10r-org/doctester/discussions)
+- **Bug reports:** [GitHub Issues](https://github.com/seanchatmangpt/doctester/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/seanchatmangpt/doctester/discussions)
 - **Contributing:** See [CLAUDE.md](./CLAUDE.md)
 
 ---

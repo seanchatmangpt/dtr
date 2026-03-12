@@ -69,7 +69,7 @@ Learn how to generate documentation automatically as part of your test suite:
 **Key configuration:**
 ```xml
 <plugin>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-maven-plugin</artifactId>
     <version>2.5.0</version>
     <configuration>

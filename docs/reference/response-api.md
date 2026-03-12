@@ -1,6 +1,6 @@
 # Reference: Response API
 
-**Package:** `org.r10r.doctester.testbrowser`
+**Package:** `io.github.seanchatmangpt.dtr.doctester.testbrowser`
 **File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Response.java`
 
 `Response` holds the result of an HTTP request. It provides access to the status code, headers, and body, with built-in JSON/XML deserialization.

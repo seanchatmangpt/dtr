@@ -259,8 +259,8 @@ dtr export src/docs/problematic-file.md --format html
 
 #### "Plugin not found"
 ```
-[ERROR] Failed to execute goal org.r10r:dtr-maven-plugin
-Error: Could not find artifact org.r10r:dtr-maven-plugin:2.5.0
+[ERROR] Failed to execute goal io.github.seanchatmangpt.dtr:dtr-maven-plugin
+Error: Could not find artifact io.github.seanchatmangpt.dtr:dtr-maven-plugin:2.5.0
 ```
 
 **Cause:** Maven plugin not installed or wrong version
@@ -268,16 +268,16 @@ Error: Could not find artifact org.r10r:dtr-maven-plugin:2.5.0
 **Solution:**
 ```bash
 # Check Maven can download plugin
-mvn help:describe -Dplugin=org.r10r:dtr-maven-plugin:2.5.0
+mvn help:describe -Dplugin=io.github.seanchatmangpt.dtr:dtr-maven-plugin:2.5.0
 
 # Force update of Maven cache
 mvn -U clean install
 
 # Verify plugin version exists
-mvn org.r10r:dtr-maven-plugin:2.5.0:help
+mvn io.github.seanchatmangpt.dtr:dtr-maven-plugin:2.5.0:help
 
 # Use correct groupId/artifactId (check pom.xml)
-# <groupId>org.r10r</groupId>
+# <groupId>io.github.seanchatmangpt.dtr</groupId>
 # <artifactId>dtr-maven-plugin</artifactId>
 # <version>2.5.0</version>
 ```

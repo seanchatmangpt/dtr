@@ -33,7 +33,7 @@ export PATH=$JAVA_HOME/bin:$PATH
 ## Clone and build
 
 ```bash
-git clone https://github.com/r10r-org/doctester.git
+git clone https://github.com/seanchatmangpt/doctester.git
 cd doctester
 
 mvnd clean install

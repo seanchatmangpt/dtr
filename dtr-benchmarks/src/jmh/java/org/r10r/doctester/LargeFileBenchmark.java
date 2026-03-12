@@ -33,8 +33,8 @@ import java.util.concurrent.TimeUnit;
  * - 500MB file streaming
  * - Memory efficiency metrics
  *
- * Run with: mvnd clean package -pl doctester-benchmarks && \
- *           java -jar doctester-benchmarks/target/benchmarks.jar LargeFileBenchmark
+ * Run with: mvnd clean package -pl dtr-benchmarks && \
+ *           java -jar dtr-benchmarks/target/benchmarks.jar LargeFileBenchmark
  */
 @Fork(value = 1, jvmArgs = {"--enable-preview"})
 @Warmup(iterations = 2, time = 5, timeUnit = TimeUnit.SECONDS)

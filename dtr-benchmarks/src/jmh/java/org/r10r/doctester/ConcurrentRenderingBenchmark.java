@@ -32,8 +32,8 @@ import java.util.concurrent.TimeUnit;
  * - Race condition detection
  * - Thread safety verification
  *
- * Run with: mvnd clean package -pl doctester-benchmarks && \
- *           java -jar doctester-benchmarks/target/benchmarks.jar -t 4 ConcurrentRenderingBenchmark
+ * Run with: mvnd clean package -pl dtr-benchmarks && \
+ *           java -jar dtr-benchmarks/target/benchmarks.jar -t 4 ConcurrentRenderingBenchmark
  *
  * Note: Use -t 4 (threads) to simulate parallel rendering.
  */

@@ -1,4 +1,4 @@
-DTR [![Build Status](https://api.travis-ci.org/r10r-org/doctester.svg)](https://travis-ci.org/r10r-org/doctester)
+DTR [![Build Status](https://api.travis-ci.org/seanchatmangpt/doctester.svg)](https://travis-ci.org/seanchatmangpt/doctester)
 =========
 
 DTR is a Java Testing Framework. 
@@ -39,7 +39,7 @@ public void testMyApi() {
 
 This in turn generates the following output:
 
-![A screenshot of the generated html output](https://github.com/r10r-org/doctester/blob/master/img/doctester_example_output.png)
+![A screenshot of the generated html output](https://github.com/seanchatmangpt/doctester/blob/master/img/doctester_example_output.png)
 
 
 By default the resulting html is generated into src/target/site/doctester/
@@ -48,7 +48,7 @@ By default the resulting html is generated into src/target/site/doctester/
 There is an integration test that uses all of doctester. Check out for a more
 comprehensive example:
 
-https://github.com/r10r-org/doctester/blob/master/dtr-integration-test/src/test/java/controllers/ApiControllerDocTest.java
+https://github.com/seanchatmangpt/doctester/blob/master/dtr-integration-test/src/test/java/controllers/ApiControllerDocTest.java
 
 
 ## In-depth description of the problem we solve

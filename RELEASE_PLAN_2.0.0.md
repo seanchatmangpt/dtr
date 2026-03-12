@@ -30,7 +30,7 @@
 Child modules reference parent version via:
 ```xml
 <parent>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>doctester</artifactId>
     <version>1.1.12-SNAPSHOT</version>  <!-- Automatic update via parent -->
 </parent>
@@ -132,7 +132,7 @@ After successful Maven Central deployment:
 1. **Verify published artifacts** (takes ~15 minutes):
    ```bash
    # Check Maven Central
-   https://central.sonatype.com/artifact/org.r10r/dtr-core/2.0.0
+   https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/2.0.0
    ```
 
 2. **Merge main branch**:
@@ -141,7 +141,7 @@ After successful Maven Central deployment:
    ```
 
 3. **Create GitHub Release**:
-   - Go to: https://github.com/r10r-org/doctester/releases/new
+   - Go to: https://github.com/seanchatmangpt/doctester/releases/new
    - Tag: `v2.0.0`
    - Title: `DocTester 2.0.0 - Major Release with Breaking Changes`
    - Body: Copy from `CHANGELOG_2.0.0.md`

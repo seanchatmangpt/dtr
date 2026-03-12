@@ -86,7 +86,7 @@ All five new methods have:
 - ✅ Backward compatibility: all 2.3.x code compiles unmodified
 - ✅ Javadoc: all 5 new methods documented with examples
 - ✅ Dependencies: 0 new external libraries
-- ✅ Ready for Maven Central: `org.r10r:dtr-core:2.4.0`
+- ✅ Ready for Maven Central: `io.github.seanchatmangpt.dtr:dtr-core:2.4.0`
 
 ---
 

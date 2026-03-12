@@ -1,6 +1,6 @@
 # Reference: RenderMachine Interface
 
-**Package:** `org.r10r.doctester.rendermachine`
+**Package:** `io.github.seanchatmangpt.dtr.doctester.rendermachine`
 **File:** `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachine.java`
 
 `RenderMachine` is the HTML documentation generator interface. The default implementation is `RenderMachineImpl`. Override `getRenderMachine()` in your `DocTester` subclass to supply a custom renderer.

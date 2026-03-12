@@ -17,7 +17,7 @@ This section is for developers who want to contribute to DTR itself — fix bugs
 
 ```bash
 # Clone
-git clone https://github.com/r10r-org/doctester.git
+git clone https://github.com/seanchatmangpt/doctester.git
 cd doctester
 
 # Verify toolchain

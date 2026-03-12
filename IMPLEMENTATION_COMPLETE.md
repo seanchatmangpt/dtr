@@ -84,7 +84,7 @@ Runtime exception thrown when a reference targets a non-existent section anchor.
 **Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
 
 **Changes**:
-- Added import: `org.r10r.doctester.crossref.DocTestRef`
+- Added import: `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)` for Markdown output
 - Renders cross-reference as: `[linkText](../ClassName.md#anchor)`
 
@@ -97,7 +97,7 @@ Runtime exception thrown when a reference targets a non-existent section anchor.
 **Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/latex/RenderMachineLatex.java`
 
 **Changes**:
-- Added import: `org.r10r.doctester.crossref.DocTestRef`
+- Added import: `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)` for LaTeX output
 - Added helper method: `convertTextToLatexLabel(String text)` normalizing anchor strings
 - Renders cross-reference as: `See Section \ref{sec:anchor-name}`
@@ -112,8 +112,8 @@ See Section \ref{sec:user-creation}
 
 **Changes**:
 - Added imports:
-  - `org.r10r.doctester.crossref.CrossReferenceIndex`
-  - `org.r10r.doctester.crossref.DocTestRef`
+  - `io.github.seanchatmangpt.dtr.doctester.crossref.CrossReferenceIndex`
+  - `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)`:
   - Registers reference via `CrossReferenceIndex.getInstance().register(ref)`
   - Delegates rendering to `renderMachine.sayRef(ref)`

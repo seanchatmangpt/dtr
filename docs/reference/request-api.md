@@ -1,6 +1,6 @@
 # Reference: Request API
 
-**Package:** `org.r10r.doctester.testbrowser`
+**Package:** `io.github.seanchatmangpt.dtr.doctester.testbrowser`
 **File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Request.java`
 
 `Request` is a fluent builder for HTTP requests. Create instances via the static factory methods and chain configuration methods.

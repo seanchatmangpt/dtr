@@ -9,7 +9,7 @@ Print this checklist and complete each item before attempting release.
 ### Item 1: Sonatype Central API Token
 
 - [ ] Sonatype Central account exists (https://central.sonatype.org/)
-- [ ] `org.r10r` groupId verified
+- [ ] `io.github.seanchatmangpt.dtr` groupId verified
 - [ ] API Token generated from account settings
 - [ ] Token Username (OAuth username): ________________
 - [ ] Token Password (OAuth password): ________________
@@ -180,7 +180,7 @@ unset HISTFILE
 
 **Check server status:**
 ```bash
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:junit | jq '.[-1].name'
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:junit | jq '.[-1].name'
 # Should return a name, indicating API is working
 ```
 
@@ -248,14 +248,14 @@ mvnd -P release release:prepare release:perform \
 
 - [ ] Check Maven Central search
   ```bash
-  curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core:2.0.0"
+  curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core:2.0.0"
   # Should return artifact record
   ```
 
 - [ ] Verify signatures
   ```bash
   # Download artifact and check signature
-  mvn dependency:get -Dartifact=org.r10r:dtr-core:2.0.0
+  mvn dependency:get -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
   ls -la ~/.m2/repository/org/r10r/dtr-core/2.0.0/
   # Should have: .jar, .pom, .jar.asc, .pom.asc
   ```

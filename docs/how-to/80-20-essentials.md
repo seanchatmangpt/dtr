@@ -255,10 +255,10 @@ public void testFileUpload() {
 Here's a minimal, working DocTest with explanations:
 
 ```java
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Request;
-import org.r10r.doctester.testbrowser.Response;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;

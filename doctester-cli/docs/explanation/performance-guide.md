@@ -154,7 +154,7 @@ DTR will adjust parallelism if memory limit is reached.
 
 ```xml
 <plugin>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-maven-plugin</artifactId>
     <configuration>
         <parallel>true</parallel>

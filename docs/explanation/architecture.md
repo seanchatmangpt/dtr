@@ -32,10 +32,10 @@ doctester/
 ## Package layout
 
 ```
-org.r10r.doctester
+io.github.seanchatmangpt.dtr.doctester
 ├── DTR.java               # Abstract base class
 
-org.r10r.doctester.testbrowser
+io.github.seanchatmangpt.dtr.doctester.testbrowser
 ├── TestBrowser.java             # HTTP client interface
 ├── TestBrowserImpl.java         # Apache HttpClient implementation
 ├── Request.java                 # Fluent request builder
@@ -44,7 +44,7 @@ org.r10r.doctester.testbrowser
 ├── HttpConstants.java           # HTTP string constants
 └── PayloadUtils.java            # JSON/XML formatting helpers
 
-org.r10r.doctester.rendermachine
+io.github.seanchatmangpt.dtr.doctester.rendermachine
 ├── RenderMachineCommands.java   # Output method interface
 ├── RenderMachine.java           # Full interface (commands + lifecycle)
 ├── RenderMachineImpl.java       # Bootstrap HTML implementation

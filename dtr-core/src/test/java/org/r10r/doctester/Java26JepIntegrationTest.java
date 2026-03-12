@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 4. JEP 516 (AoT Object Caching) - Global DocMetadata caching
  * 5. JEP 500 (Final Means Final) - Sealed hierarchies throughout
  *
- * Run with: mvnd test -pl doctester-core -Dtest=Java26JepIntegrationTest
+ * Run with: mvnd test -pl dtr-core -Dtest=Java26JepIntegrationTest
  */
 @DisplayName("Java 26 JEP Integration Test")
 public class Java26JepIntegrationTest {

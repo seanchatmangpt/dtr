@@ -44,8 +44,8 @@ Create a WebSocket test:
 package com.example;
 
 import org.junit.Test;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;

@@ -63,7 +63,7 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 
 ```xml
 <dependency>
-  <groupId>org.r10r</groupId>
+  <groupId>io.github.seanchatmangpt.dtr</groupId>
   <artifactId>dtr-core</artifactId>
   <version>2.0.0</version>
   <scope>test</scope>

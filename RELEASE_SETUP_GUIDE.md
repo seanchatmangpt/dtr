@@ -36,9 +36,9 @@ cat .mvn/maven.config
 
 Visit https://central.sonatype.org/ and:
 1. Sign up for free account (or use existing)
-2. Verify ownership of `org.r10r` groupId
+2. Verify ownership of `io.github.seanchatmangpt.dtr` groupId
    - Option A: Domain verification (own `r10r.org` domain)
-   - Option B: GitHub repository proof (fork/contribute to `github.com/r10r-org`)
+   - Option B: GitHub repository proof (fork/contribute to `github.com/seanchatmangpt`)
 3. Wait for approval (typically 1 business day)
 
 ### 2b. Generate API Token
@@ -224,7 +224,7 @@ The release plugin will push tags via SSH. Verify:
 ```bash
 # Test SSH to GitHub
 ssh -T git@github.com
-# Expected: "Hi r10r-org! You've successfully authenticated..."
+# Expected: "Hi seanchatmangpt! You've successfully authenticated..."
 
 # If fails, add SSH key to GitHub:
 # 1. Generate: ssh-keygen -t ed25519 -f ~/.ssh/github
@@ -387,7 +387,7 @@ mvnd -P release release:prepare release:perform \
 
 ```bash
 # Search for artifact (1-2 minute delay)
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core:2.0.0 | jq .
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core:2.0.0 | jq .
 
 # Expected: artifact record found
 ```
@@ -396,7 +396,7 @@ curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core:2.0.0 | j
 
 ```bash
 # Wait 2-5 minutes, then try downloading
-mvn dependency:get -Dartifact=org.r10r:dtr-core:2.0.0
+mvn dependency:get -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
 
 # Check cache
 ls -la ~/.m2/repository/org/r10r/dtr-core/2.0.0/
@@ -430,7 +430,7 @@ gh release create v2.0.0 \
 ```
 
 Or manually via GitHub web UI:
-1. Go to https://github.com/r10r-org/doctester/releases
+1. Go to https://github.com/seanchatmangpt/doctester/releases
 2. Click "Create new release"
 3. Select tag: `v2.0.0`
 4. Add changelog content
@@ -523,7 +523,7 @@ export GPG_PASSPHRASE="xyz"
 mvnd -P release release:prepare release:perform -DskipTests --batch-mode
 
 # Check publication
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core | jq '.[-1]'
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core | jq '.[-1]'
 ```
 
 ---

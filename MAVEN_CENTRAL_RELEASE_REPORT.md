@@ -204,9 +204,9 @@ doctester/
 
 ```xml
 <scm>
-    <url>https://github.com/r10r-org/doctester</url>
-    <connection>scm:git:git://github.com/r10r-org/doctester.git</connection>
-    <developerConnection>scm:git:git@github.com:r10r-org/doctester.git</developerConnection>
+    <url>https://github.com/seanchatmangpt/doctester</url>
+    <connection>scm:git:git://github.com/seanchatmangpt/doctester.git</connection>
+    <developerConnection>scm:git:git@github.com:seanchatmangpt/doctester.git</developerConnection>
     <tag>HEAD</tag>
 </scm>
 ```
@@ -215,7 +215,7 @@ doctester/
 
 | Element | Value | Status | Notes |
 |---------|-------|--------|-------|
-| **url** | https://github.com/r10r-org/doctester | ✅ Valid | Public GitHub URL |
+| **url** | https://github.com/seanchatmangpt/doctester | ✅ Valid | Public GitHub URL |
 | **connection** | scm:git:git:// | ✅ Valid | Read-only clone URL (public) |
 | **developerConnection** | scm:git:git@github.com:... | ✅ Valid | SSH clone URL (requires GitHub auth) |
 | **tag** | HEAD | ⚠️ Default | Will be updated to `v2.0.0` during release:prepare |
@@ -242,7 +242,7 @@ scm.tagNameFormat=v@{project.version}
 
 **How to obtain:**
 1. Sign up for free account at https://central.sonatype.org/
-2. Verify ownership of `org.r10r` groupId (domain ownership + GitHub repo proof)
+2. Verify ownership of `io.github.seanchatmangpt.dtr` groupId (domain ownership + GitHub repo proof)
 3. Generate API token in Central account settings
 
 **Setup location:** `~/.m2/settings.xml`
@@ -303,7 +303,7 @@ $ gpg --list-secret-keys
 
 **Current repo setup:**
 ```
-developerConnection: scm:git:git@github.com:r10r-org/doctester.git
+developerConnection: scm:git:git@github.com:seanchatmangpt/doctester.git
 ```
 
 **Setup:**
@@ -347,8 +347,8 @@ mvnd -P release release:prepare -DdryRun=true
 
 **Generated release.properties:**
 ```properties
-project.rel.org.r10r\:doctester=1.1.12
-project.dev.org.r10r\:doctester=1.1.13-SNAPSHOT
+project.rel.io.github.seanchatmangpt.dtr\:doctester=1.1.12
+project.dev.io.github.seanchatmangpt.dtr\:doctester=1.1.13-SNAPSHOT
 scm.tag=v1.1.12
 ```
 
@@ -563,7 +563,7 @@ Apache Maven 4.0.0-rc-5
 
 - [ ] **Sonatype Central Account**
   - [ ] Account created at https://central.sonatype.org/
-  - [ ] `org.r10r` groupId ownership verified
+  - [ ] `io.github.seanchatmangpt.dtr` groupId ownership verified
   - [ ] API token generated
   - [ ] Token saved to `~/.m2/settings.xml` (see Issue 1 fix)
 
@@ -629,7 +629,7 @@ mvnd -P release release:perform
 
 # 4. Monitor Central
 # Sonatype publishes within 2-15 minutes
-# Verify at: https://central.sonatype.com/artifact/org.r10r/dtr-core/2.0.0
+# Verify at: https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/2.0.0
 ```
 
 ### For CI/CD (GitHub Actions example)
@@ -653,7 +653,7 @@ mvnd -P release release:prepare release:perform \
 
 # Check status (optional wait)
 sleep 30
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core | jq .
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core | jq .
 ```
 
 ### For Central Publishing Plugin (alternative to release-plugin)
@@ -682,10 +682,10 @@ After successful `release:perform`:
 **Verification:**
 ```bash
 # Check CDN availability
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core:2.0.0
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
 
 # Or download directly
-mvn dependency:get -Dartifact=org.r10r:dtr-core:2.0.0
+mvn dependency:get -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
 ```
 
 ---
@@ -785,7 +785,7 @@ mvn dependency:get -Dartifact=org.r10r:dtr-core:2.0.0
 curl -s https://central.sonatype.com/api/v1/repositories
 
 # Search for artifact
-curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core"
+curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core"
 
 # If stuck, check Central admin dashboard for manual approval
 ```

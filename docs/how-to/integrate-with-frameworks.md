@@ -13,8 +13,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.runner.RunWith;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -66,8 +66,8 @@ Start Ninja with a test rule and pass the port to the URL:
 
 ```java
 import ninja.NinjaTest;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
 public abstract class NinjaDocTester extends DTR {
 
@@ -102,8 +102,8 @@ public abstract class NinjaApiDocTester extends DTR {
 
 ```java
 import org.junit.runner.RunWith;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -147,8 +147,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
 public abstract class JettyDocTester extends DTR {
 

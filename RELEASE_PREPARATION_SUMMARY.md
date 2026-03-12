@@ -53,7 +53,7 @@ DocTester's publication pipeline to Maven Central is **fully configured and test
 
 **Steps:**
 1. Create account at https://central.sonatype.org/
-2. Verify `org.r10r` groupId ownership
+2. Verify `io.github.seanchatmangpt.dtr` groupId ownership
 3. Generate API token
 4. Add to `~/.m2/settings.xml`
 
@@ -170,7 +170,7 @@ mvnd -P release release:prepare release:perform \
 
 ### Verify on Maven Central (5-10 min after release)
 ```bash
-curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core:2.0.0" | jq .
+curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core:2.0.0" | jq .
 ```
 
 ---

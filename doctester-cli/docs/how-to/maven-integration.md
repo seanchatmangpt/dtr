@@ -19,7 +19,7 @@ Add the DTR Maven plugin to your project's `pom.xml`:
 <build>
     <plugins>
         <plugin>
-            <groupId>org.r10r</groupId>
+            <groupId>io.github.seanchatmangpt.dtr</groupId>
             <artifactId>dtr-maven-plugin</artifactId>
             <version>2.5.0</version>
             <configuration>
@@ -46,7 +46,7 @@ Minimal setup (Markdown output to `target/docs`):
 
 ```xml
 <plugin>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-maven-plugin</artifactId>
     <version>2.5.0</version>
 </plugin>
@@ -63,7 +63,7 @@ mvn clean test
 ### Multiple Output Formats
 ```xml
 <plugin>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-maven-plugin</artifactId>
     <version>2.5.0</version>
     <configuration>
@@ -143,7 +143,7 @@ Create profiles for different scenarios:
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.r10r</groupId>
+                    <groupId>io.github.seanchatmangpt.dtr</groupId>
                     <artifactId>dtr-maven-plugin</artifactId>
                     <configuration>
                         <format>markdown</format>
@@ -160,7 +160,7 @@ Create profiles for different scenarios:
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.r10r</groupId>
+                    <groupId>io.github.seanchatmangpt.dtr</groupId>
                     <artifactId>dtr-maven-plugin</artifactId>
                     <configuration>
                         <formats>
@@ -182,7 +182,7 @@ Create profiles for different scenarios:
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.r10r</groupId>
+                    <groupId>io.github.seanchatmangpt.dtr</groupId>
                     <artifactId>dtr-maven-plugin</artifactId>
                     <configuration>
                         <format>latex</format>
@@ -296,7 +296,7 @@ open target/docs/index.pdf
     <dependencies>
         <!-- Testing -->
         <dependency>
-            <groupId>org.r10r</groupId>
+            <groupId>io.github.seanchatmangpt.dtr</groupId>
             <artifactId>dtr-core</artifactId>
             <version>2.5.0</version>
             <scope>test</scope>
@@ -321,7 +321,7 @@ open target/docs/index.pdf
             </plugin>
 
             <plugin>
-                <groupId>org.r10r</groupId>
+                <groupId>io.github.seanchatmangpt.dtr</groupId>
                 <artifactId>dtr-maven-plugin</artifactId>
                 <version>2.5.0</version>
                 <configuration>

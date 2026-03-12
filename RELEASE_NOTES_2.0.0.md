@@ -15,7 +15,7 @@ DTR 2.0.0 is a **major release** with significant architectural improvements, mo
 **Maven Coordinates:**
 ```xml
 <dependency>
-  <groupId>org.r10r</groupId>
+  <groupId>io.github.seanchatmangpt.dtr</groupId>
   <artifactId>dtr-core</artifactId>
   <version>2.0.0</version>
   <scope>test</scope>
@@ -246,7 +246,7 @@ java -version  # Verify: openjdk 25.x.x
 #### Step 3: Update DTR Dependency
 ```xml
 <dependency>
-  <groupId>org.r10r</groupId>
+  <groupId>io.github.seanchatmangpt.dtr</groupId>
   <artifactId>dtr-core</artifactId>
   <version>2.0.0</version>
   <scope>test</scope>
@@ -439,7 +439,7 @@ Apache License 2.0
 - **Release Date:** March 10, 2026
 - **Git Tag:** `v2.0.0`
 - **Repository:** https://github.com/seanchatmangpt/doctester
-- **Maven Central:** https://mvnrepository.com/artifact/org.r10r/dtr-core/2.0.0
+- **Maven Central:** https://mvnrepository.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/2.0.0
 
 ---
 

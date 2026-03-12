@@ -225,7 +225,7 @@ public void testTokenRefresh() { ... }
 
 ### 2. WebSocket Support
 
-**New Package:** `org.r10r.doctester.websocket`
+**New Package:** `io.github.seanchatmangpt.dtr.doctester.websocket`
 
 ```java
 // Create a WebSocket session
@@ -247,7 +247,7 @@ sayAndAssertThat("Server echoes the message",
 
 ### 3. Server-Sent Events (SSE) Support
 
-**New Package:** `org.r10r.doctester.sse`
+**New Package:** `io.github.seanchatmangpt.dtr.doctester.sse`
 
 ```java
 // Subscribe to SSE stream
@@ -267,7 +267,7 @@ subscription.unsubscribe();
 
 ### 4. OpenAPI Specification Generation
 
-**New Package:** `org.r10r.doctester.openapi`
+**New Package:** `io.github.seanchatmangpt.dtr.doctester.openapi`
 
 Automatically generate OpenAPI 3.0 specs from your DocTests:
 
@@ -285,7 +285,7 @@ OpenApiWriter.write(spec, OutputFormat.YAML);  // → target/site/doctester/open
 
 ### 5. Advanced Authentication Providers
 
-**New Package:** `org.r10r.doctester.auth`
+**New Package:** `io.github.seanchatmangpt.dtr.doctester.auth`
 
 Instead of manual header manipulation:
 
@@ -370,7 +370,7 @@ Request.GET()
 
 <!-- NEW -->
 <dependency>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
     <version>2.0.0</version>
     <scope>test</scope>
@@ -681,7 +681,7 @@ public static void afterTests() {
 
 ### Get Help
 
-- **Official Docs:** https://github.com/r10r-org/doctester (updated for 2.0.0)
+- **Official Docs:** https://github.com/seanchatmangpt/doctester (updated for 2.0.0)
 - **Issue Tracker:** Report bugs or request features
 - **Community:** Discuss on GitHub Discussions
 
