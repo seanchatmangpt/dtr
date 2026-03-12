@@ -112,7 +112,7 @@ public class Java26VerificationTest {
     @Test
     void testStructuredConcurrencyWithVirtualThreads() throws Exception {
         // Create a structured scope that coordinates virtual threads
-        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
+        try (var scope = new StructuredTaskScope<String>()) {
 
             // Task 1: Simulate rendering Markdown
             Future<String> markdownTask = scope.fork(() -> {

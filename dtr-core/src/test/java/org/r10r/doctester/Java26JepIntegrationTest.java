@@ -233,14 +233,14 @@ public class Java26JepIntegrationTest {
             case 200 -> "OK";
             case 201 -> "Created";
             case 299 -> "Success";
-            case 2__ -> "Success";
+            case int code when code >= 200 && code < 300 -> "Success";
             case 404 -> "Not Found";
             case 429 -> "Too Many Requests";
             case 499 -> "Client Error";
-            case 4__ -> "Client Error";
+            case int code when code >= 400 && code < 500 -> "Client Error";
             case 500 -> "Internal Server Error";
             case 599 -> "Server Error";
-            case 5__ -> "Server Error";
+            case int code when code >= 500 && code < 600 -> "Server Error";
             default -> "Unknown Status";
         };
     }

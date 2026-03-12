@@ -21,21 +21,29 @@ import io.github.seanchatmangpt.dtr.testbrowser.Request;
  * Interface for authentication providers that can apply authentication to HTTP requests.
  *
  * <p>Implementations of this interface can add headers, query parameters, or other
- * authentication mechanisms to outgoing requests.
+ * authentication mechanisms to outgoing requests.</p>
  *
- * Java 26 Enhancement (JEP 500 - Final Means Final):
- * This interface is sealed to only allow the specified implementations.
- * This enables the JVM to make static analysis guarantees:
- * - Devirtualization of authentication method calls
- * - Exhaustive pattern matching over sealed auth types
- * - Preparation for Valhalla value class flattening
+ * <p>Java 25 Enhancement (Sealed Interfaces - JEP 409):</p>
+ * <p>This interface is sealed to only allow the specified implementations.
+ * This enables the JVM to make static analysis guarantees:</p>
+ * <ul>
+ *   <li>Devirtualization of authentication method calls</li>
+ *   <li>Exhaustive pattern matching over sealed auth types</li>
+ *   <li>Preparation for Valhalla value class flattening</li>
+ * </ul>
  *
- * Permitted implementations:
- * - BasicAuth - HTTP Basic authentication (RFC 7617)
- * - BearerTokenAuth - OAuth 2.0 Bearer token authentication (RFC 6750)
- * - ApiKeyAuth - Custom API key headers or query parameters
- * - OAuth2TokenManager - OAuth2 token refresh and scope management
- * - SessionAwareAuthProvider - Automatic cookie jar and session management
+ * <p>Since AuthProvider has a single abstract method ({@code apply}),
+ * it qualifies as a functional interface and can be used with lambda expressions,
+ * though the sealed constraint emphasizes the closed type hierarchy.</p>
+ *
+ * <p>Permitted implementations:</p>
+ * <ul>
+ *   <li>BasicAuth - HTTP Basic authentication (RFC 7617)</li>
+ *   <li>BearerTokenAuth - OAuth 2.0 Bearer token authentication (RFC 6750)</li>
+ *   <li>ApiKeyAuth - Custom API key headers or query parameters</li>
+ *   <li>OAuth2TokenManager - OAuth2 token refresh and scope management</li>
+ *   <li>SessionAwareAuthProvider - Automatic cookie jar and session management</li>
+ * </ul>
  *
  * @see BearerTokenAuth
  * @see ApiKeyAuth
@@ -43,7 +51,6 @@ import io.github.seanchatmangpt.dtr.testbrowser.Request;
  * @see OAuth2TokenManager
  * @see SessionAwareAuthProvider
  */
-@FunctionalInterface
 public sealed interface AuthProvider
     permits BasicAuth, BearerTokenAuth, ApiKeyAuth, OAuth2TokenManager, SessionAwareAuthProvider {
 

@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 
 /**
  * Comprehensive Performance Validation Test for Java 26 Features in DocTester
@@ -626,7 +627,7 @@ public class Java26PerformanceValidationTest {
     }
 
     void simulateParallelRendersWithStructuredConcurrency(int cycles) throws InterruptedException {
-        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
+        try (var scope = new StructuredTaskScope<String>()) {
             for (int i = 0; i < cycles; i++) {
                 scope.fork(this::simulateMarkdownRender);
                 scope.fork(this::simulateLatexRender);

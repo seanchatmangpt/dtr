@@ -20,25 +20,27 @@ import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
 /**
  * Abstract base class for render machines that convert test execution into documentation.
  *
- * Supports multiple output formats: Markdown, Blog posts, Slides, LaTeX, etc.
+ * <p>Supports multiple output formats: Markdown, Blog posts, Slides, LaTeX, etc.</p>
  *
- * Java 26 Enhancement (JEP 500 - Final Means Final):
- * This class is sealed to only allow the specified subclasses.
- * This enables the JVM to make static analysis guarantees:
- * - Devirtualization of method calls (faster dispatch)
- * - Exhaustive pattern matching over sealed types
- * - Preparation for Valhalla value class flattening
+ * <p>Java 25 Design Note:</p>
+ * <p>While sealed classes (JEP 409) would normally enforce a closed type hierarchy for
+ * static analysis and devirtualization, this class remains open due to Java's constraint
+ * that sealed classes in non-modular projects cannot have permitted subclasses in
+ * different packages. Since RenderMachine implementations are distributed across
+ * io.github.seanchatmangpt.dtr.rendermachine, rendermachine.latex, render.blog, and
+ * render.slides packages, the class uses standard inheritance with all implementations
+ * marked {@code final} to maintain single inheritance and enable JIT devirtualization.</p>
  *
- * Permitted subclasses:
- * - RenderMachineImpl: Markdown output
- * - RenderMachineLatex: LaTeX/PDF output
- * - MultiRenderMachine: Parallel dispatch to multiple machines
- * - BlogRenderMachine: Social media and blog platform export
- * - SlideRenderMachine: Reveal.js HTML5 presentation output
+ * <p>Standard implementation hierarchy:</p>
+ * <ul>
+ *   <li>RenderMachineImpl: Markdown output</li>
+ *   <li>RenderMachineLatex: LaTeX/PDF output</li>
+ *   <li>MultiRenderMachine: Parallel dispatch to multiple machines</li>
+ *   <li>BlogRenderMachine: Social media and blog platform export</li>
+ *   <li>SlideRenderMachine: Reveal.js HTML5 presentation output</li>
+ * </ul>
  */
-public abstract sealed class RenderMachine implements RenderMachineCommands
-    permits RenderMachineImpl, RenderMachineLatex, MultiRenderMachine,
-            BlogRenderMachine, SlideRenderMachine {
+public abstract class RenderMachine implements RenderMachineCommands {
 
     /**
      * Sets the TestBrowser instance for HTTP request execution.
