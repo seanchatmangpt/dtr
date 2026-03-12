@@ -9,20 +9,20 @@ the specific language governing permissions and limitations under the License. -
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.r10r</groupId>
-    <artifactId>doctester</artifactId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr</artifactId>
     <version>2.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>DocTester</name>
+    <name>DTR - Documentation Testing Runtime</name>
     <description>A Java testing framework that generates HTML documentation while running JUnit tests.
         Provides a fluent API for making HTTP requests and documenting REST API responses.</description>
-    <url>https://github.com/r10r-org/doctester</url>
+    <url>https://github.com/seanchatmangpt/dtr</url>
 
     <modules>
-        <module>doctester-core</module>
-        <module>doctester-integration-test</module>
-        <module>doctester-benchmarks</module>
+        <module>dtr-core</module>
+        <module>dtr-integration-test</module>
+        <module>dtr-benchmarks</module>
     </modules>
 
     <distributionManagement>
@@ -33,15 +33,15 @@ the specific language governing permissions and limitations under the License. -
     </distributionManagement>
 
     <scm>
-        <url>https://github.com/r10r-org/doctester</url>
-        <connection>scm:git:git://github.com/r10r-org/doctester.git</connection>
-        <developerConnection>scm:git:git@github.com:r10r-org/doctester.git</developerConnection>
-        <tag>doctester-2.4.0</tag>
+        <url>https://github.com/seanchatmangpt/dtr</url>
+        <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
+        <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
+        <tag>dtr-2.5.0</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/r10r-org/doctester/issues/</url>
+        <url>https://github.com/seanchatmangpt/dtr/issues/</url>
     </issueManagement>
 
     <licenses>
@@ -54,12 +54,11 @@ the specific language governing permissions and limitations under the License. -
 
     <developers>
         <developer>
-            <id>ra</id>
-            <name>ra</name>
-            <email>ra@r10r.org</email>
-            <url>https://github.com/r10r-org</url>
-            <organization>r10r</organization>
-            <organizationUrl>https://github.com/r10r-org</organizationUrl>
+            <id>seanchatmangpt</id>
+            <name>Sean Chatman</name>
+            <url>https://github.com/seanchatmangpt</url>
+            <organization>seanchatmangpt</organization>
+            <organizationUrl>https://github.com/seanchatmangpt</organizationUrl>
         </developer>
     </developers>
 
