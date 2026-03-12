@@ -15,7 +15,7 @@ Save as `src/test/java/example/FirstDocTest.java`:
 ```java
 package example;
 
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.DocTester;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.*;
 
@@ -598,7 +598,7 @@ mvnd --version         # Shows: Maven 4.0.0-rc-5
 ### 3. Create your first test
 
 ```java
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.DocTester;
 import org.junit.jupiter.api.Test;
 
 public class MyFirstDocTest extends DocTester {
