@@ -1,434 +1,469 @@
 """Custom exceptions for CLI with user-friendly error messages.
 
 Provides exceptions that display helpful messages to users instead of
-Python stack traces. These follow the 80/20 principle of error handling.
+Python stack traces. Each error has a unique identity (error code) and
+structured context — following Joe Armstrong's principle that every
+error must carry enough information to act on it.
 """
 
+import json
+from dataclasses import dataclass, field
+from typing import Any
 
+
+@dataclass
 class CLIError(Exception):
-    """Base exception for user-facing CLI errors.
+    """Base class for all DTR CLI errors.
 
-    Subclasses should provide clear messages about what went wrong
-    and how to fix it, without exposing Python internals.
+    Every error carries:
+    - A unique error_code (DTR-XXX) for programmatic identification.
+    - A human-readable message describing what went wrong.
+    - An optional hint explaining how to fix it.
+    - A structured context dict for machine-readable metadata.
     """
 
-    def __init__(self, message: str, hint: str | None = None):
-        """Initialize CLI error.
+    message: str
+    hint: str = ""
+    error_code: str = "DTR-000"
+    context: dict[str, Any] = field(default_factory=dict)
 
-        Args:
-            message: User-friendly error message (what went wrong)
-            hint: Optional hint about how to fix the problem
-        """
-        self.message = message
-        self.hint = hint
-        super().__init__(message)
+    def __post_init__(self) -> None:
+        super().__init__(self.message)
 
     def format_message(self) -> str:
         """Format error message for display to user."""
-        msg = f"❌ {self.message}"
+        parts = [f"❌ [{self.error_code}] {self.message}"]
         if self.hint:
-            msg += f"\n💡 {self.hint}"
-        return msg
+            parts.append(f"💡 {self.hint}")
+        return "\n".join(parts)
+
+    def format_json(self) -> str:
+        """Format error as JSON for --json mode / machine consumption."""
+        return json.dumps(
+            {
+                "error": self.error_code,
+                "message": self.message,
+                "hint": self.hint,
+                "context": self.context,
+            },
+            indent=2,
+        )
+
+    def __str__(self) -> str:
+        return self.format_message()
+
+
+# ---------------------------------------------------------------------------
+# File-system errors  (DTR-1xx)
+# ---------------------------------------------------------------------------
 
 
 class FileNotFoundError_(CLIError):
     """Raised when a required file or directory is not found."""
 
-    def __init__(self, path: str, file_type: str = "file"):
-        """Initialize file not found error.
-
-        Args:
-            path: Path to the missing file/directory
-            file_type: Type of file ("file", "directory", "export")
-        """
-        message = f"{file_type.capitalize()} not found: {path}"
-        hint = f"Check that the path exists and is accessible"
-        super().__init__(message, hint)
+    def __init__(self, path: str = "", file_type: str = "file", **kwargs: Any):
+        super().__init__(
+            message=f"{file_type.capitalize()} not found: {path}",
+            hint="Check that the path exists and is accessible",
+            error_code="DTR-101",
+            context={"path": path, "file_type": file_type},
+        )
 
 
 class InvalidPathError(CLIError):
     """Raised when a path is invalid or inaccessible."""
 
-    def __init__(self, path: str, reason: str):
-        """Initialize invalid path error.
-
-        Args:
-            path: Invalid path
-            reason: Why the path is invalid
-        """
-        message = f"Invalid path: {path}\nReason: {reason}"
-        super().__init__(message)
+    def __init__(self, path: str = "", reason: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"Invalid path: {path}\nReason: {reason}",
+            hint="Ensure the path string is well-formed and the filesystem location exists",
+            error_code="DTR-102",
+            context={"path": path, "reason": reason},
+        )
 
 
 class DirectoryExpectedError(CLIError):
     """Raised when a file is provided instead of a directory."""
 
-    def __init__(self, path: str):
-        """Initialize directory expected error.
-
-        Args:
-            path: Path to the file
-        """
-        message = f"Expected a directory, got file: {path}"
-        hint = "Check that you're pointing to a directory, not a file"
-        super().__init__(message, hint)
+    def __init__(self, path: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"Expected a directory, got file: {path}",
+            hint="Check that you're pointing to a directory, not a file",
+            error_code="DTR-103",
+            context={"path": path},
+        )
 
 
 class FileExpectedError(CLIError):
     """Raised when a directory is provided instead of a file."""
 
-    def __init__(self, path: str):
-        """Initialize file expected error.
-
-        Args:
-            path: Path to the directory
-        """
-        message = f"Expected a file, got directory: {path}"
-        hint = "Check that you're pointing to a file, not a directory"
-        super().__init__(message, hint)
-
-
-class InvalidFormatError(CLIError):
-    """Raised when an invalid format is specified."""
-
-    def __init__(self, format_name: str, valid_formats: list[str]):
-        """Initialize invalid format error.
-
-        Args:
-            format_name: Name of the invalid format
-            valid_formats: List of valid format names
-        """
-        formats_str = ", ".join(valid_formats)
-        message = f"Invalid format: {format_name}"
-        hint = f"Valid formats are: {formats_str}"
-        super().__init__(message, hint)
-
-
-class PermissionDeniedError(CLIError):
-    """Raised when permission is denied for a file/directory."""
-
-    def __init__(self, path: str, operation: str = "access"):
-        """Initialize permission denied error.
-
-        Args:
-            path: Path with permission issue
-            operation: Operation that failed ("read", "write", "execute")
-        """
-        message = f"Permission denied: cannot {operation} {path}"
-        hint = "Check file permissions and try again"
-        super().__init__(message, hint)
-
-
-class InvalidArgumentError(CLIError):
-    """Raised when an argument value is invalid."""
-
-    def __init__(self, arg_name: str, value: str, reason: str):
-        """Initialize invalid argument error.
-
-        Args:
-            arg_name: Name of the argument
-            value: Invalid value
-            reason: Why the value is invalid
-        """
-        message = f"Invalid value for {arg_name}: {value}"
-        hint = f"Expected: {reason}"
-        super().__init__(message, hint)
-
-
-class EmptyDirectoryError(CLIError):
-    """Raised when an empty directory is not allowed."""
-
-    def __init__(self, path: str, what: str = "exports"):
-        """Initialize empty directory error.
-
-        Args:
-            path: Path to the empty directory
-            what: What was expected to find ("exports", "files")
-        """
-        message = f"No {what} found in: {path}"
-        hint = "Check that the directory contains the expected files"
-        super().__init__(message, hint)
-
-
-class ConversionError(CLIError):
-    """Raised when format conversion fails."""
-
-    def __init__(self, input_path: str, output_format: str, reason: str):
-        """Initialize conversion error.
-
-        Args:
-            input_path: Path to file being converted
-            output_format: Target format
-            reason: Why conversion failed
-        """
-        message = f"Failed to convert {input_path} to {output_format}"
-        hint = f"Reason: {reason}"
-        super().__init__(message, hint)
-
-
-class OutputError(CLIError):
-    """Raised when output cannot be written."""
-
-    def __init__(self, output_path: str, reason: str):
-        """Initialize output error.
-
-        Args:
-            output_path: Path where output should be written
-            reason: Why output failed
-        """
-        message = f"Cannot write output to: {output_path}"
-        hint = f"Reason: {reason}"
-        super().__init__(message, hint)
-
-
-class ArchiveError(CLIError):
-    """Raised when archive creation/reading fails."""
-
-    def __init__(self, archive_path: str, operation: str, reason: str):
-        """Initialize archive error.
-
-        Args:
-            archive_path: Path to archive
-            operation: Operation that failed ("create", "read", "extract")
-            reason: Why it failed
-        """
-        message = f"Failed to {operation} archive: {archive_path}"
-        hint = f"Reason: {reason}"
-        super().__init__(message, hint)
-
-
-class ConfigurationError(CLIError):
-    """Raised when configuration is invalid."""
-
-    def __init__(self, config_name: str, reason: str):
-        """Initialize configuration error.
-
-        Args:
-            config_name: Name of invalid configuration
-            reason: Why it's invalid
-        """
-        message = f"Invalid configuration: {config_name}"
-        hint = f"Reason: {reason}"
-        super().__init__(message, hint)
-
-
-class DiskSpaceError(CLIError):
-    """Raised when there's not enough disk space."""
-
-    def __init__(self, path: str, needed_mb: int):
-        """Initialize disk space error.
-
-        Args:
-            path: Path where disk space is needed
-            needed_mb: Megabytes needed
-        """
-        message = f"Not enough disk space for operation in {path}"
-        hint = f"Free up at least {needed_mb}MB and try again"
-        super().__init__(message, hint)
-
-
-class TimeoutError_(CLIError):
-    """Raised when an operation times out."""
-
-    def __init__(self, operation: str, timeout_seconds: int):
-        """Initialize timeout error.
-
-        Args:
-            operation: Operation that timed out
-            timeout_seconds: Timeout duration
-        """
-        message = f"Operation timed out: {operation}"
-        hint = f"Increase timeout (currently {timeout_seconds}s) or try with smaller input"
-        super().__init__(message, hint)
-
-
-class ConcurrencyError(CLIError):
-    """Raised when concurrent operations interfere."""
-
-    def __init__(self, resource: str, action: str = "access"):
-        """Initialize concurrency error.
-
-        Args:
-            resource: Resource with conflict
-            action: Action that conflicted
-        """
-        message = f"Cannot {action} {resource}: it's being used by another process"
-        hint = "Wait for the other operation to complete and try again"
-        super().__init__(message, hint)
-
-
-class MavenBuildFailedError(CLIError):
-    """Raised when Maven build fails."""
-
-    def __init__(self, exit_code: int, reason: str = "Unknown"):
-        """Initialize Maven build failed error.
-
-        Args:
-            exit_code: Maven exit code
-            reason: Brief explanation of failure
-        """
-        message = f"Maven build failed with exit code {exit_code}"
-        hint = f"Reason: {reason}\nRun with --verbose to see full output"
-        super().__init__(message, hint)
-
-
-class MavenNotFoundError(CLIError):
-    """Raised when Maven/mvnd not found in PATH."""
-
-    def __init__(self):
-        """Initialize Maven not found error."""
-        message = "Maven (mvnd or mvn) not found in PATH"
-        hint = (
-            "Install Maven from https://maven.apache.org/ or "
-            "mvnd from https://maven.apache.org/mvnd/"
+    def __init__(self, path: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"Expected a file, got directory: {path}",
+            hint="Check that you're pointing to a file, not a directory",
+            error_code="DTR-104",
+            context={"path": path},
         )
-        super().__init__(message, hint)
+
+
+# ---------------------------------------------------------------------------
+# Maven / build errors  (DTR-2xx)
+# ---------------------------------------------------------------------------
 
 
 class PomNotFoundError(CLIError):
-    """Raised when pom.xml not found."""
+    """Raised when pom.xml is not found in the expected location."""
 
-    def __init__(self, path: str):
-        """Initialize pom.xml not found error.
+    def __init__(self, path: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"pom.xml not found in {path}" if path else "pom.xml not found",
+            hint="Make sure you're in the root directory of a Maven project",
+            error_code="DTR-201",
+            context={"path": path},
+        )
 
-        Args:
-            path: Directory where pom.xml was expected
-        """
-        message = f"pom.xml not found in {path}"
-        hint = "Make sure you're in the root directory of a Maven project"
-        super().__init__(message, hint)
+
+class MavenNotFoundError(CLIError):
+    """Raised when Maven / mvnd is not found in PATH."""
+
+    def __init__(self, **kwargs: Any):
+        super().__init__(
+            message="Maven (mvnd or mvn) not found in PATH",
+            hint=(
+                "Install Maven from https://maven.apache.org/ or "
+                "mvnd from https://maven.apache.org/mvnd/"
+            ),
+            error_code="DTR-202",
+            context={},
+        )
+
+
+class MavenBuildFailedError(CLIError):
+    """Raised when a Maven build exits with a non-zero status."""
+
+    def __init__(self, returncode: int = 1, goals: str = "", **kwargs: Any):
+        super().__init__(
+            message=(
+                f"Maven build failed (exit {returncode})"
+                + (f" running '{goals}'" if goals else "")
+            ),
+            hint="Run with --verbose to see full Maven output. Check pom.xml for syntax errors.",
+            error_code="DTR-203",
+            context={"returncode": returncode, "goals": goals},
+        )
+
+
+# ---------------------------------------------------------------------------
+# LaTeX errors  (DTR-3xx)
+# ---------------------------------------------------------------------------
 
 
 class LatexCompilationError(CLIError):
     """Raised when LaTeX compilation fails."""
 
-    def __init__(self, compiler: str, exit_code: int, details: str | None = None):
-        """Initialize LaTeX compilation error.
-
-        Args:
-            compiler: Name of the LaTeX compiler that failed
-            exit_code: Exit code from compiler
-            details: Optional compilation error details/log excerpt
-        """
-        message = f"LaTeX compilation failed with {compiler} (exit code {exit_code})"
-        hint = "Check your LaTeX syntax or ensure texlive/miktex is installed"
-        super().__init__(message, hint)
+    def __init__(
+        self,
+        compiler: str = "",
+        exit_code: int = 1,
+        details: str | None = None,
+        **kwargs: Any,
+    ):
+        super().__init__(
+            message=f"LaTeX compilation failed with {compiler} (exit code {exit_code})",
+            hint="Check your LaTeX syntax or ensure texlive/miktex is installed",
+            error_code="DTR-301",
+            context={"compiler": compiler, "exit_code": exit_code, "details": details or ""},
+        )
         self.details = details
 
 
 class NoLatexCompilerError(CLIError):
     """Raised when no LaTeX compiler is found in PATH."""
 
-    def __init__(self):
-        """Initialize no LaTeX compiler error."""
-        message = "No LaTeX compiler found in PATH"
-        hint = (
-            "Install texlive: apt-get install texlive-latex-base\n"
-            "Or install miktex: https://miktex.org/download"
+    def __init__(self, **kwargs: Any):
+        super().__init__(
+            message="No LaTeX compiler found in PATH",
+            hint=(
+                "Install texlive: apt-get install texlive-latex-base\n"
+                "Or install miktex: https://miktex.org/download"
+            ),
+            error_code="DTR-302",
+            context={},
         )
-        super().__init__(message, hint)
 
 
 class LatexTemplateMissingError(CLIError):
     """Raised for invalid LaTeX template selection."""
 
-    def __init__(self, template_name: str, valid_templates: list[str]):
-        """Initialize LaTeX template missing error.
-
-        Args:
-            template_name: Name of the invalid template
-            valid_templates: List of valid template names
-        """
-        templates_str = ", ".join(valid_templates)
-        message = f"Unknown LaTeX template: {template_name}"
-        hint = f"Valid templates are: {templates_str}"
-        super().__init__(message, hint)
+    def __init__(self, template_name: str = "", valid_templates: list[str] | None = None, **kwargs: Any):
+        valid = valid_templates or []
+        super().__init__(
+            message=f"Unknown LaTeX template: {template_name}",
+            hint=f"Valid templates are: {', '.join(valid)}",
+            error_code="DTR-303",
+            context={"template_name": template_name, "valid_templates": valid},
+        )
 
 
-class MissingGPGKeyError(CLIError):
-    """Raised when GPG key is not found."""
-
-    def __init__(self, key_id: str | None = None):
-        """Initialize missing GPG key error.
-
-        Args:
-            key_id: ID of the missing GPG key (optional)
-        """
-        if key_id:
-            message = f"GPG key not found: {key_id}"
-            hint = f"Import or create GPG key: gpg --import <keyfile>\nOr use: gpg --gen-key"
-        else:
-            message = "No GPG key found"
-            hint = "Set up GPG: gpg --gen-key\nExport public key: gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>"
-        super().__init__(message, hint)
+# ---------------------------------------------------------------------------
+# Publishing / credentials errors  (DTR-4xx)
+# ---------------------------------------------------------------------------
 
 
 class InvalidCredentialsError(CLIError):
     """Raised when OSSRH credentials are missing or invalid."""
 
-    def __init__(self, credential_type: str = "OSSRH"):
-        """Initialize invalid credentials error.
-
-        Args:
-            credential_type: Type of credential (OSSRH, GPG, etc.)
-        """
-        message = f"{credential_type} credentials not configured"
-        hint = (
-            f"Configure {credential_type} credentials in ~/.m2/settings.xml\n"
-            "Or set environment variables: OSSRH_USERNAME, OSSRH_PASSWORD"
+    def __init__(self, credential_type: str = "OSSRH", **kwargs: Any):
+        super().__init__(
+            message=f"{credential_type} credentials not configured",
+            hint=(
+                f"Configure {credential_type} credentials in ~/.m2/settings.xml\n"
+                "Or set environment variables: OSSRH_USERNAME, OSSRH_PASSWORD"
+            ),
+            error_code="DTR-401",
+            context={"credential_type": credential_type},
         )
-        super().__init__(message, hint)
 
 
 class InvalidPOMError(CLIError):
     """Raised when pom.xml is invalid for Maven Central publishing."""
 
-    def __init__(self, missing_elements: list[str] | str, requirement: str = ""):
-        """Initialize invalid POM error.
-
-        Args:
-            missing_elements: List of missing POM elements or error message
-            requirement: What's required to fix it (optional)
-        """
+    def __init__(
+        self,
+        missing_elements: list[str] | str = "",
+        requirement: str = "",
+        **kwargs: Any,
+    ):
         if isinstance(missing_elements, list):
             elements_str = ", ".join(missing_elements)
             message = f"Invalid pom.xml: Missing required elements: {elements_str}"
-            hint = (
-                f"Add missing elements to pom.xml\n"
-                f"See PUBLISHING.md for complete pom.xml structure"
-            )
+            hint = "Add missing elements to pom.xml\nSee PUBLISHING.md for complete pom.xml structure"
+            ctx: dict[str, Any] = {"missing_elements": missing_elements}
         else:
             message = f"Invalid pom.xml: {missing_elements}"
             hint = f"Required for Maven Central: {requirement}" if requirement else ""
-        super().__init__(message, hint)
+            ctx = {"missing_elements": missing_elements, "requirement": requirement}
+        super().__init__(
+            message=message,
+            hint=hint,
+            error_code="DTR-402",
+            context=ctx,
+        )
 
 
 class PublishValidationError(CLIError):
     """Raised when pre-flight publish validation fails."""
 
-    def __init__(self, failures: list[str]):
-        """Initialize publish validation error.
-
-        Args:
-            failures: List of validation failures
-        """
+    def __init__(self, failures: list[str] | None = None, **kwargs: Any):
+        failures = failures or []
         failures_str = "\n".join(f"  - {f}" for f in failures)
-        message = f"Pre-flight validation failed:\n{failures_str}"
-        hint = "Run 'dtr publish check' to validate your environment before publishing"
-        super().__init__(message, hint)
+        super().__init__(
+            message=f"Pre-flight validation failed:\n{failures_str}",
+            hint="Run 'dtr publish check' to validate your environment before publishing",
+            error_code="DTR-403",
+            context={"failures": failures},
+        )
 
 
 class MavenCentralNotFoundError(CLIError):
     """Raised when artifact is not found on Maven Central after publishing."""
 
-    def __init__(self, artifact: str, version: str = ""):
-        """Initialize Maven Central not found error.
-
-        Args:
-            artifact: Artifact coordinates
-            version: Version of the artifact
-        """
+    def __init__(self, artifact: str = "", version: str = "", **kwargs: Any):
         ver_str = f" (v{version})" if version else ""
-        message = f"Artifact not found on Maven Central: {artifact}{ver_str}"
-        hint = "Artifact may still be syncing. Wait 15-30 minutes and try again."
-        super().__init__(message, hint)
+        super().__init__(
+            message=f"Artifact not found on Maven Central: {artifact}{ver_str}",
+            hint="Artifact may still be syncing. Wait 15-30 minutes and try again.",
+            error_code="DTR-404",
+            context={"artifact": artifact, "version": version},
+        )
+
+
+# ---------------------------------------------------------------------------
+# Format / configuration errors  (DTR-5xx)
+# ---------------------------------------------------------------------------
+
+
+class InvalidFormatError(CLIError):
+    """Raised when an invalid format is specified."""
+
+    def __init__(
+        self,
+        format_name: str = "",
+        valid_formats: list[str] | None = None,
+        **kwargs: Any,
+    ):
+        valid = valid_formats or []
+        super().__init__(
+            message=f"Invalid format: {format_name}",
+            hint=f"Valid formats are: {', '.join(valid)}",
+            error_code="DTR-501",
+            context={"format_name": format_name, "valid_formats": valid},
+        )
+
+
+class ConfigurationError(CLIError):
+    """Raised when configuration is invalid."""
+
+    def __init__(
+        self,
+        message: str = "",
+        config_name: str = "",
+        reason: str = "",
+        context: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ):
+        # Allow callers to pass either the new-style (message + context) or
+        # old-style (config_name + reason) arguments for backwards compatibility.
+        if not message and config_name:
+            message = f"Invalid configuration: {config_name}"
+        if not message:
+            message = "Invalid configuration"
+        hint = f"Reason: {reason}" if reason else ""
+        ctx = context if context is not None else {}
+        if config_name and "config_name" not in ctx:
+            ctx = {"config_name": config_name, "reason": reason, **ctx}
+        super().__init__(
+            message=message,
+            hint=hint,
+            error_code="DTR-502",
+            context=ctx,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Runtime / resource errors  (DTR-6xx)
+# ---------------------------------------------------------------------------
+
+
+class PermissionDeniedError(CLIError):
+    """Raised when permission is denied for a file/directory."""
+
+    def __init__(self, path: str = "", operation: str = "access", **kwargs: Any):
+        super().__init__(
+            message=f"Permission denied: cannot {operation} {path}",
+            hint="Check file permissions and try again",
+            error_code="DTR-601",
+            context={"path": path, "operation": operation},
+        )
+
+
+class TimeoutError_(CLIError):
+    """Raised when an operation times out."""
+
+    def __init__(self, operation: str = "", timeout_seconds: int = 0, **kwargs: Any):
+        super().__init__(
+            message=f"Operation timed out: {operation}",
+            hint=f"Increase timeout (currently {timeout_seconds}s) or try with smaller input",
+            error_code="DTR-602",
+            context={"operation": operation, "timeout_seconds": timeout_seconds},
+        )
+
+
+class DiskSpaceError(CLIError):
+    """Raised when there is not enough disk space."""
+
+    def __init__(self, path: str = "", needed_mb: int = 0, **kwargs: Any):
+        super().__init__(
+            message=f"Not enough disk space for operation in {path}",
+            hint=f"Free up at least {needed_mb}MB and try again",
+            error_code="DTR-603",
+            context={"path": path, "needed_mb": needed_mb},
+        )
+
+
+class ConcurrencyError(CLIError):
+    """Raised when concurrent operations interfere."""
+
+    def __init__(self, resource: str = "", action: str = "access", **kwargs: Any):
+        super().__init__(
+            message=f"Cannot {action} {resource}: it's being used by another process",
+            hint="Wait for the other operation to complete and try again",
+            error_code="DTR-604",
+            context={"resource": resource, "action": action},
+        )
+
+
+# ---------------------------------------------------------------------------
+# Additional errors preserved from original (no code range assigned above)
+# ---------------------------------------------------------------------------
+
+
+class InvalidArgumentError(CLIError):
+    """Raised when an argument value is invalid."""
+
+    def __init__(self, arg_name: str = "", value: str = "", reason: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"Invalid value for {arg_name}: {value}",
+            hint=f"Expected: {reason}",
+            error_code="DTR-503",
+            context={"arg_name": arg_name, "value": value, "reason": reason},
+        )
+
+
+class EmptyDirectoryError(CLIError):
+    """Raised when an empty directory is not allowed."""
+
+    def __init__(self, path: str = "", what: str = "exports", **kwargs: Any):
+        super().__init__(
+            message=f"No {what} found in: {path}",
+            hint="Check that the directory contains the expected files",
+            error_code="DTR-105",
+            context={"path": path, "what": what},
+        )
+
+
+class ConversionError(CLIError):
+    """Raised when format conversion fails."""
+
+    def __init__(self, input_path: str = "", output_format: str = "", reason: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"Failed to convert {input_path} to {output_format}",
+            hint=f"Reason: {reason}",
+            error_code="DTR-504",
+            context={"input_path": input_path, "output_format": output_format, "reason": reason},
+        )
+
+
+class OutputError(CLIError):
+    """Raised when output cannot be written."""
+
+    def __init__(self, output_path: str = "", reason: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"Cannot write output to: {output_path}",
+            hint=f"Reason: {reason}",
+            error_code="DTR-605",
+            context={"output_path": output_path, "reason": reason},
+        )
+
+
+class ArchiveError(CLIError):
+    """Raised when archive creation/reading fails."""
+
+    def __init__(self, archive_path: str = "", operation: str = "process", reason: str = "", **kwargs: Any):
+        super().__init__(
+            message=f"Failed to {operation} archive: {archive_path}",
+            hint=f"Reason: {reason}",
+            error_code="DTR-606",
+            context={"archive_path": archive_path, "operation": operation, "reason": reason},
+        )
+
+
+class MissingGPGKeyError(CLIError):
+    """Raised when GPG key is not found."""
+
+    def __init__(self, key_id: str | None = None, **kwargs: Any):
+        if key_id:
+            message = f"GPG key not found: {key_id}"
+            hint = "Import or create GPG key: gpg --import <keyfile>\nOr use: gpg --gen-key"
+        else:
+            message = "No GPG key found"
+            hint = (
+                "Set up GPG: gpg --gen-key\n"
+                "Export public key: gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>"
+            )
+        super().__init__(
+            message=message,
+            hint=hint,
+            error_code="DTR-405",
+            context={"key_id": key_id or ""},
+        )
