@@ -681,6 +681,69 @@ dtr/
 
 ---
 
+## Glossary
+
+**DtrTest** — Base class for documentation tests. Extend this to get `say*` methods injected directly into your test class without parameter declarations.
+
+**DtrExtension** — JUnit 5 extension (`@ExtendWith(DtrExtension.class)`). Use this with a `DtrContext ctx` parameter on your test method instead of extending `DtrTest`. Preferred when you cannot or do not want to extend a base class.
+
+**DtrContext** — The documentation API. Provides all `say*` methods plus request/response utilities (`sayAndMakeRequest`, `sayAndAssertThat`). The single object your tests interact with.
+
+**RenderMachine** — The rendering pipeline. Captures `say*` events in order and formats them into a complete output document. Each format (Markdown, LaTeX, HTML, JSON) has its own implementation.
+
+**MultiRenderMachine** — Dispatches to multiple render machines in parallel. Use this to generate Markdown, LaTeX, and blog exports from a single test run.
+
+**say\* methods** — The documentation API: `sayNextSection`, `say`, `sayCode`, `sayTable`, `sayJson`, `sayWarning`, `sayNote`, `sayKeyValue`, `sayUnorderedList`, `sayOrderedList`, `sayAssertions`, `sayAndMakeRequest`. Each call both records a documentation event and (for assertion/request methods) executes the underlying operation.
+
+**Living Documentation** — Documentation generated directly from passing tests. It is always accurate because the documentation only exists when the tests pass. If behavior changes, the next test run regenerates the docs to match.
+
+---
+
+## Troubleshooting
+
+### "0 tests run" in Maven output
+
+Add `junit-jupiter-engine` to your test dependencies. Surefire 3.x requires it explicitly — `junit-jupiter` alone is not sufficient.
+
+```xml
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-engine</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+### "cannot find symbol: class DocTester"
+
+Use `DtrTest` (not `DocTester`). The correct import is:
+
+```java
+import io.github.seanchatmangpt.dtr.DtrTest;
+```
+
+`DocTester` was the class name in the original doctester project. DTR uses `DtrTest`.
+
+### "Documentation file not written"
+
+DTR throws `RuntimeException` when file writes fail. Check that the `dtr.output.dir` system property is set and the target directory is writable. By default, output goes to `target/docs/test-results/` — ensure your build has write access there.
+
+### "Too many authentication attempts" from Maven Central
+
+Run the proxy before your Maven command:
+
+```bash
+python3 maven-proxy-auth.py &
+```
+
+Then add to `.mvn/jvm.config`:
+
+```
+-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128
+-Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
+```
+
+---
+
 ## 🔗 See Also
 
 - **[CLAUDE.md](./CLAUDE.md)** — Comprehensive project guide for contributors
