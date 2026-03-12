@@ -34,14 +34,14 @@ install-dev:
 	uv sync --all-extras
 
 lint:
-	ruff check doctester_cli tests
+	ruff check dtr_cli tests
 
 format:
-	ruff format doctester_cli tests
-	ruff check --fix doctester_cli tests
+	ruff format dtr_cli tests
+	ruff check --fix dtr_cli tests
 
 type-check:
-	mypy doctester_cli
+	mypy dtr_cli
 
 check: lint type-check
 	@echo "$(GREEN)✓ All checks passed$(NC)"
@@ -50,7 +50,7 @@ test:
 	pytest
 
 coverage:
-	pytest --cov=doctester_cli --cov-report=html --cov-report=term-missing
+	pytest --cov=dtr_cli --cov-report=html --cov-report=term-missing
 
 clean:
 	rm -rf build/ dist/ *.egg-info

@@ -54,7 +54,7 @@ public class DtrContext implements RenderMachineCommands {
 
     private final RenderMachine renderMachine;
     private final TestBrowser testBrowser;
-    private final String testServerUrl;
+    private String testServerUrl;
 
     /**
      * Creates a new DtrContext.
@@ -243,12 +243,17 @@ public class DtrContext implements RenderMachineCommands {
     }
 
     /**
-     * Sets a custom test server URL.
+     * Sets a custom test server URL. Subsequent calls to {@link #testServerUrl()}
+     * and any requests routed through it will use this base URL.
      *
-     * @param url the new base URL
+     * @param url the new base URL (must not be null or blank)
+     * @throws IllegalArgumentException if url is null or blank
      */
     public void setTestServerUrl(String url) {
-        // Note: This creates a new Url instance each time
+        if (url == null || url.isBlank()) {
+            throw new IllegalArgumentException("Test server URL cannot be null or blank");
+        }
+        this.testServerUrl = url;
     }
 
     // ========================================================================

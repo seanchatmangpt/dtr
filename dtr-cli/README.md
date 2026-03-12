@@ -2,7 +2,7 @@
 
 A comprehensive, modern Python CLI tool for managing, converting, and publishing DTR documentation exports.
 
-**Built with:** Python 3.12+ • Typer • uv • Pydantic • Rich
+**Built with:** Python 3.11+ • Typer • uv • Pydantic • Rich
 
 ## Features
 
@@ -95,7 +95,7 @@ dtr push gh target/site/dtr --repo owner/repo
 
 ### Build Commands (`build`)
 
-Orchestrate Maven builds directly from the CLI, eliminating the need to run `mvnd`/`mvn` separately.
+Orchestrates Maven builds via a unified CLI interface, with automatic retry on transient failures.
 
 ```bash
 dtr build                          # Default: clean verify

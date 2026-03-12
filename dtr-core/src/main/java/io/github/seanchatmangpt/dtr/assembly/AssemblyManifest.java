@@ -17,13 +17,14 @@ package io.github.seanchatmangpt.dtr.assembly;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-
-import io.github.seanchatmangpt.dtr.receipt.LockchainReceipt;
 
 /**
  * Immutable manifest of a complete document assembly combining multiple DocTests.
+ *
+ * <p>Contains only fields that are actually populated during assembly. Receipt signing
+ * and SHA3 hash computation are not yet implemented and have been removed rather than
+ * pretending they work with null/empty placeholders.
  */
 public record AssemblyManifest(
     List<?> includedTests,
@@ -33,10 +34,7 @@ public record AssemblyManifest(
     int totalTables,
     int totalCitations,
     int totalCrossReferences,
-    LockchainReceipt assemblyReceipt,
-    Map<String, LockchainReceipt> componentReceipts,
-    Instant assembledAt,
-    String sha3HashOfManifest
+    Instant assembledAt
 ) {
 
     /**
@@ -52,12 +50,7 @@ public record AssemblyManifest(
         if (totalWords < 0) {
             throw new IllegalArgumentException("totalWords must be non-negative");
         }
-        Objects.requireNonNull(assemblyReceipt, "assemblyReceipt cannot be null");
-        Objects.requireNonNull(componentReceipts, "componentReceipts cannot be null");
         Objects.requireNonNull(assembledAt, "assembledAt cannot be null");
-        if (sha3HashOfManifest == null || sha3HashOfManifest.trim().isEmpty()) {
-            throw new IllegalArgumentException("sha3HashOfManifest cannot be null or empty");
-        }
     }
 
     /**
@@ -67,7 +60,6 @@ public record AssemblyManifest(
         var sb = new StringBuilder();
         sb.append("{\n");
         sb.append("  \"assembledAt\": \"").append(assembledAt).append("\",\n");
-        sb.append("  \"sha3HashOfManifest\": \"").append(sha3HashOfManifest).append("\",\n");
         sb.append("  \"statistics\": {\n");
         sb.append("    \"totalPages\": ").append(totalPages).append(",\n");
         sb.append("    \"totalWords\": ").append(totalWords).append(",\n");
@@ -76,8 +68,7 @@ public record AssemblyManifest(
         sb.append("    \"totalCitations\": ").append(totalCitations).append(",\n");
         sb.append("    \"totalCrossReferences\": ").append(totalCrossReferences).append("\n");
         sb.append("  },\n");
-        sb.append("  \"includedTests\": ").append(includedTests.size()).append(",\n");
-        sb.append("  \"assemblyReceipt\": ").append(assemblyReceipt.toJson()).append("\n");
+        sb.append("  \"includedTests\": ").append(includedTests.size()).append("\n");
         sb.append("}\n");
         return sb.toString();
     }

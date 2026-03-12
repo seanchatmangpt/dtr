@@ -4,7 +4,7 @@ Thank you for your interest in contributing! This guide explains how to set up y
 
 ## Prerequisites
 
-- Python 3.12+ (check `.python-version`)
+- Python 3.11+ (check `.python-version`)
 - `uv` package manager — [Install `uv`](https://docs.astral.sh/uv/getting-started/)
 - `make` for running development commands
 
@@ -62,7 +62,7 @@ pytest --cov=dtr_cli
 ### Code Style
 
 - **Line length:** 100 characters
-- **Python version:** 3.12+ (using modern syntax: `str | None`, `list[str]`, etc.)
+- **Python version:** 3.11+ (using modern syntax: `str | None`, `list[str]`, etc.)
 - **Type hints:** Required for all public functions and methods
 - **Docstrings:** Google-style docstrings for modules, classes, and functions
 
