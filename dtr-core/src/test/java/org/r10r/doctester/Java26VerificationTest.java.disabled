@@ -112,8 +112,9 @@ public class Java26VerificationTest {
     @Test
     void testStructuredConcurrencyWithVirtualThreads() throws Exception {
         // Create a structured scope that coordinates virtual threads
-        @SuppressWarnings("unchecked")
-        try (StructuredTaskScope<?> scope = new StructuredTaskScope<>()) {
+        @SuppressWarnings("rawtypes")
+        StructuredTaskScope scope = new StructuredTaskScope() {};
+        try (scope) {
 
             // Task 1: Simulate rendering Markdown
             Future<String> markdownTask = scope.fork(() -> {
@@ -140,8 +141,9 @@ public class Java26VerificationTest {
      */
     @Test
     void testStructuredConcurrencyErrorHandling() throws Exception {
-        @SuppressWarnings("unchecked")
-        try (StructuredTaskScope<?> scope = new StructuredTaskScope<>()) {
+        @SuppressWarnings("rawtypes")
+        StructuredTaskScope scope = new StructuredTaskScope() {};
+        try (scope) {
 
             Future<Integer> task1 = scope.fork(() -> {
                 Thread.sleep(5);

@@ -21,7 +21,7 @@
     <parent>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr</artifactId>
-        <version>2.5.0-SNAPSHOT</version>
+        <version>2.5.0</version>
     </parent>
 
     <artifactId>dtr-benchmarks</artifactId>
@@ -117,6 +117,16 @@
                             <mainClass>org.openjdk.jmh.Main</mainClass>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Deploy plugin: skip benchmark deployment to Maven Central -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.3</version>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
