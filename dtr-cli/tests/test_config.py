@@ -462,3 +462,157 @@ def test_config_file_closest_wins_over_parent(tmp_path: Path) -> None:
     cfg = load_config(child)
     assert cfg.report.type == "coverage"
     assert cfg.source() == child / CONFIG_FILENAME
+
+
+# ---------------------------------------------------------------------------
+# Pydantic v2 validation: field-level errors via ConfigurationError
+# ---------------------------------------------------------------------------
+
+
+def test_load_config_raises_configuration_error_for_negative_timeout(tmp_path: Path) -> None:
+    """Negative timeout_seconds triggers ConfigurationError with field name in message."""
+    (tmp_path / CONFIG_FILENAME).write_text("build:\n  timeout_seconds: -1\n")
+    with pytest.raises(ConfigurationError) as exc_info:
+        load_config(tmp_path)
+    message = str(exc_info.value)
+    # Field name must appear in the error message for actionability
+    assert "timeout_seconds" in message, (
+        f"Expected 'timeout_seconds' in error message, got: {message}"
+    )
+
+
+def test_load_config_raises_configuration_error_for_empty_goals(tmp_path: Path) -> None:
+    """Empty goals string triggers ConfigurationError."""
+    (tmp_path / CONFIG_FILENAME).write_text("build:\n  goals: '   '\n")
+    with pytest.raises(ConfigurationError) as exc_info:
+        load_config(tmp_path)
+    message = str(exc_info.value)
+    assert "goals" in message, (
+        f"Expected 'goals' in error message, got: {message}"
+    )
+
+
+def test_load_config_raises_configuration_error_for_invalid_platform(tmp_path: Path) -> None:
+    """Unknown publish platform triggers ConfigurationError."""
+    (tmp_path / CONFIG_FILENAME).write_text("publish:\n  platform: ftp\n")
+    with pytest.raises(ConfigurationError) as exc_info:
+        load_config(tmp_path)
+    message = str(exc_info.value)
+    assert "platform" in message, (
+        f"Expected 'platform' in error message, got: {message}"
+    )
+
+
+def test_load_config_raises_configuration_error_for_invalid_report_type(tmp_path: Path) -> None:
+    """Unknown report type triggers ConfigurationError."""
+    (tmp_path / CONFIG_FILENAME).write_text("report:\n  type: nonsense\n")
+    with pytest.raises(ConfigurationError) as exc_info:
+        load_config(tmp_path)
+    message = str(exc_info.value)
+    assert "type" in message.lower(), (
+        f"Expected report 'type' field in error message, got: {message}"
+    )
+
+
+def test_load_config_raises_configuration_error_for_empty_output_dir(tmp_path: Path) -> None:
+    """Empty output_dir triggers ConfigurationError."""
+    (tmp_path / CONFIG_FILENAME).write_text("export:\n  output_dir: ''\n")
+    with pytest.raises(ConfigurationError) as exc_info:
+        load_config(tmp_path)
+    message = str(exc_info.value)
+    assert "output_dir" in message, (
+        f"Expected 'output_dir' in error message, got: {message}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# validate_config() function
+# ---------------------------------------------------------------------------
+
+
+def test_validate_config_returns_empty_list_for_valid_config(tmp_path: Path) -> None:
+    """validate_config() returns [] for a valid .dtr.yml."""
+    (tmp_path / CONFIG_FILENAME).write_text(
+        "build:\n  verbose: true\n  timeout_seconds: 300\n"
+    )
+    errors = validate_config(tmp_path / CONFIG_FILENAME)
+    assert errors == [], f"Expected no errors for valid config, got: {errors}"
+
+
+def test_validate_config_returns_empty_list_when_no_file(tmp_path: Path) -> None:
+    """validate_config() with a path to a non-existent file returns [] (defaults are valid)."""
+    errors = validate_config(tmp_path / CONFIG_FILENAME)
+    assert errors == []
+
+
+def test_validate_config_returns_errors_for_invalid_timeout(tmp_path: Path) -> None:
+    """validate_config() returns non-empty list when timeout_seconds is negative."""
+    (tmp_path / CONFIG_FILENAME).write_text("build:\n  timeout_seconds: 0\n")
+    errors = validate_config(tmp_path / CONFIG_FILENAME)
+    assert len(errors) > 0, "Expected at least one error for invalid timeout"
+    combined = " ".join(errors)
+    assert "timeout_seconds" in combined, (
+        f"Expected field name 'timeout_seconds' in errors: {errors}"
+    )
+
+
+def test_validate_config_returns_errors_for_invalid_platform(tmp_path: Path) -> None:
+    """validate_config() returns non-empty list when platform is not in valid set."""
+    (tmp_path / CONFIG_FILENAME).write_text("publish:\n  platform: ftp\n")
+    errors = validate_config(tmp_path / CONFIG_FILENAME)
+    assert len(errors) > 0
+    combined = " ".join(errors)
+    assert "platform" in combined
+
+
+def test_validate_config_returns_errors_for_bad_yaml(tmp_path: Path) -> None:
+    """validate_config() returns an error message when YAML is invalid."""
+    (tmp_path / CONFIG_FILENAME).write_text("build: [\nbroken")
+    errors = validate_config(tmp_path / CONFIG_FILENAME)
+    assert len(errors) > 0
+
+
+def test_validate_config_returns_multiple_errors_for_multiple_bad_fields(tmp_path: Path) -> None:
+    """A config with several invalid fields produces at least one error."""
+    (tmp_path / CONFIG_FILENAME).write_text(
+        "build:\n  timeout_seconds: -99\n  goals: '  '\n"
+    )
+    errors = validate_config(tmp_path / CONFIG_FILENAME)
+    assert len(errors) > 0
+
+
+# ---------------------------------------------------------------------------
+# init_config — Chicago TDD: real file created in real temp dir
+# ---------------------------------------------------------------------------
+
+
+def test_init_config_creates_real_file_in_temp_dir(tmp_path: Path) -> None:
+    """init_config() creates a real .dtr.yml file on disk."""
+    created = init_config(tmp_path)
+    assert created.exists(), f".dtr.yml was not created at {created}"
+    assert created == tmp_path / CONFIG_FILENAME
+
+
+def test_init_config_file_contains_valid_yaml(tmp_path: Path) -> None:
+    """The created .dtr.yml must be loadable as valid YAML."""
+    init_config(tmp_path)
+    cfg = load_config(tmp_path)
+    # Defaults must round-trip cleanly
+    assert cfg.build.verbose is False
+    assert cfg.export.output_dir == "target/docs/test-results"
+    assert cfg.publish.platform == "local"
+    assert cfg.report.type == "summary"
+
+
+def test_init_config_file_is_real_file_not_directory(tmp_path: Path) -> None:
+    """init_config creates a file, not a directory."""
+    created = init_config(tmp_path)
+    assert created.is_file()
+    assert not created.is_dir()
+
+
+def test_init_config_content_validates_cleanly(tmp_path: Path) -> None:
+    """The file created by init_config passes validate_config() with no errors."""
+    init_config(tmp_path)
+    errors = validate_config(tmp_path / CONFIG_FILENAME)
+    assert errors == [], f"init_config created invalid config: {errors}"

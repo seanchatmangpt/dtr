@@ -628,6 +628,7 @@ class TestCliTestRun:
 
     def test_invokes_correct_mvnd_command(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         _make_project(tmp_path)
+        _make_module(tmp_path, "dtr-integration-test", ["PhDThesisDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir)
@@ -652,6 +653,7 @@ class TestCliTestRun:
 
     def test_builds_correct_command_structure(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         _make_project(tmp_path)
+        _make_module(tmp_path, "my-module", ["MyDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir)
@@ -676,6 +678,7 @@ class TestCliTestRun:
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["FailingTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir, exit_code=1)
@@ -718,6 +721,7 @@ class TestCliTestRun:
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["MyDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir, exit_code=0)
@@ -740,6 +744,7 @@ class TestCliTestRun:
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["BrokenDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir, exit_code=1)
@@ -937,23 +942,22 @@ class TestListShowsTypeColumn:
     """dtr test list shows the Type column with correct values."""
 
     def test_doc_test_java_shows_doctest_type(self, tmp_path: Path):
-        # Real filesystem: create a DocTest.java under src/test/java
-        module = tmp_path / "dtr-integration-test"
+        # Real filesystem: create a DocTest.java under src/test/java.
+        # Use a short class name so Rich doesn't truncate it in the 80-col terminal.
+        module = tmp_path / "mod"
         module.mkdir()
         (module / "pom.xml").write_text("<project/>")
         (tmp_path / "pom.xml").write_text("<project><modules/></project>")
         src = module / "src" / "test" / "java"
         src.mkdir(parents=True)
-        (src / "PhDThesisDocTest.java").write_text(
-            "public class PhDThesisDocTest {}"
-        )
+        (src / "ApiDocTest.java").write_text("public class ApiDocTest {}")
 
         result = runner.invoke(
             app, ["test", "list", "--project-dir", str(tmp_path)]
         )
 
         assert result.exit_code == 0, f"stdout={result.stdout!r}"
-        assert "PhDThesisDocTest" in result.stdout
+        assert "ApiDocTest" in result.stdout
         # The Type column must show "DocTest"
         assert "DocTest" in result.stdout, (
             "Expected 'DocTest' type in table output. "
