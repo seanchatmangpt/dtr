@@ -663,9 +663,31 @@ dtr/
 
 ## 💬 Questions?
 
-- **Bug reports:** [GitHub Issues](https://github.com/seanchatmangpt/doctester/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/seanchatmangpt/doctester/discussions)
-- **Contributing:** See [CLAUDE.md](./CLAUDE.md)
+- **Bug reports:** [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/seanchatmangpt/dtr/discussions)
+- **Contributing:** See [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+---
+
+## 👥 Contributors
+
+**DTR (Documentation Testing Runtime)** was created and is maintained by:
+
+- **[Sean Chatman](https://github.com/seanchatmangpt)** (@seanchatmangpt) — Creator, architect, and lead maintainer
+
+### Acknowledgments
+
+DTR builds on innovative Java platform features including:
+- **Java 25 Preview Features** — Records, sealed classes, pattern matching, virtual threads, text blocks
+- **Apache HttpClient 5** — Reliable HTTP testing foundation
+- **Jackson 2.x** — Flexible JSON/XML serialization
+- **Guava 33.x** — Essential utilities for the JVM
+- **JUnit 5 & JUnit Platform** — Industry-standard Java testing framework
+- **The Java Community** — For feedback, testing, and adoption
+
+### Getting Involved
+
+Contributions, bug reports, and feature requests are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ---
 
