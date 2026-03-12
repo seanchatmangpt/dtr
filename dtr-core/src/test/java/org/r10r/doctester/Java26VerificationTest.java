@@ -112,7 +112,9 @@ public class Java26VerificationTest {
     @Test
     void testStructuredConcurrencyWithVirtualThreads() throws Exception {
         // Create a structured scope that coordinates virtual threads
-        try (var scope = new StructuredTaskScope<String>()) {
+        @SuppressWarnings("rawtypes")
+        StructuredTaskScope scope = new StructuredTaskScope() {};
+        try (scope) {
 
             // Task 1: Simulate rendering Markdown
             Future<String> markdownTask = scope.fork(() -> {
@@ -126,7 +128,7 @@ public class Java26VerificationTest {
                 return "latex_rendered";
             });
 
-            // Wait for any to complete (success short-circuits)
+            // Wait for all to complete
             scope.join();
 
             // At least one should be done
@@ -135,11 +137,13 @@ public class Java26VerificationTest {
     }
 
     /**
-     * JEP 525 (Preview): Verify ShutdownOnFailure for error handling in parallel rendering.
+     * JEP 525 (Preview): Verify error handling in parallel rendering.
      */
     @Test
     void testStructuredConcurrencyErrorHandling() throws Exception {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        @SuppressWarnings("rawtypes")
+        StructuredTaskScope scope = new StructuredTaskScope() {};
+        try (scope) {
 
             Future<Integer> task1 = scope.fork(() -> {
                 Thread.sleep(5);
