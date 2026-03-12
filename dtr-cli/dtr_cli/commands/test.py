@@ -234,6 +234,7 @@ def list_tests(
 
     table = Table(title="DTR Test Classes", show_lines=False)
     table.add_column("Module", style="cyan", no_wrap=True)
+    table.add_column("Package", style="dim")
     table.add_column("Class", style="bold green")
     table.add_column("Type", style="magenta", no_wrap=True)
     table.add_column("File Path", style="dim", overflow="fold")
@@ -246,6 +247,7 @@ def list_tests(
             rel_path = entry["path"]
         table.add_row(
             entry["module"],
+            entry["package"] or "(default)",
             entry["class_name"],
             entry.get("type", "Unit"),
             str(rel_path),

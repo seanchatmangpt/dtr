@@ -364,7 +364,7 @@ def config(
             section = getattr(cfg, section_name)
             default_section = getattr(defaults, section_name)
             first_row = True
-            for field_name in section.model_fields:
+            for field_name in type(section).model_fields:
                 current_val = getattr(section, field_name)
                 default_val = getattr(default_section, field_name)
                 section_label = section_name if first_row else ""

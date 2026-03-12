@@ -374,7 +374,7 @@ def get_value(cfg: DtrConfig, key: str) -> Any:
     if section_name not in _SECTION_MAP:
         raise KeyError(f"Unknown config section: '{section_name}'")
     section = getattr(cfg, section_name)
-    if attr not in section.model_fields:
+    if attr not in type(section).model_fields:
         raise KeyError(f"Unknown config key: '{key}'")
     return getattr(section, attr)
 
@@ -396,7 +396,7 @@ def set_value(cfg: DtrConfig, key: str, value: str) -> None:
     if section_name not in _SECTION_MAP:
         raise KeyError(f"Unknown config section: '{section_name}'")
     section = getattr(cfg, section_name)
-    if attr not in section.model_fields:
+    if attr not in type(section).model_fields:
         raise KeyError(f"Unknown config key: '{key}'")
 
     current = getattr(section, attr)
