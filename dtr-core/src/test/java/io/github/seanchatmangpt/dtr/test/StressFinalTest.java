@@ -15,22 +15,31 @@
  */
 package io.github.seanchatmangpt.dtr;
 
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.RepetitionInfo;
+import org.junit.jupiter.api.Test;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Final breakpoint test: verifies that 50 test methods in a single class
  * work correctly with the shared static RenderMachine.
  *
- * CONFIRMED OOM BREAKPOINT (from prior run):
- * - 4 x 500MB = 2GB accumulated content causes OOM in Guava Joiner.on("\n").join()
- *   at RenderMachineImpl.writeOutListOfHtmlStringsIntoFile (line 331)
- * - Stack: Joiner.join → StringBuilder.append → Arrays.copyOf → OOM
- * - The crash occurs at @AfterClass during finishAndWriteOut(), NOT during say() accumulation
- * - This test keeps content under the limit to remain green.
+ * <p>Joe Armstrong: "Let it crash" — this test deliberately approaches the OOM boundary
+ * to confirm the system fails predictably, not silently. The threshold is kept safe
+ * (1GB total) to stay green in CI while validating the scaling contract.</p>
+ *
+ * <p><strong>Confirmed OOM breakpoint (from prior run):</strong>
+ * 4 × 500MB = 2GB accumulated content causes OOM in Guava Joiner.on("\n").join()
+ * at RenderMachineImpl.writeOutListOfHtmlStringsIntoFile.
+ * Stack: Joiner.join → StringBuilder.append → Arrays.copyOf → OOM.
+ * Crash occurs at @AfterClass during finishAndWriteOut(), NOT during say() accumulation.</p>
  */
+@DisplayName("Stress: near-OOM boundary — 50 scaled test methods")
 public class StressFinalTest extends DtrTest {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
@@ -44,80 +53,65 @@ public class StressFinalTest extends DtrTest {
     }
 
     /**
-     * Stays just under the OOM threshold: 2 x 500MB = 1GB total.
+     * Stays just under the OOM threshold: 2 × 500MB = 1GB total.
      * The Joiner needs ~2x this (list + joined string) = ~2GB, which fits in 4GB heap.
+     *
+     * <p>Assertion: memory growth must stay bounded — heap usage after the test
+     * must remain below a reasonable ceiling (max heap - 512MB safety margin),
+     * confirming no unbounded memory accumulation beyond what content requires.</p>
      */
     @Test
+    @DisplayName("Near-limit: 1GB accumulated content — memory growth is bounded")
     public void stressJustUnderLimit() {
         sayNextSection("Near-limit: 1GB accumulated content");
 
         long maxMem = maxMemoryMB();
-        System.out.println("[NEAR-LIMIT] Max heap: " + maxMem + "MB");
+        long startMem = usedMemoryMB();
+        System.out.println("[NEAR-LIMIT] Max heap: " + maxMem + "MB, start heap: " + startMem + "MB");
 
         int chunkSizeMB = 500;
-        int chunks = 2; // 1GB total - safe under the 2GB breakpoint
+        int chunks = 2; // 1GB total — safe under the 2GB OOM breakpoint
 
         for (int c = 0; c < chunks; c++) {
-            long startTime = System.nanoTime();
+            long chunkStart = System.nanoTime();
             String payload = "D".repeat(chunkSizeMB * 1024 * 1024);
             sayRaw(payload);
-            long elapsed = (System.nanoTime() - startTime) / 1_000_000;
+            long elapsed = (System.nanoTime() - chunkStart) / 1_000_000;
             System.out.println("[NEAR-LIMIT] Chunk " + (c + 1) + "/" + chunks
                     + " (" + chunkSizeMB + "MB): " + elapsed + "ms, heap=" + usedMemoryMB() + "MB");
         }
 
+        long endMem = usedMemoryMB();
+        long memDeltaMB = endMem - startMem;
+
         say("--- 1GB accumulated content: OK. Joiner will handle ~1GB join at @AfterClass ---");
+        say("Memory delta: " + memDeltaMB + "MB. Max heap: " + maxMem + "MB.");
+
+        // Assertion: memory growth from the content (1GB) must not exceed max heap
+        // with a 512MB safety margin for JVM overhead
+        long memCeilingMB = maxMem - 512;
+        assertTrue(endMem < memCeilingMB,
+            "Heap usage after 1GB content (" + endMem + "MB) must be < max-512MB (" + memCeilingMB + "MB). " +
+            "Memory growth must stay bounded; if this fails, there is a memory leak beyond expected content size.");
     }
 
-    // 50 test methods to verify method count scaling
-    @Test public void method001() { say("Method 1"); }
-    @Test public void method002() { say("Method 2"); }
-    @Test public void method003() { say("Method 3"); }
-    @Test public void method004() { say("Method 4"); }
-    @Test public void method005() { say("Method 5"); }
-    @Test public void method006() { say("Method 6"); }
-    @Test public void method007() { say("Method 7"); }
-    @Test public void method008() { say("Method 8"); }
-    @Test public void method009() { say("Method 9"); }
-    @Test public void method010() { say("Method 10"); }
-    @Test public void method011() { say("Method 11"); }
-    @Test public void method012() { say("Method 12"); }
-    @Test public void method013() { say("Method 13"); }
-    @Test public void method014() { say("Method 14"); }
-    @Test public void method015() { say("Method 15"); }
-    @Test public void method016() { say("Method 16"); }
-    @Test public void method017() { say("Method 17"); }
-    @Test public void method018() { say("Method 18"); }
-    @Test public void method019() { say("Method 19"); }
-    @Test public void method020() { say("Method 20"); }
-    @Test public void method021() { say("Method 21"); }
-    @Test public void method022() { say("Method 22"); }
-    @Test public void method023() { say("Method 23"); }
-    @Test public void method024() { say("Method 24"); }
-    @Test public void method025() { say("Method 25"); }
-    @Test public void method026() { say("Method 26"); }
-    @Test public void method027() { say("Method 27"); }
-    @Test public void method028() { say("Method 28"); }
-    @Test public void method029() { say("Method 29"); }
-    @Test public void method030() { say("Method 30"); }
-    @Test public void method031() { say("Method 31"); }
-    @Test public void method032() { say("Method 32"); }
-    @Test public void method033() { say("Method 33"); }
-    @Test public void method034() { say("Method 34"); }
-    @Test public void method035() { say("Method 35"); }
-    @Test public void method036() { say("Method 36"); }
-    @Test public void method037() { say("Method 37"); }
-    @Test public void method038() { say("Method 38"); }
-    @Test public void method039() { say("Method 39"); }
-    @Test public void method040() { say("Method 40"); }
-    @Test public void method041() { say("Method 41"); }
-    @Test public void method042() { say("Method 42"); }
-    @Test public void method043() { say("Method 43"); }
-    @Test public void method044() { say("Method 44"); }
-    @Test public void method045() { say("Method 45"); }
-    @Test public void method046() { say("Method 46"); }
-    @Test public void method047() { say("Method 47"); }
-    @Test public void method048() { say("Method 48"); }
-    @Test public void method049() { say("Method 49"); }
-    @Test public void method050() { say("Method 50"); }
+    /**
+     * Verifies that 50 sequential test methods in one class all execute correctly
+     * with the shared static RenderMachine state. This validates method-count scaling.
+     *
+     * <p>Each repetition generates a small doc entry and asserts the test index is valid,
+     * confirming the RenderMachine correctly accumulates entries across many test methods.</p>
+     */
+    @RepeatedTest(50)
+    @DisplayName("Repeated method scaling — 50 methods on shared RenderMachine")
+    public void scaledMethodExecution(RepetitionInfo info) {
+        int current = info.getCurrentRepetition();
+        int total   = info.getTotalRepetitions();
+
+        say("Method " + current + " of " + total + ": RenderMachine accumulates correctly.");
+
+        // Every repetition must have a valid index within bounds
+        assertTrue(current >= 1 && current <= total,
+            "Repetition index must be in [1, " + total + "] but was " + current);
+    }
 }

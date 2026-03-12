@@ -1,12 +1,19 @@
 """Pytest configuration and fixtures for Chicago-style TDD.
 
-Fixtures are divided into two categories:
+Fixtures are divided into three categories:
 
 1. SAMPLE FIXTURES (for unit tests):
    - tmp_export_dir: Sample HTML files for unit testing
    - tmp_markdown_file: Sample Markdown file for unit testing
 
-2. REAL MAVEN FIXTURES (for integration tests):
+2. PROJECT FIXTURES (for CLI integration tests):
+   - tmp_project_dir: Minimal Maven project with pom.xml
+   - tmp_project_with_tests: Project dir with sample DocTest and Unit test Java files
+   - mock_mvnd_success: Monkeypatched subprocess.run returning exit code 0
+   - mock_mvnd_failure: Monkeypatched subprocess.run returning exit code 1
+   - dtr_app: The main Typer app for testing
+
+3. REAL MAVEN FIXTURES (for integration tests):
    - project_root: DTR repository root (auto-detected)
    - maven_dtr_core_exports: Real HTML exports from dtr-core build
    - maven_integration_test_exports: Real API documentation from integration tests
@@ -20,6 +27,7 @@ from typing import Generator
 import os
 
 import pytest
+from typer.testing import CliRunner
 
 
 # ============================================================================
@@ -86,6 +94,91 @@ public class Hello {
 ```
 """)
     yield md_file
+
+
+# ============================================================================
+# PROJECT FIXTURES FOR CLI INTEGRATION TESTS
+# ============================================================================
+
+
+@pytest.fixture
+def cli_runner() -> CliRunner:
+    """Typer CliRunner for invoking CLI commands in tests."""
+    return CliRunner(mix_stderr=False)
+
+
+@pytest.fixture
+def tmp_project_dir(tmp_path: Path) -> Path:
+    """
+    Real temporary project directory with a minimal pom.xml.
+
+    Chicago TDD: use real files, not mocks of file system.
+    """
+    pom = tmp_path / "pom.xml"
+    pom.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>test-project</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+</project>
+""")
+    src_test = tmp_path / "src" / "test" / "java" / "com" / "example"
+    src_test.mkdir(parents=True)
+    return tmp_path
+
+
+@pytest.fixture
+def tmp_project_with_tests(tmp_project_dir: Path) -> Path:
+    """Project dir with sample DocTest and Unit test Java files."""
+    test_dir = tmp_project_dir / "src" / "test" / "java" / "com" / "example"
+    (test_dir / "ApiDocTest.java").write_text(
+        "package com.example;\npublic class ApiDocTest {}\n"
+    )
+    (test_dir / "UtilityTest.java").write_text(
+        "package com.example;\npublic class UtilityTest {}\n"
+    )
+    return tmp_project_dir
+
+
+@pytest.fixture
+def mock_mvnd_success(monkeypatch):
+    """
+    Monkeypatch subprocess.run to simulate a successful mvnd build.
+
+    Chicago TDD: mock only the external process, not our code.
+    Returns a fake CompletedProcess with returncode=0.
+    """
+    import subprocess as sp
+
+    def fake_run(cmd, *args, **kwargs):
+        return sp.CompletedProcess(args=cmd, returncode=0, stdout=b"BUILD SUCCESS", stderr=b"")
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    return fake_run
+
+
+@pytest.fixture
+def mock_mvnd_failure(monkeypatch):
+    """Monkeypatch subprocess.run to simulate a failed mvnd build."""
+    import subprocess as sp
+
+    def fake_run(cmd, *args, **kwargs):
+        return sp.CompletedProcess(args=cmd, returncode=1, stdout=b"", stderr=b"BUILD FAILURE")
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    return fake_run
+
+
+@pytest.fixture
+def dtr_app():
+    """Return the main DTR Typer app for testing."""
+    from dtr_cli.main import app
+    return app
 
 
 # ============================================================================
