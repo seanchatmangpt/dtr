@@ -15,6 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr.rendermachine.latex;
 
+import io.github.seanchatmangpt.dtr.util.StringEscapeUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -129,21 +130,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
 
     @Override
     public String escapeLatex(String text) {
-        if (text == null || text.isEmpty()) {
-            return "";
-        }
-
-        return text
-            .replace("\\", "\\textbackslash{}")
-            .replace("&", "\\&")
-            .replace("%", "\\%")
-            .replace("$", "\\$")
-            .replace("#", "\\#")
-            .replace("_", "\\_")
-            .replace("{", "\\{")
-            .replace("}", "\\}")
-            .replace("~", "\\textasciitilde{}")
-            .replace("^", "\\textasciicircum{}");
+        return StringEscapeUtils.escapeLaTeX(text);
     }
 
     @Override

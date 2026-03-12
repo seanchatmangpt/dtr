@@ -15,6 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr.bibliography;
 
+import io.github.seanchatmangpt.dtr.util.StringEscapeUtils;
 import java.util.Collections;
 import java.util.Map;
 
@@ -77,7 +78,7 @@ public record BibTeXEntry(
 
         fields.forEach((name, value) -> {
             if (value != null && !value.isEmpty()) {
-                sb.append("  ").append(name).append(" = \"").append(escapeBibValue(value)).append("\",\n");
+                sb.append("  ").append(name).append(" = \"").append(StringEscapeUtils.escapeBibValue(value)).append("\",\n");
             }
         });
 
@@ -91,10 +92,4 @@ public record BibTeXEntry(
      * @param value the raw value to escape
      * @return escaped value safe for BibTeX
      */
-    private String escapeBibValue(String value) {
-        return value
-            .replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("\n", " ");
-    }
 }

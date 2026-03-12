@@ -15,6 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr.assembly;
 
+import io.github.seanchatmangpt.dtr.util.StringEscapeUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +48,7 @@ public final class IndexBuilder {
          * Generates LaTeX index command for this term.
          */
         public String toLatex() {
-            var escaped = escapeLaTeX(term);
+            var escaped = StringEscapeUtils.escapeLaTeX(term);
             return "\\index{" + escaped + "}";
         }
 
@@ -146,21 +147,4 @@ public final class IndexBuilder {
     /**
      * Escapes LaTeX special characters in a string.
      */
-    private static String escapeLaTeX(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s
-            .replace("\\", "\\textbackslash{}")
-            .replace("&", "\\&")
-            .replace("%", "\\%")
-            .replace("$", "\\$")
-            .replace("#", "\\#")
-            .replace("_", "\\_")
-            .replace("{", "\\{")
-            .replace("}", "\\}")
-            .replace("~", "\\textasciitilde{}")
-            .replace("^", "\\textasciicircum{}")
-            .replace("|", "\\textbar{}");
-    }
 }
