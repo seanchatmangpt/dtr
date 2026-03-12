@@ -1,8 +1,8 @@
-# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 26
+# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 25+
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 26 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
+**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 25+ (with `--enable-preview`) | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
 
 ---
 
@@ -15,11 +15,11 @@ Save as `src/test/java/example/FirstDocTest.java`:
 ```java
 package example;
 
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.*;
 
-public class FirstDocTest extends DocTester {
+public class FirstDocTest extends DtrTest {
 
     @Test
     void documentUserApi() {
@@ -566,10 +566,10 @@ A single test generates all of them. 🎯
 
 ## 🚀 Getting Started
 
-### 1. Install Java 25 and Maven 4
+### 1. Install Java 25+ and Maven 4
 
 ```bash
-# Install Java 25 LTS
+# Install Java 25+ (LTS) with --enable-preview
 export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 
 # Verify
@@ -598,10 +598,10 @@ mvnd --version         # Shows: Maven 4.0.0-rc-5
 ### 3. Create your first test
 
 ```java
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 import org.junit.jupiter.api.Test;
 
-public class MyFirstDocTest extends DocTester {
+public class MyFirstDocTest extends DtrTest {
     @Test
     void myFirstDoc() {
         sayNextSection("Hello World");
@@ -634,7 +634,7 @@ dtr/
 ├── dtr-core/
 │   ├── pom.xml
 │   └── src/main/java/io/github/seanchatmangpt/dtr/
-│       ├── DocTester.java              # Base test class with say* methods
+│       ├── DtrTest.java                # Base test class with say* methods
 │       ├── assembly/                   # Document assembly & indexing
 │       ├── openapi/                    # OpenAPI/Swagger spec generation
 │       ├── receipt/                    # Cryptographic integrity (blockchain receipts)

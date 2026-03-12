@@ -569,7 +569,8 @@ public final class RenderMachineImpl extends RenderMachine {
                 writer.write('\n');
             }
         } catch (IOException e) {
-            logger.error("Error writing markdown file: {}", outputFile, e);
+            throw new RuntimeException(
+                "DTR failed to write documentation file: " + outputFile.getAbsolutePath(), e);
         }
     }
 

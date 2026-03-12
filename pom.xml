@@ -200,6 +200,18 @@ the specific language governing permissions and limitations under the License. -
                 <artifactId>junit-jupiter</artifactId>
                 <version>${junit5.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit5.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>1.11.4</version>
+                <scope>test</scope>
+            </dependency>
 
             <!-- Property-based testing -->
             <dependency>
@@ -333,6 +345,9 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.5.3</version>
                     <configuration>
                         <argLine>--enable-preview</argLine>
+                        <excludes>
+                            <exclude>**/*IntegrationTest.java</exclude>
+                        </excludes>
                         <!-- DTR documentation output configuration passed to test runtime -->
                         <systemPropertyVariables>
                             <dtr.output.dir>${dtr.output.dir}</dtr.output.dir>

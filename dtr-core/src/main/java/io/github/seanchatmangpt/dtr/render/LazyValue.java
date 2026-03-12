@@ -38,8 +38,22 @@ import java.util.function.Supplier;
  */
 public final class LazyValue<T> implements Supplier<T> {
 
+    /**
+     * Sentinel object used to distinguish "not yet computed" from "computed as null".
+     * The field {@code value} is initialised to this sentinel and replaced exactly
+     * once when the initializer is first invoked.
+     */
+    private static final Object UNSET = new Object();
+
     private final Supplier<? extends T> initializer;
-    private volatile T value;
+
+    /**
+     * Holds either {@link #UNSET} (before first computation) or the result
+     * returned by the initializer (which may itself be {@code null}).
+     * Declared {@code volatile} so the single-check fast-path is safe.
+     */
+    @SuppressWarnings("unchecked")
+    private volatile Object value = UNSET;
 
     /**
      * Create a new lazy value with the given initializer.
@@ -55,21 +69,24 @@ public final class LazyValue<T> implements Supplier<T> {
      *
      * After the first call, subsequent accesses return the cached value with
      * no allocation overhead. The JIT compiler can inline this after warm-up.
+     * If the initializer returns {@code null} the result is still cached so
+     * the initializer is never called more than once.
      *
-     * @return the cached value
+     * @return the cached value (may be {@code null} if the initializer returned null)
      */
     @Override
+    @SuppressWarnings("unchecked")
     public T get() {
-        T result = value;
-        if (result == null) {
+        Object result = value;
+        if (result == UNSET) {
             synchronized (this) {
                 result = value;
-                if (result == null) {
+                if (result == UNSET) {
                     value = result = initializer.get();
                 }
             }
         }
-        return result;
+        return (T) result;
     }
 
     /**
