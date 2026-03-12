@@ -2,7 +2,7 @@
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0-SNAPSHOT` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
+**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
 
 ---
 
@@ -449,7 +449,7 @@ new BlogRenderMachine(new SubstackTemplate())     // Substack
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2.5.0-SNAPSHOT</version>
+    <version>2.5.0</version>
     <scope>test</scope>
 </dependency>
 
@@ -583,7 +583,7 @@ mvnd --version         # Shows: Maven 4.0.0-rc-5
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2.5.0-SNAPSHOT</version>
+    <version>2.5.0</version>
     <scope>test</scope>
 </dependency>
 
