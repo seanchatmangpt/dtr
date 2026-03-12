@@ -39,6 +39,7 @@ class MavenBuildConfig:
     modules: list[str] | None = None
     verbose: bool = False
     timeout: int = 600
+    skip_tests: bool = False
 
     def __post_init__(self) -> None:
         """Set defaults if not provided."""
@@ -185,6 +186,10 @@ class MavenRunner:
         # Add properties
         for key, value in (config.properties or {}).items():
             cmd.append(f"-D{key}={value}")
+
+        # Skip tests if requested
+        if config.skip_tests:
+            cmd.append("-DskipTests")
 
         # Add modules (selective build)
         if config.modules:

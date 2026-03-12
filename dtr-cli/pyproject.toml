@@ -7,7 +7,7 @@ name = "dtr-cli"
 version = "0.1.0"
 description = "Python CLI to manage DTR (Document Testing Runtime) exports, conversions, and publishing"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "DTR Contributors", email = "info@dtr.org"}
@@ -21,6 +21,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Testing",
@@ -73,7 +74,7 @@ packages = ["dtr_cli"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py311"
 extend-select = [
     "I",      # isort - import sorting
     "UP",     # pyupgrade
@@ -91,7 +92,7 @@ exclude = [
 "__init__.py" = ["F401"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true

@@ -11,6 +11,10 @@ from dtr_cli.converters.base_converter import BaseConverter
 class HtmlConverter(BaseConverter):
     """Convert HTML documentation to other formats."""
 
+    def convert(self, config: ConversionConfig) -> ConversionResult:
+        """Convert HTML files to Markdown (default conversion)."""
+        return self.convert_to_markdown(config)
+
     def convert_to_markdown(self, config: ConversionConfig) -> ConversionResult:
         """Convert HTML files to Markdown format."""
         files = self.get_input_files(config)

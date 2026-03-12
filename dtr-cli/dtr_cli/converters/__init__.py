@@ -1,1 +1,1 @@
-"""Format converters for DocTester exports."""
+"""Format converters for DTR exports."""

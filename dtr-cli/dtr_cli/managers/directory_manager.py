@@ -10,7 +10,7 @@ from dtr_cli.model import ManageConfig, ManageResult, ExportInfo
 
 
 class DirectoryManager:
-    """Manage DocTester export directories."""
+    """Manage DTR export directories."""
 
     def list_exports(self, config: ManageConfig) -> list[ExportInfo]:
         """List all exports in a directory."""

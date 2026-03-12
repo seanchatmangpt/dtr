@@ -51,7 +51,7 @@ class MarkdownReporter(BaseReporter):
     def _generate_default_report(self, exports: list[Path]) -> str:
         """Generate default Markdown report."""
         lines = [
-            "# DocTester Exports Report\n",
+            "# DTR Exports Report\n",
             f"**Generated:** {datetime.now().isoformat()}\n",
             "\n## Exports\n",
         ]

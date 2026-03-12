@@ -186,7 +186,7 @@ def build_command(
         else:
             console.print(
                 "[yellow]⚠️  No exports found. "
-                "Did your tests generate DocTester output?[/yellow]"
+                "Did your tests generate DTR output?[/yellow]"
             )
 
         # Run format conversion if requested

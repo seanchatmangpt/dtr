@@ -294,7 +294,7 @@ class TestPublishCommands:
 
         result = runner.invoke(publish.app, ["--help"])
         assert result.exit_code == 0
-        assert "Publish DocTester to Maven Central" in result.output
+        assert "Publish DTR to Maven Central" in result.output
 
     def test_check_command_help(self, runner):
         """Test that check subcommand shows help."""

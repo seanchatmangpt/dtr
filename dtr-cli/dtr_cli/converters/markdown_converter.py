@@ -63,6 +63,10 @@ class MarkdownConverter(BaseConverter):
 </html>""",
     }
 
+    def convert(self, config: ConversionConfig) -> ConversionResult:
+        """Convert Markdown files to HTML (default conversion)."""
+        return self.convert_to_html(config)
+
     def convert_to_html(self, config: ConversionConfig) -> ConversionResult:
         """Convert Markdown files to HTML."""
         files = self.get_input_files(config)

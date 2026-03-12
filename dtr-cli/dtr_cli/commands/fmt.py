@@ -1,4 +1,4 @@
-"""Convert DocTester exports between formats."""
+"""Convert DTR exports between formats."""
 
 import os
 from pathlib import Path

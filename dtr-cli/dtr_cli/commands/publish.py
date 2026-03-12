@@ -28,7 +28,7 @@ from dtr_cli.model import (
 )
 
 console = Console()
-app = typer.Typer(help="Publish DocTester to Maven Central")
+app = typer.Typer(help="Publish DTR to Maven Central")
 
 
 @app.command()
