@@ -16,6 +16,7 @@ Usage:
 import fnmatch
 import re
 import subprocess
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -41,6 +42,35 @@ def _is_doc_or_test_class(name: str) -> bool:
     return stem.endswith("DocTest") or stem.endswith("Test")
 
 
+def _detect_test_type(class_name: str, module_name: str) -> str:
+    """Classify a test class as DocTest, Bench, or Unit.
+
+    Rules (applied in order):
+    - class name ends with 'DocTest'  → 'DocTest'
+    - module name contains 'bench'    → 'Bench'
+    - otherwise                       → 'Unit'
+    """
+    if class_name.endswith("DocTest"):
+        return "DocTest"
+    if "bench" in module_name.lower():
+        return "Bench"
+    return "Unit"
+
+
+def _find_test_file(test_class: str, project_dir: Path) -> Optional[Path]:
+    """Find the Java source file for the given test class name.
+
+    Only files under 'src/test/java' are considered.
+
+    Returns:
+        The first matching path, or None if not found.
+    """
+    for candidate in project_dir.rglob(f"{test_class}.java"):
+        if "src/test/java" in str(candidate):
+            return candidate
+    return None
+
+
 def _package_from_path(java_file: Path, module_dir: Path) -> str:
     """Derive the Java package string from a source file path.
 
@@ -62,7 +92,8 @@ def collect_test_files(
 ) -> list[dict]:
     """Return a list of dicts describing discovered test files.
 
-    Each dict has keys: module, package, class_name, path (absolute Path).
+    Each dict has keys: module, package, class_name, type, path (absolute Path).
+    type is one of: 'DocTest', 'Bench', 'Unit'.
     Only *DocTest.java and *Test.java files under src/test/java/ are returned.
     """
     results: list[dict] = []
@@ -90,11 +121,13 @@ def collect_test_files(
         for java_file in sorted(test_root.rglob("*.java")):
             if not _is_doc_or_test_class(java_file.name):
                 continue
+            class_name = java_file.stem
             results.append(
                 {
                     "module": module_name,
                     "package": _package_from_path(java_file, module_path),
-                    "class_name": java_file.stem,
+                    "class_name": class_name,
+                    "type": _detect_test_type(class_name, module_name),
                     "path": java_file,
                 }
             )
@@ -201,16 +234,21 @@ def list_tests(
 
     table = Table(title="DTR Test Classes", show_lines=False)
     table.add_column("Module", style="cyan", no_wrap=True)
-    table.add_column("Package", style="dim")
     table.add_column("Class", style="bold green")
-    table.add_column("Path", style="dim", overflow="fold")
+    table.add_column("Type", style="magenta", no_wrap=True)
+    table.add_column("File Path", style="dim", overflow="fold")
 
     for entry in entries:
+        # Show path relative to project root for readability; fall back to absolute.
+        try:
+            rel_path = entry["path"].relative_to(resolved_dir)
+        except ValueError:
+            rel_path = entry["path"]
         table.add_row(
             entry["module"],
-            entry["package"] or "(default)",
             entry["class_name"],
-            str(entry["path"]),
+            entry.get("type", "Unit"),
+            str(rel_path),
         )
 
     console.print(table)
@@ -268,10 +306,30 @@ def run_test(
         )
         raise typer.Exit(code=1)
 
+    # Validate the test class exists in the project before invoking Maven.
+    test_file = _find_test_file(class_name, resolved_dir)
+    if test_file is None:
+        # Collect available test classes to show in the hint.
+        available = collect_test_files(resolved_dir)
+        available_names = sorted({e["class_name"] for e in available})
+        hint = (
+            (
+                "\nAvailable test classes:\n"
+                + "\n".join(f"  - {n}" for n in available_names)
+            )
+            if available_names
+            else "\nNo test classes found in this project."
+        )
+        console.print(
+            f"[red]Test class not found: {class_name}{hint}[/red]"
+        )
+        raise typer.Exit(code=1)
+
     cmd = build_test_run_command(module, class_name)
     console.print(f"[bold cyan]$ {' '.join(cmd)}[/bold cyan]")
 
-    try:
+    def _execute_test(cmd: list[str]) -> int:
+        """Run *cmd* and return the exit code, streaming output when verbose."""
         kwargs: dict = {"cwd": resolved_dir, "text": True}
         if not verbose:
             kwargs["stdout"] = subprocess.PIPE
@@ -282,40 +340,32 @@ def run_test(
         if not verbose and proc.stdout:
             console.print(proc.stdout)
 
-        if proc.returncode == 0:
-            console.print(f"[bold green]Test PASSED[/bold green] — {class_name}")
-        else:
-            console.print(
-                f"[bold red]Test FAILED[/bold red] (exit {proc.returncode}) — {class_name}"
-            )
-            raise typer.Exit(code=proc.returncode)
+        return proc.returncode
 
+    start = time.perf_counter()
+    try:
+        returncode = _execute_test(cmd)
     except FileNotFoundError:
         # mvnd not on PATH — fall back to mvn
         fallback = ["mvn"] + cmd[1:]
         console.print("[yellow]mvnd not found, retrying with mvn...[/yellow]")
         console.print(f"[bold cyan]$ {' '.join(fallback)}[/bold cyan]")
         try:
-            fallback_kwargs: dict = {"cwd": resolved_dir, "text": True}
-            if not verbose:
-                fallback_kwargs["stdout"] = subprocess.PIPE
-                fallback_kwargs["stderr"] = subprocess.STDOUT
-
-            proc2 = subprocess.run(fallback, **fallback_kwargs)
-
-            if not verbose and proc2.stdout:
-                console.print(proc2.stdout)
-
-            if proc2.returncode == 0:
-                console.print(f"[bold green]Test PASSED[/bold green] — {class_name}")
-            else:
-                console.print(
-                    f"[bold red]Test FAILED[/bold red] (exit {proc2.returncode}) — {class_name}"
-                )
-                raise typer.Exit(code=proc2.returncode)
+            returncode = _execute_test(fallback)
         except FileNotFoundError:
             console.print("[red]Neither mvnd nor mvn found on PATH.[/red]")
             raise typer.Exit(code=127)
+
+    elapsed = time.perf_counter() - start
+    console.print(f"[dim]Test completed in {elapsed:.2f}s[/dim]")
+
+    if returncode == 0:
+        console.print(f"[bold green]Test PASSED[/bold green] — {class_name}")
+    else:
+        console.print(
+            f"[bold red]Test FAILED[/bold red] (exit {returncode}) — {class_name}"
+        )
+        raise typer.Exit(code=returncode)
 
 
 @app.command("filter")
