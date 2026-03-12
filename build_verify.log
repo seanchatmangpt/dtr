@@ -1,0 +1,106 @@
+Mar 12, 2026 6:02:10 AM org.jline.utils.Log logr
+WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+[main] WARNING org.jline - Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+[INFO] Processing build on daemon 28e4dd0a
+[INFO] Scanning for projects...
+[INFO] BuildTimeEventSpy is registered.
+[INFO] ----------------------------------------------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] DTR - Documentation Testing Runtime                                                                        [pom]
+[INFO] DTR Core                                                                                                   [jar]
+[INFO] dtr-integration-test                                                                                       [war]
+[INFO] DTR Benchmarks                                                                                             [jar]
+[INFO] 
+[INFO] Using the SmartBuilder implementation with a thread count of 4
+[dtr] [INFO] 
+[dtr] [INFO] --------------------------------------< io.github.seanchatmangpt.dtr:dtr >--------------------------------------
+[dtr] [INFO] Building DTR - Documentation Testing Runtime 2.5.0                                                         [1/4]
+[dtr] [INFO]   from pom.xml
+[dtr] [INFO] ----------------------------------------------------[ pom ]-----------------------------------------------------
+[dtr] [INFO] 
+[dtr] [INFO] --- clean:3.4.0:clean (default-clean) @ dtr ---
+[dtr] [INFO] Deleting /home/user/dtr/target
+[dtr-core] [INFO] 
+[dtr-core] [INFO] -----------------------------------< io.github.seanchatmangpt.dtr:dtr-core >------------------------------------
+[dtr-core] [INFO] Building DTR Core 2.5.0                                                                                    [2/4]
+[dtr-core] [INFO]   from dtr-core/pom.xml
+[dtr-core] [INFO] ----------------------------------------------------[ jar ]-----------------------------------------------------
+[dtr-core] [INFO] 
+[dtr-core] [INFO] --- clean:3.4.0:clean (default-clean) @ dtr-core ---
+[dtr-core] [INFO] Deleting /home/user/dtr/dtr-core/target
+[dtr-core] [INFO] 
+[dtr-core] [INFO] --- resources:3.3.1:resources (default-resources) @ dtr-core ---
+[dtr-core] [INFO] Copying 94 resources from src/main/java to target/classes
+[dtr-core] [INFO] Copying 1 resource from src/main/resources to target/classes
+[dtr-core] [INFO] 
+[dtr-core] [INFO] --- compiler:3.13.0:compile (default-compile) @ dtr-core ---
+[dtr-core] [INFO] Recompiling the module because of changed source code.
+[dtr-core] [INFO] Compiling 94 source files with javac [debug preview release 25] to target/classes
+[dtr-core] [INFO] /home/user/dtr/dtr-core/src/main/java/io/github/seanchatmangpt/dtr/config/RenderConfig.java: Some input files use or override a deprecated API.
+[dtr-core] [INFO] /home/user/dtr/dtr-core/src/main/java/io/github/seanchatmangpt/dtr/config/RenderConfig.java: Recompile with -Xlint:deprecation for details.
+[dtr-core] [INFO] /home/user/dtr/dtr-core/src/main/java/io/github/seanchatmangpt/dtr/openapi/OpenApiCollector.java: Some input files use preview features of Java SE 25.
+[dtr-core] [INFO] /home/user/dtr/dtr-core/src/main/java/io/github/seanchatmangpt/dtr/openapi/OpenApiCollector.java: Recompile with -Xlint:preview for details.
+[dtr-integration-test] [INFO] 
+[dtr-integration-test] [INFO] -----------------------------< io.github.seanchatmangpt.dtr:dtr-integration-test >------------------------------
+[dtr-integration-test] [INFO] Building dtr-integration-test 2.5.0                                                                        [3/4]
+[dtr-integration-test] [INFO]   from dtr-integration-test/pom.xml
+[dtr-integration-test] [INFO] ----------------------------------------------------[ war ]-----------------------------------------------------
+[dtr-benchmarks] [INFO] 
+[dtr-benchmarks] [INFO] --------------------------------< io.github.seanchatmangpt.dtr:dtr-benchmarks >---------------------------------
+[dtr-benchmarks] [INFO] Building DTR Benchmarks 2.5.0                                                                              [4/4]
+[dtr-benchmarks] [INFO]   from dtr-benchmarks/pom.xml
+[dtr-benchmarks] [INFO] ----------------------------------------------------[ jar ]-----------------------------------------------------
+[dtr-benchmarks] [INFO] 
+[dtr-benchmarks] [INFO] --- clean:3.4.0:clean (default-clean) @ dtr-benchmarks ---
+[dtr-benchmarks] [INFO] Deleting /home/user/dtr/dtr-benchmarks/target
+[dtr-benchmarks] [INFO] 
+[dtr-benchmarks] [INFO] --- resources:3.3.1:resources (default-resources) @ dtr-benchmarks ---
+[dtr-benchmarks] [INFO] skip non existing resourceDirectory /home/user/dtr/dtr-benchmarks/src/main/resources
+[dtr-benchmarks] [INFO] skip non existing resourceDirectory /home/user/dtr/dtr-benchmarks/src/main/resources-filtered
+[dtr-benchmarks] [INFO] 
+[dtr-benchmarks] [INFO] --- compiler:3.13.0:compile (default-compile) @ dtr-benchmarks ---
+[dtr-benchmarks] [INFO] No sources to compile
+[dtr-integration-test] [WARNING] 1 problem was encountered while building the effective model for 'org.javassist:javassist:jar:3.18.1-GA' during dependency collection step for project (use -X to see details)
+[dtr-integration-test] [INFO] 
+[dtr-integration-test] [INFO] --- clean:3.4.0:clean (default-clean) @ dtr-integration-test ---
+[dtr-integration-test] [INFO] Deleting /home/user/dtr/dtr-integration-test/target
+[dtr-integration-test] [INFO] 
+[dtr-integration-test] [INFO] --- enforcer:3.6.2:enforce (enforce-versions) @ dtr-integration-test ---
+[dtr-integration-test] [INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[dtr-integration-test] [INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[dtr-integration-test] [INFO] 
+[dtr-integration-test] [INFO] --- enforcer:3.6.2:enforce (enforce-banned-dependencies) @ dtr-integration-test ---
+[dtr-integration-test] [INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[dtr-integration-test] [INFO] 
+[dtr-integration-test] [INFO] --- resources:3.3.1:resources (default-resources) @ dtr-integration-test ---
+[dtr-integration-test] [INFO] Copying 19 resources from src/main/java to target/classes
+[dtr-integration-test] [INFO] skip non existing resourceDirectory /home/user/dtr/dtr-integration-test/src/main/resources
+[dtr-integration-test] [INFO] 
+[dtr-integration-test] [INFO] --- compiler:3.13.0:compile (default-compile) @ dtr-integration-test ---
+[dtr-integration-test] [INFO] Recompiling the module because of changed source code.
+[dtr-integration-test] [INFO] Compiling 19 source files with javac [debug preview release 25] to target/classes
+[dtr-integration-test] [INFO] /home/user/dtr/dtr-integration-test/src/main/java/controllers/ArticleController.java: Some input files use or override a deprecated API.
+[dtr-integration-test] [INFO] /home/user/dtr/dtr-integration-test/src/main/java/controllers/ArticleController.java: Recompile with -Xlint:deprecation for details.
+[dtr-integration-test] [INFO] /home/user/dtr/dtr-integration-test/src/main/java/dao/SetupDao.java: Some input files use unchecked or unsafe operations.
+[dtr-integration-test] [INFO] /home/user/dtr/dtr-integration-test/src/main/java/dao/SetupDao.java: Recompile with -Xlint:unchecked for details.
+[INFO] ------------------------------------------------------------------------
+[INFO] Average project wall time: 0.25s
+[INFO] Total concurrency: 26%
+[INFO] Bottleneck projects that decrease concurrency: (run build with -Dsmartbuilder.profiling=true for further details)
+[INFO] 	- io.github.seanchatmangpt.dtr:dtr-core:2.5.0
+[INFO] 	- io.github.seanchatmangpt.dtr:dtr-integration-test:2.5.0
+[INFO] 	- io.github.seanchatmangpt.dtr:dtr:2.5.0
+[INFO] ----------------------------------------------------------------------------------------------------------------
+[INFO] Reactor Summary for DTR - Documentation Testing Runtime 2.5.0:
+[INFO] 
+[INFO] DTR - Documentation Testing Runtime ........................................................ SUCCESS [  0.036 s]
+[INFO] DTR Core ................................................................................... SUCCESS [  0.607 s]
+[INFO] dtr-integration-test ....................................................................... SUCCESS [  0.414 s]
+[INFO] DTR Benchmarks ............................................................................. SUCCESS [  0.049 s]
+[INFO] ----------------------------------------------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ----------------------------------------------------------------------------------------------------------------
+[INFO] Total time:  1.085 s (Wall Clock)
+[INFO] Finished at: 2026-03-12T06:02:11Z
+[INFO] ----------------------------------------------------------------------------------------------------------------
