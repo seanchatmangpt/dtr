@@ -126,7 +126,7 @@ ctx.sayAndAssertThat("Status", actual, is(200)); // Assert + document result
 
 ---
 
-## 🚀 JAVA 26 FEATURES (Use These)
+## 🚀 JAVA 25 FEATURES (Use These)
 
 ```java
 // Records (immutable data)
@@ -155,7 +155,7 @@ String html = """
 ## ✅ BEFORE CODING
 
 1. `java -version` → 25.0.2+
-2. `mvnd --version` → Maven 4.0.0-rc-5+
+2. `mvnd --version` → Maven 4.0.0-rc-3+
 3. `.mvn/maven.config` contains `--enable-preview`
 4. Proxy running (if needed): `python3 maven-proxy-auth.py &`
 5. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
@@ -180,10 +180,10 @@ ps aux | grep maven-proxy      # Check proxy running
 - `dtr-core/` — Core library
 - `dtr-integration-test/` — Integration tests
 - `.mvn/maven.config` — Build flags (--enable-preview)
-- `pom.xml` — `<release>26</release>`
+- `pom.xml` — `<release>25</release>`
 
 ---
 
-**Last Updated:** March 11, 2026
-**Branch:** claude/fix-latex-errors-rzhxB
+**Last Updated:** March 12, 2026
+**Branch:** claude/audit-codebase-quality-yjLpu
 **Rule:** Always measure real, report real, use real DTR code.
