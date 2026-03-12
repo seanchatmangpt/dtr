@@ -63,7 +63,7 @@ the specific language governing permissions and limitations under the License. -
     </developers>
 
     <properties>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>26</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -306,7 +306,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
                     <configuration>
-                        <release>25</release>
+                        <release>26</release>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                         </compilerArgs>
@@ -357,7 +357,7 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.11.2</version>
                     <configuration>
                         <additionalOptions>--enable-preview</additionalOptions>
-                        <release>25</release>
+                        <release>26</release>
                     </configuration>
                 </plugin>
 
@@ -376,8 +376,8 @@ the specific language governing permissions and limitations under the License. -
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[25,)</version>
-                                        <message>Java 25 or higher is required for JEP 526/530/525/516/500 features.</message>
+                                        <version>[26,)</version>
+                                        <message>Java 26 or higher is required for JEP 526/530/525/516/500 features.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
