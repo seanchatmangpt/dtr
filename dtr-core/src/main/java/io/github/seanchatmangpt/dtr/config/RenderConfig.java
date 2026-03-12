@@ -62,7 +62,7 @@ public final class RenderConfig {
         String[] formatArray = formats.split(",");
 
         List<RenderMachine> machines = new ArrayList<>();
-        DocMetadata metadata = DocMetadata.fromBuild();
+        DocMetadata metadata = DocMetadata.getInstance();
 
         for (String format : formatArray) {
             String trimmed = format.trim().toLowerCase();

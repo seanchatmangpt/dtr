@@ -2,16 +2,16 @@
 
 **Version:** 2.5.0
 **Release Date:** March 12, 2026
-**Java Requirement:** Java 25 LTS with `--enable-preview`
+**Java Requirement:** Java 26 LTS with `--enable-preview`
 **Maven:** `io.github.seanchatmangpt.dtr:dtr-core:2.5.0`
 
 ---
 
 ## Overview
 
-DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 25 support and removes legacy sealed class constraints. This release enables production deployments through Maven Central's new Sonatype Publisher Portal while maintaining 100% backward compatibility with DTR 2.4.x.
+DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 26 support and removes legacy sealed class constraints. This release enables production deployments through Maven Central's new Sonatype Publisher Portal while maintaining 100% backward compatibility with DTR 2.4.x.
 
-**Key Theme:** Java 25 Support and Maven Central Ready
+**Key Theme:** Java 26 Support and Maven Central Ready
 
 ---
 
@@ -20,7 +20,7 @@ DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 25 support
 ### 1. RenderMachine Architecture Redesign
 **Breaking Change:** Sealed class → Abstract base class
 
-The `RenderMachine` class transitioned from a sealed class to an abstract base class. This change enables RenderMachine implementations to be distributed across multiple packages (io.github.seanchatmangpt.dtr.rendermachine, rendermachine.latex, render.blog, render.slides) without violating Java 25's sealed class package constraints.
+The `RenderMachine` class transitioned from a sealed class to an abstract base class. This change enables RenderMachine implementations to be distributed across multiple packages (io.github.seanchatmangpt.dtr.rendermachine, rendermachine.latex, render.blog, render.slides) without violating Java 26's sealed class package constraints.
 
 **Impact:** Most users see no change. The public API remains identical.
 
@@ -57,18 +57,18 @@ DTR 2.5.0 is ready for Maven Central publication via the new Sonatype Central Pu
 - No mirror required — fetch directly from `repo1.maven.org`
 
 **For CI/CD Maintainers:**
-- See `.mvn/maven.config` for Java 25 preview flag configuration
+- See `.mvn/maven.config` for Java 26 preview flag configuration
 - GPG setup: `gpg --list-secret-keys` (key must be published to keys.openpgp.org)
 
-### 3. Java 25 Preview Features Enabled
+### 3. Java 26 Preview Features Enabled
 
-DTR 2.5.0 explicitly enables Java 25 preview features in all build configurations.
+DTR 2.5.0 explicitly enables Java 26 preview features in all build configurations.
 
 **Compiler Configuration:**
 - Flag: `--enable-preview`
 - Applied to: Maven Compiler, Surefire, Javadoc generation
 
-**Used Java 25 Features:**
+**Used Java 26 Features:**
 - **Records** — Immutable data transfer objects (HttpResponse, Request metadata)
 - **Pattern Matching** — Request/Response classification in RenderMachine output
 - **Virtual Threads** — MultiRenderMachine concurrent rendering (JEP 424)
@@ -95,14 +95,14 @@ Cache is automatic; no API changes required. Users benefit immediately on repeat
 
 ### 5. Dependency Updates
 
-**Updated for Java 25 Compatibility:**
+**Updated for Java 26 Compatibility:**
 
 | Dependency | v2.4.0 | v2.5.0 | Reason |
 |---|---|---|---|
 | Jackson | 2.21.0 | 2.21.1 | Preview feature handling |
-| Guava | 33.4.0-jre | 33.5.0-jre | Java 25 compatibility |
+| Guava | 33.4.0-jre | 33.5.0-jre | Java 26 compatibility |
 | SLF4J | 2.0.16 | 2.0.17 | Virtual thread logging |
-| Mockito | 5.21.0 | 5.22.0 | Java 25 test support |
+| Mockito | 5.21.0 | 5.22.0 | Java 26 test support |
 | Maven Compiler | 3.12.1 | 3.13.0 | `--enable-preview` support |
 | Maven Surefire | 3.5.2 | 3.5.3 | Preview flag pass-through |
 
@@ -122,7 +122,7 @@ mvnd -P release release:prepare release:perform
 ```
 
 **Configuration Files:**
-- `.mvn/maven.config` — Java 25 `--enable-preview` flag
+- `.mvn/maven.config` — Java 26 `--enable-preview` flag
 - `.mvn/jvm.config` — JVM options (enforcer rules, proxy settings)
 - `pom.xml` profile "release" — Maven Central plugins
 
@@ -164,14 +164,14 @@ machine.say("content");                             // ✅ Works
 **Migration Path:**
 If you rely on sealed class type narrowing, switch to composition/interface-based checks.
 
-### 2. Build Requires Java 25.0.2+ with --enable-preview
+### 2. Build Requires Java 26.0.2+ with --enable-preview
 
 **Status:** Already documented in v2.4.0, now enforced.
 
 **Verification:**
 ```bash
 java -version
-# openjdk version "25.0.2" 2026-01-14
+# openjdk version "26.0.0" 2026-01-14
 
 mvnd --version
 # Maven Daemon 2.0.0+ (bundles Maven 4.0.0-rc-5+)
@@ -185,29 +185,29 @@ mvnd --version
 
 **Fix:** Ensure `.mvn/maven.config` contains `--enable-preview`.
 
-### 3. Java 24 and Below No Longer Supported
+### 3. Java 25 and Below No Longer Supported
 
 **Status:** Enforced by maven-enforcer-plugin.
 
 ```xml
 <requireJavaVersion>
   <version>[25,)</version>
-  <message>Java 25 or higher is required.</message>
+  <message>Java 26 or higher is required.</message>
 </requireJavaVersion>
 ```
 
-**Build will fail** if JAVA_HOME points to Java 24 or lower.
+**Build will fail** if JAVA_HOME points to Java 25 or lower.
 
-**For Java 24 Projects:**
+**For Java 25 Projects:**
 Continue using DTR 2.4.0.
 
 ---
 
 ## Sealed Classes Redesign
 
-### The Problem (Java 25 Sealed Classes)
+### The Problem (Java 26 Sealed Classes)
 
-In Java 25, sealed classes enforce a constraint: all permitted subclasses must be in the same package (or module hierarchy). DTR's RenderMachine implementations violated this:
+In Java 26, sealed classes enforce a constraint: all permitted subclasses must be in the same package (or module hierarchy). DTR's RenderMachine implementations violated this:
 
 ```
 io.github.seanchatmangpt.dtr.rendermachine.RenderMachine (sealed)
@@ -277,9 +277,9 @@ public final class MyCustomRenderer extends RenderMachine {
 
 ---
 
-## Java 25 Preview Features
+## Java 26 Preview Features
 
-DTR 2.5.0 showcases Java 25 language features in production-ready code:
+DTR 2.5.0 showcases Java 26 language features in production-ready code:
 
 ### 1. Records — Immutable Data Transfer
 
@@ -383,7 +383,7 @@ DTR 2.5.0 caches reflection results for the five introspection methods (introduc
 
 DTR 2.5.0 prepares for Java 26's JEP 516 (Metadata Caching in the Class File Format) by implementing application-level metadata caching patterns. When Java 26 releases JEP 516, DTR will gain further speedups (estimated 3-5x on annotation processing) with zero code changes.
 
-**Today (Java 25):** Manual reflection-based caching (implemented in v2.5.0)
+**Today (Java 26):** Manual reflection-based caching (implemented in v2.5.0)
 **Tomorrow (Java 26):** Native VM-level caching via JEP 516 (automatic upgrade)
 
 ---
@@ -419,12 +419,12 @@ DTR 2.5.0 prepares for Java 26's JEP 516 (Metadata Caching in the Class File For
 | Group | Artifact | v2.4.0 | v2.5.0 | Type | Impact |
 |---|---|---|---|---|---|
 | com.fasterxml.jackson.core | jackson-core | 2.21.0 | 2.21.1 | Patch | Bug fix (preview feature handling) |
-| com.google.guava | guava | 33.4.0-jre | 33.5.0-jre | Patch | Java 25 compatibility |
+| com.google.guava | guava | 33.4.0-jre | 33.5.0-jre | Patch | Java 26 compatibility |
 | org.slf4j | slf4j-api | 2.0.16 | 2.0.17 | Patch | Virtual thread logging |
-| org.mockito | mockito-core | 5.21.0 | 5.22.0 | Patch | Java 25 test support |
+| org.mockito | mockito-core | 5.21.0 | 5.22.0 | Patch | Java 26 test support |
 | org.apache.maven.plugins | maven-compiler-plugin | 3.12.1 | 3.13.0 | Minor | `--enable-preview` support |
 | org.apache.maven.plugins | maven-surefire-plugin | 3.5.2 | 3.5.3 | Patch | Preview flag pass-through |
-| org.apache.maven.plugins | maven-javadoc-plugin | 3.11.1 | 3.11.2 | Patch | Java 25 preview support |
+| org.apache.maven.plugins | maven-javadoc-plugin | 3.11.1 | 3.11.2 | Patch | Java 26 preview support |
 
 **No New External Dependencies.**
 
@@ -432,7 +432,7 @@ DTR 2.5.0 prepares for Java 26's JEP 516 (Metadata Caching in the Class File For
 
 ## Known Issues
 
-### 1. WireMock and Java 25 Preview Features
+### 1. WireMock and Java 26 Preview Features
 
 **Status:** Informational (not a blocker)
 
@@ -452,17 +452,17 @@ WARNING: Using an API that may use dynamic proxy which is not supported
 <argLine>--enable-preview -Xmx512m</argLine>
 ```
 
-### 2. Jetty 9.4.x and Java 25 Classpath
+### 2. Jetty 9.4.x and Java 26 Classpath
 
 **Status:** Known limitation in example code
 
-Jetty 9.4.x may fail to start with Java 25 `--enable-preview` due to reflection restrictions on internal JDK classes.
+Jetty 9.4.x may fail to start with Java 26 `--enable-preview` due to reflection restrictions on internal JDK classes.
 
 **Impact:** Only affects examples using Jetty (e.g., `ServerDocTest`). Core DTR libraries unaffected.
 
 **Workaround:** Use Jetty 10.0.x+ in examples, or use embedded servlet containers (Tomcat Embed).
 
-**Fix:** Jetty 12.0.0+ (full Java 25 support expected Q1 2026).
+**Fix:** Jetty 12.0.0+ (full Java 26 support expected Q1 2026).
 
 ### 3. Maven Central Mirror Delays
 
@@ -513,10 +513,10 @@ See [**MIGRATION_2.4_to_2.5.md**](docs/how-to/MIGRATION_2.4_to_2.5.md) for step-
    </dependency>
    ```
 
-2. **Verify Java 25:**
+2. **Verify Java 26:**
    ```bash
    java -version
-   # openjdk version "25.0.2" 2026-01-14
+   # openjdk version "26.0.0" 2026-01-14
    ```
 
 3. **Verify Maven:**
@@ -537,16 +537,16 @@ See [**MIGRATION_2.4_to_2.5.md**](docs/how-to/MIGRATION_2.4_to_2.5.md) for step-
 
 **DTR 2.5.0** was developed and tested by:
 
-- **Sean Chatman** (@seanchatmangpt) — Core architecture, Java 25 integration
+- **Sean Chatman** (@seanchatmangpt) — Core architecture, Java 26 integration
 - **Build Infrastructure:** Maven Central publishing pipeline, CI/CD
 - **Testing:** JUnit 5, Mockito, jqwik, WireMock integration tests
 - **Documentation:** Diataxis guides, API documentation, integration examples
 
 **Special Thanks:**
-- Java Platform Group (OpenJDK) — Java 25 JEP designs
+- Java Platform Group (OpenJDK) — Java 26 JEP designs
 - Apache Maven community — Maven 4.0.0-rc-5 stabilization
 - Sonatype — Maven Central Publisher Portal
-- The jqwik, Mockito, and Jackson communities for Java 25 support
+- The jqwik, Mockito, and Jackson communities for Java 26 support
 
 ---
 
@@ -623,4 +623,4 @@ Open an issue on [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues/) 
 ---
 
 **DTR 2.5.0 — March 12, 2026**
-*Java 25 Support and Maven Central Ready*
+*Java 26 Support and Maven Central Ready*

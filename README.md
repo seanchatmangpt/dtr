@@ -1,8 +1,8 @@
-# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 25
+# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 26
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
+**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 26 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
 
 ---
 
@@ -663,9 +663,43 @@ dtr/
 
 ## 💬 Questions?
 
-- **Bug reports:** [GitHub Issues](https://github.com/seanchatmangpt/doctester/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/seanchatmangpt/doctester/discussions)
-- **Contributing:** See [CLAUDE.md](./CLAUDE.md)
+- **Bug reports:** [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/seanchatmangpt/dtr/discussions)
+- **Contributing:** See [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+---
+
+## 👥 Contributors & Project History
+
+**DTR (Documentation Testing Runtime)** is maintained by:
+
+- **[Sean Chatman](https://github.com/seanchatmangpt)** (@seanchatmangpt) — Creator, architect, and lead maintainer (modern Java 25+ reimplementation)
+
+### Original Project Foundation
+
+DTR is a modern reimplementation and evolution of the original **[doctester](https://github.com/r10r-org/doctester)** project by the r10r organization. The original project provided the foundational concept of test-driven documentation generation. DTR modernizes this approach for:
+
+- **Java 25 & Beyond** — Leveraging latest JDK features (records, sealed classes, pattern matching, virtual threads, text blocks)
+- **Maven Central Distribution** — Professional package management and easy adoption
+- **Enhanced Architecture** — Multi-format output (Markdown, LaTeX, HTML, OpenAPI, Blog exports)
+- **Current Maintenance** — Active development with modern tooling and best practices
+
+**Thank you** to the r10r-org team for the original vision that inspired this project.
+
+### Acknowledgments
+
+DTR builds on innovative technology including:
+- **Java 25 Preview Features** — Records, sealed classes, pattern matching, virtual threads, text blocks
+- **Apache HttpClient 5** — Reliable HTTP testing foundation
+- **Jackson 2.x** — Flexible JSON/XML serialization
+- **Guava 33.x** — Essential utilities for the JVM
+- **JUnit 5 & JUnit Platform** — Industry-standard Java testing framework
+- **Original doctester Project** — Foundational concept and inspiration
+- **The Java Community** — For feedback, testing, and adoption
+
+### Getting Involved
+
+Contributions, bug reports, and feature requests are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ---
 
