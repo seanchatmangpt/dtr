@@ -95,21 +95,46 @@ def _probe(cmd: list[str], timeout: int = 5) -> str:
         return ""
 
 
+def _probe_all(cmd: list[str], timeout: int = 5) -> str:
+    """Run a tool and return all output (stdout + stderr), or empty string on failure.
+
+    Needed when JVM tools prefix output with 'Picked up JAVA_TOOL_OPTIONS' lines
+    before emitting the actual version info.
+    """
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        return (result.stdout or "") + (result.stderr or "")
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return ""
+
+
 def _java_version() -> str:
-    """Return short Java version string, e.g. 'Java 26'."""
-    raw = _probe(["java", "-version"])
-    # java -version outputs to stderr: 'openjdk version "26.0.2" ...'
-    if not raw:
-        raw = _probe(["java", "--version"])
-    if not raw:
-        return "Java (not found)"
-    # Extract quoted version number
+    """Return short Java version string, e.g. 'Java 26'.
+
+    Scans all output lines because the JVM may prepend JAVA_TOOL_OPTIONS
+    warnings before the actual version line.
+    """
     import re
-    match = re.search(r'"([^"]+)"', raw)
-    if match:
-        ver = match.group(1).split(".")[0]
-        return f"Java {ver}"
-    return raw[:30]
+
+    for cmd in (["java", "-version"], ["java", "--version"]):
+        all_output = _probe_all(cmd)
+        if not all_output:
+            continue
+        # Match quoted version: openjdk version "25.0.2" ...
+        match = re.search(r'"([^"]+)"', all_output)
+        if match:
+            ver = match.group(1).split(".")[0]
+            return f"Java {ver}"
+        # Match unquoted version on 'openjdk 25.0.2 ...' style lines
+        match = re.search(r"openjdk\s+([\d]+)", all_output)
+        if match:
+            return f"Java {match.group(1)}"
+    return "Java (not found)"
 
 
 def _maven_version() -> str:
@@ -286,7 +311,7 @@ def config(
     # Load resolved config for the remaining sub-commands
     try:
         cfg = config_module.load_config(Path.cwd())
-    except ValueError as exc:
+    except (ConfigurationError, ValueError) as exc:
         console.print(f"[red]Config error:[/red] {exc}")
         raise typer.Exit(code=1)
 
