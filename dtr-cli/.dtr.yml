@@ -1,0 +1,15 @@
+build:
+  modules: []
+  skip_tests: false
+  verbose: false
+export:
+  formats:
+  - markdown
+  - html
+  output_dir: target/docs/test-results
+publish:
+  platform: local
+  target: .
+report:
+  output_dir: target/docs/reports
+  type: summary
