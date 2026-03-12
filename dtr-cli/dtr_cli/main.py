@@ -9,6 +9,9 @@ Provides comprehensive commands to manage DTR documentation exports:
 - publish: Publish to Maven Central (check, deploy, release, status)
 - watch: Watch Java test files and auto-trigger Maven builds on change
 - diff: Compare export directories and files to show documentation changes
+- test: Discover and run DTR documentation tests (list, run, filter)
+- serve: Start a local HTTP server to preview documentation exports
+- template: Browse and apply built-in DTR test templates
 """
 
 import logging
@@ -19,7 +22,8 @@ import typer
 from rich.console import Console
 
 from dtr_cli import __version__
-from dtr_cli.commands import fmt, export, push, report, build, publish, init, watch, doctor, diff
+from dtr_cli.commands import fmt, export, push, report, build, publish, init, watch, doctor, diff, module, serve, schema, template
+from dtr_cli.commands import test as test_cmd
 from dtr_cli import config as config_module
 
 # Configure logging
@@ -45,6 +49,11 @@ app.add_typer(publish.app, name="publish", help="Publish to Maven Central")
 app.add_typer(init.app, name="init", help="Scaffold new DTR documentation tests")
 app.add_typer(watch.app, name="watch", help="Watch Java test files and auto-trigger builds")
 app.add_typer(diff.app, name="diff", help="Compare export directories and files")
+app.add_typer(module.app, name="module", help="Inspect Maven module structure")
+app.add_typer(test_cmd.app, name="test", help="Discover and run DTR documentation tests")
+app.add_typer(serve.app, name="serve", help="Start a local HTTP server to preview documentation exports")
+app.add_typer(schema.app, name="schema", help="Validate and generate schemas for DTR exports")
+app.add_typer(template.app, name="template", help="Browse and apply built-in DTR test templates")
 
 app.command(name="doctor", help="Validate the development environment and report issues")(
     doctor.doctor_command
