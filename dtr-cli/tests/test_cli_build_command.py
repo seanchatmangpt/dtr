@@ -262,7 +262,7 @@ def test_cli_build_missing_pom(runner: CliRunner, tmp_path: Path) -> None:
     assert "pom.xml not found" in output or "pom.xml" in output
 
 
-@patch("doctester_cli.managers.maven_manager.MavenRunner")
+@patch("dtr_cli.managers.maven_manager.MavenRunner")
 def test_cli_build_shows_modules(
     mock_maven_class: Mock, runner: CliRunner, tmp_pom: Path
 ) -> None:
@@ -282,7 +282,7 @@ def test_cli_build_shows_modules(
     assert "module-a" in result.stdout or "module-b" in result.stdout
 
 
-@patch("doctester_cli.managers.maven_manager.MavenRunner.build")
+@patch("dtr_cli.managers.maven_manager.MavenRunner.build")
 def test_cli_build_success(
     mock_build: Mock, runner: CliRunner, tmp_pom: Path
 ) -> None:
@@ -300,7 +300,7 @@ def test_cli_build_success(
     assert "Exports generated" in result.stdout or "Maven build completed" in result.stdout
 
 
-@patch("doctester_cli.managers.maven_manager.MavenRunner")
+@patch("dtr_cli.managers.maven_manager.MavenRunner")
 def test_cli_build_failure(
     mock_maven_class: Mock, runner: CliRunner, tmp_pom: Path
 ) -> None:

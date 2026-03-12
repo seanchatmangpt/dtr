@@ -7,10 +7,14 @@ Provides MavenPublishManager for:
 - Verification of artifact availability
 """
 
+import base64
+import json
 import os
 import re
 import subprocess
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Optional
 import xml.etree.ElementTree as ET
@@ -474,28 +478,230 @@ class MavenPublishManager:
     ) -> None:
         """Close a staging repository in Nexus.
 
+        Sends a POST to /service/local/staging/bulk/close to transition the
+        repository from "open" to "closed" so it can be inspected and released.
+        After posting, polls the activity endpoint until the close transition
+        completes or the timeout is reached.
+
         Args:
-            nexus_url: Base URL of Nexus server
-            repo_id: Staging repository ID
+            nexus_url: Base URL of Nexus server (e.g. https://s01.oss.sonatype.org)
+            repo_id: Staging repository ID (e.g. iogithubseanchatmangpt-1001)
             config: Release configuration with credentials
+
+        Raises:
+            PublishValidationError: If the HTTP request fails or times out
         """
-        # This would use the Nexus REST API to close the repository
-        # For now, this is a placeholder for the actual implementation
-        pass
+        endpoint = f"{nexus_url}/service/local/staging/bulk/close"
+        payload = {
+            "data": {
+                "stagedRepositoryIds": [repo_id],
+                "description": f"Closing staging repository {repo_id} for release",
+            }
+        }
+
+        self.console.print(f"[cyan]Closing staging repository: {repo_id}[/cyan]")
+        self._nexus_post(endpoint, payload, config)
+
+        # Poll until the repository has finished closing
+        self._nexus_wait_for_state(nexus_url, repo_id, "closed", config)
 
     def _nexus_release_repository(
         self, nexus_url: str, repo_id: str, config: PublishReleaseConfig
     ) -> None:
         """Release a staging repository to Maven Central.
 
+        Sends a POST to /service/local/staging/bulk/promote to promote the
+        closed repository to Maven Central. The autoDropAfterRelease flag
+        instructs Nexus to drop the staging repository automatically once the
+        promotion succeeds.
+
+        Args:
+            nexus_url: Base URL of Nexus server (e.g. https://s01.oss.sonatype.org)
+            repo_id: Staging repository ID (e.g. iogithubseanchatmangpt-1001)
+            config: Release configuration with credentials
+
+        Raises:
+            PublishValidationError: If the HTTP request fails
+        """
+        endpoint = f"{nexus_url}/service/local/staging/bulk/promote"
+        payload = {
+            "data": {
+                "stagedRepositoryIds": [repo_id],
+                "description": f"Releasing staging repository {repo_id} to Maven Central",
+                "autoDropAfterRelease": True,
+            }
+        }
+
+        self.console.print(f"[cyan]Releasing staging repository: {repo_id}[/cyan]")
+        self._nexus_post(endpoint, payload, config)
+
+    def _nexus_build_auth_header(self, config: PublishReleaseConfig) -> str:
+        """Build a Basic-Auth header value from OSSRH credentials.
+
+        Credential resolution order:
+        1. ``config.ossrh_user`` / ``config.ossrh_token``
+        2. ``OSSRH_USERNAME`` / ``OSSRH_PASSWORD`` environment variables
+
+        Args:
+            config: Release configuration
+
+        Returns:
+            Value for the ``Authorization`` header
+
+        Raises:
+            PublishValidationError: If no credentials are found
+        """
+        user = config.ossrh_user or os.environ.get("OSSRH_USERNAME", "")
+        token = config.ossrh_token or os.environ.get("OSSRH_PASSWORD", "")
+
+        if not user or not token:
+            raise PublishValidationError(
+                ["OSSRH credentials not configured for Nexus API call. "
+                 "Set OSSRH_USERNAME/OSSRH_PASSWORD environment variables "
+                 "or pass --ossrh-user/--ossrh-token flags."]
+            )
+
+        credentials = f"{user}:{token}"
+        encoded = base64.b64encode(credentials.encode("utf-8")).decode("ascii")
+        return f"Basic {encoded}"
+
+    def _nexus_post(
+        self, endpoint: str, payload: dict, config: PublishReleaseConfig
+    ) -> None:
+        """POST JSON payload to a Nexus REST endpoint with Basic Auth.
+
+        Uses the stdlib ``urllib.request`` exclusively so there are no
+        additional dependencies beyond what is already imported.
+
+        Args:
+            endpoint: Full URL to POST to
+            payload: Dictionary that will be serialised to JSON
+            config: Release configuration (supplies credentials)
+
+        Raises:
+            PublishValidationError: On HTTP 4xx/5xx responses or network errors
+        """
+        auth_header = self._nexus_build_auth_header(config)
+        body = json.dumps(payload).encode("utf-8")
+
+        req = urllib.request.Request(
+            endpoint,
+            data=body,
+            method="POST",
+        )
+        req.add_header("Authorization", auth_header)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json")
+
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                status = response.status
+                if status not in (200, 201, 202, 204):
+                    raise PublishValidationError(
+                        [f"Nexus API returned unexpected status {status} for {endpoint}"]
+                    )
+        except urllib.error.HTTPError as exc:
+            body_text = ""
+            try:
+                body_text = exc.read().decode("utf-8", errors="replace")
+            except Exception:
+                pass
+            raise PublishValidationError(
+                [
+                    f"Nexus API HTTP {exc.code} for {endpoint}: {exc.reason}. "
+                    f"Response body: {body_text[:500]}"
+                ]
+            )
+        except urllib.error.URLError as exc:
+            raise PublishValidationError(
+                [f"Network error contacting Nexus at {endpoint}: {exc.reason}"]
+            )
+
+    def _nexus_wait_for_state(
+        self,
+        nexus_url: str,
+        repo_id: str,
+        expected_state: str,
+        config: PublishReleaseConfig,
+        poll_interval: int = 10,
+        max_wait: int = 300,
+    ) -> None:
+        """Poll the Nexus staging repository endpoint until it reaches expected_state.
+
+        Nexus staging operations (close, release) are asynchronous. This method
+        queries ``/service/local/staging/repository/{repo_id}`` every
+        ``poll_interval`` seconds and checks the ``type`` field in the JSON
+        response against ``expected_state``.
+
         Args:
             nexus_url: Base URL of Nexus server
-            repo_id: Staging repository ID
-            config: Release configuration with credentials
+            repo_id: Staging repository ID to poll
+            expected_state: Target state string (e.g. ``"closed"``)
+            config: Release configuration (supplies credentials)
+            poll_interval: Seconds between polls (default 10)
+            max_wait: Maximum total wait time in seconds (default 300)
+
+        Raises:
+            PublishValidationError: If the state is not reached within max_wait
+                seconds, or if any HTTP request fails
         """
-        # This would use the Nexus REST API to release the repository
-        # For now, this is a placeholder for the actual implementation
-        pass
+        auth_header = self._nexus_build_auth_header(config)
+        status_url = f"{nexus_url}/service/local/staging/repository/{repo_id}"
+        elapsed = 0
+
+        self.console.print(
+            f"[yellow]Waiting for repository {repo_id} to reach state '{expected_state}'...[/yellow]"
+        )
+
+        while elapsed < max_wait:
+            req = urllib.request.Request(status_url, method="GET")
+            req.add_header("Authorization", auth_header)
+            req.add_header("Accept", "application/json")
+
+            try:
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    data = json.loads(response.read().decode("utf-8"))
+                    current_state = data.get("type", "")
+                    if current_state == expected_state:
+                        self.console.print(
+                            f"[green]Repository {repo_id} reached state '{expected_state}'[/green]"
+                        )
+                        return
+
+                    # Check for failure/dropped state
+                    if current_state in ("dropped", "released"):
+                        if expected_state != current_state:
+                            raise PublishValidationError(
+                                [
+                                    f"Repository {repo_id} reached unexpected state "
+                                    f"'{current_state}' while waiting for '{expected_state}'"
+                                ]
+                            )
+                        return
+
+            except urllib.error.HTTPError as exc:
+                raise PublishValidationError(
+                    [f"Nexus API HTTP {exc.code} while polling {status_url}: {exc.reason}"]
+                )
+            except urllib.error.URLError as exc:
+                raise PublishValidationError(
+                    [f"Network error polling Nexus at {status_url}: {exc.reason}"]
+                )
+
+            self.console.print(
+                f"[yellow]  Repository state: '{current_state}' "
+                f"(waited {elapsed}s / {max_wait}s)[/yellow]"
+            )
+            time.sleep(poll_interval)
+            elapsed += poll_interval
+
+        raise PublishValidationError(
+            [
+                f"Timed out after {max_wait}s waiting for repository "
+                f"'{repo_id}' to reach state '{expected_state}'. "
+                "Check the Nexus UI for details."
+            ]
+        )
 
     def _wait_for_maven_central_sync(self, version: Optional[str], timeout: int) -> str:
         """Wait for artifact to appear on Maven Central.

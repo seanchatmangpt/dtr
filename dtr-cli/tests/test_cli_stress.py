@@ -247,7 +247,7 @@ GET /api/endpoint3
 """)
 
         # Mock HTTP client to simulate concurrent requests
-        with mock.patch("doctester_cli.managers.http_manager.HttpManager.make_request") as mock_request:
+        with mock.patch("dtr_cli.managers.http_manager.HttpManager.make_request") as mock_request:
             # Simulate responses with delays to ensure actual concurrency
             def side_effect(method, url, **kwargs):
                 time.sleep(0.01)  # Slight delay to encourage interleaving

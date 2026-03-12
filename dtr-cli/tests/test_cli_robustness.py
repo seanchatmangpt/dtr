@@ -281,11 +281,11 @@ def test_keyboard_interrupt_graceful_shutdown(interrupt_stage: str) -> None:
 
         # Select mock target based on stage
         if interrupt_stage == "pre_start":
-            mock_target = "doctester_cli.managers.directory_manager.DirectoryManager.list_exports"
+            mock_target = "dtr_cli.managers.directory_manager.DirectoryManager.list_exports"
         elif interrupt_stage == "during_processing":
-            mock_target = "doctester_cli.managers.directory_manager.DirectoryManager._list_files"
+            mock_target = "dtr_cli.managers.directory_manager.DirectoryManager._list_files"
         else:  # during_write
-            mock_target = "doctester_cli.managers.directory_manager.DirectoryManager._create_tar_archive"
+            mock_target = "dtr_cli.managers.directory_manager.DirectoryManager._create_tar_archive"
 
         with mock.patch(mock_target, side_effect=mock_with_interrupt):
             if interrupt_stage == "pre_start" or interrupt_stage == "during_processing":
@@ -337,7 +337,7 @@ def test_sigterm_graceful_shutdown() -> None:
             raise RuntimeError("SIGTERM received - graceful shutdown")
 
         with mock.patch(
-            "doctester_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
+            "dtr_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
             side_effect=mock_create_tar_with_sigterm
         ):
             result = runner.invoke(
@@ -542,7 +542,7 @@ def test_atomic_writes_to_disk(limit_type: str) -> None:
                 raise KeyboardInterrupt("Power loss simulation")
 
             with mock.patch(
-                "doctester_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
+                "dtr_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
                 side_effect=mock_create_tar_interrupted
             ):
                 result = runner.invoke(
@@ -648,7 +648,7 @@ def test_timeout_during_processing() -> None:
 
         output_file = tmpdir_path / "export.tar.gz"
         with mock.patch(
-            "doctester_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
+            "dtr_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
             side_effect=mock_slow_operation
         ):
             result_timeout = runner.invoke(
@@ -697,7 +697,7 @@ def test_recovery_from_partial_state() -> None:
                 raise KeyboardInterrupt("Interrupted mid-archive")
 
         with mock.patch(
-            "doctester_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
+            "dtr_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
             side_effect=mock_create_tar_with_interrupt,
         ):
             # First attempt (interrupted)
@@ -712,7 +712,7 @@ def test_recovery_from_partial_state() -> None:
             archive_path.write_text("valid tar data")
 
         with mock.patch(
-            "doctester_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
+            "dtr_cli.managers.directory_manager.DirectoryManager._create_tar_archive",
             side_effect=mock_create_tar_success,
         ):
             result2 = runner.invoke(
