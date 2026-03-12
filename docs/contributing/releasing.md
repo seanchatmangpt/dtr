@@ -113,11 +113,11 @@ After Maven Central sync:
 ```bash
 # Verify the artifact is available
 mvn dependency:get \
-    -Dartifact=org.doctester:dtr-core:1.1.12 \
+    -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.5.0 \
     -Ddest=/tmp/dtr-verify.jar
 ```
 
-Check the [Maven Central search](https://search.maven.org/artifact/org.doctester/dtr-core) page.
+Check the [Maven Central search](https://search.maven.org/artifact/io.github.seanchatmangpt.dtr/dtr-core) page.
 
 ## Post-release
 

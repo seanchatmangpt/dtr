@@ -183,6 +183,220 @@ The `provided` scope for JUnit means DTR doesn't force a specific JUnit version 
 
 ---
 
+## Package-Level Responsibilities
+
+### Core Package: `io.github.seanchatmangpt.dtr`
+
+**Role:** Entry point and lifecycle management
+
+**Key Classes:**
+- `DTR` (abstract) — Base class all tests inherit from
+  - Lifecycle: `@Before`, `@After`, `@BeforeClass`, `@AfterClass` hooks
+  - Extension points: `testServerUrl()`, `getTestBrowser()`, `getRenderMachine()`
+  - API methods: All `say*()` methods delegate to `RenderMachine` and `TestBrowser`
+
+**Responsibility:** Connect test lifecycle to RenderMachine and TestBrowser
+
+---
+
+### TestBrowser Package: `io.github.seanchatmangpt.dtr.testbrowser`
+
+**Role:** HTTP client abstraction and request/response handling
+
+**Key Classes:**
+- `TestBrowser` (interface) — What any HTTP implementation must provide
+- `TestBrowserImpl` (class) — Apache HttpClient 4.5 implementation
+  - Manages `CloseableHttpClient` (one per test method)
+  - Handles cookies with `BasicCookieStore`
+  - Serializes/deserializes payloads (JSON, XML)
+  - Dispatches HTTP methods (GET, POST, PUT, DELETE, etc.)
+
+- `Request` (builder) — Fluent API for constructing HTTP requests
+  - Methods: `GET()`, `POST()`, `PUT()`, `DELETE()`, `PATCH()`
+  - Chainable options: `url()`, `payload()`, `header()`, `contentType()`, etc.
+  - Supports multipart file uploads via `multipartForm()`
+
+- `Response` (wrapper) — Handles response data and deserialization
+  - Provides access to: status code, headers, body, content type
+  - Deserialization: `payloadAs(Class)` for JSON/XML → Java objects
+  - Assertion helpers: `assertThat()` methods
+
+- `Url` (builder) — Fluent URL construction
+  - Methods: `host()`, `path()`, `queryParam()`, `fragment()`
+  - Immutable and safe for reuse across requests
+
+- `PayloadUtils` (utility) — Content type detection and formatting
+  - Detects JSON/XML from Content-Type headers
+  - Pretty-prints JSON and XML for documentation
+  - Handles charset variations (e.g., `application/json; charset=utf-8`)
+
+- `HttpConstants` (constants) — HTTP method and header names
+  - HTTP methods: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
+  - Headers: Content-Type, Accept, Authorization, Accept-Encoding, etc.
+
+**Responsibility:** Abstract away HTTP complexity; provide simple, testable request/response interface
+
+---
+
+### RenderMachine Package: `io.github.seanchatmangpt.dtr.rendermachine`
+
+**Role:** Output generation (HTML, Markdown, LaTeX, etc.)
+
+**Key Classes:**
+- `RenderMachine` (interface) — Comprehensive rendering interface
+  - Extends `RenderMachineCommands` (the output methods)
+  - Additional methods: `finishAndWriteOut()` (flush to disk)
+
+- `RenderMachineCommands` (interface) — Minimal output API
+  - Core methods: `say()`, `sayNextSection()`, `sayCode()`, `sayTable()`, `sayJson()`
+  - Extension point: implement to add new output formats
+
+- `RenderMachineImpl` (class) — Default Bootstrap HTML implementation
+  - Output method: accumulates HTML into `StringBuilder`
+  - Sections tracked in a list (for table of contents)
+  - Request/response pairs stored as objects, rendered on `finishAndWriteOut()`
+  - Lifecycle: static field in `DTR` (persists across test methods in one class)
+  - File output: writes to `target/site/doctester/{TestClassName}.html`
+
+- `RenderMachineHtml` (constants) — HTML template strings
+  - Bootstrap navbar, sidebar, footer templates
+  - Responsive grid layout snippets
+  - Panel templates for request/response pairs
+  - CSS styling (inlined)
+
+**Responsibility:** Transform test output into user-friendly documentation (HTML by default, extensible)
+
+**Extension Pattern:** Custom renderers can implement `RenderMachine` or `RenderMachineCommands` to:
+- Generate Markdown, AsciiDoc, or ReStructuredText
+- Output to Confluence, Notion, or other platforms
+- Create LaTeX for PDF generation
+- Generate OpenAPI specs
+- Build blog post exports
+
+---
+
+## Module Overview
+
+The project contains three Maven modules:
+
+### Module 1: `dtr-core`
+**Maven Coordinate:** `io.github.seanchatmangpt.dtr:dtr-core:2.5.0`
+
+**What it is:** The main library JAR
+
+**Contents:**
+- All classes in packages above (DTR, testbrowser, rendermachine)
+- Bootstrap 3 CSS (bundled)
+- No runtime dependencies (everything is test-scoped)
+
+**Who uses it:** Your project (add as `<scope>test</scope>`)
+
+**Output:** `target/site/doctester/*.html` files
+
+---
+
+### Module 2: `dtr-integration-test`
+**Maven Coordinate:** Internal only (not published to Maven Central)
+
+**What it is:** Full-stack integration test suite
+
+**Contents:**
+- Real web server (Ninja Framework + Jetty)
+- `PhDThesisDocTest` — Comprehensive example using all DTR features
+- Real HTTP requests (not mocked)
+- Database interactions (if configured)
+
+**Purpose:**
+- Verify DTR works end-to-end
+- Serve as canonical documentation (every feature demonstrated here)
+- Catch regressions
+
+**Output:** Full HTML docs + PDF/LaTeX/OpenAPI (if enabled)
+
+---
+
+### Module 3: `dtr-benchmarks`
+**Maven Coordinate:** Internal only (not published to Maven Central)
+
+**What it is:** JMH microbenchmarks
+
+**Contents:**
+- Benchmark classes for RenderMachine operations
+- Benchmark classes for TestBrowser HTTP operations
+- Virtual thread performance comparisons
+
+**Purpose:**
+- Measure DTR's performance impact
+- Track regressions across releases
+- Guide optimization efforts
+
+**Output:** JMH result files (`target/benchmarks-results/`)
+
+---
+
+## Data Flow
+
+### Request/Response Documentation Flow
+
+```
+User writes test:
+  ctx.sayAndMakeRequest(request)
+    ↓
+  DTR.sayAndMakeRequest() delegates:
+    ├─→ TestBrowser.makeRequest(request)  [executes HTTP]
+    │      ↓
+    │      [Returns Response]
+    │
+    └─→ RenderMachine.sayRequest(request)  [documents]
+       RenderMachine.sayResponse(response) [documents]
+    ↓
+  [Test method ends]
+    ↓
+  @After hook calls:
+    RenderMachine.finishAndWriteOut()
+    ↓
+  File written:
+    target/site/doctester/TestClass.html
+```
+
+### Output Assembly (RenderMachineImpl.finishAndWriteOut)
+
+```
+1. HTML skeleton (doctype, head, opening tags)
+2. Bootstrap navbar (title, timestamp)
+3. Table of contents (links to sections)
+4. Main content buffer (all say* calls)
+5. Request/Response panels (structured data → formatted HTML)
+6. Footer
+7. Write to file
+```
+
+---
+
+## Lifecycle Details
+
+### Per Test Class
+
+- `@BeforeClass` (static): RenderMachine initialized (static field)
+- All test methods in class accumulate output to same RenderMachine
+- `@AfterClass` (static): `finishAndWriteOut()` called, file written
+
+**Consequence:** All output from a test class goes into one HTML file.
+
+### Per Test Method
+
+- `@Before`: New `TestBrowser` instance created
+  - Fresh `CloseableHttpClient` initialized
+  - New `BasicCookieStore` (empty)
+- Test method executes: `sayAndMakeRequest()` calls, assertions
+- `@After`: `TestBrowser` closed
+  - HTTP client closed (connections pooled, then shut down)
+  - Cookie jar discarded (not persisted between methods)
+
+**Consequence:** Cookies don't persist between test methods. Each method starts fresh.
+
+---
+
 ## Design decisions
 
 **Why JUnit 4, not 5?**
