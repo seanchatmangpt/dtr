@@ -15,9 +15,11 @@
  */
 package io.github.seanchatmangpt.dtr.rendermachine;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -68,7 +70,10 @@ public final class MultiRenderMachine extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiRenderMachine.class);
 
+    private static final int DEFAULT_TIMEOUT_SECONDS = 30;
+
     private final List<RenderMachine> machines;
+    private final int timeoutSeconds;
 
     /**
      * Create a multi-render machine delegating to the given machines.
@@ -76,7 +81,18 @@ public final class MultiRenderMachine extends RenderMachine {
      * @param machines the render machines to dispatch to (immutable copy is made)
      */
     public MultiRenderMachine(List<RenderMachine> machines) {
+        this(machines, DEFAULT_TIMEOUT_SECONDS);
+    }
+
+    /**
+     * Create a multi-render machine delegating to the given machines with a configurable timeout.
+     *
+     * @param machines       the render machines to dispatch to (immutable copy is made)
+     * @param timeoutSeconds maximum seconds to wait for all machines to complete per dispatch
+     */
+    public MultiRenderMachine(List<RenderMachine> machines, int timeoutSeconds) {
         this.machines = List.copyOf(machines);
+        this.timeoutSeconds = timeoutSeconds;
     }
 
     /**
@@ -85,7 +101,7 @@ public final class MultiRenderMachine extends RenderMachine {
      * @param machines the render machines to dispatch to
      */
     public MultiRenderMachine(RenderMachine... machines) {
-        this.machines = List.of(machines);
+        this(List.of(machines), DEFAULT_TIMEOUT_SECONDS);
     }
 
     /**
@@ -114,18 +130,38 @@ public final class MultiRenderMachine extends RenderMachine {
     private void dispatchToAll(Consumer<RenderMachine> action) {
         try (var scope = StructuredTaskScope.open()) {
             // Fork one task per machine — all run concurrently on virtual threads
+            // Track machine alongside its subtask so failures can name the offending machine
+            record MachineTask(RenderMachine machine, StructuredTaskScope.Subtask<Void> subtask) {}
+            var subtasks = new java.util.ArrayList<MachineTask>(machines.size());
             for (RenderMachine machine : machines) {
-                scope.fork(() -> {
+                var subtask = scope.fork(() -> {
                     action.accept(machine);
                     return null;
                 });
+                subtasks.add(new MachineTask(machine, subtask));
             }
 
-            // Join all tasks — blocks until all complete or first throws exception
-            scope.join();
+            // Join with deadline — prevents hanging forever in CI pipelines
+            scope.joinUntil(Instant.now().plusSeconds(timeoutSeconds));
+
+            // Surface any per-machine failures with the machine's class name
+            for (var mt : subtasks) {
+                if (mt.subtask().state() == StructuredTaskScope.Subtask.State.FAILED) {
+                    Throwable cause = mt.subtask().exception();
+                    String machineName = mt.machine().getClass().getSimpleName();
+                    throw new MultiRenderException(
+                        "Render machine failed [" + machineName + "]: " + cause.getMessage(),
+                        List.of(cause instanceof Exception ex ? ex : new RuntimeException(cause)));
+                }
+            }
+        } catch (TimeoutException e) {
+            throw new RuntimeException(
+                "DTR render timed out after " + timeoutSeconds + "s", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new MultiRenderException("Render dispatch interrupted", List.of(e));
+        } catch (MultiRenderException e) {
+            throw e;
         } catch (Exception e) {
             // StructuredTaskScope propagates the underlying exception (not wrapped in ExecutionException)
             throw new MultiRenderException("Render machines failed: " + e.getMessage(), List.of(e));

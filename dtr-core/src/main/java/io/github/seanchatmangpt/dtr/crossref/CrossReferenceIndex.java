@@ -17,7 +17,6 @@ package io.github.seanchatmangpt.dtr.crossref;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,8 +42,7 @@ public class CrossReferenceIndex {
 
     private static CrossReferenceIndex instance;
 
-    private final List<DocTestRef> registeredReferences = Collections.synchronizedList(
-            new ArrayList<>());
+    private final List<DocTestRef> registeredReferences = new ArrayList<>();
     private final ReferenceResolver resolver = new ReferenceResolver();
     private boolean compiled = false;
 
@@ -81,7 +79,7 @@ public class CrossReferenceIndex {
      *
      * @param ref the reference to register
      */
-    public void register(DocTestRef ref) {
+    public synchronized void register(DocTestRef ref) {
         Objects.requireNonNull(ref, "Reference cannot be null");
         registeredReferences.add(ref);
         logger.trace("Registered reference: {} -> {}", ref.docTestClassName(), ref.anchor());
@@ -94,8 +92,8 @@ public class CrossReferenceIndex {
      *
      * @return immutable list of all registered references
      */
-    public List<DocTestRef> getReferences() {
-        return Collections.unmodifiableList(new ArrayList<>(registeredReferences));
+    public synchronized List<DocTestRef> getReferences() {
+        return List.copyOf(registeredReferences);
     }
 
     /**
@@ -106,7 +104,7 @@ public class CrossReferenceIndex {
      * @throws InvalidDocTestRefException if the DocTest class is not found
      * @throws InvalidAnchorException if the anchor is not found
      */
-    public String resolve(DocTestRef ref) {
+    public synchronized String resolve(DocTestRef ref) {
         if (!compiled) {
             logger.warn("Index not yet compiled; reference may not resolve: {}", ref);
         }
@@ -121,7 +119,7 @@ public class CrossReferenceIndex {
      * @throws InvalidDocTestRefException if the DocTest class is not found
      * @throws InvalidAnchorException if the anchor is not found
      */
-    public String generateLatexRef(DocTestRef ref) {
+    public synchronized String generateLatexRef(DocTestRef ref) {
         return resolver.generateRefCommand(ref);
     }
 
@@ -136,7 +134,7 @@ public class CrossReferenceIndex {
      * @param docTestClass the DocTest class that generated these files
      * @throws Exception if files cannot be read
      */
-    public void buildIndex(List<Path> texFiles, Class<?> docTestClass) throws Exception {
+    public synchronized void buildIndex(List<Path> texFiles, Class<?> docTestClass) throws Exception {
         resolver.buildIndex(texFiles, docTestClass);
         compiled = true;
         logger.info("Built cross-reference index from {} .tex files", texFiles.size());
@@ -151,7 +149,7 @@ public class CrossReferenceIndex {
      * @throws InvalidDocTestRefException if a DocTest class is not found
      * @throws InvalidAnchorException if an anchor is not found
      */
-    public void validateReferences() {
+    public synchronized void validateReferences() {
         resolver.validateReferences(registeredReferences);
     }
 

@@ -92,6 +92,34 @@ Retrieve a user by ID and display their details.
 
 ---
 
+## Architecture
+
+DTR has four main components:
+
+- **DtrTest / DtrExtension** — Test lifecycle integration. `DtrTest` is a base class; `DtrExtension` is a JUnit 5 extension for parameter injection. Both wire up the documentation pipeline around each test method.
+- **DtrContext** — The documentation API surface. Exposes all `say*` methods and HTTP request/response utilities that tests call to record documentation events.
+- **RenderMachine** — The rendering pipeline. Captures `say*` events as they occur and formats them into structured output. `MultiRenderMachine` dispatches to multiple engines in parallel.
+- **Output engines** — Format-specific writers: Markdown (`.md`), LaTeX (`.tex`), HTML (`.html`), JSON (`.json`), and more.
+
+```
+JUnit 5 Test
+    │
+    ▼
+DtrContext.say*()          ← your test calls these
+    │
+    ▼
+RenderMachine              ← captures & formats events
+    │
+    ├──► Markdown (.md)
+    ├──► LaTeX (.tex)
+    ├──► HTML (.html)
+    └──► JSON (.json)
+```
+
+Output lands in `target/docs/test-results/` by default.
+
+---
+
 ## 📚 Tutorials — Learn by Doing
 
 ### Tutorial: Document REST API Responses
