@@ -37,7 +37,7 @@ class JsonLinesHandler(logging.Handler):
             "time": record.created,
         }
         if record.exc_info:
-            entry["exception"] = self.formatException(record.exc_info)
+            entry["exception"] = logging.Formatter().formatException(record.exc_info)
         # Flush immediately so lines appear in order even when piped.
         print(json.dumps(entry), file=sys.stderr, flush=True)
 

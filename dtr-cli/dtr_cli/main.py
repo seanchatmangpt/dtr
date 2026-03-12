@@ -26,6 +26,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from dtr_cli import __version__
+from dtr_cli.cli_errors import ConfigurationError
 from dtr_cli.commands import (
     fmt,
     export,
@@ -321,11 +322,36 @@ def config(
 
     # --show (or no flag)
     if show:
+        from rich.table import Table as RichTable
         source = cfg.source()
         location = str(source) if source else "(defaults — no .dtr.yml found)"
         console.print(f"[bold cyan]DTR CLI Configuration[/bold cyan]  source: {location}")
-        import yaml
-        console.print(yaml.dump(cfg.to_dict(), default_flow_style=False, sort_keys=True))
+        console.print()
+
+        defaults = config_module.DtrConfig.defaults()
+        table = RichTable(show_header=True, header_style="bold cyan", box=None, padding=(0, 1))
+        table.add_column("Section", style="bold", no_wrap=True)
+        table.add_column("Key", no_wrap=True)
+        table.add_column("Value")
+        table.add_column("Default", style="dim")
+
+        for section_name in ("build", "export", "publish", "report"):
+            section = getattr(cfg, section_name)
+            default_section = getattr(defaults, section_name)
+            first_row = True
+            for field_name in section.model_fields:
+                current_val = getattr(section, field_name)
+                default_val = getattr(default_section, field_name)
+                section_label = section_name if first_row else ""
+                first_row = False
+                # Highlight changed values
+                val_str = str(current_val)
+                default_str = str(default_val)
+                if current_val != default_val:
+                    val_str = f"[bold yellow]{val_str}[/bold yellow]"
+                table.add_row(section_label, field_name, val_str, default_str)
+
+        console.print(table)
     else:
         console.print(
             "Use [bold]--show[/bold] to display configuration, "
