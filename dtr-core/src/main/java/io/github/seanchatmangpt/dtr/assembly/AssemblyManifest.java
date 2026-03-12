@@ -18,6 +18,7 @@ package io.github.seanchatmangpt.dtr.assembly;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import io.github.seanchatmangpt.dtr.receipt.LockchainReceipt;
 
@@ -51,15 +52,9 @@ public record AssemblyManifest(
         if (totalWords < 0) {
             throw new IllegalArgumentException("totalWords must be non-negative");
         }
-        if (assemblyReceipt == null) {
-            throw new IllegalArgumentException("assemblyReceipt cannot be null");
-        }
-        if (componentReceipts == null) {
-            throw new IllegalArgumentException("componentReceipts cannot be null");
-        }
-        if (assembledAt == null) {
-            throw new IllegalArgumentException("assembledAt cannot be null");
-        }
+        Objects.requireNonNull(assemblyReceipt, "assemblyReceipt cannot be null");
+        Objects.requireNonNull(componentReceipts, "componentReceipts cannot be null");
+        Objects.requireNonNull(assembledAt, "assembledAt cannot be null");
         if (sha3HashOfManifest == null || sha3HashOfManifest.trim().isEmpty()) {
             throw new IllegalArgumentException("sha3HashOfManifest cannot be null or empty");
         }

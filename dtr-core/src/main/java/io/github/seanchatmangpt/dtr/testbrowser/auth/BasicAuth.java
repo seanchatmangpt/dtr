@@ -19,6 +19,7 @@ import io.github.seanchatmangpt.dtr.testbrowser.Request;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 
 /**
  * HTTP Basic authentication provider.
@@ -52,12 +53,8 @@ public record BasicAuth(String username, String password) implements AuthProvide
      * @throws NullPointerException if username or password is null
      */
     public BasicAuth {
-        if (username == null) {
-            throw new NullPointerException("username must not be null");
-        }
-        if (password == null) {
-            throw new NullPointerException("password must not be null");
-        }
+        Objects.requireNonNull(username, "username must not be null");
+        Objects.requireNonNull(password, "password must not be null");
     }
 
     @Override
