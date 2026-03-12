@@ -25,27 +25,79 @@ import io.github.seanchatmangpt.dtr.testbrowser.auth.AuthProvider;
 import org.slf4j.LoggerFactory;
 
 /**
- * This represents a Request we can pass then to the TestBrowser.
+ * Fluent builder for HTTP requests with full support for all HTTP methods,
+ * headers, payloads, form data, and file uploads.
+ *
+ * <p>Request objects are mutable by design and intended to be built via method
+ * chaining. Each builder method returns {@code this} for fluent composition.</p>
+ *
+ * <p><strong>Basic Usage Patterns:</strong></p>
+ * <pre>{@code
+ * // Simple GET
+ * Request.GET().url(Url.host("http://api.example.com").path("/users"))
+ *
+ * // POST with JSON
+ * Request.POST()
+ *     .url(testServerUrl().path("/api/users"))
+ *     .contentTypeApplicationJson()
+ *     .payload(new User("alice", "alice@example.com"))
+ *
+ * // PUT with multipart form + file upload
+ * Request.PUT()
+ *     .url(testServerUrl().path("/users/123"))
+ *     .addFormParameter("name", "Alice")
+ *     .addFileToUpload("avatar", new File("avatar.jpg"))
+ *
+ * // DELETE with custom headers
+ * Request.DELETE()
+ *     .url(testServerUrl().path("/users/123"))
+ *     .addHeader("X-API-Key", "secret-key")
+ *     .addHeader("X-Correlation-ID", "req-123")
+ * }</pre>
+ *
+ * <p><strong>Payload Handling:</strong></p>
+ * <ul>
+ *   <li>String payloads are sent as-is</li>
+ *   <li>Objects with Content-Type: application/json are serialized to JSON</li>
+ *   <li>Objects with Content-Type: application/xml are serialized to XML</li>
+ *   <li>For POST/PUT, if no Content-Type is set, defaults to application/json</li>
+ * </ul>
+ *
+ * <p><strong>Form Parameters vs. Payloads:</strong></p>
+ * <ul>
+ *   <li>Form parameters: for application/x-www-form-urlencoded or multipart/form-data</li>
+ *   <li>Payloads: for JSON, XML, or raw request bodies</li>
+ *   <li>File uploads: use {@link #addFileToUpload(String, File)} with form parameters</li>
+ * </ul>
  *
  * @author Raphael A. Bauer
- *
+ * @since 1.0.0
+ * @see TestBrowser#makeRequest(Request)
+ * @see Response for response handling
  */
 public class Request {
 
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(Response.class);
 
+    /** HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD). */
     public String httpRequestType;
 
+    /** Target URI for the request. */
     public URI uri;
 
+    /** Files to upload (multipart form-data). */
     public Map<String, File> filesToUpload;
 
+    /** HTTP headers for this request. */
     public Map<String, String> headers;
 
+    /** Form parameters (application/x-www-form-urlencoded or multipart). */
     public Map<String, String> formParameters;
 
+    /** Request payload (JSON, XML, or raw body). */
     public Object payload;
 
+    /** Whether to automatically follow HTTP redirects (3xx). */
     public boolean followRedirects;
 
     /**

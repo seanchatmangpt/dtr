@@ -57,6 +57,55 @@ import java.util.Map.Entry;
 
 import static io.github.seanchatmangpt.dtr.testbrowser.HttpConstants.*;
 
+/**
+ * Default HTTP test browser implementation using Apache HttpClient 5.
+ *
+ * <p>Provides a stateful HTTP client for making requests to test servers with
+ * automatic cookie persistence, multipart file upload support, JSON/XML serialization,
+ * and flexible request/response handling.</p>
+ *
+ * <p><strong>Features:</strong></p>
+ * <ul>
+ *   <li>Cookie jar persistence across requests</li>
+ *   <li>All HTTP methods: GET, HEAD, POST, PUT, PATCH, DELETE</li>
+ *   <li>Automatic redirect following (configurable per-request)</li>
+ *   <li>Multipart form data and file uploads</li>
+ *   <li>Form-encoded and JSON/XML payloads</li>
+ *   <li>Custom header support with fluent API</li>
+ *   <li>Response parsing to JSON/XML POJOs or TypeReferences</li>
+ * </ul>
+ *
+ * <p><strong>Usage:</strong></p>
+ * <pre>{@code
+ * TestBrowser browser = new TestBrowserImpl();
+ *
+ * // GET request
+ * Response resp1 = browser.makeRequest(
+ *     Request.GET().url(Url.host("http://api.example.com").path("/users")));
+ *
+ * // POST with JSON payload
+ * Response resp2 = browser.makeRequest(
+ *     Request.POST()
+ *         .url(Url.host("http://api.example.com").path("/users"))
+ *         .contentTypeApplicationJson()
+ *         .payload(new User("alice", "alice@example.com")));
+ *
+ * // Parse response
+ * User user = resp2.payloadAs(User.class);
+ *
+ * // Cookies are automatically persisted
+ * List<Cookie> cookies = browser.getCookies();
+ * }</pre>
+ *
+ * <p><strong>Thread Safety:</strong></p>
+ * <p>The underlying {@link CloseableHttpClient} is thread-safe, but instances of
+ * TestBrowserImpl should typically be used by a single thread per test method.</p>
+ *
+ * @see Request for request builder API
+ * @see Response for response parsing methods
+ * @see TestBrowser for interface contract
+ * @since 1.0.0
+ */
 public class TestBrowserImpl implements TestBrowser {
 
     private static Logger logger = LoggerFactory.getLogger(TestBrowserImpl.class);
@@ -64,6 +113,12 @@ public class TestBrowserImpl implements TestBrowser {
     private CloseableHttpClient httpClient;
     private BasicCookieStore cookieStore;
 
+    /**
+     * Creates a new TestBrowserImpl with a fresh HTTP client and empty cookie store.
+     *
+     * <p>Each test method should typically get its own TestBrowserImpl instance
+     * to ensure cookie isolation between tests.</p>
+     */
     public TestBrowserImpl() {
         cookieStore = new BasicCookieStore();
         httpClient = HttpClientBuilder.create()

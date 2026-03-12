@@ -7,6 +7,7 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 | Topic | Description |
 |---|---|
 | [80/20 Quick Reference](80-20-quick-reference.md) | One-page cheat sheet — print or bookmark this |
+| [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) | Answers to common questions and solutions for typical issues |
 
 ## Java 25 Language Features
 

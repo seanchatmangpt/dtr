@@ -25,24 +25,67 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Fluent builder for constructing HTTP URLs with a more intuitive API than JDK {@link java.net.URI}.
  *
- * Well. Usually we'd just use URI from the Jdk. But to be honest - we think
- * that URI is hard and not easy to use.
+ * <p>Provides method chaining for building URLs component-by-component: host, path, and query
+ * parameters. Handles URL encoding and construction automatically.</p>
  *
- * Uri allows for some nice chaining and handles query parameters as well as
- * hosts and paths of your Url in a more natural way than URI.
+ * <p><strong>Advantages over {@code java.net.URI}:</strong></p>
+ * <ul>
+ *   <li>Fluent API with method chaining: {@code Url.host(...).path(...).addQueryParameter(...)}</li>
+ *   <li>Automatic handling of leading/trailing slashes</li>
+ *   <li>Natural parameter building (not string parsing)</li>
+ *   <li>Less exception-prone than URI constructor</li>
+ * </ul>
+ *
+ * <p><strong>Usage Examples:</strong></p>
+ * <pre>{@code
+ * // Simple host + path
+ * Url url1 = Url.host("http://api.example.com").path("/users");
+ *
+ * // With query parameters
+ * Url url2 = Url.host("http://api.example.com")
+ *     .path("/users")
+ *     .addQueryParameter("limit", "10")
+ *     .addQueryParameter("offset", "0");
+ *
+ * // Host with trailing slash and path without leading slash
+ * Url url3 = Url.host("http://api.example.com/v1/")
+ *     .path("users");  // Handles slash automatically
+ *
+ * // Convert to URI for use with HTTP clients
+ * URI uri = url2.uri();  // Can pass to Request.url(URI)
+ *
+ * // String representation
+ * String fullUrl = url2.toString();
+ * }</pre>
+ *
+ * <p><strong>Slash Handling:</strong></p>
+ * <p>The builder automatically handles leading/trailing slashes:
+ * <ul>
+ *   <li>Hosts always have trailing slash removed</li>
+ *   <li>Paths always have leading slash added if missing</li>
+ *   <li>Query parameters are properly URL-encoded</li>
+ * </ul>
  *
  * @author Raphael A. Bauer
- *
+ * @since 1.0.0
+ * @see Request for HTTP request building
+ * @see java.net.URI for standard JDK URI class
  */
 public class Url {
 
     private static Logger logger = LoggerFactory.getLogger(Url.class);
 
+    /** URL builder accumulating scheme, host, and path components. */
     private StringBuilder simpleUrlBuilder;
 
+    /** Query parameters to be appended to the URL. */
     private Map<String, String> queryParameters;
 
+    /**
+     * Private constructor. Use {@link #host(String)} to create instances.
+     */
     private Url() {
         simpleUrlBuilder = new StringBuilder();
         queryParameters = new HashMap<>();
@@ -50,13 +93,22 @@ public class Url {
     }
 
     /**
-     * Create a Url instance from a host. Host should look like
-     * http://myserver:8080 or http://myserver:8080/application.
+     * Creates a new URL builder from a host specification.
      *
-     * @param host The host e.g. http://myserver:8080 may contain trailing slash
-     * or parts of a path.
-     * @return The Url you can customize even further with path, query
-     * parameters and so on.
+     * <p>The host parameter should be a complete scheme + host, optionally with port and
+     * optional path prefix. Trailing slashes are automatically removed.</p>
+     *
+     * <p>Examples:</p>
+     * <ul>
+     *   <li>{@code Url.host("http://localhost:8080")} → can add paths</li>
+     *   <li>{@code Url.host("https://api.example.com/v1/")} → trailing / removed</li>
+     *   <li>{@code Url.host("http://192.168.1.1:3000")} → IP addresses work too</li>
+     * </ul>
+     *
+     * @param host the host specification (scheme + host + optional port, e.g., "http://localhost:8080")
+     * @return a new Url builder ready for path and parameter configuration
+     * @see #path(String) to add the path component
+     * @see #addQueryParameter(String, String) to add query parameters
      */
     public static Url host(String host) {
 
@@ -77,10 +129,21 @@ public class Url {
     }
 
     /**
-     * Set the full path of this Url. Eg. "/my/funky/url"
+     * Appends a path component to this URL.
      *
-     * @param path Eg. "/my/funky/url"
-     * @return This Url for chaining.
+     * <p>The path is automatically prefixed with a leading slash if missing.
+     * Handles both {@code /my/path} and {@code my/path} equally.</p>
+     *
+     * <p>Examples:</p>
+     * <ul>
+     *   <li>{@code Url.host("http://api.example.com").path("/users")}</li>
+     *   <li>{@code Url.host("http://api.example.com").path("users")}</li> (slash added automatically)
+     *   <li>{@code Url.host("http://api.example.com").path("/users/123/profile")}</li>
+     * </ul>
+     *
+     * @param path the path component, with or without leading slash (e.g., "/users" or "users")
+     * @return this Url builder for method chaining
+     * @see #addQueryParameter(String, String) to add query parameters
      */
     public Url path(String path) {
 
@@ -99,12 +162,23 @@ public class Url {
     }
 
     /**
-     * Allows you to add query parameters to this url (In your browser something
-     * like "?user=bob"
+     * Adds a query parameter to this URL.
      *
-     * @param key The key for this query parameter.
-     * @param value The value for this query parameter.
-     * @return This Url for chaining.
+     * <p>Multiple parameters can be chained: parameters are automatically URL-encoded
+     * and separated by {@code &}. The leading {@code ?} is added by {@link #uri()}.</p>
+     *
+     * <p>Examples:</p>
+     * <pre>{@code
+     * Url url = Url.host("http://api.example.com")
+     *     .path("/search")
+     *     .addQueryParameter("q", "java")
+     *     .addQueryParameter("limit", "10");
+     * // Produces: http://api.example.com/search?q=java&limit=10
+     * }</pre>
+     *
+     * @param key the parameter name (e.g., "q", "limit", "offset")
+     * @param value the parameter value (automatically URL-encoded)
+     * @return this Url builder for method chaining
      */
     public Url addQueryParameter(String key, String value) {
 
@@ -115,9 +189,13 @@ public class Url {
     }
 
     /**
-     * Creates a URI from this Uri.
+     * Converts this URL builder into a {@link java.net.URI} object.
      *
-     * @return The URI you can pass to any lib using Uri.
+     * <p>Uses Apache {@code URIBuilder} to construct a properly encoded URI
+     * from all accumulated components (host, path, query parameters).</p>
+     *
+     * @return a URI object suitable for use with HTTP clients (e.g., {@link Request})
+     * @throws IllegalStateException if the URI cannot be constructed (syntax error)
      */
     public URI uri() {
 

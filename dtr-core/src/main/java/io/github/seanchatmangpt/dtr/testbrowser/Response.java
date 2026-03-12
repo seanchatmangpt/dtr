@@ -27,26 +27,79 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import java.io.IOException;
 
 /**
+ * Immutable HTTP response object from a {@link TestBrowser} request.
  *
- * The response from a call done with the TestBrowser.
+ * <p>Contains the HTTP status code, headers, and payload. Provides convenient methods
+ * for parsing JSON and XML payloads into Java objects or TypeReferences.</p>
+ *
+ * <p><strong>Usage Patterns:</strong></p>
+ * <pre>{@code
+ * Response resp = browser.makeRequest(Request.GET().url(...));
+ *
+ * // Check status
+ * int status = resp.httpStatus;  // e.g., 200
+ *
+ * // Get raw payload
+ * String raw = resp.payloadAsString();
+ *
+ * // Auto-detect JSON/XML from Content-Type header
+ * User user = resp.payloadAs(User.class);
+ *
+ * // Force JSON parsing
+ * User user = resp.payloadJsonAs(User.class);
+ *
+ * // Force XML parsing
+ * User user = resp.payloadXmlAs(User.class);
+ *
+ * // Parse collections with TypeReference
+ * List<User> users = resp.payloadJsonAs(new TypeReference<List<User>>() {});
+ *
+ * // Pretty-printed payload for documentation
+ * String pretty = resp.payloadAsPrettyString();
+ * }</pre>
+ *
+ * <p><strong>Content Type Detection:</strong></p>
+ * <p>The {@link #payloadAs(Class)} method inspects the response Content-Type header
+ * to determine the payload format:</p>
+ * <ul>
+ *   <li>{@code application/json} → JSON deserialization</li>
+ *   <li>{@code application/xml}, {@code application/xmlObject} → XML deserialization</li>
+ *   <li>Other types → returns null and logs error</li>
+ * </ul>
  *
  * @author Raphael A. Bauer
- *
+ * @since 1.0.0
+ * @see Request for request building
+ * @see TestBrowser#makeRequest(Request)
  */
 public class Response {
 
     private final Logger logger = LoggerFactory.getLogger(Response.class);
 
+    /** HTTP response headers (Content-Type, Content-Length, etc.). */
     public final Map<String, String> headers;
 
+    /** HTTP status code (200, 404, 500, etc.). */
     public final int httpStatus;
 
+    /** Response body as a raw string (raw JSON, XML, HTML, etc.). */
     public final String payload;
 
     private final XmlMapper xmlMapper;
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * Creates a new Response object.
+     *
+     * <p>Initializes Jackson ObjectMapper (for JSON) and XmlMapper (for XML) with
+     * sensible defaults. The XML mapper is configured with {@code setDefaultUseWrapper(false)}
+     * to produce output similar to JSON deserialization.</p>
+     *
+     * @param headers the HTTP response headers (Content-Type, Content-Length, etc.)
+     * @param httpStatus the HTTP status code (200, 404, 500, etc.)
+     * @param payload the raw response body as a string
+     */
     public Response(Map<String, String> headers, int httpStatus, String payload) {
 
         // configure the JacksonXml mapper in a cleaner way...
@@ -94,14 +147,21 @@ public class Response {
     }
 
     /**
-     * Parses response into Plain old Java objects. First checks header
-     * Content-Type and then converts object into suitable Pojo object. Can
-     * handle "application/xmlObject" and "application/xml". If you want to
-     * force the parsing of a certain content type check out payloadJsonAs/...)
-     * and payloadXmlAs(...).
+     * Parses the response payload into a Java object, auto-detecting format from Content-Type header.
      *
-     * @param clazz The class to use as blueprint for parsing the response body.
-     * @return An instance of the class or null if parsing went wrong.
+     * <p>Inspects the {@code Content-Type} header to determine the payload format and delegates
+     * to {@link #payloadJsonAs(Class)} or {@link #payloadXmlAs(Class)} accordingly.
+     * If the Content-Type is neither JSON nor XML, returns null and logs an error.</p>
+     *
+     * <p>For explicit control over the parsing format, use {@link #payloadJsonAs(Class)}
+     * or {@link #payloadXmlAs(Class)} directly.</p>
+     *
+     * @param <T> the target type
+     * @param clazz the class to deserialize the response body into (must not be null)
+     * @return an instance of the class populated from the response payload,
+     *         or null if the content type is unsupported or parsing fails
+     * @see #payloadJsonAs(Class) to force JSON parsing
+     * @see #payloadXmlAs(Class) to force XML parsing
      */
     public <T> T payloadAs(Class<T> clazz) {
 
@@ -120,12 +180,15 @@ public class Response {
     }
 
     /**
-     * The payload of this request de-serialized into the specified class type.
-     * The payload must be valid Xml.
+     * Parses the response payload as XML into the specified class type.
      *
-     * @param clazz The class type that should be used to de-serialize the
-     * payload.
-     * @return An instance of clazz filled with data from the payload.
+     * <p>Uses Jackson XmlMapper with {@code setDefaultUseWrapper(false)} for deserialization.
+     * Errors during parsing are logged and null is returned.</p>
+     *
+     * @param <T> the target type
+     * @param clazz the class to deserialize the XML payload into (must not be null)
+     * @return an instance of clazz populated from the XML payload, or null if parsing fails
+     * @see #payloadAs(Class) for automatic format detection
      */
     public <T> T payloadXmlAs(Class<T> clazz) {
 
@@ -144,12 +207,15 @@ public class Response {
     }
 
     /**
-     * The payload of this request de-serialized into the specified
-     * TypeReference. The payload must be Xml.
+     * Parses the response payload as XML into the specified TypeReference.
      *
-     * @param typeReference The TypeReference that should be used to
-     * de-serialize the payload.
-     * @return An instance of clazz filled with data from the payload.
+     * <p>Allows parsing complex generic types like {@code List<User>} or {@code Map<String, Order>}.
+     * Errors during parsing are logged and null is returned.</p>
+     *
+     * @param <T> the target type
+     * @param typeReference the TypeReference describing the target type structure
+     *                       (e.g., {@code new TypeReference<List<User>>() {}})
+     * @return an instance of the target type populated from the XML payload, or null if parsing fails
      */
     public <T> T payloadXmlAs(TypeReference<T> typeReference) {
 
@@ -167,12 +233,16 @@ public class Response {
     }
 
     /**
-     * The payload of this request de-serialized into the specified class type.
-     * The payload must be Json.
+     * Parses the response payload as JSON into the specified class type.
      *
-     * @param clazz The class type that should be used to de-serialize the
-     * payload.
-     * @return An instance of clazz filled with data from the payload.
+     * <p>Uses Jackson ObjectMapper with default configuration. Errors during parsing
+     * are logged and null is returned.</p>
+     *
+     * @param <T> the target type
+     * @param clazz the class to deserialize the JSON payload into (must not be null)
+     * @return an instance of clazz populated from the JSON payload, or null if parsing fails
+     * @see #payloadAs(Class) for automatic format detection
+     * @see #payloadJsonAs(TypeReference) for parsing generic types
      */
     public <T> T payloadJsonAs(Class<T> clazz) {
 
@@ -189,12 +259,19 @@ public class Response {
     }
 
     /**
-     * The payload of this request de-serialized into the specified
-     * TypeReference. The payload must be Json.
+     * Parses the response payload as JSON into the specified TypeReference.
      *
-     * @param typeReference The TypeReference that should be used to de-serialize
-     * the payload.
-     * @return An instance of clazz filled with data from the payload.
+     * <p>Allows parsing complex generic types like {@code List<User>}, {@code Map<String, Order>},
+     * or any other generic structure. Example:</p>
+     * <pre>{@code
+     * List<User> users = response.payloadJsonAs(new TypeReference<List<User>>() {});
+     * }</pre>
+     * <p>Errors during parsing are logged and null is returned.</p>
+     *
+     * @param <T> the target type
+     * @param typeReference the TypeReference describing the target type structure
+     * @return an instance of the target type populated from the JSON payload, or null if parsing fails
+     * @see #payloadJsonAs(Class) for parsing non-generic types
      */
     public <T> T payloadJsonAs(TypeReference<T> typeReference) {
 

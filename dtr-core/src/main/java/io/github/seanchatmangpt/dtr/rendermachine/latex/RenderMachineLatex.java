@@ -44,13 +44,62 @@ import org.slf4j.LoggerFactory;
 /**
  * LaTeX-based render machine generating publication-ready PDF documentation.
  *
- * Maps all RenderMachine say* methods to LaTeX commands for document generation
- * via pdflatex, latexmk, or xelatex.
+ * <p>Maps all RenderMachine {@code say*} methods to LaTeX commands for document generation
+ * via pdflatex, latexmk, xelatex, or other LaTeX compilers. Produces high-quality PDF suitable
+ * for academic papers, technical reports, patents, and professional documentation.</p>
  *
- * Supports sealed template system (ArXiv, USPTO, IEEE, ACM, Nature) for format
- * customization. HTTP exchanges formatted as code listings with syntax highlighting.
+ * <p><strong>Template System:</strong></p>
+ * <p>Supports multiple academic and professional templates via sealed {@link LatexTemplate}:
+ * <ul>
+ *   <li>{@link ArXivTemplate} - arXiv preprint submissions (default)</li>
+ *   <li>{@link UsPatentTemplate} - USPTO patent exhibit format</li>
+ *   <li>{@link IEEETemplate} - IEEE journal article format</li>
+ *   <li>{@link ACMTemplate} - ACM conference proceedings format</li>
+ *   <li>{@link NatureTemplate} - Nature scientific publication format</li>
+ * </ul>
  *
- * Output: .tex file written to docs/test/latex/ directory.
+ * <p><strong>Features:</strong></p>
+ * <ul>
+ *   <li>LaTeX escaping of special characters in text, code, and tables</li>
+ *   <li>HTTP request/response formatted as syntax-highlighted code listings</li>
+ *   <li>Automatic bibliography integration via BibTeX</li>
+ *   <li>Cross-references between DocTests with LaTeX \ref{} commands</li>
+ *   <li>Metadata support: title, author, date, keywords for PDF properties</li>
+ *   <li>Table formatting with column specifications</li>
+ *   <li>JSON payload rendering with inline code formatting</li>
+ * </ul>
+ *
+ * <p><strong>Output:</strong></p>
+ * <p>Generates a .tex source file written to {@code docs/test/latex/&lt;FileName&gt;.tex}
+ * which can be compiled independently or included in a master document.</p>
+ *
+ * <p><strong>Usage:</strong></p>
+ * <pre>{@code
+ * DocMetadata metadata = new DocMetadata(
+ *     "My API Specification",
+ *     "2.0.0",
+ *     "Alice Smith",
+ *     "alice@example.com");
+ *
+ * RenderMachine latex = new RenderMachineLatex(
+ *     new ArXivTemplate(),
+ *     metadata);
+ *
+ * latex.setFileName("ApiDocTest");
+ * latex.setTestBrowser(browser);
+ * latex.sayNextSection("REST API Specification");
+ * latex.say("Documents the complete REST API...");
+ * latex.finishAndWriteOut();
+ * }</pre>
+ *
+ * <p><strong>Design Note:</strong></p>
+ * <p>This is a {@code final} class to enable JIT devirtualization. Works seamlessly
+ * with {@link MultiRenderMachine} for simultaneous Markdown + LaTeX generation.</p>
+ *
+ * @since 1.0.0
+ * @see LatexTemplate for template implementations
+ * @see DocMetadata for document metadata
+ * @see RenderMachine for interface contract
  */
 public final class RenderMachineLatex extends RenderMachine {
 
@@ -59,15 +108,26 @@ public final class RenderMachineLatex extends RenderMachine {
     private static final String BASE_DIR = "docs/test/latex";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    /** LaTeX document template (e.g., ArXiv, IEEE, ACM, Nature). */
     private final LatexTemplate template;
+
+    /** Document metadata (title, author, date, keywords). */
     private final DocMetadata metadata;
+
+    /** Accumulated LaTeX document lines. */
     private final List<String> texDocument;
 
+    /** HTTP client for making requests and documenting them. */
     private TestBrowser testBrowser;
+
+    /** Output filename (typically the test class name). */
     private String fileName;
 
     /**
-     * Create a LaTeX render machine with specified template and metadata.
+     * Creates a new LaTeX render machine with the specified template and metadata.
+     *
+     * @param template the LaTeX template to use for formatting (e.g., ArXivTemplate)
+     * @param metadata the document metadata (title, author, date, keywords)
      */
     public RenderMachineLatex(LatexTemplate template, DocMetadata metadata) {
         this.template = template;
