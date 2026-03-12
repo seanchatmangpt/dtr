@@ -93,6 +93,15 @@ public class PhDThesisDocTest extends DocTester {
                 "Anthropic. Claude: Constitutional AI and Harmlessness. Technical Report, 2024.");
         bib.register("OpenJDK2024",
                 "OpenJDK. Project Loom: Virtual Threads and Structured Concurrency. openjdk.org, 2024.");
+        bib.register("Armstrong2003",
+                "Armstrong, J. Making reliable distributed systems in the presence of software errors. "
+                + "PhD Thesis, KTH Royal Institute of Technology, Stockholm, 2003.");
+        bib.register("Armstrong2010",
+                "Armstrong, J. Erlang. Communications of the ACM, 53(9):68-75, 2010. "
+                + "The canonical account of how the 'let it crash' philosophy achieves five-nines reliability.");
+        bib.register("Virding1996",
+                "Virding, R., Wikstrom, C., Williams, M. Concurrent Programming in Erlang (2nd ed.). "
+                + "Prentice Hall, 1996. The first rigorous treatment of the actor model at production scale.");
     }
 
     @AfterAll
@@ -208,6 +217,12 @@ public class PhDThesisDocTest extends DocTester {
                 compile or run. The documentation cannot drift because the documentation and \
                 the tests are the same file.""");
 
+        sayWarning("""
+                This is a living document. The prose and the code are the same artifact. \
+                If the tests fail, the document is false. Falsehood is a compile error. \
+                To reproduce: `mvnd test -pl dtr-core -Dtest=PhDThesisDocTest`. \
+                Every claim in this document is a passing assertion in the JVM that generated it.""");
+
         sayNote("""
                 The meta-irony of this thesis is intentional and load-bearing. \
                 You are reading a PhD thesis that is also a JUnit 5 test class. \
@@ -245,6 +260,30 @@ public class PhDThesisDocTest extends DocTester {
                     public Url testServerUrl() { return Url.host("http://localhost:8080"); }
                 }""",
                 "java");
+
+        say("""
+                Every engineering discipline has a canonical impossibility result that defines \
+                the boundary of what can be achieved. For distributed systems, it is the CAP \
+                theorem: you cannot have consistency, availability, and partition tolerance \
+                simultaneously. For cryptography, it is the one-time pad: you cannot have \
+                information-theoretic security with a key shorter than the message. \
+                For documentation, the analogous result — call it the Documentation Drift \
+                Theorem — is this: you cannot guarantee that a document describing a system \
+                remains correct unless the document and the system are the same artifact, \
+                or the document is mechanically derived from the system on every read.""");
+
+        say("""
+                Joe Armstrong proved the distributed systems equivalent in his KTH PhD thesis \
+                (2003): the only way to build a system that survives software errors is to \
+                make error recovery a structural property of the language, not a pattern \
+                applied by developers. Erlang's 'let it crash' philosophy is not permission \
+                to write buggy code — it is an acknowledgment that bugs will occur and that \
+                the supervisor hierarchy should handle them, not the application logic. \
+                DTR applies the same principle to documentation: do not ask developers to \
+                keep documentation current. Make documentation staleness a build error.""");
+
+        sayCite("Armstrong2003");
+        sayCite("Armstrong2010");
 
         say("""
                 The remainder of this thesis is organized as follows. Chapter 2 surveys \
@@ -339,6 +378,22 @@ public class PhDThesisDocTest extends DocTester {
             {"AI-augmented generation",       "No",      "No",      "No",       "No",                "Yes"},
             {"Reflection-based introspection","No",      "No",      "No",       "No",                "Yes"},
         });
+
+        say("""
+                Armstrong's actor model, introduced in Erlang in 1986 and proven at \
+                five-nines reliability in Ericsson's AXD 301 switch, contains a structural \
+                parallel to DocTester that is not coincidental. In Erlang, the only safe \
+                way to interact with a process is to send it a typed message — a tuple \
+                whose first element is an atom tag. The receiver pattern-matches on the \
+                tag. If the message does not match any receive clause, it remains in the \
+                queue until a handler is registered. In DTR, the only way to produce \
+                documentation is to emit a typed SayEvent — a sealed record whose type \
+                is the tag. Every renderer pattern-matches on the event type. If a new event \
+                type has no handler, the renderer fails to compile. The architectural \
+                insight is the same: type-tagging + exhaustive dispatch = correctness by \
+                construction.""");
+
+        sayCite("Virding1996", "pp. 1-32");
 
         say("The Java evolution leading to DocTester's design choices is itself worth tracing:");
 
