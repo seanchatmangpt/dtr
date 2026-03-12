@@ -86,7 +86,7 @@ import org.r10r.doctester.testbrowser.Url;
 
 import java.util.List;
 
-public class RecordsExampleTest extends DocTester {
+public class RecordsExampleTest extends DTR {
 
     @Test
     public void useRecordsForApiPayloads() throws Exception {
@@ -157,7 +157,7 @@ public class RecordsExampleTest extends DocTester {
 Define a sealed hierarchy when you have multiple record types that should be exhaustive:
 
 ```java
-public class ApiResponseExampleTest extends DocTester {
+public class ApiResponseExampleTest extends DTR {
 
     // Sealed interface: only Success and Failure can implement it
     sealed interface ApiResponse {

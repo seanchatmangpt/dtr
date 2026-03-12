@@ -1,10 +1,10 @@
-# DocTester Changelog
+# DTR Changelog
 
 ## [2.4.0] — 2026-03-11
 
 ### Added: JVM Introspection Methods (Blue Ocean Innovations)
 
-DocTester 2.4.0 ships five JVM-introspective documentation primitives that extract structural facts directly from bytecode and the live JVM. These methods address the "provenance absence" problem — enabling self-describing, drift-proof documentation derived from code facts rather than developer prose.
+DTR 2.4.0 ships five JVM-introspective documentation primitives that extract structural facts directly from bytecode and the live JVM. These methods address the "provenance absence" problem — enabling self-describing, drift-proof documentation derived from code facts rather than developer prose.
 
 #### New Methods
 
@@ -57,7 +57,7 @@ No transitive dependency bumps. No external libraries. **Maven Central pom.xml d
 
 ### Backward Compatibility
 
-✅ **100% backward compatible** with DocTester 2.3.x
+✅ **100% backward compatible** with DTR 2.3.x
 
 - Existing consumer code compiles unmodified
 - Default no-op implementations prevent API breakage
@@ -68,7 +68,7 @@ No transitive dependency bumps. No external libraries. **Maven Central pom.xml d
 
 - Added `Java26InnovationsTest.java` with 5 live documentation tests
 - Total test suite: **325 tests, 0 failures**
-- Each test demonstrates method against real DocTester classes
+- Each test demonstrates method against real DTR classes
 - Tests ARE documentation — test execution generates the docs
 
 ### Documentation
@@ -86,7 +86,7 @@ All five new methods have:
 - ✅ Backward compatibility: all 2.3.x code compiles unmodified
 - ✅ Javadoc: all 5 new methods documented with examples
 - ✅ Dependencies: 0 new external libraries
-- ✅ Ready for Maven Central: `org.r10r:doctester-core:2.4.0`
+- ✅ Ready for Maven Central: `org.r10r:dtr-core:2.4.0`
 
 ---
 
@@ -138,6 +138,6 @@ All five new methods have:
 
 ### Initial Release
 
-- Core DocTester framework
+- Core DTR framework
 - Abstract `DocTester` base class
 - Basic `say()` and `sayAndMakeRequest()` methods

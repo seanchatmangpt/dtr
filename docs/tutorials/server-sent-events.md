@@ -1,6 +1,6 @@
 # Tutorial: Server-Sent Events for One-Way Real-Time Streams
 
-Learn how to test Server-Sent Events (SSE) with DocTester. SSE is a simple HTTP-based protocol for pushing real-time data from server to client — perfect for notifications, live updates, and dashboards.
+Learn how to test Server-Sent Events (SSE) with DTR. SSE is a simple HTTP-based protocol for pushing real-time data from server to client — perfect for notifications, live updates, and dashboards.
 
 **Time:** ~35 minutes
 **Prerequisites:** Java 25, understanding of HTTP and event streams
@@ -56,7 +56,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerSentEventsDocTest extends DocTester {
+public class ServerSentEventsDocTest extends DTR {
 
     @Test
     public void subscribeToEventStream() throws Exception {

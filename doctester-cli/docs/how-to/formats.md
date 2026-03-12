@@ -5,7 +5,7 @@ You've written documentation or run tests with DocTester, and now you need to ex
 
 ## Solution Overview
 
-DocTester supports 6 primary output formats. Choose based on your audience and distribution method:
+DTR supports 6 primary output formats. Choose based on your audience and distribution method:
 
 | Format | Use Case | Output File | Best For |
 |--------|----------|-------------|----------|

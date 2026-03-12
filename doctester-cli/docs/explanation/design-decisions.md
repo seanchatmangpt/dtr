@@ -1,6 +1,6 @@
 # Design Decisions and Tradeoffs
 
-Every system embodies choices. This document explains *why* DocTester CLI was designed the way it is, the alternatives considered, and the tradeoffs accepted.
+Every system embodies choices. This document explains *why* DTR CLI was designed the way it is, the alternatives considered, and the tradeoffs accepted.
 
 ## Decision 1: Python CLI, Not Pure Java
 
@@ -39,7 +39,7 @@ The CLI is used frequently (potentially dozens of times per build), so startup t
 
 **Decision Rationale:**
 
-Monolithic design seems simpler initially, but DocTester supports 5+ formats (HTML, LaTeX, PDF, Blog, Slides). Mixing format logic creates spaghetti code:
+Monolithic design seems simpler initially, but DTR supports 5+ formats (HTML, LaTeX, PDF, Blog, Slides). Mixing format logic creates spaghetti code:
 
 ```python
 # ❌ Monolithic (bad)
@@ -131,7 +131,7 @@ with open('large_file.md') as f:
 
 **Accepted Tradeoff:** Can't do multi-pass analysis (e.g., counting words before rendering). For most features, single-pass is sufficient.
 
-**Why This Matters:** DocTester scales to enterprise-size doc sets without requiring massive RAM. A 100MB file uses ~50MB peak, allowing this to run in CI with tight memory budgets.
+**Why This Matters:** DTR scales to enterprise-size doc sets without requiring massive RAM. A 100MB file uses ~50MB peak, allowing this to run in CI with tight memory budgets.
 
 ---
 
@@ -149,9 +149,9 @@ with open('large_file.md') as f:
 
 **Decision Rationale:**
 
-DocTester users fall into two camps:
+DTR users fall into two camps:
 1. **Maven projects:** Want docs auto-generated on `mvn verify`
-2. **Non-Maven projects:** Use CLI standalone (Node, Go, Python projects using DocTester docs)
+2. **Non-Maven projects:** Use CLI standalone (Node, Go, Python projects using DTR docs)
 
 Mandatory Maven coupling would exclude camp 2. Optional integration serves both.
 

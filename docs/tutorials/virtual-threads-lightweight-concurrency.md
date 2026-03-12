@@ -111,7 +111,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-public class VirtualThreadsDocTest extends DocTester {
+public class VirtualThreadsDocTest extends DTR {
 
     @Test
     public void demonstrateVirtualThreads() throws Exception {

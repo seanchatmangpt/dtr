@@ -13,10 +13,10 @@ Total Content: ~7,000 lines
 ================================================================================
 
 Master Entry Point:
-  /home/user/doctester/doctester-cli/docs/index.md
+  /home/user/doctester/dtr-cli/docs/index.md
 
 Complete Directory:
-  /home/user/doctester/doctester-cli/docs/
+  /home/user/doctester/dtr-cli/docs/
 
 Summary Documents:
   /home/user/doctester/DIATAXIS_DOCUMENTATION.md
@@ -75,17 +75,17 @@ Publication Ready:  ✅ YES
 ================================================================================
 
 Master Index:
-  /home/user/doctester/doctester-cli/docs/index.md (219 lines)
+  /home/user/doctester/dtr-cli/docs/index.md (219 lines)
   Entry point with navigation for all documentation types
 
 Reference Files:
-  /home/user/doctester/doctester-cli/docs/reference/exit-codes.md (194 lines)
-  /home/user/doctester/doctester-cli/docs/reference/glossary.md (186 lines)
+  /home/user/doctester/dtr-cli/docs/reference/exit-codes.md (194 lines)
+  /home/user/doctester/dtr-cli/docs/reference/glossary.md (186 lines)
 
 Explanation Files:
-  /home/user/doctester/doctester-cli/docs/explanation/performance-guide.md (274 lines)
-  /home/user/doctester/doctester-cli/docs/explanation/best-practices.md (510 lines)
-  /home/user/doctester/doctester-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
+  /home/user/doctester/dtr-cli/docs/explanation/performance-guide.md (274 lines)
+  /home/user/doctester/dtr-cli/docs/explanation/best-practices.md (510 lines)
+  /home/user/doctester/dtr-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
 
 Summary Documents:
   /home/user/doctester/DIATAXIS_DOCUMENTATION.md (Complete summary)
@@ -97,16 +97,16 @@ Summary Documents:
 ================================================================================
 
 New Users:
-  1. Start: /home/user/doctester/doctester-cli/docs/index.md
+  1. Start: /home/user/doctester/dtr-cli/docs/index.md
   2. Then: tutorials/01-getting-started.md
   3. Continue: tutorials/02-export-formats.md
 
 Problem-Focused Users:
-  1. Start: /home/user/doctester/doctester-cli/docs/index.md
+  1. Start: /home/user/doctester/dtr-cli/docs/index.md
   2. Then: how-to/<relevant-guide>.md
 
 Reference Seekers:
-  1. Start: /home/user/doctester/doctester-cli/docs/index.md
+  1. Start: /home/user/doctester/dtr-cli/docs/index.md
   2. Then: reference/cli-commands.md or reference/glossary.md
 
 Learners:
@@ -178,7 +178,7 @@ Option 4: MkDocs or Sphinx
 4. PUBLISH: Deploy to documentation platform
 5. MAINTAIN: Update quarterly and when features change
 
-Start Here: /home/user/doctester/doctester-cli/docs/index.md
+Start Here: /home/user/doctester/dtr-cli/docs/index.md
 
 ================================================================================
                           SUPPORT & CONTRIBUTION
@@ -200,7 +200,7 @@ Questions or feedback:
 Created:        2026-03-11
 Last Updated:   2026-03-11
 Framework:      Diataxis 2.0
-DocTester Ver:  0.1.0
+DTR Ver:  0.1.0
 Python Ver:     3.12+
 Status:         ✅ Production Ready
 License:        Apache 2.0

@@ -1,6 +1,6 @@
-# DocTester 80/20 Quick Reference
+# DTR 80/20 Quick Reference
 
-**One-page cheat sheet** for the most common DocTester patterns. Print this or bookmark it.
+**One-page cheat sheet** for the most common DTR patterns. Print this or bookmark it.
 
 ---
 
@@ -240,7 +240,7 @@ import org.r10r.doctester.testbrowser.Url;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 
-public class MyApiDocTest extends DocTester {
+public class MyApiDocTest extends DTR {
 
     @Override
     public Url testServerUrl() {

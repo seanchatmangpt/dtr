@@ -112,7 +112,7 @@ Output: 5 tests with human-readable metrics
 
 ### Option 2: Unit Tests (Requires Maven)
 ```bash
-mvnd test -pl doctester-core -Dtest=DocMetadataBenchmarkTest
+mvnd test -pl dtr-core -Dtest=DocMetadataBenchmarkTest
 ```
 
 ## Conclusion

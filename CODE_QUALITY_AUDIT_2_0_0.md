@@ -1,4 +1,4 @@
-# DocTester 2.0.0 Code Quality Audit Report
+# DTR 2.0.0 Code Quality Audit Report
 
 **Date:** March 10, 2026
 **Target Version:** 2.0.0 (Release)
@@ -23,7 +23,7 @@ DocTester's core module is **production-ready** for a 2.0.0 release. The codebas
 No TODO, FIXME, or HACK comments found in the codebase.
 
 ```
-Search Result: 0 matches in doctester-core/src/main/java
+Search Result: 0 matches in dtr-core/src/main/java
 ```
 
 This is excellent for a release candidate. The team has addressed all identified work items.
@@ -39,7 +39,7 @@ Javadoc is comprehensive across all public APIs:
 #### Fully Documented Classes (Best Examples)
 
 **Core Request/Response Layer:**
-- ✓ `DocTester.java` — Complete class and method documentation with usage examples
+- ✓ `DTR.java` — Complete class and method documentation with usage examples
 - ✓ `Request.java` — All public methods documented (HEAD, GET, POST, PUT, PATCH, DELETE factory methods; fluent chainers)
 - ✓ `Response.java` — All deserialization methods documented (JSON, XML, automatic detection)
 - ✓ `TestBrowser.java` — Interface contract fully documented
@@ -105,7 +105,7 @@ None identified in public APIs. All public classes, interfaces, records, enums, 
 
 ### Overall Java 25 Adoption: EXCELLENT (95% Coverage)
 
-DocTester demonstrates sophisticated use of modern Java idioms. This codebase is a **reference implementation** for Java 25 best practices.
+DTR demonstrates sophisticated use of modern Java idioms. This codebase is a **reference implementation** for Java 25 best practices.
 
 #### Records (Stable Feature) — Fully Adopted ✓
 
@@ -322,7 +322,7 @@ This is a clean static-import pattern. No change needed.
 
 ### Finding: 100% Compliant ✓
 
-**Total Source Files:** 41 (doctester-core/src/main/java)
+**Total Source Files:** 41 (dtr-core/src/main/java)
 **Files with Apache 2.0 Header:** 41 (100%)
 **Files Missing Header:** 0
 
@@ -343,7 +343,7 @@ All source files include proper Apache 2.0 license text:
 ### Build Output Analysis
 
 ```
-[INFO] /home/user/doctester/doctester-core/src/test/java/org/r10r/doctester/AnnotationDocTest.java:
+[INFO] /home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/AnnotationDocTest.java:
 Some input files use or override a deprecated API.
 [INFO] Recompile with -Xlint:deprecation for details.
 ```
@@ -353,14 +353,14 @@ Some input files use or override a deprecated API.
 **Analysis:**
 - This is in the **test** directory, not in core production code
 - Source file not available for review in main library
-- Does not impact 2.0.0 release for doctester-core JAR
-- Recommendation: Fix in doctester-core v2.0.1 or immediately for clarity
+- Does not impact 2.0.0 release for dtr-core JAR
+- Recommendation: Fix in dtr-core v2.0.1 or immediately for clarity
 
 **No deprecated Java 24/25 methods** detected in production code.
 
 ### HTTP Client Upgrade: Excellent ✓
 
-DocTester correctly upgraded from Apache HttpClient 4.5 to **HttpClient 5.x** (httpclient5: 5.6):
+DTR correctly upgraded from Apache HttpClient 4.5 to **HttpClient 5.x** (httpclient5: 5.6):
 ```
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -418,7 +418,7 @@ This is **future-proof** and removes legacy servlet dependencies.
 The release should be positioned as:
 - **Feature-rich upgrade** to Java 25 idioms
 - **Additive only** (no removal of APIs)
-- **JUnit 4 users:** May safely upgrade; existing DocTester subclasses continue to work
+- **JUnit 4 users:** May safely upgrade; existing DTR subclasses continue to work
 - **JUnit 5 users:** New extension-based API available (recommended)
 
 ---
@@ -496,7 +496,7 @@ Document:
 
 ## 10. Final Assessment
 
-**DocTester is production-ready for v2.0.0 release.**
+**DTR is production-ready for v2.0.0 release.**
 
 ### Strengths
 1. **Zero technical debt** — no TODOs, FIXMEs, or broken references
@@ -522,7 +522,7 @@ The codebase demonstrates professional standards, sophisticated use of modern Ja
 ## Appendix: Files Reviewed
 
 ### Core Public APIs
-- DocTester.java
+- DTR.java
 - Request.java
 - Response.java
 - Url.java
@@ -586,4 +586,4 @@ The codebase demonstrates professional standards, sophisticated use of modern Ja
 
 **End of Report**
 
-Prepared for DocTester 2.0.0 release candidate review.
+Prepared for DTR 2.0.0 release candidate review.

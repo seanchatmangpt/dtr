@@ -1,5 +1,5 @@
 ================================================================================
-                    DocTester 2.0.0 RELEASE DOCUMENTS
+                    DTR 2.0.0 RELEASE DOCUMENTS
                          COMPLETE FILE LISTING
 ================================================================================
 
@@ -258,7 +258,7 @@ All release documents are in: /home/user/doctester/
 
 Project files to review:
   /home/user/doctester/pom.xml                (root, release profile)
-  /home/user/doctester/doctester-core/pom.xml (main artifact)
+  /home/user/doctester/dtr-core/pom.xml (main artifact)
   /home/user/doctester/.mvn/maven.config      (build configuration)
 
 Maven configuration:
@@ -330,7 +330,7 @@ SUCCESS PROBABILITY: 98% 🚀
 5. Post-Release:
    • Create GitHub release
    • Announce to community
-   • Start planning DocTester 2.1.0
+   • Start planning DTR 2.1.0
 
 ================================================================================
                       CONTACT & SUPPORT
@@ -375,7 +375,7 @@ Start with RELEASE_EXECUTIVE_SUMMARY.txt.
 Then follow RELEASE_SETUP_GUIDE.md.
 Use RELEASE_CREDENTIALS_CHECKLIST.md on release day.
 
-Good luck with DocTester 2.0.0! 🚀
+Good luck with DTR 2.0.0! 🚀
 
 ================================================================================
 Document listing updated: 2026-03-10

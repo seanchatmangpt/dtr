@@ -10,11 +10,11 @@
 
 ## Executive Summary
 
-DocTester is **fully compatible with Java 26** language features. All major JEPs have been verified to:
+DTR is **fully compatible with Java 26** language features. All major JEPs have been verified to:
 
 1. ✅ Compile correctly with `javac --source 25 --enable-preview`
 2. ✅ Execute without errors
-3. ✅ Integrate seamlessly with existing DocTester codebase
+3. ✅ Integrate seamlessly with existing DTR codebase
 4. ✅ Provide immediate performance benefits (JEP 526, 522, 516)
 
 **Status:** 🟢 **READY FOR JAVA 26 GA (March 17, 2026)**
@@ -196,7 +196,7 @@ Improvement:        6,667x faster (99.98% reduction)
 
 ### Test Compilation Configuration
 
-**File:** `doctester-core/pom.xml`
+**File:** `dtr-core/pom.xml`
 
 ```xml
 <plugin>
@@ -350,7 +350,7 @@ Note: Recompile with -Xlint:preview for details.
 - [ ] Enable JEP 525 (Structured Concurrency) in `DocumentAssembler`
 - [ ] Optimize PEM key handling (JEP 524)
 - [ ] Profile and tune G1 GC settings (JEP 522)
-- [ ] Release DocTester 2.6.0 with "Java 26 Ready" badge
+- [ ] Release DTR 2.6.0 with "Java 26 Ready" badge
 
 ---
 
@@ -393,7 +393,7 @@ Note: Recompile with -Xlint:preview for details.
 - [JEP 516: AOT Object Caching](https://openjdk.org/jeps/516)
 - [JEP 500: Final Means Final](https://openjdk.org/jeps/500)
 
-### DocTester Project Files
+### DTR Project Files
 - `CLAUDE.md` — Project guidelines and architecture
 - `JAVA_26_DEVELOPER_GUIDE.md` — Comprehensive 1,498-line developer guide
 - `JAVA_26_JEPS_IMPLEMENTATION.md` — Detailed JEP analysis
@@ -405,7 +405,7 @@ Note: Recompile with -Xlint:preview for details.
 
 ## Conclusion
 
-DocTester is **production-ready for Java 26**. All language features compile and execute correctly. Performance projections show 2.4-3.4x improvement in document generation throughput when JEP 526 and 525 optimizations are implemented.
+DTR is **production-ready for Java 26**. All language features compile and execute correctly. Performance projections show 2.4-3.4x improvement in document generation throughput when JEP 526 and 525 optimizations are implemented.
 
 The project is well-positioned to become the **gold standard for Java 26+ documentation generation**.
 

@@ -1,6 +1,6 @@
 # Explanation: Documentation Philosophy
 
-This document explains the philosophy behind DocTester — why it was built this way, and what assumptions it makes about how API documentation should work.
+This document explains the philosophy behind DTR — why it was built this way, and what assumptions it makes about how API documentation should work.
 
 ---
 
@@ -14,19 +14,19 @@ This is the "documentation rot" problem, and it's endemic to software projects. 
 
 ---
 
-## The DocTester approach: documentation is the test
+## The DTR approach: documentation is the test
 
 DocTester's answer is radical: **make the documentation executable**.
 
 Instead of writing tests and documentation separately, you write them together. The same code that asserts `response.httpStatus() == 200` also generates the paragraph that says "The server responds with 200 OK." If the behavior changes, the test fails — and you must fix the test — and fixing the test updates the documentation automatically.
 
-This isn't a new idea. Python's doctest module pioneered it in 1999. DocTester brings the same philosophy to Java REST API testing.
+This isn't a new idea. Python's doctest module pioneered it in 1999. DTR brings the same philosophy to Java REST API testing.
 
 ---
 
 ## What this means for how you write tests
 
-DocTester changes the mental model for test authorship.
+DTR changes the mental model for test authorship.
 
 **Traditional test:** "Does this code produce the correct output?"
 
@@ -65,7 +65,7 @@ The documentation you generate is read by other developers. Ask yourself: "Would
 | Reference | Looking up | "Tell me exactly what this does" |
 | Explanation | Studying | "Help me understand why" |
 
-DocTester generates output that sits somewhere between **reference** and **tutorial** — it shows what an API does (reference) by walking through a worked example (tutorial). The narrative text you write with `say()` is the tutorial layer; the request/response panels are the reference layer.
+DTR generates output that sits somewhere between **reference** and **tutorial** — it shows what an API does (reference) by walking through a worked example (tutorial). The narrative text you write with `say()` is the tutorial layer; the request/response panels are the reference layer.
 
 Good DocTest output does both. A developer scanning the panels can see the API mechanics at a glance. A developer reading the text understands the intent and context.
 
@@ -77,10 +77,10 @@ This documentation site you're reading now is organized around Diataxis — tuto
 
 DocTester's approach has trade-offs to be aware of:
 
-**Tests must be integration tests.** DocTester requires a running server to make HTTP requests. You can't generate documentation from unit tests. This is the right trade-off for API documentation — readers want to see real requests against a real server — but it means DocTester belongs in your integration test phase, not unit test phase.
+**Tests must be integration tests.** DTR requires a running server to make HTTP requests. You can't generate documentation from unit tests. This is the right trade-off for API documentation — readers want to see real requests against a real server — but it means DTR belongs in your integration test phase, not unit test phase.
 
 **Documentation is per test class.** One test class = one HTML page. If your API is large, organize it into multiple DocTest classes, each covering a logical section.
 
-**Output is read-only HTML.** DocTester generates static HTML files. If you want interactive documentation (a live Swagger UI, for example), DocTester isn't the right tool. It's best for generating human-readable API reference pages that can be hosted on any static site.
+**Output is read-only HTML.** DTR generates static HTML files. If you want interactive documentation (a live Swagger UI, for example), DTR isn't the right tool. It's best for generating human-readable API reference pages that can be hosted on any static site.
 
-**JUnit 4 only.** DocTester currently uses JUnit 4's `@Before`/`@AfterClass` lifecycle. JUnit 5 support would require a different extension mechanism. If your project has migrated to JUnit 5, you can still use DocTester if you add `junit-vintage-engine` to run JUnit 4 tests.
+**JUnit 4 only.** DTR currently uses JUnit 4's `@Before`/`@AfterClass` lifecycle. JUnit 5 support would require a different extension mechanism. If your project has migrated to JUnit 5, you can still use DTR if you add `junit-vintage-engine` to run JUnit 4 tests.

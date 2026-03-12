@@ -5,7 +5,7 @@ Plain text documentation is bland. You need to include images, structured data t
 
 ## Solution Overview
 
-DocTester supports all standard Markdown elements plus extended features. Content renders consistently across all export formats (HTML, PDF, slides, blog).
+DTR supports all standard Markdown elements plus extended features. Content renders consistently across all export formats (HTML, PDF, slides, blog).
 
 ## Images
 

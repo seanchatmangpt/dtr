@@ -1,8 +1,8 @@
-# DocTester 2.0.0 Code Quality Audit — Complete Index
+# DTR 2.0.0 Code Quality Audit — Complete Index
 
 ## Audit Overview
 
-Comprehensive code quality review of DocTester core module in preparation for 2.0.0 release.
+Comprehensive code quality review of DTR core module in preparation for 2.0.0 release.
 
 **Audit Date:** March 10, 2026
 **Target Version:** 2.0.0 (Release)
@@ -225,7 +225,7 @@ All audit documents located in repository root:
 ├── CODE_QUALITY_AUDIT_2_0_0.md             ← Detailed findings
 ├── RELEASE_READINESS_REPORT.md             ← Go/No-Go decision
 ├── RELEASE_OPTIMIZATION_PLAN.md            ← Action items
-├── doctester-core/
+├── dtr-core/
 │   ├── pom.xml
 │   └── src/main/java/org/r10r/doctester/
 │       ├── [41 source files analyzed]
@@ -275,7 +275,7 @@ Before beginning the 2.0.0 release process:
 - [ ] Make release/no-release decision
 - [ ] If releasing immediately: Proceed to Maven Central upload
 - [ ] If optimizing first: Read RELEASE_OPTIMIZATION_PLAN.md and execute tasks
-- [ ] After optimization: Run full test suite (mvnd test -pl doctester-core)
+- [ ] After optimization: Run full test suite (mvnd test -pl dtr-core)
 - [ ] Verify no new issues introduced
 - [ ] Update pom.xml version to 2.0.0
 - [ ] Update CHANGELOG.md with highlights

@@ -1,6 +1,6 @@
 # Tutorials
 
-Tutorials are **learning-oriented**. They take you through a series of steps to complete a project. When you finish, you'll have a working DocTester setup and a clear mental model of how it works.
+Tutorials are **learning-oriented**. They take you through a series of steps to complete a project. When you finish, you'll have a working DTR setup and a clear mental model of how it works.
 
 ## Available Tutorials
 

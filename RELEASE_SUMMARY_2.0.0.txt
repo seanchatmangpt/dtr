@@ -19,13 +19,13 @@ ROOT POM:
   Update:  <version>2.0.0</version>
 
 CORE MODULE (inherits from parent):
-  File:    /home/user/doctester/doctester-core/pom.xml
+  File:    /home/user/doctester/dtr-core/pom.xml
   Line:    31
   Current: Version inherited from parent
   Note:    No direct change needed; inherits via <parent> tag
 
 INTEGRATION TEST MODULE (inherits from parent):
-  File:    /home/user/doctester/doctester-integration-test/pom.xml
+  File:    /home/user/doctester/dtr-integration-test/pom.xml
   Line:    17
   Current: Version inherited from parent
   Note:    No direct change needed; inherits via <parent> tag
@@ -87,7 +87,7 @@ TAG FORMAT:
   Branch:    main
 
 COMMIT MESSAGE:
-  Release: bump DocTester to version 2.0.0
+  Release: bump DTR to version 2.0.0
   
   Major release with breaking changes and new features:
   - Markdown-first output format (replaces HTML)
@@ -132,7 +132,7 @@ IMMEDIATELY AFTER VERSION UPDATES:
 
 4. Create git commit
    $ git add pom.xml CHANGELOG_2.0.0.md
-   $ git commit -m "Release: bump DocTester to 2.0.0"
+   $ git commit -m "Release: bump DTR to 2.0.0"
 
 5. Create annotated tag
    $ git tag -a v2.0.0 -m "DocTester 2.0.0 Release"
@@ -150,7 +150,7 @@ IMMEDIATELY AFTER VERSION UPDATES:
 
 8. Verify Maven Central
    (Wait 15 minutes for indexing)
-   https://central.sonatype.com/artifact/org.r10r/doctester-core/2.0.0
+   https://central.sonatype.com/artifact/org.r10r/dtr-core/2.0.0
 
 ================================================================================
 6. RELEASE DOCUMENTATION FILES
@@ -184,7 +184,7 @@ For Library Users:
    - Action: Update documentation pipelines to handle Markdown
 
 2. JUNIT 5 REQUIRED
-   - Before: Extend DocTester (JUnit 4 base class)
+   - Before: Extend DTR (JUnit 4 base class)
    - After:  @ExtendWith(DocTesterExtension.class) + JUnit 5 annotations
    - Action: Migrate test classes to Jupiter API (see CHANGELOG)
 
@@ -231,7 +231,7 @@ After completing all version bump and release steps:
 ✓ mvnd clean verify passes all 40+ tests
 ✓ Git tag v2.0.0 created and pushed
 ✓ CHANGELOG_2.0.0.md reviewed and complete
-✓ Maven Central shows org.r10r:doctester-core:2.0.0
+✓ Maven Central shows org.r10r:dtr-core:2.0.0
 ✓ Javadoc JAR published and accessible
 ✓ Sources JAR published and accessible
 ✓ All artifacts GPG-signed
@@ -258,7 +258,7 @@ Then investigate failure and restart process.
 
 Maven Central:
   https://central.sonatype.com/
-  https://central.sonatype.com/artifact/org.r10r/doctester-core/2.0.0
+  https://central.sonatype.com/artifact/org.r10r/dtr-core/2.0.0
 
 Project:
   GitHub: https://github.com/r10r-org/doctester
@@ -280,7 +280,7 @@ SUMMARY - READY FOR EXECUTION
 
 Status: PLANNING COMPLETE - Ready to execute
 
-The DocTester 2.0.0 release is fully planned and documented.
+The DTR 2.0.0 release is fully planned and documented.
 
 Required Actions:
 1. Review all three documents (CHANGELOG, RELEASE_PLAN, this summary)

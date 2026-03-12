@@ -2,7 +2,7 @@
 
 ## The core choice: `say*` vs plain methods
 
-Every DocTester method has two forms:
+Every DTR method has two forms:
 
 | Documented (`say*`) | Silent (plain) |
 |---|---|
@@ -120,7 +120,7 @@ Each `@Test` method starts a new block in the output. Use `@FixMethodOrder(Metho
 
 ```java
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UserApiDocTest extends DocTester {
+public class UserApiDocTest extends DTR {
 
     @Test
     public void test01_listUsers() { /* ... */ }

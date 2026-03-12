@@ -1,4 +1,4 @@
-# Contributing to DocTester CLI
+# Contributing to DTR CLI
 
 Thank you for your interest in contributing! This guide explains how to set up your development environment and contribute to the project.
 
@@ -14,7 +14,7 @@ Thank you for your interest in contributing! This guide explains how to set up y
 
 ```bash
 git clone https://github.com/seanchatmangpt/doctester.git
-cd doctester/doctester-cli
+cd doctester/dtr-cli
 ```
 
 ### 2. Install Development Environment
@@ -132,7 +132,7 @@ def test_my_feature(tmp_path: Path) -> None:
 ## Project Structure
 
 ```
-doctester-cli/
+dtr-cli/
 ├── doctester_cli/
 │   ├── __init__.py
 │   ├── main.py              # CLI entry point
@@ -278,7 +278,7 @@ pytest -k "pattern"        # Run specific tests
 
 - Check existing issues: https://github.com/seanchatmangpt/doctester/issues
 - Review similar code in the repository
-- Read the [DocTester documentation](https://github.com/seanchatmangpt/doctester/tree/master/doctester-cli)
+- Read the [DTR documentation](https://github.com/seanchatmangpt/doctester/tree/master/dtr-cli)
 
 ## License
 

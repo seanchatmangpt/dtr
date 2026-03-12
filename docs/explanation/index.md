@@ -4,11 +4,11 @@ Explanation is **understanding-oriented**. These documents discuss concepts, des
 
 ## Available Explanations
 
-### DocTester 80/20 Design Patterns
+### DTR 80/20 Design Patterns
 
 | Document | What it explains |
 |---|---|
-| [80/20 Design Patterns](80-20-design-patterns.md) | Why DocTester works the way it does — the philosophy behind the core methods |
+| [80/20 Design Patterns](80-20-design-patterns.md) | Why DTR works the way it does — the philosophy behind the core methods |
 
 ### Java 25 Design Philosophy
 
@@ -24,11 +24,11 @@ Explanation is **understanding-oriented**. These documents discuss concepts, des
 |---|---|
 | [Real-Time Protocol Philosophy](realtime-protocols-philosophy.md) | When to use WebSockets, gRPC, or SSE; evolution, trade-offs, design goals |
 
-### DocTester and Testing Philosophy
+### DTR and Testing Philosophy
 
 | Document | What it explains |
 |---|---|
-| [How DocTester Works](how-doctester-works.md) | The request/test/render lifecycle in detail |
+| [How DTR Works](how-dtr-works.md) | The request/test/render lifecycle in detail |
 | [Documentation Philosophy](documentation-philosophy.md) | Why test-driven documentation, and the Diataxis connection |
 | [Architecture](architecture.md) | Module structure, class design, and extension points |
 

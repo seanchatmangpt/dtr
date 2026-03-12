@@ -1,4 +1,4 @@
-# DocTester 2.0.0 — Release Preparation Summary
+# DTR 2.0.0 — Release Preparation Summary
 
 **Date:** 2026-03-10
 **Status:** READY FOR RELEASE (pending credentials)
@@ -133,7 +133,7 @@ gpg --full-generate-key
 gpg --keyserver keys.openpgp.org --send-keys <KEY_ID>
 
 # Step 6: Verify setup (2 min)
-mvnd clean install -pl doctester-core -DskipTests
+mvnd clean install -pl dtr-core -DskipTests
 mvnd -P release release:prepare -DdryRun=true
 rm -f pom.xml.tag pom.xml.releaseBackup release.properties
 
@@ -170,7 +170,7 @@ mvnd -P release release:prepare release:perform \
 
 ### Verify on Maven Central (5-10 min after release)
 ```bash
-curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core:2.0.0" | jq .
+curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core:2.0.0" | jq .
 ```
 
 ---
@@ -185,7 +185,7 @@ curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core:2.
 - Git tags format verified
 
 ### Medium-Risk Items ⚠️
-- Integration tests failing (Jetty issue) — **workaround available** (skip with `-pl doctester-core`)
+- Integration tests failing (Jetty issue) — **workaround available** (skip with `-pl dtr-core`)
 - Credentials not yet configured — **blocking but straightforward to set up**
 - First release to Maven Central — **careful execution + monitoring recommended**
 
@@ -218,7 +218,7 @@ Release is successful when:
 - [ ] `mvnd -P release release:prepare release:perform` completes with `BUILD SUCCESS`
 - [ ] Git tag `v2.0.0` exists: `git tag | grep 2.0.0`
 - [ ] Artifact appears on Maven Central within 5-10 minutes
-- [ ] Signatures present: `ls ~/.m2/repository/org/r10r/doctester-core/2.0.0/*.asc`
+- [ ] Signatures present: `ls ~/.m2/repository/org/r10r/dtr-core/2.0.0/*.asc`
 - [ ] GitHub release created with changelog
 - [ ] Announcement published
 
@@ -269,8 +269,8 @@ RELEASE_PREPARATION_SUMMARY.md           (this file)
 
 ```
 pom.xml                                  (release profile complete)
-doctester-core/pom.xml                   (deployable JAR artifact)
-doctester-integration-test/pom.xml       (test artifact)
+dtr-core/pom.xml                   (deployable JAR artifact)
+dtr-integration-test/pom.xml       (test artifact)
 .mvn/maven.config                        (Java 25 preview flags)
 ```
 
@@ -311,7 +311,7 @@ The person executing the release should:
 A: Yes, 100%. All POM configuration is correct for Maven Central. You only need credentials.
 
 **Q: Can I release just the core module?**
-A: Yes, use `-pl doctester-core` to skip integration tests (recommended due to Jetty issue).
+A: Yes, use `-pl dtr-core` to skip integration tests (recommended due to Jetty issue).
 
 **Q: How long does publication to Maven Central take?**
 A: Typically 2-5 minutes, maximum 15 minutes. Check the API after 10 minutes.
@@ -337,7 +337,7 @@ Missing only: Credentials (straightforward to add)
 
 ---
 
-**You are ready to release DocTester 2.0.0 to Maven Central.**
+**You are ready to release DTR 2.0.0 to Maven Central.**
 
 Start with credential setup, then follow the release-day commands. All infrastructure is in place.
 

@@ -1,6 +1,6 @@
 # Best Practices
 
-This guide shares proven patterns and conventions for using DocTester CLI effectively. Follow these practices for maintainable, professional documentation.
+This guide shares proven patterns and conventions for using DTR CLI effectively. Follow these practices for maintainable, professional documentation.
 
 ## Documentation Organization
 
@@ -254,7 +254,7 @@ docs/html/
 docs/pdf/
 docs/output/
 
-# DocTester cache
+# DTR cache
 .doctester/
 ~/.doctester/
 
@@ -325,7 +325,7 @@ jobs:
           python-version: '3.12'
       
       - name: Install DocTester
-        run: pip install -e ./doctester-cli
+        run: pip install -e ./dtr-cli
       
       - name: Generate Documentation
         run: dtr batch --input 'docs/**/*.md' --output './build/docs/'

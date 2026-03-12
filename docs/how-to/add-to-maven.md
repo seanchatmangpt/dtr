@@ -1,17 +1,17 @@
-# How-to: Add DocTester to a Maven Project
+# How-to: Add DTR to a Maven Project
 
 ## Add the dependency
 
 ```xml
 <dependency>
     <groupId>org.doctester</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>1.1.12</version>
     <scope>test</scope>
 </dependency>
 ```
 
-DocTester requires JUnit 4:
+DTR requires JUnit 4:
 
 ```xml
 <dependency>
@@ -43,7 +43,7 @@ DocTester's HTTP client (Apache HttpClient) uses SLF4J. Without a binding you'll
 
 ## Configure the compiler plugin
 
-DocTester targets Java 25 with preview features enabled:
+DTR targets Java 25 with preview features enabled:
 
 ```xml
 <build>
@@ -101,7 +101,7 @@ DocTester targets Java 25 with preview features enabled:
         </dependency>
         <dependency>
             <groupId>org.doctester</groupId>
-            <artifactId>doctester-core</artifactId>
+            <artifactId>dtr-core</artifactId>
             <version>1.1.12</version>
             <scope>test</scope>
         </dependency>
@@ -152,4 +152,4 @@ mvnd test
 ls target/site/doctester/
 ```
 
-If `index.html` appears, DocTester is working.
+If `index.html` appears, DTR is working.

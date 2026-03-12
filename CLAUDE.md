@@ -1,4 +1,4 @@
-# DocTester — Claude Code Quick Reference
+# DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
 **Project:** Markdown documentation generator for Java 25 | **Version:** 2.5.0-SNAPSHOT
 
@@ -8,12 +8,12 @@
 
 ### 1. REAL CODE, REAL MEASUREMENTS ONLY
 - ❌ NO simulation, NO fakes, NO hard-coded numbers
-- ✅ Use actual DocTester code (RenderMachine + say* methods)
+- ✅ Use actual DTR code (RenderMachine + say* methods)
 - ✅ Measure with System.nanoTime() on real execution
 - ✅ Report: metric + units + Java version + iterations + environment
 - **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)" NOT "6667x faster"
 
-### 2. ALWAYS USE REAL DOCTESTER CLI
+### 2. ALWAYS USE REAL DTR CLI
 - ✅ JUnit 5 tests with DocTesterContext
 - ✅ Output through RenderMachine rendering pipeline
 - ❌ Never bypass with standalone generators
@@ -29,8 +29,8 @@
 ## 🔧 QUICK BUILD
 
 ```bash
-# Run real DocTester test
-mvnd test -pl doctester-integration-test -Dtest=PhDThesisDocTest
+# Run real DTR test
+mvnd test -pl dtr-integration-test -Dtest=PhDThesisDocTest
 
 # If Maven auth fails, start proxy first
 python3 maven-proxy-auth.py &
@@ -177,8 +177,8 @@ ps aux | grep maven-proxy      # Check proxy running
 ## 📚 FILES YOU NEED
 
 - `maven-proxy-auth.py` — Enterprise proxy solution
-- `doctester-core/` — Core library
-- `doctester-integration-test/` — Integration tests
+- `dtr-core/` — Core library
+- `dtr-integration-test/` — Integration tests
 - `.mvn/maven.config` — Build flags (--enable-preview)
 - `pom.xml` — `<release>26</release>`
 
@@ -186,4 +186,4 @@ ps aux | grep maven-proxy      # Check proxy running
 
 **Last Updated:** March 11, 2026
 **Branch:** claude/fix-latex-errors-rzhxB
-**Rule:** Always measure real, report real, use real DocTester code.
+**Rule:** Always measure real, report real, use real DTR code.

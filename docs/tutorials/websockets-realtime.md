@@ -1,6 +1,6 @@
 # Tutorial: WebSockets for Real-Time Bidirectional Communication
 
-Learn how to test WebSocket servers with DocTester. WebSockets enable persistent, full-duplex communication between client and server — perfect for real-time applications like chat, notifications, and live dashboards.
+Learn how to test WebSocket servers with DTR. WebSockets enable persistent, full-duplex communication between client and server — perfect for real-time applications like chat, notifications, and live dashboards.
 
 **Time:** ~40 minutes
 **Prerequisites:** Java 25, understanding of HTTP and networking
@@ -55,7 +55,7 @@ import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class WebSocketDocTest extends DocTester {
+public class WebSocketDocTest extends DTR {
 
     @Test
     public void connectToWebSocketServer() throws Exception {

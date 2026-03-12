@@ -1,12 +1,12 @@
-# DocTester 80/20 Essentials: The Minimal Path to Productivity
+# DTR 80/20 Essentials: The Minimal Path to Productivity
 
-**Goal:** Master 20% of DocTester to be productive with 80% of real-world API testing scenarios in ~45 minutes.
+**Goal:** Master 20% of DTR to be productive with 80% of real-world API testing scenarios in ~45 minutes.
 
 ---
 
 ## The Core Trinity: Three Methods That Do Most of the Work
 
-Every DocTester test revolves around **three methods**. Master these and you can write working tests immediately.
+Every DTR test revolves around **three methods**. Master these and you can write working tests immediately.
 
 ### 1. Document a Section: `sayNextSection(String title)`
 
@@ -263,7 +263,7 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 
-public class UserApiDocTest extends DocTester {
+public class UserApiDocTest extends DTR {
 
     // ✅ Implement this — return your test server's base URL
     @Override

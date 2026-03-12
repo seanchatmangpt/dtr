@@ -1,4 +1,4 @@
-# DocTester 2.0.0 Release Notes
+# DTR 2.0.0 Release Notes
 
 **Release Date:** March 10, 2026
 
@@ -10,13 +10,13 @@
 
 ## Overview
 
-DocTester 2.0.0 is a **major release** with significant architectural improvements, modernization for Java 25 + Maven 4, and new enterprise-grade testing capabilities. This release introduces breaking changes to modernize the framework for contemporary Java development.
+DTR 2.0.0 is a **major release** with significant architectural improvements, modernization for Java 25 + Maven 4, and new enterprise-grade testing capabilities. This release introduces breaking changes to modernize the framework for contemporary Java development.
 
 **Maven Coordinates:**
 ```xml
 <dependency>
   <groupId>org.r10r</groupId>
-  <artifactId>doctester-core</artifactId>
+  <artifactId>dtr-core</artifactId>
   <version>2.0.0</version>
   <scope>test</scope>
 </dependency>
@@ -100,7 +100,7 @@ Request.GET()
 
 ### 7. Java 25 Modernization
 
-DocTester is built on **Java 25 (LTS)** with `--enable-preview` enabled, leveraging modern language features:
+DTR is built on **Java 25 (LTS)** with `--enable-preview` enabled, leveraging modern language features:
 
 - **Records** for request/response DTOs and value objects
 - **Sealed class hierarchies** for request methods and authentication types
@@ -243,11 +243,11 @@ java -version  # Verify: openjdk 25.x.x
 </plugin>
 ```
 
-#### Step 3: Update DocTester Dependency
+#### Step 3: Update DTR Dependency
 ```xml
 <dependency>
   <groupId>org.r10r</groupId>
-  <artifactId>doctester-core</artifactId>
+  <artifactId>dtr-core</artifactId>
   <version>2.0.0</version>
   <scope>test</scope>
 </dependency>
@@ -274,7 +274,7 @@ java -version  # Verify: openjdk 25.x.x
 
 **Before (Version 1.x):**
 ```java
-public class UserApiDocTest extends DocTester {
+public class UserApiDocTest extends DTR {
     @Test
     public void testListUsers() {
         sayNextSection("Get All Users");
@@ -297,7 +297,7 @@ public class UserApiDocTest extends DocTester {
 
 **After (Version 2.0.0):**
 ```java
-public class UserApiDocTest extends DocTester {
+public class UserApiDocTest extends DTR {
     @Test
     @DocSection("Get All Users")
     @DocDescription("Retrieve a list of all registered users.")
@@ -362,13 +362,13 @@ mvnd clean install -DskipTests
 mvnd clean verify
 
 # Build only core module
-mvnd clean install -pl doctester-core -DskipTests
+mvnd clean install -pl dtr-core -DskipTests
 
 # Run tests (single module)
-mvnd test -pl doctester-core
+mvnd test -pl dtr-core
 
 # Run integration tests
-mvnd clean install -pl doctester-integration-test -am
+mvnd clean install -pl dtr-integration-test -am
 
 # Parallel build
 mvnd clean verify -T 1C
@@ -439,7 +439,7 @@ Apache License 2.0
 - **Release Date:** March 10, 2026
 - **Git Tag:** `v2.0.0`
 - **Repository:** https://github.com/seanchatmangpt/doctester
-- **Maven Central:** https://mvnrepository.com/artifact/org.r10r/doctester-core/2.0.0
+- **Maven Central:** https://mvnrepository.com/artifact/org.r10r/dtr-core/2.0.0
 
 ---
 
@@ -457,7 +457,7 @@ export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 mvnd clean verify
 
 # Run integration tests
-mvnd clean install -pl doctester-integration-test -am
+mvnd clean install -pl dtr-integration-test -am
 
 # View generated documentation
 cat target/docs/README.md
@@ -465,4 +465,4 @@ cat target/docs/README.md
 
 ---
 
-**Thank you for using DocTester 2.0.0!**
+**Thank you for using DTR 2.0.0!**

@@ -1,7 +1,7 @@
 # Reference: RenderMachine Interface
 
 **Package:** `org.r10r.doctester.rendermachine`
-**File:** `doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachine.java`
+**File:** `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachine.java`
 
 `RenderMachine` is the HTML documentation generator interface. The default implementation is `RenderMachineImpl`. Override `getRenderMachine()` in your `DocTester` subclass to supply a custom renderer.
 
@@ -62,7 +62,7 @@ Finalizes the HTML and writes the output files. Called once per test class by `D
 
 ## Default implementation: RenderMachineImpl
 
-**File:** `doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
+**File:** `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
 
 **Output directory:** `target/site/doctester/`
 
@@ -143,7 +143,7 @@ public class MarkdownRenderMachine implements RenderMachine {
 Inject it:
 
 ```java
-public abstract class MarkdownDocTester extends DocTester {
+public abstract class MarkdownDocTester extends DTR {
 
     @Override
     public RenderMachine getRenderMachine() {

@@ -1,4 +1,4 @@
-# DocTester 2.0.0 Release Optimization Plan
+# DTR 2.0.0 Release Optimization Plan
 
 ## Overview
 
@@ -69,8 +69,8 @@ Replace any `String.format(...)` with `"...".formatted(...)`
 ### Validation
 ```bash
 # After changes, verify no String.format() remains in these files
-grep -n "String\.format" doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java
-grep -n "String\.format" doctester-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java
+grep -n "String\.format" dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java
+grep -n "String\.format" dtr-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java
 
 # Should return 0 matches
 ```
@@ -171,15 +171,15 @@ Map<String, String> headers = new HashMap<>();
 ```bash
 # After changes, verify no Guava collection factories remain
 grep -r "Maps\.newHashMap\|Maps\.newHashMap\|Lists\.newArrayList\|Sets\.newHashSet" \
-    doctester-core/src/main/java/org/r10r/doctester/testbrowser/ \
-    doctester-core/src/main/java/org/r10r/doctester/rendermachine/
+    dtr-core/src/main/java/org/r10r/doctester/testbrowser/ \
+    dtr-core/src/main/java/org/r10r/doctester/rendermachine/
 
 # Should return 0 matches
 
 # Verify imports are removed
-grep "com.google.common.collect" doctester-core/src/main/java/org/r10r/doctester/testbrowser/Request.java
-grep "com.google.common.collect" doctester-core/src/main/java/org/r10r/doctester/testbrowser/Url.java
-grep "com.google.common.collect" doctester-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java
+grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/doctester/testbrowser/Request.java
+grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/doctester/testbrowser/Url.java
+grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java
 
 # Should return 0 matches
 ```
@@ -199,7 +199,7 @@ grep "com.google.common.collect" doctester-core/src/main/java/org/r10r/doctester
 
 **Issue:**
 ```
-[INFO] /home/user/doctester/doctester-core/src/test/java/org/r10r/doctester/AnnotationDocTest.java:
+[INFO] /home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/AnnotationDocTest.java:
        Some input files use or override a deprecated API.
 ```
 
@@ -210,14 +210,14 @@ grep "com.google.common.collect" doctester-core/src/main/java/org/r10r/doctester
 
 **Command to investigate:**
 ```bash
-mvn clean compile -pl doctester-core -Xlint:deprecation 2>&1 | \
+mvn clean compile -pl dtr-core -Xlint:deprecation 2>&1 | \
     grep -A 5 "AnnotationDocTest"
 ```
 
 ### Validation
 ```bash
 # After fix, no deprecation warning should appear for this file
-mvnd clean compile -pl doctester-core -Xlint:deprecation 2>&1 | \
+mvnd clean compile -pl dtr-core -Xlint:deprecation 2>&1 | \
     grep "AnnotationDocTest"
 
 # Should return no matches
@@ -230,7 +230,7 @@ mvnd clean compile -pl doctester-core -Xlint:deprecation 2>&1 | \
 ### Pre-Execution
 - [ ] Verify current branch is `main` or release branch
 - [ ] Create feature branch: `git checkout -b chore/java25-idiom-cleanup`
-- [ ] Ensure all tests currently pass: `mvnd clean test -pl doctester-core`
+- [ ] Ensure all tests currently pass: `mvnd clean test -pl dtr-core`
 
 ### Task 1: String.format() Migration
 - [ ] Open `RenderMachineImpl.java`
@@ -238,7 +238,7 @@ mvnd clean compile -pl doctester-core -Xlint:deprecation 2>&1 | \
 - [ ] Open `OpenApiCollector.java`
 - [ ] Replace 2 `String.format()` calls with `.formatted()`
 - [ ] Run grep validation
-- [ ] Compile and test: `mvnd clean test -pl doctester-core`
+- [ ] Compile and test: `mvnd clean test -pl dtr-core`
 
 ### Task 2: Guava Cleanup
 - [ ] Open `Request.java`
@@ -253,22 +253,22 @@ mvnd clean compile -pl doctester-core -Xlint:deprecation 2>&1 | \
 - [ ] Replace 1 `Maps.newHashMap()` with `new HashMap<>()`
 - [ ] Remove Guava imports from `TestBrowserImpl.java`
 - [ ] Run grep validation
-- [ ] Compile and test: `mvnd clean test -pl doctester-core`
+- [ ] Compile and test: `mvnd clean test -pl dtr-core`
 
 ### Task 3: Deprecation Fix
 - [ ] Investigate AnnotationDocTest deprecation
 - [ ] Fix or suppress appropriately
-- [ ] Compile with warnings: `mvnd clean compile -pl doctester-core -Xlint:deprecation`
+- [ ] Compile with warnings: `mvnd clean compile -pl dtr-core -Xlint:deprecation`
 - [ ] Verify no AnnotationDocTest warnings
 
 ### Final Validation
-- [ ] Full compilation: `mvnd clean install -pl doctester-core`
-- [ ] Full test suite: `mvnd test -pl doctester-core`
+- [ ] Full compilation: `mvnd clean install -pl dtr-core`
+- [ ] Full test suite: `mvnd test -pl dtr-core`
 - [ ] Verify no compilation warnings related to these changes
 - [ ] Code review changes
 
 ### Post-Execution
-- [ ] Stage changes: `git add doctester-core/src/main/java`
+- [ ] Stage changes: `git add dtr-core/src/main/java`
 - [ ] Create commit with message:
   ```
   Modernize Java 25 idioms for 2.0.0 release
@@ -300,8 +300,8 @@ mvnd clean compile -pl doctester-core -Xlint:deprecation 2>&1 | \
 ## Quality Gates
 
 ### Before Committing
-- [ ] `mvnd clean install -pl doctester-core` succeeds
-- [ ] `mvnd test -pl doctester-core` all tests pass
+- [ ] `mvnd clean install -pl dtr-core` succeeds
+- [ ] `mvnd test -pl dtr-core` all tests pass
 - [ ] No compilation warnings related to these changes
 - [ ] No new deprecation warnings introduced
 - [ ] Grep validation shows 0 matches for:
@@ -343,5 +343,5 @@ No API or behavioral changes means zero risk of rollback issues.
 ---
 
 **Status:** Ready for execution
-**Target Release:** DocTester 2.0.0
+**Target Release:** DTR 2.0.0
 **Priority:** High (improves Java 25 adoption score from 85 → 95)

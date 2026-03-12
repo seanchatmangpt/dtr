@@ -1,7 +1,7 @@
-# DocTester — Living API Documentation for Java
+# DTR — Living API Documentation for Java
 
 [![Build Status](https://github.com/r10r-org/doctester/actions/workflows/build.yml/badge.svg)](https://github.com/r10r-org/doctester/actions)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.r10r/doctester-core/badge.svg)](https://central.sonatype.com/artifact/org.r10r/doctester-core)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.r10r/dtr-core/badge.svg)](https://central.sonatype.com/artifact/org.r10r/dtr-core)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
 **DocTester 2.0.0** generates **Markdown documentation while running JUnit tests**. Write tests once, get living API documentation for free.
@@ -10,7 +10,7 @@
 
 ---
 
-## The Problem DocTester Solves
+## The Problem DTR Solves
 
 You build a REST API with multiple endpoints, payloads, and response codes. You test it thoroughly with JUnit. But your API documentation? It rots.
 
@@ -169,7 +169,7 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 ```xml
 <dependency>
     <groupId>org.r10r</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>2.0.0</version>
     <scope>test</scope>
 </dependency>
@@ -227,7 +227,7 @@ import org.r10r.doctester.DocDescription;
 import org.junit.Test;
 import static org.hamcrest.Matchers.equalTo;
 
-public class UserApiDocTest extends DocTester {
+public class UserApiDocTest extends DTR {
 
     @Test
     @DocSection("Get All Users")
@@ -441,7 +441,7 @@ public class MyApiDocTest extends NinjaApiDoctester {
 
 ```java
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class MyApiDocTest extends DocTester {
+public class MyApiDocTest extends DTR {
     @LocalServerPort
     int port;
 
@@ -456,7 +456,7 @@ public class MyApiDocTest extends DocTester {
 
 ```java
 @QuarkusTest
-public class MyApiDocTest extends DocTester {
+public class MyApiDocTest extends DTR {
     @Override
     public Url testServerUrl() {
         return Url.host("http://localhost:8081");  // Quarkus default
@@ -657,7 +657,7 @@ Last release of the 1.x series. Generates Bootstrap HTML documentation.
 
 ## Acknowledgments
 
-DocTester is inspired by Python doctests and the Devbliss doctest library. Thanks to all contributors!
+DTR is inspired by Python doctests and the Devbliss doctest library. Thanks to all contributors!
 
 ---
 

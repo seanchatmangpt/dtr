@@ -1,6 +1,6 @@
 # Reference Documentation
 
-Complete, structured reference for all DocTester CLI commands, configuration, environment variables, exit codes, and terminology.
+Complete, structured reference for all DTR CLI commands, configuration, environment variables, exit codes, and terminology.
 
 ## Files in This Reference
 
@@ -24,10 +24,10 @@ Complete listing of all `dtr` commands with detailed syntax, arguments, options,
 - Syntax patterns for all commands
 
 ### [Environment Variables Reference](./environment-variables.md)
-All environment variables affecting DocTester CLI behavior and platform integration.
+All environment variables affecting DTR CLI behavior and platform integration.
 
 **Categories:**
-- DocTester core configuration (DTR_* variables)
+- DTR core configuration (DTR_* variables)
 - Java & Maven integration (JAVA_HOME, MAVEN_OPTS, etc.)
 - Output & rendering configuration (LaTeX, syntax highlighting, TOC)
 - Blog & social media publishing credentials
@@ -66,7 +66,7 @@ User-level (~/.doctester/config) and project-level (./doctester.yaml) configurat
 - CI/CD integration examples
 
 ### [Exit Codes Reference](./exit-codes.md)
-Complete reference of all exit codes returned by the DocTester CLI.
+Complete reference of all exit codes returned by the DTR CLI.
 
 **Exit codes documented:**
 - 0 = Success
@@ -94,7 +94,7 @@ Complete reference of all exit codes returned by the DocTester CLI.
 - POSIX convention reference
 
 ### [Glossary of Terms](./glossary.md)
-Comprehensive glossary of all terminology used throughout DocTester documentation.
+Comprehensive glossary of all terminology used throughout DTR documentation.
 
 **Coverage:**
 - 100+ defined terms (A-Z)
@@ -152,7 +152,7 @@ This reference follows the **Diataxis Framework** for information-oriented docum
 - **Searchable** — Headings, glossary, clear hierarchy
 - **Scannable** — Tables, lists, bold keywords for quick lookup
 - **Accurate** — Reflects actual CLI behavior and features
-- **Up-to-date** — Updated with latest DocTester version
+- **Up-to-date** — Updated with latest DTR version
 
 ## Related Documentation
 

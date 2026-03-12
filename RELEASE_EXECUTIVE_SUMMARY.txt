@@ -1,9 +1,9 @@
 ================================================================================
-                    DocTester 2.0.0 RELEASE READINESS REPORT
+                    DTR 2.0.0 RELEASE READINESS REPORT
                           EXECUTIVE SUMMARY
 ================================================================================
 
-PROJECT:                    DocTester (Java testing framework)
+PROJECT:                    DTR (Java testing framework)
 CURRENT VERSION:            1.1.12-SNAPSHOT
 TARGET RELEASE:             2.0.0
 TARGET PUBLICATION:         Maven Central (Sonatype Central Publisher Portal)
@@ -14,7 +14,7 @@ PREPARED BY:                Maven 4 + mvnd Build Expert
                                 STATUS: READY ✅
 ================================================================================
 
-DocTester is PRODUCTION-READY for Maven Central publication. All required
+DTR is PRODUCTION-READY for Maven Central publication. All required
 configuration is in place. Only credential setup (straightforward, ~45 minutes)
 remains before release can proceed.
 
@@ -50,7 +50,7 @@ PUBLICATION INFRASTRUCTURE
 
 PROJECT METADATA
   ✅ Group ID: org.r10r
-  ✅ Artifact ID: doctester-core (main library)
+  ✅ Artifact ID: dtr-core (main library)
   ✅ SCM: GitHub (git@github.com:r10r-org/doctester.git)
   ✅ License: Apache 2.0
   ✅ Developers: Listed with contact info
@@ -58,8 +58,8 @@ PROJECT METADATA
 
 MULTI-MODULE STRUCTURE
   ✅ Parent POM (doctester) - aggregates modules
-  ✅ doctester-core JAR - main artifact for publication
-  ✅ doctester-integration-test WAR - integration tests
+  ✅ dtr-core JAR - main artifact for publication
+  ✅ dtr-integration-test WAR - integration tests
 
 TESTING & VALIDATION
   ✅ Dry-run completed successfully (2026-03-10 21:18 UTC)
@@ -67,7 +67,7 @@ TESTING & VALIDATION
   ✅ Git tag format verified (v1.1.12)
   ✅ Release artifacts would generate correctly
   ✅ Enforcer rules pass (Java 25 + Maven 4.0.0-rc-3+)
-  ✅ Core module builds with: mvnd clean install -pl doctester-core -DskipTests
+  ✅ Core module builds with: mvnd clean install -pl dtr-core -DskipTests
 
 ================================================================================
                               WHAT'S NEEDED ⚠️
@@ -103,9 +103,9 @@ Total preparation time (incl. validation): 45 minutes
 ISSUE 1: Integration Test Failures (Jetty ClassLoader)
   Severity:      Medium (affects full build, not core release)
   Error:         NoClassDefFound: org.eclipse.jetty.servlet.ServletContextHandler
-  Impact:        Integration tests fail (77 tests in doctester-integration-test)
-  Core artifact: NOT affected (doctester-core builds successfully)
-  Workaround:    Use -pl doctester-core to skip integration tests during release
+  Impact:        Integration tests fail (77 tests in dtr-integration-test)
+  Core artifact: NOT affected (dtr-core builds successfully)
+  Workaround:    Use -pl dtr-core to skip integration tests during release
   Fix timeline:  Optional (upgrade Jetty version or debug Ninja config)
 
 ISSUE 2: Missing Sonatype Credentials
@@ -197,7 +197,7 @@ RELEASE COMMAND (once credentials are set up):
   mvnd -P release release:prepare release:perform
 
 VERIFY ON MAVEN CENTRAL (5-10 min after release):
-  https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core:2.0.0
+  https://central.sonatype.com/api/v1/search?q=org.r10r:dtr-core:2.0.0
 
 SUCCESS INDICATORS:
   ✓ Git tag v2.0.0 created
@@ -207,7 +207,7 @@ SUCCESS INDICATORS:
 
 CRITICAL FILES:
   pom.xml                        (root, release profile)
-  doctester-core/pom.xml         (main artifact)
+  dtr-core/pom.xml         (main artifact)
   .mvn/maven.config              (build configuration)
   ~/.m2/settings.xml             (to be updated with credentials)
 
@@ -291,7 +291,7 @@ External resources:
                                CONCLUSION
 ================================================================================
 
-DocTester 2.0.0 is READY FOR RELEASE to Maven Central.
+DTR 2.0.0 is READY FOR RELEASE to Maven Central.
 
 All required infrastructure and configuration is in place and has been validated
 through comprehensive dry-run testing. Only credential setup remains (45 minutes

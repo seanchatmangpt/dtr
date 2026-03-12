@@ -1,4 +1,4 @@
-# DocTester 2.0.0 Release Status Report
+# DTR 2.0.0 Release Status Report
 
 **Report Generated:** March 10, 2026
 
@@ -64,7 +64,7 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 ```xml
 <dependency>
   <groupId>org.r10r</groupId>
-  <artifactId>doctester-core</artifactId>
+  <artifactId>dtr-core</artifactId>
   <version>2.0.0</version>
   <scope>test</scope>
 </dependency>
@@ -93,7 +93,7 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 
 ```bash
 $ git tag -l v2.0.0 -n 10
-v2.0.0          DocTester 2.0.0 - Major Release with Markdown Output, Java 25, WebSocket/SSE Support, and Enterprise Auth
+v2.0.0          DTR 2.0.0 - Major Release with Markdown Output, Java 25, WebSocket/SSE Support, and Enterprise Auth
 
 $ git describe --tags
 v2.0.0-4-gdb0e25e
@@ -103,7 +103,7 @@ tag v2.0.0
 Tagger: Claude <noreply@anthropic.com>
 Date:   Tue Mar 10 21:28:25 2026 +0000
 
-DocTester 2.0.0 - Major Release with Markdown Output, Java 25, WebSocket/SSE Support, and Enterprise Auth
+DTR 2.0.0 - Major Release with Markdown Output, Java 25, WebSocket/SSE Support, and Enterprise Auth
 
 commit ef1fffa04ed31b1483e6f57592c525ead090c0f4
 ```

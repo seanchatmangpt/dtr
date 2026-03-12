@@ -1,4 +1,4 @@
-# DocTester 2.0.0 — Maven Central Release Documentation Index
+# DTR 2.0.0 — Maven Central Release Documentation Index
 
 **Project Status:** ✅ READY FOR RELEASE (pending credential setup)
 **Documentation Version:** 1.0
@@ -139,8 +139,8 @@
 ├── RELEASE_CREDENTIALS_CHECKLIST.md        (print-friendly checklist)
 │
 ├── pom.xml                                 (root POM with release profile)
-├── doctester-core/pom.xml                  (main artifact to publish)
-├── doctester-integration-test/pom.xml      (test artifact)
+├── dtr-core/pom.xml                  (main artifact to publish)
+├── dtr-integration-test/pom.xml      (test artifact)
 │
 ├── .mvn/maven.config                       (Java 25 preview flags)
 ├── CLAUDE.md                               (project architecture guide)
@@ -178,7 +178,7 @@
 |------|--------|------|-------|
 | Enforcer plugin | ✅ PASS | 2026-03-10 | Java 25 + Maven 4 enforced |
 | Dry-run (no GPG) | ✅ PARTIAL | 2026-03-10 | Failed only on GPG (expected) |
-| Core build | ✅ PASS | 2026-03-10 | `mvnd clean install -pl doctester-core -DskipTests` |
+| Core build | ✅ PASS | 2026-03-10 | `mvnd clean install -pl dtr-core -DskipTests` |
 | Integration tests | ⚠️ FAIL | 2026-03-10 | Jetty issue (workaround available) |
 
 ---
@@ -190,7 +190,7 @@
 1. **Read** `RELEASE_PREPARATION_SUMMARY.md` (10 min)
 2. **Follow** `RELEASE_SETUP_GUIDE.md` Steps 1-4 (30 min)
 3. **Print** `RELEASE_CREDENTIALS_CHECKLIST.md` and fill out
-4. **Test** with `mvnd clean install -pl doctester-core -DskipTests` (5 min)
+4. **Test** with `mvnd clean install -pl dtr-core -DskipTests` (5 min)
 
 **Total time investment:** ~45 minutes
 
@@ -359,10 +359,10 @@ A: See `RELEASE_SETUP_GUIDE.md` Step 8 (verification commands)
 
 Start with `RELEASE_PREPARATION_SUMMARY.md`, follow `RELEASE_SETUP_GUIDE.md`, and use `RELEASE_CREDENTIALS_CHECKLIST.md` on release day.
 
-Good luck with DocTester 2.0.0! 🚀
+Good luck with DTR 2.0.0! 🚀
 
 ---
 
 **Documentation compiled:** 2026-03-10
-**Next review recommended:** Before DocTester 3.0.0
+**Next review recommended:** Before DTR 3.0.0
 **Questions?** Refer to the comprehensive guides or Maven Central documentation.

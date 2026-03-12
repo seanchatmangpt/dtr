@@ -5,14 +5,14 @@
 ### Run Unit Tests (Fast - <30 seconds)
 ```bash
 cd /home/user/doctester
-pytest doctester-cli/tests/test_cli_stress.py -v
+pytest dtr-cli/tests/test_cli_stress.py -v
 ```
 
 ### Run Benchmarks (Detailed - ~2 minutes)
 ```bash
 cd /home/user/doctester
-mvnd clean package -pl doctester-benchmarks -am
-java -jar doctester-benchmarks/target/benchmarks.jar
+mvnd clean package -pl dtr-benchmarks -am
+java -jar dtr-benchmarks/target/benchmarks.jar
 ```
 
 ---
@@ -23,14 +23,14 @@ java -jar doctester-benchmarks/target/benchmarks.jar
 **After:** 5 essential unit tests + dedicated benchmarks module
 
 ### New Files
-- `doctester-cli/tests/test_cli_stress.py` — 5 consolidated tests
-- `doctester-benchmarks/` — New JMH benchmarks module (Java)
-- `doctester-benchmarks/README.md` — Comprehensive guide
+- `dtr-cli/tests/test_cli_stress.py` — 5 consolidated tests
+- `dtr-benchmarks/` — New JMH benchmarks module (Java)
+- `dtr-benchmarks/README.md` — Comprehensive guide
 - `CONSOLIDATION_SUMMARY_5AB.md` — Detailed consolidation report
 
 ### Old Files (Still Available)
-- `doctester-cli/tests/test_cli_stress_large_files.py` (not removed, can archive)
-- `doctester-cli/tests/test_cli_stress_concurrent.py` (not removed, can archive)
+- `dtr-cli/tests/test_cli_stress_large_files.py` (not removed, can archive)
+- `dtr-cli/tests/test_cli_stress_concurrent.py` (not removed, can archive)
 
 ---
 
@@ -50,7 +50,7 @@ java -jar doctester-benchmarks/target/benchmarks.jar
 
 ---
 
-## Benchmarks Overview (doctester-benchmarks/)
+## Benchmarks Overview (dtr-benchmarks/)
 
 10+ detailed JMH benchmarks for performance tracking:
 
@@ -78,15 +78,15 @@ java -jar doctester-benchmarks/target/benchmarks.jar
 
 ### Fast Build Path (PR validation)
 ```bash
-pytest doctester-cli/tests/test_cli_stress.py -v
+pytest dtr-cli/tests/test_cli_stress.py -v
 ```
 **Time:** <30 seconds
 **Exit:** 0 if all tests pass
 
 ### Detailed Build Path (Nightly/Manual)
 ```bash
-mvnd clean package -pl doctester-benchmarks -am
-java -jar doctester-benchmarks/target/benchmarks.jar -rf json -rff results.json
+mvnd clean package -pl dtr-benchmarks -am
+java -jar dtr-benchmarks/target/benchmarks.jar -rf json -rff results.json
 ```
 **Time:** 1-5 minutes
 **Output:** JSON results for trend analysis
@@ -98,14 +98,14 @@ java -jar doctester-benchmarks/target/benchmarks.jar -rf json -rff results.json
 ### Unit Tests Not Found
 ```bash
 cd /home/user/doctester
-python -m pytest doctester-cli/tests/test_cli_stress.py -v --collect-only
+python -m pytest dtr-cli/tests/test_cli_stress.py -v --collect-only
 ```
 
 ### Benchmarks Won't Compile
 Ensure Maven Enforcer plugin is available:
 ```bash
 mvnd --stop
-mvnd clean compile -pl doctester-benchmarks -am
+mvnd clean compile -pl dtr-benchmarks -am
 ```
 
 ### Results Vary Between Runs
@@ -120,11 +120,11 @@ java -jar target/benchmarks.jar -w 10 -i 20  # More iterations = more stable
 
 ```
 /home/user/doctester/
-├── doctester-cli/tests/
+├── dtr-cli/tests/
 │   ├── test_cli_stress.py              ← NEW: 5 consolidated tests
 │   ├── test_cli_stress_large_files.py  (original, not deleted)
 │   └── test_cli_stress_concurrent.py   (original, not deleted)
-├── doctester-benchmarks/               ← NEW: JMH benchmarks module
+├── dtr-benchmarks/               ← NEW: JMH benchmarks module
 │   ├── pom.xml
 │   ├── README.md
 │   └── src/jmh/java/.../
@@ -159,17 +159,17 @@ java -jar target/benchmarks.jar -w 10 -i 20  # More iterations = more stable
 ## Common Tasks
 
 ### Add a New Unit Stress Test
-1. Edit `doctester-cli/tests/test_cli_stress.py`
+1. Edit `dtr-cli/tests/test_cli_stress.py`
 2. Add function with `def test_*()` signature
-3. Run: `pytest doctester-cli/tests/test_cli_stress.py::test_name -v`
+3. Run: `pytest dtr-cli/tests/test_cli_stress.py::test_name -v`
 
 ### Add a New Benchmark
-1. Edit appropriate file in `doctester-benchmarks/src/jmh/java/.../`
+1. Edit appropriate file in `dtr-benchmarks/src/jmh/java/.../`
 2. Add method with `@Benchmark` annotation
 3. Build and run:
    ```bash
-   mvnd clean package -pl doctester-benchmarks -am
-   java -jar doctester-benchmarks/target/benchmarks.jar ClassName.methodName
+   mvnd clean package -pl dtr-benchmarks -am
+   java -jar dtr-benchmarks/target/benchmarks.jar ClassName.methodName
    ```
 
 ### Compare Benchmark Results
@@ -200,23 +200,23 @@ diff baseline.json current.json
 
 ## Documentation
 
-- **Benchmarks Guide:** `doctester-benchmarks/README.md`
+- **Benchmarks Guide:** `dtr-benchmarks/README.md`
 - **Consolidation Report:** `CONSOLIDATION_SUMMARY_5AB.md` (this file)
 - **Project Overview:** `CLAUDE.md`
-- **Benchmark Sources:** `doctester-benchmarks/src/jmh/java/`
+- **Benchmark Sources:** `dtr-benchmarks/src/jmh/java/`
 
 ---
 
 ## Next Steps
 
-1. **Verify tests pass:** `pytest doctester-cli/tests/test_cli_stress.py -v`
-2. **Build benchmarks:** `mvnd clean package -pl doctester-benchmarks -am`
-3. **Record baseline:** `java -jar doctester-benchmarks/target/benchmarks.jar -rf json -rff baseline.json`
+1. **Verify tests pass:** `pytest dtr-cli/tests/test_cli_stress.py -v`
+2. **Build benchmarks:** `mvnd clean package -pl dtr-benchmarks -am`
+3. **Record baseline:** `java -jar dtr-benchmarks/target/benchmarks.jar -rf json -rff baseline.json`
 4. **Update CI/CD:** Add benchmarks to nightly/manual trigger (optional)
 5. **Archive old files** (optional):
    ```bash
-   rm doctester-cli/tests/test_cli_stress_large_files.py
-   rm doctester-cli/tests/test_cli_stress_concurrent.py
+   rm dtr-cli/tests/test_cli_stress_large_files.py
+   rm dtr-cli/tests/test_cli_stress_concurrent.py
    ```
 
 ---
@@ -225,5 +225,5 @@ diff baseline.json current.json
 
 Refer to:
 - `CONSOLIDATION_SUMMARY_5AB.md` for detailed rationale
-- `doctester-benchmarks/README.md` for benchmark specifics
+- `dtr-benchmarks/README.md` for benchmark specifics
 - `CLAUDE.md` for project overview

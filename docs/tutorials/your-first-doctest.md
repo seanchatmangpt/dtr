@@ -4,7 +4,7 @@ In this tutorial you will write a DocTest that hits a real HTTP endpoint, assert
 
 By the end you will have:
 
-- A Maven project with DocTester configured
+- A Maven project with DTR configured
 - A working test that documents a GET request
 - An HTML page in `target/site/doctester/` you can open in a browser
 
@@ -13,9 +13,9 @@ By the end you will have:
 
 ---
 
-## Step 1 — Add DocTester to your project
+## Step 1 — Add DTR to your project
 
-Open your `pom.xml` and add DocTester to the test dependencies:
+Open your `pom.xml` and add DTR to the test dependencies:
 
 ```xml
 <dependencies>
@@ -27,10 +27,10 @@ Open your `pom.xml` and add DocTester to the test dependencies:
         <scope>test</scope>
     </dependency>
 
-    <!-- DocTester -->
+    <!-- DTR -->
     <dependency>
         <groupId>org.doctester</groupId>
-        <artifactId>doctester-core</artifactId>
+        <artifactId>dtr-core</artifactId>
         <version>1.1.12</version>
         <scope>test</scope>
     </dependency>
@@ -89,7 +89,7 @@ import org.r10r.doctester.testbrowser.Url;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-public class HttpBinDocTest extends DocTester {
+public class HttpBinDocTest extends DTR {
 
     @Test
     public void testGetRequest() {
@@ -199,7 +199,7 @@ public void testPostJsonPayload() {
     sayNextSection("POST with JSON Body");
 
     say("To send a JSON body, use contentTypeApplicationJson() and pass any "
-        + "Java object as the payload. DocTester serializes it automatically.");
+        + "Java object as the payload. DTR serializes it automatically.");
 
     record UserRequest(String name, String email) {}
 
@@ -225,11 +225,11 @@ Refresh the HTML page — all three scenarios are now documented.
 
 ## What you learned
 
-- How to add DocTester to a Maven project
+- How to add DTR to a Maven project
 - The structure of a DocTest class (`extends DocTester`, override `testServerUrl()`)
 - The core `say*` methods: `sayNextSection`, `say`, `sayAndMakeRequest`, `sayAndAssertThat`
 - How to build URLs with `Url.host()`, `.path()`, `.addQueryParameter()`
-- Where DocTester writes its output (`target/site/doctester/`)
+- Where DTR writes its output (`target/site/doctester/`)
 
 ---
 
@@ -238,4 +238,4 @@ Refresh the HTML page — all three scenarios are now documented.
 - [Tutorial: Testing a REST API](testing-a-rest-api.md) — a complete CRUD workflow with authentication
 - [How-to: Test JSON Endpoints](../how-to/test-json-endpoints.md) — deserialize and assert on response bodies
 - [How-to: Use Cookies](../how-to/use-cookies.md) — session and authentication cookie handling
-- [Reference: DocTester Base Class](../reference/doctester-base-class.md) — every method available
+- [Reference: DTR Base Class](../reference/dtr-base-class.md) — every method available

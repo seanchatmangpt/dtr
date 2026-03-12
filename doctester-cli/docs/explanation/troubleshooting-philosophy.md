@@ -1,6 +1,6 @@
 # Troubleshooting Philosophy
 
-This document explains how to think about and approach troubleshooting DocTester CLI problems. Rather than just listing fixes, it teaches you *how* to diagnose and resolve issues systematically.
+This document explains how to think about and approach troubleshooting DTR CLI problems. Rather than just listing fixes, it teaches you *how* to diagnose and resolve issues systematically.
 
 ## The Troubleshooting Mindset
 
@@ -35,7 +35,7 @@ This document explains how to think about and approach troubleshooting DocTester
 
 ### Reading Error Messages
 
-Error messages from DocTester follow a pattern:
+Error messages from DTR follow a pattern:
 
 ```
 Error: [Type] — [What went wrong] — [Location/Context]
@@ -90,7 +90,7 @@ dtr fmt html myfile.md -o output.html
 
 ### Step 2: Check the Error Code
 
-DocTester returns an exit code. Check what it means:
+DTR returns an exit code. Check what it means:
 
 ```bash
 dtr fmt html myfile.md -o output.html
@@ -193,13 +193,13 @@ dtr fmt html myfile.md -o output/result.html
 
 ### Step 7: Check Dependencies
 
-DocTester requires certain things to be installed:
+DTR requires certain things to be installed:
 
 ```bash
 # Check Python version
 python3 --version  # Should be 3.12+
 
-# Check DocTester is installed
+# Check DTR is installed
 dtr --version
 
 # Check dependencies
@@ -225,7 +225,7 @@ dtr fmt html myfile.md -o output.html 2>&1 | tee debug.log
 
 ### Problem: "dtr: command not found"
 
-**Hypothesis:** DocTester is not installed or not on PATH
+**Hypothesis:** DTR is not installed or not on PATH
 
 **Debug:**
 ```bash
@@ -235,7 +235,7 @@ echo $PATH
 ```
 
 **Solutions:**
-- Install: `pip install -e ./doctester-cli/`
+- Install: `pip install -e ./dtr-cli/`
 - Activate venv: `source venv/bin/activate`
 - Add to PATH: Export in `.bashrc` or `.zshrc`
 
@@ -262,7 +262,7 @@ grep -n "^#" myfile.md  # Check headings
 
 ### Problem: "Out of memory"
 
-**Hypothesis:** DocTester needs more RAM or file is too large
+**Hypothesis:** DTR needs more RAM or file is too large
 
 **Debug:**
 ```bash
@@ -325,7 +325,7 @@ If you're stuck, gather this information before asking for help:
 4. **Your environment:**
    - OS: macOS Ventura / Linux Ubuntu 22.04 / Windows 11
    - Python: `python3 --version` → Python 3.12.0
-   - DocTester: `dtr --version` → doctester-cli, version 0.1.0
+   - DocTester: `dtr --version` → dtr-cli, version 0.1.0
 
 5. **Reproduction steps:**
    - `echo "# Test" > test.md`
@@ -377,7 +377,7 @@ If an error message is confusing, suggest an improvement:
 - Create an issue on GitHub
 - Describe what was confusing
 - Suggest clearer wording
-- Help improve DocTester for everyone
+- Help improve DTR for everyone
 
 ## Prevention is Better Than Cure
 

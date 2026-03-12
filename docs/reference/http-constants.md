@@ -1,7 +1,7 @@
 # Reference: HttpConstants
 
 **Package:** `org.r10r.doctester.testbrowser`
-**File:** `doctester-core/src/main/java/org/r10r/doctester/testbrowser/HttpConstants.java`
+**File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/HttpConstants.java`
 
 `HttpConstants` provides string constants for HTTP methods, content types, and header names. You rarely need to use these directly — they are used internally by `Request` and `TestBrowserImpl`.
 

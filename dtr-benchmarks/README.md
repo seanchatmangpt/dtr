@@ -1,6 +1,6 @@
-# DocTester Benchmarks Module
+# DTR Benchmarks Module
 
-Performance benchmarks for DocTester using JMH (Java Microbenchmark Harness).
+Performance benchmarks for DTR using JMH (Java Microbenchmark Harness).
 
 ## Overview
 
@@ -53,7 +53,7 @@ Key metrics:
 
 ```bash
 # Build benchmarks module with all dependencies
-mvnd clean package -pl doctester-benchmarks -am
+mvnd clean package -pl dtr-benchmarks -am
 
 # This produces: target/benchmarks.jar (fat JAR, all dependencies included)
 ```
@@ -113,7 +113,7 @@ Lower scores are better (faster operations).
 |--------|-----------|-----------|
 | **Purpose** | Functional verification | Performance monitoring |
 | **Coverage** | Essential operations only | Detailed variations and edge cases |
-| **Location** | doctester-cli/tests/ | doctester-benchmarks/ |
+| **Location** | dtr-cli/tests/ | dtr-benchmarks/ |
 | **Framework** | pytest | JMH |
 | **Language** | Python | Java |
 | **Run Time** | <30 seconds | Variable (typically 1-5 min) |
@@ -140,7 +140,7 @@ To add new benchmarks:
        // Benchmark code here
    }
    ```
-3. Build and run: `mvnd clean package -pl doctester-benchmarks && java -jar target/benchmarks.jar`
+3. Build and run: `mvnd clean package -pl dtr-benchmarks && java -jar target/benchmarks.jar`
 
 ## Dependencies
 
@@ -151,7 +151,7 @@ To add new benchmarks:
 ## Troubleshooting
 
 **Q: "Cannot find symbol" errors when compiling?**
-A: Run `mvnd clean package -pl doctester-benchmarks -am` to build with dependencies.
+A: Run `mvnd clean package -pl dtr-benchmarks -am` to build with dependencies.
 
 **Q: Results vary between runs?**
 A: JMH includes warmup iterations to stabilize JIT compilation. Variance is normal; compare averages across multiple runs.

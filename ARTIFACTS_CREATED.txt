@@ -3,13 +3,13 @@ CONSOLIDATION ARTIFACTS - Complete File List
 ================================================================================
 
 1. CONSOLIDATED UNIT TEST FILE
-   /home/user/doctester/doctester-cli/tests/test_cli_stress.py
+   /home/user/doctester/dtr-cli/tests/test_cli_stress.py
    - 12 KB, 9 parametrized test cases, 380 lines
    - Python pytest format, syntax verified
    - Covers: Large files (100-500MB), Many files (1K-10K), Parallel rendering, Concurrency
 
 2. BENCHMARKS MODULE STRUCTURE
-   /home/user/doctester/doctester-benchmarks/
+   /home/user/doctester/dtr-benchmarks/
    ├── pom.xml (4.5 KB)
    │   - Maven 4 configuration with Java 25 and JMH 1.37
    │   - Shade plugin for executable JAR
@@ -39,7 +39,7 @@ CONSOLIDATION ARTIFACTS - Complete File List
 
 3. UPDATED ROOT POM
    /home/user/doctester/pom.xml
-   - Added <module>doctester-benchmarks</module>
+   - Added <module>dtr-benchmarks</module>
    - Registers new module in multi-module build
 
 4. DOCUMENTATION FILES
@@ -55,8 +55,8 @@ CONSOLIDATION ARTIFACTS - Complete File List
    - Common tasks and troubleshooting
 
 5. ORIGINAL FILES (NOT DELETED)
-   /home/user/doctester/doctester-cli/tests/test_cli_stress_large_files.py (22 KB, 22 tests)
-   /home/user/doctester/doctester-cli/tests/test_cli_stress_concurrent.py (60 KB, 21 tests)
+   /home/user/doctester/dtr-cli/tests/test_cli_stress_large_files.py (22 KB, 22 tests)
+   /home/user/doctester/dtr-cli/tests/test_cli_stress_concurrent.py (60 KB, 21 tests)
    - Preserved for reference
    - Can be archived or deleted after consolidation is verified
 
@@ -91,7 +91,7 @@ Syntax Validation:
   ✓ pom.xml - XML well-formed
 
 Module Registration:
-  ✓ doctester-benchmarks added to root pom.xml modules list
+  ✓ dtr-benchmarks added to root pom.xml modules list
 
 Test Structure:
   ✓ 5 root test functions identified
@@ -124,7 +124,7 @@ Maven Integration:
 
 Dependencies:
   ✓ JMH 1.37 dependency added
-  ✓ DocTester Core dependency declared
+  ✓ DTR Core dependency declared
   ✓ SLF4J for logging included
   ✓ No conflicting versions
 
@@ -138,15 +138,15 @@ READY FOR
 ================================================================================
 
 1. Unit Testing
-   pytest doctester-cli/tests/test_cli_stress.py -v
+   pytest dtr-cli/tests/test_cli_stress.py -v
    Expected: <30 seconds, all tests pass
 
 2. Benchmark Building
-   mvnd clean package -pl doctester-benchmarks -am
+   mvnd clean package -pl dtr-benchmarks -am
    Expected: Builds successfully, creates benchmarks.jar
 
 3. Benchmark Execution
-   java -jar doctester-benchmarks/target/benchmarks.jar
+   java -jar dtr-benchmarks/target/benchmarks.jar
    Expected: 1-5 minutes, standard JMH output
 
 4. CI/CD Integration
@@ -155,7 +155,7 @@ READY FOR
    - Parse and track benchmark results
 
 5. Baseline Recording
-   java -jar doctester-benchmarks/target/benchmarks.jar -rf json -rff baseline.json
+   java -jar dtr-benchmarks/target/benchmarks.jar -rf json -rff baseline.json
    Expected: Creates baseline.json for regression detection
 
 ================================================================================

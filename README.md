@@ -1,8 +1,8 @@
-# DocTester — Markdown Living Documentation for Java 25
+# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 25
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0-SNAPSHOT` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `org.r10r:doctester-core`
+**Latest:** `2.5.0-SNAPSHOT` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `org.r10r:dtr-core`
 
 ---
 
@@ -448,7 +448,7 @@ new BlogRenderMachine(new SubstackTemplate())     // Substack
 ```xml
 <dependency>
     <groupId>org.r10r</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>2.5.0-SNAPSHOT</version>
     <scope>test</scope>
 </dependency>
@@ -494,7 +494,7 @@ new BlogRenderMachine(new SubstackTemplate())     // Substack
 
 ---
 
-## 💡 Explanation — Why DocTester?
+## 💡 Explanation — Why DTR?
 
 ### The Problem: Stale Documentation
 
@@ -506,7 +506,7 @@ Traditional documentation:
 
 ### The Solution: Living Documentation
 
-DocTester generates docs from **actual test execution**:
+DTR (Documentation Testing Runtime) generates docs from **actual test execution**:
 - ✅ Always reflects current code behavior
 - ✅ Examples are guaranteed to work (they're your tests)
 - ✅ Single source of truth: your test suite
@@ -535,9 +535,9 @@ mvnd test  # Docs automatically regenerate with new response format
 
 ### Why Java 25?
 
-DocTester targets Java 25 idioms for concise, expressive tests:
+DTR targets Java 25 idioms for concise, expressive tests:
 
-| Java 25 Feature | Use in DocTester |
+| Java 25 Feature | Use in DTR |
 |---|---|
 | **Records** | Immutable test data (Product, User, etc.) |
 | **Sealed classes** | Type-safe test result hierarchies |
@@ -577,12 +577,12 @@ java -version          # Shows: openjdk version "25.0.2"
 mvnd --version         # Shows: Maven 4.0.0-rc-5
 ```
 
-### 2. Add DocTester to your `pom.xml`
+### 2. Add DTR to your `pom.xml`
 
 ```xml
 <dependency>
     <groupId>org.r10r</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>2.5.0-SNAPSHOT</version>
     <scope>test</scope>
 </dependency>
@@ -630,10 +630,10 @@ cat target/docs/test-results/MyFirstDocTest.md
 ## 📊 Module Structure
 
 ```
-doctester/
-├── doctester-core/
+dtr/
+├── dtr-core/
 │   ├── pom.xml
-│   └── src/main/java/org/r10r/doctester/
+│   └── src/main/java/io/github/seanchatmangpt/dtr/
 │       ├── DocTester.java              # Base test class with say* methods
 │       ├── assembly/                   # Document assembly & indexing
 │       ├── openapi/                    # OpenAPI/Swagger spec generation
@@ -647,7 +647,7 @@ doctester/
 │       │   └── auth/                   # OAuth2, Bearer, API Key support
 │       ├── websocket/                  # WebSocket (RFC 6455)
 │       └── sse/                        # Server-Sent Events
-└── doctester-integration-test/
+└── dtr-integration-test/
     └── Full integration examples
 ```
 
@@ -657,7 +657,7 @@ doctester/
 
 - **[CLAUDE.md](./CLAUDE.md)** — Comprehensive project guide for contributors
 - **[Documentation](./docs/)** — Full API documentation and guides
-- **[Examples](./doctester-integration-test/src/test/java/)** — Working examples
+- **[Examples](./dtr-integration-test/src/test/java/)** — Working examples
 
 ---
 

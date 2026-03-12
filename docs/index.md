@@ -1,10 +1,10 @@
-# DocTester Documentation
+# DTR Documentation
 
-DocTester is a Java testing framework that **generates HTML documentation while running JUnit tests**. Write your REST API tests once — get living documentation for free.
+DTR is a Java testing framework that **generates HTML documentation while running JUnit tests**. Write your REST API tests once — get living documentation for free.
 
 ## The Core Idea
 
-Traditional API documentation rots. Developers update code, forget to update docs, and users suffer. DocTester solves this by making tests and documentation the same thing: every test you write produces a readable HTML page that stays accurate because it is the test.
+Traditional API documentation rots. Developers update code, forget to update docs, and users suffer. DTR solves this by making tests and documentation the same thing: every test you write produces a readable HTML page that stays accurate because it is the test.
 
 ```java
 @Test
@@ -46,17 +46,17 @@ DocTester's documentation follows the [Diataxis](https://diataxis.fr/) framework
 |---|---|---|---|---|
 | **Java 25 Features** | [Virtual Threads](tutorials/virtual-threads-lightweight-concurrency.md), [Records & Sealed](tutorials/records-sealed-classes.md) | [Use Virtual Threads](how-to/use-virtual-threads.md), [Pattern Matching](how-to/pattern-matching.md), [Text Blocks](how-to/text-blocks.md), [Switch](how-to/switch-expressions.md) | [Virtual Threads API](reference/virtual-threads-reference.md), [Records & Sealed](reference/records-sealed-reference.md) | [Design Philosophy](explanation/java25-design-philosophy.md), [Virtual Threads](explanation/virtual-threads-philosophy.md), [Records & Sealed](explanation/records-sealed-philosophy.md) |
 | **Real-Time Protocols** | [WebSockets](tutorials/websockets-realtime.md), [gRPC](tutorials/grpc-streaming.md), [SSE](tutorials/server-sent-events.md) | [WS Connection](how-to/websockets-connection.md), [gRPC Unary](how-to/grpc-unary.md), [gRPC Streaming](how-to/grpc-streaming.md), [SSE Subscribe](how-to/sse-subscription.md) | [Protocols Reference](reference/realtime-protocols-reference.md) | [Protocol Philosophy](explanation/realtime-protocols-philosophy.md) |
-| **REST API Testing** | [Your First DocTest](tutorials/your-first-doctest.md), [REST API](tutorials/testing-a-rest-api.md) | [JSON](how-to/test-json-endpoints.md), [XML](how-to/test-xml-endpoints.md), [Cookies](how-to/use-cookies.md), [Files](how-to/upload-files.md), [Query Params](how-to/test-with-query-parameters.md), [Headers](how-to/use-custom-headers.md) | [DocTester](reference/doctester-base-class.md), [Request](reference/request-api.md), [Response](reference/response-api.md) | [How it Works](explanation/how-doctester-works.md), [Philosophy](explanation/documentation-philosophy.md), [Architecture](explanation/architecture.md) |
+| **REST API Testing** | [Your First DocTest](tutorials/your-first-doctest.md), [REST API](tutorials/testing-a-rest-api.md) | [JSON](how-to/test-json-endpoints.md), [XML](how-to/test-xml-endpoints.md), [Cookies](how-to/use-cookies.md), [Files](how-to/upload-files.md), [Query Params](how-to/test-with-query-parameters.md), [Headers](how-to/use-custom-headers.md) | [DocTester](reference/dtr-base-class.md), [Request](reference/request-api.md), [Response](reference/response-api.md) | [How it Works](explanation/how-dtr-works.md), [Philosophy](explanation/documentation-philosophy.md), [Architecture](explanation/architecture.md) |
 
 ### By Learning Mode
 
 | Section | Purpose | Start here if… |
 |---|---|---|
-| [Tutorials](tutorials/index.md) | Step-by-step learning | You're new to Java 25 or DocTester |
+| [Tutorials](tutorials/index.md) | Step-by-step learning | You're new to Java 25 or DTR |
 | [How-to Guides](how-to/index.md) | Task-focused recipes | You know what you want to do |
 | [Reference](reference/index.md) | Complete API docs | You need to look something up |
 | [Explanation](explanation/index.md) | Concepts & design | You want to understand *why* |
-| [Contributing](contributing/index.md) | Developer experience | You want to develop DocTester itself |
+| [Contributing](contributing/index.md) | Developer experience | You want to develop DTR itself |
 
 ---
 
@@ -67,7 +67,7 @@ DocTester's documentation follows the [Diataxis](https://diataxis.fr/) framework
 ```xml
 <dependency>
     <groupId>org.doctester</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>1.1.12</version>
     <scope>test</scope>
 </dependency>
@@ -76,7 +76,7 @@ DocTester's documentation follows the [Diataxis](https://diataxis.fr/) framework
 **2. Write a test:**
 
 ```java
-public class ApiDocTest extends DocTester {
+public class ApiDocTest extends DTR {
 
     @Test
     public void testCreateUser() {

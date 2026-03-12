@@ -6,51 +6,51 @@ A quick orientation to the key files before you make changes.
 
 ### The public API your users call
 
-**`DocTester.java`** — `doctester-core/src/main/java/org/r10r/doctester/DocTester.java`
+**`DTR.java`** — `dtr-core/src/main/java/org/r10r/doctester/DTR.java`
 
 The abstract base class. All `say*` methods here. This is what user-facing changes touch. Read it first.
 
-**`Request.java`** — `doctester-core/src/main/java/org/r10r/doctester/testbrowser/Request.java`
+**`Request.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Request.java`
 
 The fluent request builder. Adding new HTTP options (new headers, new authentication types) goes here.
 
-**`Response.java`** — `doctester-core/src/main/java/org/r10r/doctester/testbrowser/Response.java`
+**`Response.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Response.java`
 
 Response holder with deserialization methods. If Jackson serialization breaks, look here.
 
-**`Url.java`** — `doctester-core/src/main/java/org/r10r/doctester/testbrowser/Url.java`
+**`Url.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Url.java`
 
 URL builder. Very simple. Rarely needs changes.
 
 ### The HTTP engine
 
-**`TestBrowserImpl.java`** — `doctester-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java`
+**`TestBrowserImpl.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java`
 
 Where HTTP actually happens. Apache HttpClient calls are here. If a request type doesn't work (wrong headers, missing content type), start here.
 
-**`PayloadUtils.java`** — `doctester-core/src/main/java/org/r10r/doctester/testbrowser/PayloadUtils.java`
+**`PayloadUtils.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/PayloadUtils.java`
 
 Content type detection and pretty-printing. If JSON/XML isn't being detected correctly, look here.
 
 ### The HTML generator
 
-**`RenderMachineImpl.java`** — `doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
+**`RenderMachineImpl.java`** — `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
 
 HTML assembly. The `finishAndWriteOut()` method is where the full page is built. If the HTML output looks wrong, this is the file.
 
-**`RenderMachineHtml.java`** — `doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineHtml.java`
+**`RenderMachineHtml.java`** — `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineHtml.java`
 
 HTML template string constants. Bootstrap panel HTML, navbar, sidebar template. If you're updating the Bootstrap version or changing the page layout, this is where the templates live.
 
 ### Tests
 
-**`DocTesterTest.java`** — `doctester-core/src/test/java/org/r10r/doctester/DocTesterTest.java`
+**`DocTesterTest.java`** — `dtr-core/src/test/java/org/r10r/doctester/DocTesterTest.java`
 
 Unit tests for DocTester's core functionality. Uses Mockito to mock `TestBrowser` and `RenderMachine`.
 
-**`ApiControllerDocTest.java`** — `doctester-integration-test/src/test/java/controllers/ApiControllerDocTest.java`
+**`ApiControllerDocTest.java`** — `dtr-integration-test/src/test/java/controllers/ApiControllerDocTest.java`
 
-The integration test. Runs a full Ninja web server. This is both a test and an example — it demonstrates every major DocTester feature.
+The integration test. Runs a full Ninja web server. This is both a test and an example — it demonstrates every major DTR feature.
 
 ---
 
@@ -58,7 +58,7 @@ The integration test. Runs a full Ninja web server. This is both a test and an e
 
 | Change type | Files to touch |
 |---|---|
-| New `say*` method | `RenderMachineCommands.java`, `RenderMachine.java`, `RenderMachineImpl.java`, `DocTester.java` |
+| New `say*` method | `RenderMachineCommands.java`, `RenderMachine.java`, `RenderMachineImpl.java`, `DTR.java` |
 | New Request option | `Request.java`, possibly `TestBrowserImpl.java` |
 | New Response method | `Response.java` |
 | New content type support | `HttpConstants.java`, `PayloadUtils.java`, `Request.java`, `TestBrowserImpl.java` |

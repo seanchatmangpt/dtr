@@ -19,7 +19,7 @@ We'll document a hypothetical Articles API with these endpoints:
 | `GET` | `/api/articles/{id}` | Get a single article |
 | `DELETE` | `/api/articles/{id}` | Delete an article |
 
-This is the same structure as the DocTester integration test — adapt the URLs and DTOs to your own API.
+This is the same structure as the DTR integration test — adapt the URLs and DTOs to your own API.
 
 ---
 
@@ -59,7 +59,7 @@ public record ArticleList(List<Article> articles) {}
 
 When testing a real server, create a base class that sets the server URL once. This is the recommended pattern for projects with multiple DocTest classes.
 
-`src/test/java/com/example/ApiDocTester.java`:
+`src/test/java/com/example/ApiDTR.java`:
 
 ```java
 package com.example;
@@ -67,7 +67,7 @@ package com.example;
 import org.r10r.doctester.DocTester;
 import org.r10r.doctester.testbrowser.Url;
 
-public abstract class ApiDocTester extends DocTester {
+public abstract class ApiDocTester extends DTR {
 
     @Override
     public Url testServerUrl() {
@@ -323,7 +323,7 @@ say("To create an article, POST a JSON object with `title`, `body`, and `author`
     "fields. The server assigns an ID and returns the full article in the response body.");
 ```
 
-Think of DocTester output as the narrative section of a developer guide, with the request/response panels as embedded examples.
+Think of DTR output as the narrative section of a developer guide, with the request/response panels as embedded examples.
 
 ---
 
@@ -343,4 +343,4 @@ Think of DocTester output as the narrative section of a developer guide, with th
 - [How-to: Integrate with Frameworks](../how-to/integrate-with-frameworks.md) — Ninja, Arquillian, Spring Boot, Jetty
 - [How-to: Test XML Endpoints](../how-to/test-xml-endpoints.md) — XML payloads and deserialization
 - [How-to: Upload Files](../how-to/upload-files.md) — multipart form data
-- [Explanation: How DocTester Works](../explanation/how-doctester-works.md) — the lifecycle in detail
+- [Explanation: How DTR Works](../explanation/how-dtr-works.md) — the lifecycle in detail

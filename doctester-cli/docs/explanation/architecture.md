@@ -1,6 +1,6 @@
 # Architecture Overview
 
-DocTester CLI is structured as a layered system where each layer has a specific responsibility. Understanding these layers helps you predict behavior, extend functionality, and debug issues effectively.
+DTR CLI is structured as a layered system where each layer has a specific responsibility. Understanding these layers helps you predict behavior, extend functionality, and debug issues effectively.
 
 ## System Layers
 
@@ -55,7 +55,7 @@ Converts markdown/jupyter into target format.
 **Why separate?** Each format (HTML, LaTeX, PDF, Blog) has unique rules. Isolating them prevents format A from breaking format B.
 
 ### 4. Maven Integration Layer
-Allows DocTester to run as part of the build lifecycle.
+Allows DTR to run as part of the build lifecycle.
 
 **Responsibilities:**
 - Listen to Maven lifecycle events (test-compile, verify)
@@ -175,7 +175,7 @@ A typical export follows this path:
 
 ## Concurrency Model
 
-DocTester uses thread pools for parallel operations to make large batch exports fast.
+DTR uses thread pools for parallel operations to make large batch exports fast.
 
 **How It Works:**
 ```
@@ -223,7 +223,7 @@ This means:
 
 ## Key Architectural Decision: Python, Not Java
 
-DocTester CLI is written in Python, while the core library is Java. Why?
+DTR CLI is written in Python, while the core library is Java. Why?
 
 | Dimension | Python CLI | Java Alternative |
 |-----------|-----------|------------------|

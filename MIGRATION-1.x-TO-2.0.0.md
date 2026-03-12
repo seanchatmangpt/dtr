@@ -1,4 +1,4 @@
-# DocTester 1.x to 2.0.0 Migration Guide
+# DTR 1.x to 2.0.0 Migration Guide
 
 **Version:** 2.0.0
 **Release Date:** 2026-03-10
@@ -8,7 +8,7 @@
 
 ## Overview
 
-DocTester 2.0.0 is a major release with **breaking changes** that modernize the framework for contemporary Java and improve documentation portability. This guide helps you upgrade from 1.x (1.1.12) to 2.0.0.
+DTR 2.0.0 is a major release with **breaking changes** that modernize the framework for contemporary Java and improve documentation portability. This guide helps you upgrade from 1.x (1.1.12) to 2.0.0.
 
 ### Key Changes at a Glance
 
@@ -87,14 +87,14 @@ All documentation is now written to `docs/test/` at the module level:
 
 **Version 1.x:**
 ```
-mvnd test -pl doctester-core
-# → target/site/doctester/ created in doctester-core/
+mvnd test -pl dtr-core
+# → target/site/doctester/ created in dtr-core/
 ```
 
 **Version 2.0.0:**
 ```
-mvnd test -pl doctester-core
-# → docs/test/ created in doctester-core/
+mvnd test -pl dtr-core
+# → docs/test/ created in dtr-core/
 ```
 
 **For multi-module projects:** Each module gets its own `docs/test/` directory. Consider merging them in your build or documentation pipeline.
@@ -272,7 +272,7 @@ subscription.unsubscribe();
 Automatically generate OpenAPI 3.0 specs from your DocTests:
 
 ```java
-// In your DocTester base class or helper
+// In your DTR base class or helper
 OpenApiCollector collector = new OpenApiCollector();
 
 // Your tests automatically record HTTP calls
@@ -355,7 +355,7 @@ Request.GET()
 </plugin>
 ```
 
-### Step 2: Update DocTester Dependency
+### Step 2: Update DTR Dependency
 
 **In your test module `pom.xml`:**
 
@@ -363,7 +363,7 @@ Request.GET()
 <!-- OLD -->
 <dependency>
     <groupId>org.doctester</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>1.1.12</version>
     <scope>test</scope>
 </dependency>
@@ -371,7 +371,7 @@ Request.GET()
 <!-- NEW -->
 <dependency>
     <groupId>org.r10r</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>2.0.0</version>
     <scope>test</scope>
 </dependency>
@@ -402,7 +402,7 @@ Request.GET()
 **Before (Version 1.x):**
 
 ```java
-public class UserApiDocTest extends DocTester {
+public class UserApiDocTest extends DTR {
 
     @Test
     public void testListUsers() {
@@ -442,7 +442,7 @@ public class UserApiDocTest extends DocTester {
 **After (Version 2.0.0):**
 
 ```java
-public class UserApiDocTest extends DocTester {
+public class UserApiDocTest extends DTR {
 
     @Test
     @DocSection("Get All Users")
@@ -632,7 +632,7 @@ Tests pass, but no docs/test/ directory appears.
 ```java
 @AfterClass
 public static void afterTests() {
-    DocTester.finishDocTest();
+    DTR.finishDocTest();
 }
 ```
 
@@ -652,7 +652,7 @@ public static void afterTests() {
 
 - [ ] Java 25 installed and `JAVA_HOME` set
 - [ ] `pom.xml` updated with `<release>25</release>` and `--enable-preview`
-- [ ] DocTester dependency updated to 2.0.0
+- [ ] DTR dependency updated to 2.0.0
 - [ ] Test classes compile without preview warnings
 - [ ] Tests run and output Markdown to `docs/test/`
 - [ ] CI/CD pipeline updated to use `docs/test/` path

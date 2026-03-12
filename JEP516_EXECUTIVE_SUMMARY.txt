@@ -3,7 +3,7 @@ JEP 516 (AoT Object Caching) - DocMetadata Performance Analysis
 Executive Summary
 ================================================================================
 
-PROJECT: DocTester 2.5.0-SNAPSHOT
+PROJECT: DTR 2.5.0-SNAPSHOT
 DATE: March 11, 2026
 ENVIRONMENT: Java 25.0.2, Linux 6.18.5, Maven 4.0.0-rc-5
 
@@ -198,7 +198,7 @@ The JEP 516 implementation in DocMetadata is:
 RECOMMENDATION: ✓ APPROVED FOR PRODUCTION
 
 The JEP 516 caching strategy provides exceptional performance gains with zero
-correctness concerns. It is ready for immediate use in the DocTester project
+correctness concerns. It is ready for immediate use in the DTR project
 and is recommended for any similar metadata-caching scenarios.
 
 ================================================================================
@@ -212,12 +212,12 @@ Benchmark Implementation:
   - Output: human-readable metrics
 
 Unit Test Suite:
-  /home/user/doctester/doctester-core/src/test/java/org/r10r/doctester/metadata/DocMetadataBenchmarkTest.java
+  /home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/metadata/DocMetadataBenchmarkTest.java
   - JUnit 5 tests
   - Runnable via: mvnd test -Dtest=DocMetadataBenchmarkTest
 
 Production Source:
-  /home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java
+  /home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java
   - Java 25 record
   - Immutable singleton
   - Safe static initialization

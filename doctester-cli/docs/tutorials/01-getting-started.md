@@ -1,10 +1,10 @@
-# Getting Started with DocTester CLI
+# Getting Started with DTR CLI
 
-Welcome! DocTester CLI helps you convert and publish documentation in multiple formats. Whether you're converting Markdown to HTML, managing documentation exports, or publishing to platforms like GitHub Pages, this guide will get you started in 5 minutes.
+Welcome! DTR CLI helps you convert and publish documentation in multiple formats. Whether you're converting Markdown to HTML, managing documentation exports, or publishing to platforms like GitHub Pages, this guide will get you started in 5 minutes.
 
-## What is DocTester CLI?
+## What is DTR CLI?
 
-DocTester CLI is a powerful tool that:
+DTR CLI is a powerful tool that:
 - **Converts** documentation between formats (HTML, Markdown, JSON)
 - **Generates** summary reports and changelogs
 - **Publishes** documentation to GitHub Pages, AWS S3, Google Cloud Storage, or local folders
@@ -34,7 +34,7 @@ You should see `Python 3.12.x` or higher. If not, install Python 3.12+.
 
 ```bash
 git clone https://github.com/seanchatmangpt/doctester.git
-cd doctester/doctester-cli
+cd doctester/dtr-cli
 ```
 
 ### Step 2: Create a Virtual Environment
@@ -53,7 +53,7 @@ venv\Scripts\activate
 
 You'll see `(venv)` at the start of your terminal prompt. Good!
 
-### Step 3: Install DocTester CLI
+### Step 3: Install DTR CLI
 
 Using `uv` (recommended, faster):
 ```bash
@@ -71,7 +71,7 @@ pip install -e .
 dtr --version
 ```
 
-You should see: `doctester-cli, version 0.1.0`
+You should see: `dtr-cli, version 0.1.0`
 
 Great! The CLI is ready to use.
 
@@ -90,7 +90,7 @@ This is a paragraph explaining something important.
 
 ## Getting Started
 
-DocTester CLI is easy to use. Follow these steps:
+DTR CLI is easy to use. Follow these steps:
 
 1. Install Python 3.12
 2. Clone the repository
@@ -154,7 +154,7 @@ Here are the commands you'll use most often:
 ## Next Steps
 
 You've learned:
-- ✅ Install DocTester CLI
+- ✅ Install DTR CLI
 - ✅ Convert Markdown to HTML
 - ✅ Convert files to other formats
 

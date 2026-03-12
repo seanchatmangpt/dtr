@@ -1,7 +1,7 @@
-# Reference: DocTester Base Class
+# Reference: DTR Base Class
 
 **Package:** `org.r10r.doctester`
-**File:** `doctester-core/src/main/java/org/r10r/doctester/DocTester.java`
+**File:** `dtr-core/src/main/java/org/r10r/doctester/DTR.java`
 
 `DocTester` is the abstract JUnit base class your test classes extend. It orchestrates both HTTP execution (via `TestBrowser`) and HTML documentation generation (via `RenderMachine`).
 
@@ -10,7 +10,7 @@
 ## Extending DocTester
 
 ```java
-public class MyApiDocTest extends DocTester {
+public class MyApiDocTest extends DTR {
 
     @Test
     public void testSomething() {
@@ -259,7 +259,7 @@ Produces: `target/site/doctester/user-api-reference.html`
 
 ## Lifecycle
 
-DocTester uses JUnit 4 lifecycle hooks internally:
+DTR uses JUnit 4 lifecycle hooks internally:
 
 | Hook | What happens |
 |---|---|
@@ -272,4 +272,4 @@ The `RenderMachine` is shared across all test methods in a class; the `TestBrows
 
 ## Thread safety
 
-DocTester is **not thread-safe**. Do not run tests from the same class in parallel. Maven Surefire's default (one thread per class) is safe.
+DTR is **not thread-safe**. Do not run tests from the same class in parallel. Maven Surefire's default (one thread per class) is safe.

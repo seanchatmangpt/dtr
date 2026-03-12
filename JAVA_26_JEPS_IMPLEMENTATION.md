@@ -1,4 +1,4 @@
-# DocTester Java 26 JEPs Implementation Review
+# DTR Java 26 JEPs Implementation Review
 
 **Date**: March 11, 2026
 **Target Java Version**: Java 26 LTS (GA: March 17, 2026)
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-DocTester is **forward-compatible with Java 26** and already implements all 5 targeted JEPs for zero-overhead documentation generation. The codebase demonstrates best practices in:
+DTR is **forward-compatible with Java 26** and already implements all 5 targeted JEPs for zero-overhead documentation generation. The codebase demonstrates best practices in:
 
 - **Template caching** via lazy initialization (JEP 526)
 - **Primitive pattern matching** for HTTP dispatch (JEP 530)
@@ -16,14 +16,14 @@ DocTester is **forward-compatible with Java 26** and already implements all 5 ta
 - **Global object caching** to eliminate cold-start overhead (JEP 516)
 - **Sealed hierarchies** for type-safe polymorphism (JEP 500)
 
-This positions DocTester as a **reference implementation** for Java 26+ documentation generation frameworks.
+This positions DTR as a **reference implementation** for Java 26+ documentation generation frameworks.
 
 ---
 
 ## JEP 526: Lazy Constants (Zero-Cost Template Initialization)
 
 ### File
-`doctester-core/src/main/java/org/r10r/doctester/render/RenderMachineFactory.java`
+`dtr-core/src/main/java/org/r10r/doctester/render/RenderMachineFactory.java`
 
 ### Implementation Details
 
@@ -126,7 +126,7 @@ machines.add(new BlogRenderMachine(DEV_TO.get()));
 ## JEP 530: Primitive Types in Patterns (Zero-Boxing HTTP Dispatch)
 
 ### File
-`doctester-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java`
+`dtr-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java`
 
 ### Implementation Details
 
@@ -196,15 +196,15 @@ private String getStatusDescription(int status) {
 ### Related Code
 
 Similar patterns used in:
-- `doctester-core/src/main/java/org/r10r/doctester/rendermachine/latex/LatexCompiler.java` (exit code dispatch)
-- `doctester-core/src/main/java/org/r10r/doctester/testbrowser/Response.java` (status assertions)
+- `dtr-core/src/main/java/org/r10r/doctester/rendermachine/latex/LatexCompiler.java` (exit code dispatch)
+- `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Response.java` (status assertions)
 
 ---
 
 ## JEP 525: Structured Concurrency (Zero-Overhead Async Rendering)
 
 ### File
-`doctester-core/src/main/java/org/r10r/doctester/rendermachine/MultiRenderMachine.java`
+`dtr-core/src/main/java/org/r10r/doctester/rendermachine/MultiRenderMachine.java`
 
 ### Implementation Details
 
@@ -279,7 +279,7 @@ try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
 ## JEP 516: AoT Object Caching (Zero Cold-Start)
 
 ### File
-`doctester-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
+`dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
 
 ### Implementation Details
 
@@ -360,7 +360,7 @@ When Project Leyden's `CRaC` (Checkpoint/Restore as Chosen) lands in Java 26+, t
 
 ### 1. RenderMachine (Abstract Sealed Class)
 
-**File**: `doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachine.java`
+**File**: `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachine.java`
 
 **Lines 39-41**: Sealed declaration:
 ```java
@@ -378,7 +378,7 @@ public abstract sealed class RenderMachine implements RenderMachineCommands
 
 ### 2. CompilerStrategy (Sealed Interface)
 
-**File**: `doctester-core/src/main/java/org/r10r/doctester/rendermachine/latex/CompilerStrategy.java`
+**File**: `dtr-core/src/main/java/org/r10r/doctester/rendermachine/latex/CompilerStrategy.java`
 
 **Lines 40-41**: Sealed declaration:
 ```java
@@ -394,7 +394,7 @@ public sealed interface CompilerStrategy
 
 ### 3. AuthProvider (Sealed Interface)
 
-**File**: `doctester-core/src/main/java/org/r10r/doctester/testbrowser/auth/AuthProvider.java`
+**File**: `dtr-core/src/main/java/org/r10r/doctester/testbrowser/auth/AuthProvider.java`
 
 **Lines 47-48**: Sealed declaration with `@FunctionalInterface`:
 ```java
@@ -491,17 +491,17 @@ String description = switch (renderMachine) {
 
 ### Compile Command
 ```bash
-mvnd clean compile -pl doctester-core --enable-preview
+mvnd clean compile -pl dtr-core --enable-preview
 ```
 
 ### Test Command
 ```bash
-mvnd clean verify -pl doctester-core --enable-preview
+mvnd clean verify -pl dtr-core --enable-preview
 ```
 
 ### Integration Tests
 ```bash
-mvnd test -pl doctester-integration-test --enable-preview
+mvnd test -pl dtr-integration-test --enable-preview
 ```
 
 ---
@@ -528,7 +528,7 @@ value class DocMetadata {
 
 ## Conclusion
 
-DocTester demonstrates **production-ready adoption of Java 26 JEPs** with:
+DTR demonstrates **production-ready adoption of Java 26 JEPs** with:
 
 ✅ Zero-cost template caching (JEP 526)
 ✅ Zero-boxing HTTP dispatch (JEP 530)
@@ -536,7 +536,7 @@ DocTester demonstrates **production-ready adoption of Java 26 JEPs** with:
 ✅ Zero cold-start penalties (JEP 516)
 ✅ Type-safe sealed hierarchies (JEP 500)
 
-This positions DocTester as a **reference implementation** for Java 26+ documentation generation frameworks, demonstrating that modern Java can be both expressive and performant.
+This positions DTR as a **reference implementation** for Java 26+ documentation generation frameworks, demonstrating that modern Java can be both expressive and performant.
 
 ---
 

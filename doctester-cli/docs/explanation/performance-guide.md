@@ -1,10 +1,10 @@
 # Performance Guide
 
-DocTester CLI is designed for speed and efficiency. This guide explains how DocTester's performance features work and how to optimize your workflows.
+DTR CLI is designed for speed and efficiency. This guide explains how DocTester's performance features work and how to optimize your workflows.
 
 ## Overview
 
-DocTester uses several strategies to keep performance high:
+DTR uses several strategies to keep performance high:
 
 - **Parallel Processing** — Convert multiple files simultaneously
 - **Caching** — Avoid redundant conversions
@@ -30,7 +30,7 @@ Performance varies based on system resources, file complexity, and output format
 
 ### 1. Parallel Processing
 
-By default, DocTester processes multiple files in parallel. Control parallelism:
+By default, DTR processes multiple files in parallel. Control parallelism:
 
 ```bash
 # Use all CPU cores (default)
@@ -49,7 +49,7 @@ dtr batch --input '*.md' --output ./html/ --threads 1
 
 ### 2. Caching
 
-DocTester caches conversion results to avoid redundant work:
+DTR caches conversion results to avoid redundant work:
 
 ```bash
 # Cache is enabled by default
@@ -65,7 +65,7 @@ dtr cache clear
 Cache files are stored in `~/.doctester/cache/`. The cache is invalidated when:
 - Input file is modified
 - Configuration changes
-- DocTester version updates
+- DTR version updates
 
 **When to use:**
 - **Enable caching** — Repeated conversions, batch processing, CI/CD pipelines
@@ -101,7 +101,7 @@ Some output formats are faster than others:
 
 ### 5. Streaming Large Files
 
-DocTester streams large files to avoid loading entirely into memory:
+DTR streams large files to avoid loading entirely into memory:
 
 ```bash
 # Streaming is automatic for files > 10 MB
@@ -137,7 +137,7 @@ dtr batch --input '*.md' --output ./html/ --max-memory 512M
 dtr batch --input '*.md' --output ./html/ --max-memory 2G
 ```
 
-DocTester will adjust parallelism if memory limit is reached.
+DTR will adjust parallelism if memory limit is reached.
 
 ## CI/CD Integration Performance
 
@@ -155,7 +155,7 @@ DocTester will adjust parallelism if memory limit is reached.
 ```xml
 <plugin>
     <groupId>org.r10r</groupId>
-    <artifactId>doctester-maven-plugin</artifactId>
+    <artifactId>dtr-maven-plugin</artifactId>
     <configuration>
         <parallel>true</parallel>
         <threads>4</threads>

@@ -1,6 +1,6 @@
 # Contributing to DocTester
 
-This section is for developers who want to contribute to DocTester itself — fix bugs, add features, or improve the codebase.
+This section is for developers who want to contribute to DTR itself — fix bugs, add features, or improve the codebase.
 
 ## Guides
 
@@ -28,7 +28,7 @@ mvnd --version         # mvnd 2.x / Maven 4.x
 mvnd clean verify
 
 # Run integration tests (starts a Jetty server)
-mvnd clean verify -pl doctester-integration-test
+mvnd clean verify -pl dtr-integration-test
 ```
 
 Open an issue before starting significant work. We use GitHub Issues for bugs, feature requests, and design discussion.

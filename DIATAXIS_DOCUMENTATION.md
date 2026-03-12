@@ -1,8 +1,8 @@
-# DocTester CLI — Complete Diataxis Documentation
+# DTR CLI — Complete Diataxis Documentation
 
 ## Overview
 
-Complete Diataxis-structured documentation for DocTester CLI, providing comprehensive coverage across four documentation types. This documentation follows the [Diataxis framework](https://diataxis.fr/), which organizes documentation into four distinct sections, each serving a different user need.
+Complete Diataxis-structured documentation for DTR CLI, providing comprehensive coverage across four documentation types. This documentation follows the [Diataxis framework](https://diataxis.fr/), which organizes documentation into four distinct sections, each serving a different user need.
 
 **Documentation Status:** ✅ **COMPLETE**
 **Total Files:** 24 markdown files
@@ -14,7 +14,7 @@ Complete Diataxis-structured documentation for DocTester CLI, providing comprehe
 ## Documentation Structure
 
 ### Master Index
-**Location:** `/home/user/doctester/doctester-cli/docs/index.md`
+**Location:** `/home/user/doctester/dtr-cli/docs/index.md`
 
 The entry point for all documentation. Users choose their learning path based on their needs:
 - Quick start guide
@@ -26,13 +26,13 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 1. TUTORIALS (Learning-Oriented)
 
-**Path:** `/home/user/doctester/doctester-cli/docs/tutorials/`
+**Path:** `/home/user/doctester/dtr-cli/docs/tutorials/`
 
 **Purpose:** Step-by-step guides for beginners. Each tutorial walks through a complete task with hands-on examples.
 
 | File | Purpose | Lines |
 |------|---------|-------|
-| `01-getting-started.md` | Install DocTester and run first conversion | 184 |
+| `01-getting-started.md` | Install DTR and run first conversion | 184 |
 | `02-export-formats.md` | Learn HTML, Markdown, JSON output formats | 273 |
 | `03-maven-integration.md` | Integrate with Maven builds | 335 |
 | `04-blogging-workflow.md` | Publish documentation to Dev.to, Medium, etc. | 426 |
@@ -41,7 +41,7 @@ The entry point for all documentation. Users choose their learning path based on
 **Total:** 1,351 lines
 
 **Key Learning Outcomes:**
-- Install and verify DocTester CLI
+- Install and verify DTR CLI
 - Convert first Markdown file to HTML
 - Explore multiple output formats
 - Integrate documentation into Maven builds
@@ -51,7 +51,7 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 2. HOW-TO GUIDES (Problem-Oriented)
 
-**Path:** `/home/user/doctester/doctester-cli/docs/how-to/`
+**Path:** `/home/user/doctester/dtr-cli/docs/how-to/`
 
 **Purpose:** Focused solutions to specific problems. Each guide answers a "how do I...?" question.
 
@@ -79,7 +79,7 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 3. REFERENCE (Information-Oriented)
 
-**Path:** `/home/user/doctester/doctester-cli/docs/reference/`
+**Path:** `/home/user/doctester/dtr-cli/docs/reference/`
 
 **Purpose:** Complete, structured reference material for lookup. Users find all available options and configurations here.
 
@@ -106,9 +106,9 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 4. EXPLANATION (Understanding-Oriented)
 
-**Path:** `/home/user/doctester/doctester-cli/docs/explanation/`
+**Path:** `/home/user/doctester/dtr-cli/docs/explanation/`
 
-**Purpose:** Conceptual understanding and design philosophy. Explores the "why" and "how" behind DocTester.
+**Purpose:** Conceptual understanding and design philosophy. Explores the "why" and "how" behind DTR.
 
 | File | Purpose | Lines |
 |------|---------|-------|
@@ -121,7 +121,7 @@ The entry point for all documentation. Users choose their learning path based on
 **Total:** 1,687 lines
 
 **Concepts Explained:**
-- How DocTester is architected
+- How DTR is architected
 - Why certain design choices were made
 - Performance optimization strategies
 - Best practices for documentation workflows
@@ -164,7 +164,7 @@ The entry point for all documentation. Users choose their learning path based on
 ## Documentation Map
 
 ```
-doctester-cli/docs/
+dtr-cli/docs/
 ├── index.md (Master Index — START HERE)
 │
 ├── tutorials/ (Learning-oriented guides)
@@ -206,19 +206,19 @@ doctester-cli/docs/
 The documentation is designed to meet users at different stages:
 
 ### New Users
-→ Start with [Master Index](./doctester-cli/docs/index.md) → [Tutorial 1: Getting Started](./doctester-cli/docs/tutorials/01-getting-started.md)
+→ Start with [Master Index](./dtr-cli/docs/index.md) → [Tutorial 1: Getting Started](./dtr-cli/docs/tutorials/01-getting-started.md)
 
 ### Task-Focused Users
-→ [Master Index](./doctester-cli/docs/index.md) → [How-To Guides](./doctester-cli/docs/how-to/) → specific guide for their task
+→ [Master Index](./dtr-cli/docs/index.md) → [How-To Guides](./dtr-cli/docs/how-to/) → specific guide for their task
 
 ### Learners
-→ [Tutorials](./doctester-cli/docs/tutorials/) → [Explanation](./doctester-cli/docs/explanation/) → [How-To Guides](./doctester-cli/docs/how-to/)
+→ [Tutorials](./dtr-cli/docs/tutorials/) → [Explanation](./dtr-cli/docs/explanation/) → [How-To Guides](./dtr-cli/docs/how-to/)
 
 ### Reference Seekers
-→ [Master Index](./doctester-cli/docs/index.md) → [Reference](./doctester-cli/docs/reference/) → specific command/option
+→ [Master Index](./dtr-cli/docs/index.md) → [Reference](./dtr-cli/docs/reference/) → specific command/option
 
 ### Troubleshooters
-→ [Troubleshooting How-To](./doctester-cli/docs/how-to/troubleshooting.md) → [Troubleshooting Philosophy](./doctester-cli/docs/explanation/troubleshooting-philosophy.md) → [Exit Codes Reference](./doctester-cli/docs/reference/exit-codes.md)
+→ [Troubleshooting How-To](./dtr-cli/docs/how-to/troubleshooting.md) → [Troubleshooting Philosophy](./dtr-cli/docs/explanation/troubleshooting-philosophy.md) → [Exit Codes Reference](./dtr-cli/docs/reference/exit-codes.md)
 
 ---
 
@@ -296,11 +296,11 @@ The documentation is designed to meet users at different stages:
 
 ### For Users
 
-1. **First time?** Start with [Master Index](./doctester-cli/docs/index.md)
-2. **Have a specific task?** Go to [How-To Guides](./doctester-cli/docs/how-to/)
-3. **Want to learn?** Start with [Tutorials](./doctester-cli/docs/tutorials/)
-4. **Need to look something up?** Use [Reference](./doctester-cli/docs/reference/)
-5. **Want to understand concepts?** Read [Explanation](./doctester-cli/docs/explanation/)
+1. **First time?** Start with [Master Index](./dtr-cli/docs/index.md)
+2. **Have a specific task?** Go to [How-To Guides](./dtr-cli/docs/how-to/)
+3. **Want to learn?** Start with [Tutorials](./dtr-cli/docs/tutorials/)
+4. **Need to look something up?** Use [Reference](./dtr-cli/docs/reference/)
+5. **Want to understand concepts?** Read [Explanation](./dtr-cli/docs/explanation/)
 
 ### For Contributors
 
@@ -323,12 +323,12 @@ The documentation is designed to meet users at different stages:
 ## Publishing
 
 ### Location
-All documentation is in: `/home/user/doctester/doctester-cli/docs/`
+All documentation is in: `/home/user/doctester/dtr-cli/docs/`
 
 ### Build and Deploy
 ```bash
 # Generate HTML from Markdown
-cd /home/user/doctester/doctester-cli/docs
+cd /home/user/doctester/dtr-cli/docs
 dtr batch --input '**/*.md' --output ./html/
 
 # Or use a static site generator
@@ -382,8 +382,8 @@ jekyll build
 
 - **Project README:** `/home/user/doctester/README.md`
 - **Contributing Guide:** `/home/user/doctester/CONTRIBUTING.md`
-- **Source Code:** `/home/user/doctester/doctester-cli/`
-- **Main Index:** `/home/user/doctester/doctester-cli/docs/index.md` ← **START HERE**
+- **Source Code:** `/home/user/doctester/dtr-cli/`
+- **Main Index:** `/home/user/doctester/dtr-cli/docs/index.md` ← **START HERE**
 
 ---
 

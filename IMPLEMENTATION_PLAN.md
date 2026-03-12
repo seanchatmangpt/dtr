@@ -91,12 +91,12 @@ Render assertion results in a table (similar to sayAndAssertThat but for non-tes
 3. Follow existing `say()` pattern: add blank line before content for spacing
 
 ### Phase 3: Unit Tests
-1. Add test class `RenderMachineExtensionTest` in `doctester-core` tests
+1. Add test class `RenderMachineExtensionTest` in `dtr-core` tests
 2. Verify each new method produces valid markdown
 3. Test edge cases (empty arrays, null values, special characters)
 
 ### Phase 4: Integration Test
-1. Add sample test method in `doctester-integration-test` that uses all new `say*` methods
+1. Add sample test method in `dtr-integration-test` that uses all new `say*` methods
 2. Generate sample HTML output to verify rendering
 
 ### Phase 5: Documentation Update
@@ -115,10 +115,10 @@ Render assertion results in a table (similar to sayAndAssertThat but for non-tes
 
 | File | Changes |
 |------|---------|
-| `doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineCommands.java` | Add 9 method signatures |
-| `doctester-core/src/main/java/org/r10r/doctester/DocTester.java` | Add 9 delegation methods |
-| `doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java` | Implement 9 methods |
-| `doctester-core/src/test/java/org/r10r/doctester/rendermachine/RenderMachineExtensionTest.java` | New test class (create) |
+| `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineCommands.java` | Add 9 method signatures |
+| `dtr-core/src/main/java/org/r10r/doctester/DTR.java` | Add 9 delegation methods |
+| `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java` | Implement 9 methods |
+| `dtr-core/src/test/java/org/r10r/doctester/rendermachine/RenderMachineExtensionTest.java` | New test class (create) |
 | `CLAUDE.md` | Update API reference section |
 
 ## Testing Plan

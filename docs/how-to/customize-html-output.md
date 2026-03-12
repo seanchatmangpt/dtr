@@ -8,7 +8,7 @@ Create a file at:
 src/test/resources/org/doctester/custom_doctester_stylesheet.css
 ```
 
-DocTester copies this file to the output directory and links it from every generated HTML page, after the default Bootstrap styles. Your rules override the defaults.
+DTR copies this file to the output directory and links it from every generated HTML page, after the default Bootstrap styles. Your rules override the defaults.
 
 ## Change the header color
 
@@ -128,7 +128,7 @@ sayRaw("""
 By default the HTML file is named after the fully-qualified test class name. Override it:
 
 ```java
-public class MyApiDocTest extends DocTester {
+public class MyApiDocTest extends DTR {
 
     @Before
     public void configureOutputFile() {
