@@ -1,8 +1,8 @@
-# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 25
+# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 26
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 25 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
+**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 26 LTS | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
 
 ---
 

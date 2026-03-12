@@ -1,6 +1,6 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 25 | **Version:** 2.5.0-SNAPSHOT
+**Project:** Markdown documentation generator for Java 26 | **Version:** 2.5.0-SNAPSHOT
 
 ---
 
@@ -11,7 +11,7 @@
 - ✅ Use actual DTR code (RenderMachine + say* methods)
 - ✅ Measure with System.nanoTime() on real execution
 - ✅ Report: metric + units + Java version + iterations + environment
-- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)" NOT "6667x faster"
+- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26.0.2)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
 - ✅ JUnit 5 tests with DocTesterContext
@@ -19,7 +19,7 @@
 - ❌ Never bypass with standalone generators
 
 ### 3. Toolchain (Non-Negotiable)
-- Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
+- Java 26: `/usr/lib/jvm/java-26-openjdk-amd64`
 - Maven 4.0.0-rc-5+: `/opt/apache-maven-4.0.0-rc-5/bin/mvn`
 - mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred)
 - Flag: `--enable-preview` in `.mvn/maven.config`

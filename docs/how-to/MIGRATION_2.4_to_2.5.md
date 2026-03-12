@@ -2,14 +2,14 @@
 
 **Version:** 2.5.0
 **Release Date:** March 12, 2026
-**Java Requirement:** Java 25 LTS with `--enable-preview`
+**Java Requirement:** Java 26 LTS with `--enable-preview`
 **Maven:** `io.github.seanchatmangpt.dtr:dtr-core:2.5.0`
 
 ---
 
 ## Overview
 
-DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 25 support and transitions the `RenderMachine` from a sealed class to an abstract base class. This change enables RenderMachine implementations to be distributed across multiple packages without violating Java 25's sealed class constraints.
+DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 26 support and transitions the `RenderMachine` from a sealed class to an abstract base class. This change enables RenderMachine implementations to be distributed across multiple packages without violating Java 26's sealed class constraints.
 
 **Good News:** Most users see **no code changes**. The public API remains 100% identical to 2.4.0.
 
@@ -19,7 +19,7 @@ DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 25 support
 |--------|-------|-------|-----------|
 | RenderMachine | Sealed class | Abstract base class | No* |
 | Maven Central | Not available | Published via Sonatype | No (additive) |
-| Java Version | Java 25 LTS | Java 25.0.2+ | No (same) |
+| Java Version | Java 26 LTS | Java 26.0.2+ | No (same) |
 | Preview Flags | Required | Enforced | No (same) |
 | Introspection Methods | All supported | All supported + cached | No (improvement) |
 | Dependencies | Jackson 2.21.0 | Jackson 2.21.1 | No (patch) |
@@ -65,17 +65,17 @@ boolean isValidRenderer = renderer instanceof RenderMachineImpl
 - Only if your code explicitly checked sealed class permits with `instanceof`
 - Regular test authors using DTR public API: **Not affected**
 
-### 2. Java 25.0.2+ Required (Stricter Enforcement)
+### 2. Java 26.0.2+ Required (Stricter Enforcement)
 
 **Impact Level:** Minimal (already documented in v2.4.0)
 
 **Solution:**
 ```bash
 # Verify your Java installation
-java -version  # Must show "openjdk 25.x.x"
+java -version  # Must show "openjdk version \"26.0.0\" or later"
 
-# If Java 24 or earlier
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+# If Java 25 or earlier
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 ```
 
 **For Java 24 Projects:** Continue using DTR 2.4.0
@@ -109,7 +109,7 @@ Subsequent calls: ~50ns ← 3000x faster!
 **Affected Methods:**
 - `sayCallSite()`, `sayAnnotationProfile()`, `sayClassHierarchy()`, `sayStringProfile()`, `sayReflectiveDiff()`
 
-### 3. Dependency Updates for Java 25
+### 3. Dependency Updates for Java 26
 
 All updates are backward-compatible patch/minor versions.
 
@@ -127,11 +127,11 @@ All updates are backward-compatible patch/minor versions.
 <version>2.5.0</version>
 ```
 
-### Step 2: Verify Java 25
+### Step 2: Verify Java 26
 
 ```bash
 java -version
-# Must show: openjdk version "25.0.2" or higher
+# Must show: openjdk version "26.0.0" or higher
 ```
 
 ### Step 3: Verify Maven
@@ -181,14 +181,14 @@ public final class MyCustomRenderer extends RenderMachine {
 
 ## Troubleshooting
 
-### "Java 25 not found"
+### "Java 26 not found"
 
 ```bash
-# 1. Install Java 25
-sudo apt install openjdk-25-jdk
+# 1. Install Java 26
+sudo apt install openjdk-26-jdk
 
 # 2. Set JAVA_HOME
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 
 # 3. Rebuild
 mvnd clean test
@@ -228,7 +228,7 @@ See [Step 5](#step-5-optional-refactor-custom-rendermachine) above for migration
 After upgrading, verify:
 
 - [ ] Updated `pom.xml` to version 2.5.0
-- [ ] Java 25 installed: `java -version` shows 25.x.x
+- [ ] Java 26 installed: `java -version` shows 26.x.x
 - [ ] Maven: `mvnd --version` shows 2.0.0+
 - [ ] `.mvn/maven.config` contains `--enable-preview`
 - [ ] `mvnd clean test` completes successfully
@@ -277,7 +277,7 @@ No configuration needed. You benefit automatically on repeated introspection ope
 | Step | Action | Time |
 |------|--------|------|
 | 1 | Update `pom.xml` | 1 min |
-| 2 | Verify Java 25 | 1 min |
+| 2 | Verify Java 26 | 1 min |
 | 3 | Run `mvnd clean test` | 2-5 min |
 | 4 | (Optional) Refactor custom RenderMachine | 5-10 min |
 | **Total** | | **5-20 min** |
@@ -287,4 +287,4 @@ No configuration needed. You benefit automatically on repeated introspection ope
 ---
 
 **DTR 2.5.0 — March 12, 2026**
-*Java 25 Support and Maven Central Ready*
+*Java 26 Support and Maven Central Ready*
