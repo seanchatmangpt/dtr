@@ -15,11 +15,10 @@
  */
 package io.github.seanchatmangpt.dtr.rendermachine;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.StructuredTaskScope;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -128,21 +127,28 @@ public final class MultiRenderMachine extends RenderMachine {
      * @throws MultiRenderException if any machine fails (wraps first exception)
      */
     private void dispatchToAll(Consumer<RenderMachine> action) {
-        try (var scope = StructuredTaskScope.open()) {
+        // Track machine alongside its subtask so failures can name the offending machine
+        record MachineTask(RenderMachine machine, StructuredTaskScope.Subtask<?> subtask) {}
+        var subtasks = new java.util.ArrayList<MachineTask>(machines.size());
+
+        try (var scope = StructuredTaskScope.open(
+                StructuredTaskScope.Joiner.awaitAll(),
+                config -> config.withTimeout(Duration.ofSeconds(timeoutSeconds)))) {
             // Fork one task per machine — all run concurrently on virtual threads
-            // Track machine alongside its subtask so failures can name the offending machine
-            record MachineTask(RenderMachine machine, StructuredTaskScope.Subtask<Void> subtask) {}
-            var subtasks = new java.util.ArrayList<MachineTask>(machines.size());
             for (RenderMachine machine : machines) {
-                var subtask = scope.fork(() -> {
-                    action.accept(machine);
-                    return null;
-                });
+                var subtask = scope.fork((Runnable) () -> action.accept(machine));
                 subtasks.add(new MachineTask(machine, subtask));
             }
 
-            // Join with deadline — prevents hanging forever in CI pipelines
-            scope.joinUntil(Instant.now().plusSeconds(timeoutSeconds));
+            // Join — blocks until all complete, timeout expires, or scope is cancelled
+            scope.join();
+
+            // Timeout: scope is cancelled if the deadline was exceeded before all tasks completed
+            if (scope.isCancelled()) {
+                throw new RuntimeException(
+                    "DTR render timed out after " + timeoutSeconds + "s",
+                    new java.util.concurrent.TimeoutException("timeout after " + timeoutSeconds + "s"));
+            }
 
             // Surface any per-machine failures with the machine's class name
             for (var mt : subtasks) {
@@ -154,13 +160,10 @@ public final class MultiRenderMachine extends RenderMachine {
                         List.of(cause instanceof Exception ex ? ex : new RuntimeException(cause)));
                 }
             }
-        } catch (TimeoutException e) {
-            throw new RuntimeException(
-                "DTR render timed out after " + timeoutSeconds + "s", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new MultiRenderException("Render dispatch interrupted", List.of(e));
-        } catch (MultiRenderException e) {
+        } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             // StructuredTaskScope propagates the underlying exception (not wrapped in ExecutionException)
