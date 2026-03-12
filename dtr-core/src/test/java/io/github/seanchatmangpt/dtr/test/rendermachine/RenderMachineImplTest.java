@@ -356,6 +356,63 @@ public class RenderMachineImplTest {
     }
 
     // =========================================================================
+    // Minimal RenderMachine stubs for MultiRenderMachine tests
+    // =========================================================================
+
+    /**
+     * A no-op RenderMachine base that provides empty implementations for all
+     * required abstract and interface methods, so test subclasses can override
+     * only the methods they care about.
+     */
+    static class NoOpRenderMachine extends RenderMachine {
+        @Override public void say(String text) {}
+        @Override public void sayNextSection(String headline) {}
+        @Override public void sayRaw(String rawMarkdown) {}
+        @Override public void sayTable(String[][] data) {}
+        @Override public void sayCode(String code, String language) {}
+        @Override public void sayWarning(String message) {}
+        @Override public void sayNote(String message) {}
+        @Override public void sayKeyValue(Map<String, String> pairs) {}
+        @Override public void sayUnorderedList(List<String> items) {}
+        @Override public void sayOrderedList(List<String> items) {}
+        @Override public void sayJson(Object object) {}
+        @Override public void sayAssertions(Map<String, String> assertions) {}
+        @Override public void sayRef(io.github.seanchatmangpt.dtr.crossref.DocTestRef ref) {}
+        @Override public void sayCite(String citationKey) {}
+        @Override public void sayCite(String citationKey, String pageRef) {}
+        @Override public void sayFootnote(String text) {}
+        @Override public List<org.apache.hc.client5.http.cookie.Cookie> sayAndGetCookies() { return List.of(); }
+        @Override public org.apache.hc.client5.http.cookie.Cookie sayAndGetCookieWithName(String name) { return null; }
+        @Override public Response sayAndMakeRequest(io.github.seanchatmangpt.dtr.testbrowser.Request req) { return null; }
+        @Override public <T> void sayAndAssertThat(String message, String reason, T actual, org.hamcrest.Matcher<? super T> matcher) {}
+        @Override public <T> void sayAndAssertThat(String message, T actual, org.hamcrest.Matcher<? super T> matcher) {}
+        @Override public void sayCodeModel(Class<?> clazz) {}
+        @Override public void sayCodeModel(java.lang.reflect.Method method) {}
+        @Override public void sayCallSite() {}
+        @Override public void sayAnnotationProfile(Class<?> clazz) {}
+        @Override public void sayClassHierarchy(Class<?> clazz) {}
+        @Override public void sayStringProfile(String text) {}
+        @Override public void sayReflectiveDiff(Object before, Object after) {}
+        @Override public void setTestBrowser(TestBrowser testBrowser) {}
+        @Override public void setFileName(String fileName) {}
+        @Override public void finishAndWriteOut() {}
+    }
+
+    /** A slow machine whose say() blocks for 30 seconds to trigger timeout. */
+    static final class SlowRenderMachine extends NoOpRenderMachine {
+        @Override public void say(String text) {
+            try { Thread.sleep(30_000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+    }
+
+    /** A machine whose say() always throws to trigger MultiRenderException. */
+    static final class FailingRenderMachine extends NoOpRenderMachine {
+        @Override public void say(String text) {
+            throw new IllegalStateException("deliberate failure from FailingRenderMachine");
+        }
+    }
+
+    // =========================================================================
     // MultiRenderMachine — timeout and failure tests
     // =========================================================================
 
@@ -387,15 +444,7 @@ public class RenderMachineImplTest {
 
     @Test
     public void multiRenderMachineTimeoutThrowsRuntimeExceptionWithTimedOutMessage() {
-        // A machine that sleeps longer than the 1-second timeout
-        var slowMachine = new RenderMachine() {
-            @Override public void say(String text) {
-                try { Thread.sleep(30_000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-            }
-            @Override public void finishAndWriteOut() {}
-        };
-
-        var multi = new MultiRenderMachine(List.of(slowMachine), 1);
+        var multi = new MultiRenderMachine(List.of(new SlowRenderMachine()), 1);
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> multi.say("trigger timeout"),
             "A machine that hangs past the timeout must cause a RuntimeException");
@@ -405,24 +454,14 @@ public class RenderMachineImplTest {
 
     @Test
     public void multiRenderMachineFailingMachineIncludesClassNameInMessage() {
-        // A machine whose say() always throws
-        var failingMachine = new RenderMachine() {
-            @Override public void say(String text) {
-                throw new IllegalStateException("deliberate failure");
-            }
-            @Override public void finishAndWriteOut() {}
-        };
-
-        var multi = new MultiRenderMachine(List.of(failingMachine), 10);
+        var multi = new MultiRenderMachine(List.of(new FailingRenderMachine()), 10);
 
         MultiRenderMachine.MultiRenderException ex = assertThrows(
             MultiRenderMachine.MultiRenderException.class,
             () -> multi.say("trigger failure"),
             "A machine that throws must cause a MultiRenderException");
-        // The exception message must name the failing machine's class
-        // (anonymous classes have a generated name containing the enclosing class)
-        assertNotNull(ex.getMessage(),
-            "MultiRenderException must have a non-null message");
+        assertTrue(ex.getMessage().contains("FailingRenderMachine"),
+            "MultiRenderException message must contain the failing machine's class name, was: " + ex.getMessage());
         assertFalse(ex.getCauses().isEmpty(),
             "MultiRenderException must contain at least one cause");
     }
