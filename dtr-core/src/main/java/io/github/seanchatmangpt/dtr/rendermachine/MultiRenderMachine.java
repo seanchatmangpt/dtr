@@ -140,15 +140,8 @@ public final class MultiRenderMachine extends RenderMachine {
                 subtasks.add(new MachineTask(machine, subtask));
             }
 
-            // Join — blocks until all complete, timeout expires, or scope is cancelled
+            // Join — blocks until all complete or timeout fires (throws TimeoutException)
             scope.join();
-
-            // Timeout: scope is cancelled if the deadline was exceeded before all tasks completed
-            if (scope.isCancelled()) {
-                throw new RuntimeException(
-                    "DTR render timed out after " + timeoutSeconds + "s",
-                    new java.util.concurrent.TimeoutException("timeout after " + timeoutSeconds + "s"));
-            }
 
             // Surface any per-machine failures with the machine's class name
             for (var mt : subtasks) {
@@ -160,6 +153,10 @@ public final class MultiRenderMachine extends RenderMachine {
                         List.of(cause instanceof Exception ex ? ex : new RuntimeException(cause)));
                 }
             }
+        } catch (StructuredTaskScope.TimeoutException e) {
+            // Thrown by join() when the scope's withTimeout deadline is exceeded
+            throw new RuntimeException(
+                "DTR render timed out after " + timeoutSeconds + "s", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new MultiRenderException("Render dispatch interrupted", List.of(e));

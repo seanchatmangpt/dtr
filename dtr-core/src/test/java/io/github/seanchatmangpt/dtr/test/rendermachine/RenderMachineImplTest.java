@@ -448,6 +448,8 @@ public class RenderMachineImplTest {
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> multi.say("trigger timeout"),
             "A machine that hangs past the timeout must cause a RuntimeException");
+        assertNotNull(ex.getMessage(),
+            "Timeout RuntimeException must have a non-null message");
         assertTrue(ex.getMessage().contains("timed out"),
             "Timeout exception message must contain 'timed out', was: " + ex.getMessage());
     }
