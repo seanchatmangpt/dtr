@@ -1,6 +1,6 @@
-# DocTester CLI Documentation
+# DTR CLI Documentation
 
-Welcome to the comprehensive documentation for DocTester CLI — a powerful tool for converting and publishing documentation in multiple formats.
+Welcome to the comprehensive documentation for DTR CLI — a powerful tool for converting and publishing documentation in multiple formats.
 
 ## 📚 Four Ways to Learn
 
@@ -9,7 +9,7 @@ Choose your path based on your needs:
 ### 🎓 **Tutorials** — Learning-Oriented
 *"Show me step-by-step how to do this"*
 
-Start here if you're new to DocTester CLI. Tutorials guide you through practical tasks with real examples:
+Start here if you're new to DTR CLI. Tutorials guide you through practical tasks with real examples:
 
 - [Getting Started](./tutorials/01-getting-started.md) — Install and run your first conversion
 - [Creating Multi-Format Docs](./tutorials/02-export-formats.md) — HTML, Markdown, JSON outputs
@@ -65,8 +65,8 @@ Understand the concepts, design decisions, and best practices behind DocTester:
 Get up and running in under 5 minutes:
 
 ```bash
-# Install DocTester CLI
-cd doctester/doctester-cli
+# Install DTR CLI
+cd doctester/dtr-cli
 python3 -m venv venv
 source venv/bin/activate  # or: venv\Scripts\activate on Windows
 pip install -e .
@@ -127,7 +127,7 @@ Not sure where to start? Use this table:
 
 | Your Situation | Start Here |
 |---|---|
-| I'm brand new to DocTester | [Tutorial 1: Getting Started](./tutorials/01-getting-started.md) |
+| I'm brand new to DTR | [Tutorial 1: Getting Started](./tutorials/01-getting-started.md) |
 | I want to export to PDF | [How-To: Formats](./how-to/formats.md) |
 | I need a complete command list | [Reference: CLI Commands](./reference/cli-commands.md) |
 | I want to integrate with my build | [Tutorial 3: Maven Integration](./tutorials/03-maven-integration.md) |
@@ -140,7 +140,7 @@ Not sure where to start? Use this table:
 
 ## 🔑 Key Features
 
-DocTester CLI provides:
+DTR CLI provides:
 
 - **Multi-format conversion** — Convert between HTML, Markdown, JSON, LaTeX, and more
 - **Rich formatting** — Support for images, tables, code blocks, math, and diagrams
@@ -158,7 +158,7 @@ DocTester CLI provides:
 **Q: What versions of Python are supported?**
 A: Python 3.12 and higher. See [Getting Started](./tutorials/01-getting-started.md).
 
-**Q: Can I use DocTester with Maven?**
+**Q: Can I use DTR with Maven?**
 A: Yes! See [Tutorial 3: Maven Integration](./tutorials/03-maven-integration.md) for setup.
 
 **Q: How do I convert multiple files at once?**
@@ -211,7 +211,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
 
 ## 📄 License
 
-DocTester CLI is licensed under the Apache 2.0 License. See [LICENSE](../LICENSE) for details.
+DTR CLI is licensed under the Apache 2.0 License. See [LICENSE](../LICENSE) for details.
 
 ---
 

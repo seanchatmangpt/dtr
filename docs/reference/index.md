@@ -7,6 +7,7 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 | Topic | Description |
 |---|---|
 | [80/20 Quick Reference](80-20-quick-reference.md) | One-page cheat sheet — print or bookmark this |
+| [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) | Answers to common questions and solutions for typical issues |
 
 ## Java 25 Language Features
 
@@ -22,11 +23,11 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 |---|---|
 | [Real-Time Protocols](realtime-protocols-reference.md) | WebSockets, gRPC, Server-Sent Events — APIs, lifecycle, error handling |
 
-## DocTester Classes
+## DTR Classes
 
 | Class | Description |
 |---|---|
-| [DocTester](doctester-base-class.md) | Abstract base class — the core API your tests extend |
+| [DocTester](dtr-base-class.md) | Abstract base class — the core API your tests extend |
 | [Request](request-api.md) | Fluent HTTP request builder |
 | [Response](response-api.md) | HTTP response with deserialization |
 | [Url](url-builder.md) | URL builder with path and query parameter support |

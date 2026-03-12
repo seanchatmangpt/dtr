@@ -1,6 +1,6 @@
 # How-to: Upload Files
 
-DocTester supports multipart file uploads via `addFileToUpload(String param, File file)`.
+DTR supports multipart file uploads via `addFileToUpload(String param, File file)`.
 
 ## Upload a single file
 

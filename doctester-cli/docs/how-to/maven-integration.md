@@ -1,11 +1,11 @@
-# How to Integrate DocTester with Maven Builds
+# How to Integrate DTR with Maven Builds
 
 ## Problem
 You're running JUnit tests in a Maven project and want documentation automatically generated during the build. Manual exports are tedious — you want docs generated as part of `mvn clean test` or `mvn verify`.
 
 ## Solution Overview
 
-DocTester includes a Maven plugin that automatically generates documentation from tests. The plugin:
+DTR includes a Maven plugin that automatically generates documentation from tests. The plugin:
 - Runs after test execution
 - Captures test output and HTTP exchanges
 - Generates Markdown, HTML, PDF, or slides
@@ -13,14 +13,14 @@ DocTester includes a Maven plugin that automatically generates documentation fro
 
 ## Step 1: Add Plugin to pom.xml
 
-Add the DocTester Maven plugin to your project's `pom.xml`:
+Add the DTR Maven plugin to your project's `pom.xml`:
 
 ```xml
 <build>
     <plugins>
         <plugin>
-            <groupId>org.r10r</groupId>
-            <artifactId>doctester-maven-plugin</artifactId>
+            <groupId>io.github.seanchatmangpt.dtr</groupId>
+            <artifactId>dtr-maven-plugin</artifactId>
             <version>2.5.0</version>
             <configuration>
                 <format>markdown</format>
@@ -46,8 +46,8 @@ Minimal setup (Markdown output to `target/docs`):
 
 ```xml
 <plugin>
-    <groupId>org.r10r</groupId>
-    <artifactId>doctester-maven-plugin</artifactId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-maven-plugin</artifactId>
     <version>2.5.0</version>
 </plugin>
 ```
@@ -63,8 +63,8 @@ mvn clean test
 ### Multiple Output Formats
 ```xml
 <plugin>
-    <groupId>org.r10r</groupId>
-    <artifactId>doctester-maven-plugin</artifactId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-maven-plugin</artifactId>
     <version>2.5.0</version>
     <configuration>
         <formats>
@@ -143,8 +143,8 @@ Create profiles for different scenarios:
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.r10r</groupId>
-                    <artifactId>doctester-maven-plugin</artifactId>
+                    <groupId>io.github.seanchatmangpt.dtr</groupId>
+                    <artifactId>dtr-maven-plugin</artifactId>
                     <configuration>
                         <format>markdown</format>
                         <skip>false</skip>
@@ -160,8 +160,8 @@ Create profiles for different scenarios:
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.r10r</groupId>
-                    <artifactId>doctester-maven-plugin</artifactId>
+                    <groupId>io.github.seanchatmangpt.dtr</groupId>
+                    <artifactId>dtr-maven-plugin</artifactId>
                     <configuration>
                         <formats>
                             <format>markdown</format>
@@ -182,8 +182,8 @@ Create profiles for different scenarios:
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.r10r</groupId>
-                    <artifactId>doctester-maven-plugin</artifactId>
+                    <groupId>io.github.seanchatmangpt.dtr</groupId>
+                    <artifactId>dtr-maven-plugin</artifactId>
                     <configuration>
                         <format>latex</format>
                         <latexTemplate>arxiv</latexTemplate>
@@ -296,8 +296,8 @@ open target/docs/index.pdf
     <dependencies>
         <!-- Testing -->
         <dependency>
-            <groupId>org.r10r</groupId>
-            <artifactId>doctester-core</artifactId>
+            <groupId>io.github.seanchatmangpt.dtr</groupId>
+            <artifactId>dtr-core</artifactId>
             <version>2.5.0</version>
             <scope>test</scope>
         </dependency>
@@ -321,8 +321,8 @@ open target/docs/index.pdf
             </plugin>
 
             <plugin>
-                <groupId>org.r10r</groupId>
-                <artifactId>doctester-maven-plugin</artifactId>
+                <groupId>io.github.seanchatmangpt.dtr</groupId>
+                <artifactId>dtr-maven-plugin</artifactId>
                 <version>2.5.0</version>
                 <configuration>
                     <formats>
@@ -359,7 +359,7 @@ open target/docs/index.pdf
 
 ## Troubleshooting
 
-**"Plugin not found"** → Ensure DocTester Maven plugin is published to Maven Central or local repository
+**"Plugin not found"** → Ensure DTR Maven plugin is published to Maven Central or local repository
 
 **"OutOfMemoryError"** → Increase Maven heap: `export MAVEN_OPTS="-Xmx2g"`
 

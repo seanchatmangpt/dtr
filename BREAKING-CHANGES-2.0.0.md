@@ -1,4 +1,4 @@
-# DocTester 2.0.0 — Breaking Changes Summary
+# DTR 2.0.0 — Breaking Changes Summary
 
 **Release Date:** 2026-03-10
 **Previous Version:** 1.1.12
@@ -8,7 +8,7 @@
 
 ## Overview
 
-DocTester 2.0.0 contains **three major breaking changes** that fundamentally alter how documentation is generated and distributed. These changes modernize the framework for contemporary Java ecosystems.
+DTR 2.0.0 contains **three major breaking changes** that fundamentally alter how documentation is generated and distributed. These changes modernize the framework for contemporary Java ecosystems.
 
 ---
 
@@ -376,7 +376,7 @@ Quick reference for what needs to be updated:
 - [ ] Update compiler plugin with `<release>25</release>`
 - [ ] Add `--enable-preview` to compiler args
 - [ ] Add `--enable-preview` to surefire argLine
-- [ ] Update DocTester dependency to 2.0.0
+- [ ] Update DTR dependency to 2.0.0
 - [ ] Update Maven Enforcer rules if present
 
 ### 3. Paths and Scripts
@@ -423,7 +423,7 @@ Quick reference for what needs to be updated:
 
 ### Q: Can I generate HTML instead of Markdown?
 
-**A:** Not from DocTester directly. However, you can easily render Markdown to HTML using:
+**A:** Not from DTR directly. However, you can easily render Markdown to HTML using:
 - **MkDocs** — `mkdocs build` → static site in `site/`
 - **Docusaurus** — `npm run build` → static site in `build/`
 - **Pandoc** — `pandoc *.md -o index.html`
@@ -433,7 +433,7 @@ This is actually **better** because you control the look and feel, and Markdown 
 
 ### Q: What about my custom CSS?
 
-**A:** Custom DocTester CSS (`custom_doctester_stylesheet.css`) is no longer used because:
+**A:** Custom DTR CSS (`custom_doctester_stylesheet.css`) is no longer used because:
 1. Markdown is not styled by DocTester
 2. Styling happens in your static site generator (theme)
 
@@ -442,11 +442,11 @@ This is actually **better** because you control the look and feel, and Markdown 
 - Applying them to your site generator theme (MkDocs, Docusaurus, Jekyll)
 - Using `--theme` flags or CSS override files
 
-### Q: Will DocTester support Java 21 or 17?
+### Q: Will DTR support Java 21 or 17?
 
 **A:** No. Version 2.0.0 requires Java 25 LTS.
 
-When Java 33 is released in 2026, DocTester will support Java 33 LTS. Version 2.0.0 will still require 25 until end-of-life (2032).
+When Java 33 is released in 2026, DTR will support Java 33 LTS. Version 2.0.0 will still require 25 until end-of-life (2032).
 
 ### Q: How do I migrate a multi-module project?
 
@@ -507,8 +507,8 @@ Contact the team if you have a custom `RenderMachine` implementation.
 - **Migration Guide:** [MIGRATION-1.x-TO-2.0.0.md](MIGRATION-1.x-TO-2.0.0.md)
 - **Updated README:** [README-2.0.0.md](README-2.0.0.md)
 - **Full Documentation:** [docs/](docs/)
-- **GitHub Issues:** [Report problems](https://github.com/r10r-org/doctester/issues)
-- **GitHub Discussions:** [Ask questions](https://github.com/r10r-org/doctester/discussions)
+- **GitHub Issues:** [Report problems](https://github.com/seanchatmangpt/doctester/issues)
+- **GitHub Discussions:** [Ask questions](https://github.com/seanchatmangpt/doctester/discussions)
 
 ---
 
@@ -516,7 +516,7 @@ Contact the team if you have a custom `RenderMachine` implementation.
 
 | Date | Event |
 |------|-------|
-| 2026-03-10 | DocTester 2.0.0 released |
+| 2026-03-10 | DTR 2.0.0 released |
 | 2026-03-31 | Last critical bug fixes for 1.x |
 | 2026-06-30 | End of life for 1.x (no further support) |
 | 2026-09-14 | Java 21 end-of-life (Java 25 becomes baseline) |
@@ -531,7 +531,7 @@ Contact the team if you have a custom `RenderMachine` implementation.
 
 ## Conclusion
 
-These breaking changes represent a significant modernization of DocTester:
+These breaking changes represent a significant modernization of DTR:
 - **Markdown** is portable and version-control friendly
 - **Java 25** unlocks modern language features
 - **New output path** aligns with Maven standards

@@ -1,4 +1,4 @@
-# DocTester CLI: Production Readiness Evaluation Report
+# DTR CLI: Production Readiness Evaluation Report
 
 **Date:** March 11, 2026
 **Evaluator:** Claude Code
@@ -30,7 +30,7 @@ The **DocTester CLI is 87% production-ready** with excellent architecture, compr
 
 **Structure:**
 ```
-doctester-cli/
+dtr-cli/
 ├── commands/           # CLI command groups (fmt, export, report, push)
 ├── managers/           # File/directory management logic
 ├── publishers/         # Upload strategies (GitHub, S3, GCS, local)
@@ -111,7 +111,7 @@ Two-tier strategy:
    - Property handling
 
 2. **Real builds (15 tests)** — Actual `mvnd` execution
-   - Real DocTester export generation
+   - Real DTR export generation
    - HTML→MD/JSON conversion on real files
    - Report generation from real exports
    - Archive creation from actual files
@@ -301,7 +301,7 @@ Current coverage: ~92% (based on test count)
 
 ## Performance Assessment: 8/10 ✅
 
-### Command Performance (Measured on actual DocTester exports)
+### Command Performance (Measured on actual DTR exports)
 
 | Operation | Time | Scale |
 |-----------|------|-------|

@@ -1,10 +1,10 @@
 # Publishing to Dev.to, Medium, and Other Blogging Platforms
 
-DocTester CLI helps you reach multiple audiences by publishing your documentation to popular blogging platforms. Write once, publish everywhere!
+DTR CLI helps you reach multiple audiences by publishing your documentation to popular blogging platforms. Write once, publish everywhere!
 
 ## Supported Blogging Platforms
 
-DocTester CLI supports exporting to:
+DTR CLI supports exporting to:
 
 | Platform | Best For | Audience |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ DocTester CLI supports exporting to:
 | **LinkedIn** | Professional insights, announcements | Professionals & networking |
 | **Substack** | Newsletters, deep dives | Subscribers & newsletters |
 
-Each platform has its own format and audience, so DocTester CLI automatically formats your content for each.
+Each platform has its own format and audience, so DTR CLI automatically formats your content for each.
 
 ## Why Publish to Multiple Platforms?
 
@@ -194,7 +194,7 @@ dtr export to-blog blog/articles/ -o blog/devto/ --platform devto -r
 
 ## Front Matter & Metadata
 
-Each platform supports different metadata. DocTester CLI handles this automatically.
+Each platform supports different metadata. DTR CLI handles this automatically.
 
 ### Dev.to Format
 
@@ -232,7 +232,7 @@ seriesId: "series-id-123"
 ---
 ```
 
-DocTester CLI automatically converts your metadata to the correct format.
+DTR CLI automatically converts your metadata to the correct format.
 
 ## Tips for Success
 
@@ -296,8 +296,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install DocTester CLI
-        run: pip install -e doctester-cli/
+      - name: Install DTR CLI
+        run: pip install -e dtr-cli/
 
       - name: Export and publish to Dev.to
         run: |

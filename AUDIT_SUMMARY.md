@@ -1,4 +1,4 @@
-# DocTester 2.0.0 Audit Summary
+# DTR 2.0.0 Audit Summary
 
 ## Quick Results
 
@@ -95,13 +95,13 @@ Then proceed to release.
 ## File Locations
 
 - **Audit Report:** `/home/user/doctester/CODE_QUALITY_AUDIT_2_0_0.md`
-- **Source Root:** `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/`
+- **Source Root:** `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/`
 
 ### Key Files for String.format() Migration
-- `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java` (6 locations)
-- `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java` (2 locations)
+- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java` (6 locations)
+- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java` (2 locations)
 
 ### Key Files for Guava Cleanup
-- `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/testbrowser/Request.java` (4 locations)
-- `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/testbrowser/Url.java` (1 location)
-- `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java` (4 locations)
+- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/testbrowser/Request.java` (4 locations)
+- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/testbrowser/Url.java` (1 location)
+- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java` (4 locations)

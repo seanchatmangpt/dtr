@@ -1,10 +1,10 @@
 # Configuration File Reference
 
-Complete guide to configuring DocTester CLI via configuration files.
+Complete guide to configuring DTR CLI via configuration files.
 
 ## User Configuration: ~/.doctester/config
 
-The user-level configuration file is stored in YAML format at `~/.doctester/config`. This file controls default behavior for all DocTester CLI commands across your entire system.
+The user-level configuration file is stored in YAML format at `~/.doctester/config`. This file controls default behavior for all DTR CLI commands across your entire system.
 
 ### Location
 
@@ -227,7 +227,7 @@ maven:
   generate_docs: true
   output_dir: target/docs
   skip_tests: false
-  test_module: doctester-integration-test
+  test_module: dtr-integration-test
 
 # Java/compilation settings
 java:
@@ -333,7 +333,7 @@ exports:
 
 ## Configuration Precedence
 
-DocTester applies configuration in this order (later overrides earlier):
+DTR applies configuration in this order (later overrides earlier):
 
 1. **Built-in defaults** (hardcoded in CLI)
 2. **User config** (`~/.doctester/config`)

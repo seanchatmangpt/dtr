@@ -51,7 +51,7 @@ JAVA 25 OVERALL SCORE                 90/100   ← Can reach 95 with optimizatio
 ✓ Zero deprecated API usage in production code
 
 Search Command Output:
-  $ grep -r "TODO|FIXME|HACK" doctester-core/src/main/java
+  $ grep -r "TODO|FIXME|HACK" dtr-core/src/main/java
   Result: 0 matches
 
 ================================================================================
@@ -74,7 +74,7 @@ Examples of Excellent Documentation:
   - Response.java: JSON/XML deserialization patterns documented
   - WebSocketMessage.java: Sealed interface with pattern matching example
   - ApiKeyAuth.java: Record with compact constructor validation documented
-  - DocTester.java: Complete base class lifecycle documented
+  - DTR.java: Complete base class lifecycle documented
 
 ================================================================================
                    APACHE 2.0 LICENSE COMPLIANCE
@@ -113,7 +113,7 @@ HttpClient Upgrade Status:
 Finding: NONE. Full backward compatibility with v1.1.x maintained.
 
 API Changes Summary:
-  ✓ JUnit 4 DocTester base class: UNCHANGED
+  ✓ JUnit 4 DTR base class: UNCHANGED
   ✓ HTTP API (Request, Response, TestBrowser): UNCHANGED
   ✓ Cookie-based authentication: UNCHANGED
 
@@ -292,7 +292,7 @@ Recommendation: PROCEED TO RELEASE
 ================================================================================
 
 Report Date:            March 10, 2026
-Audit Scope:            doctester-core source code analysis
+Audit Scope:            dtr-core source code analysis
 Target Version:         2.0.0
 Java Version:           25 LTS (openjdk 25.0.2+)
 Maven Version:          4.0.0-rc-5 / mvnd 2.0.0+

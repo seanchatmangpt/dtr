@@ -90,7 +90,7 @@ This is a major release introducing significant architectural improvements, mode
 
 **Before (JUnit 4)**:
 ```java
-public class ApiDocTest extends DocTester {
+public class ApiDocTest extends DTR {
     @Override
     public Url testServerUrl() {
         return Url.host("http://localhost:8080");
@@ -102,7 +102,7 @@ public class ApiDocTest extends DocTester {
 ```java
 @ExtendWith(DocTesterExtension.class)
 public class ApiDocTest {
-    private DocTester docTester;
+    private DTR docTester;
 
     @BeforeEach
     void setUp(DocTesterContext context) {
@@ -176,7 +176,7 @@ See below for earlier version history.
 Version 1.1.11
 =============
 
- * 2018-01-03 Switch to new package structure of org.r10r.
+ * 2018-01-03 Switch to new package structure of io.github.seanchatmangpt.dtr.
 
 Version 1.1.8
 =============
@@ -228,8 +228,8 @@ Version 1.1.2
 
  * 2014-02-14 Added support for HTTP HEAD requests (Jan Rudert).
  * 2014-02-05 Fixed issue #1. Doctester now independent of webjars version on classpath. (ra)
- * 2014-02-05 Bump to guava 16.0.1 in doctester-core and Ninja 2.5.1 in integration tests. (ra)
- * 2014-01-19 Bump to guava 16.0 in doctester-core and Ninja 2.5.1 in integration tests. (ra)
+ * 2014-02-05 Bump to guava 16.0.1 in dtr-core and Ninja 2.5.1 in integration tests. (ra)
+ * 2014-01-19 Bump to guava 16.0 in dtr-core and Ninja 2.5.1 in integration tests. (ra)
 
 Version 1.1.1
 =============
@@ -239,7 +239,7 @@ Version 1.1.1
 Version 1.1
 =============
 
- * 2013-12-04 Better documentation how to setup DocTester in your own projects (ra).
+ * 2013-12-04 Better documentation how to setup DTR in your own projects (ra).
  * 2013-11-04 Added support so that JUnit falures are marked as red
               in the generated html file. Before they were green what can be
               misleading (ra).
@@ -259,4 +259,4 @@ Version 1.0.2
 Version 1.0.1
 =============
 
- * 2013-11-05 Fixed bug with forced logback binding. Binding slf4j should be done by projects using DocTester (ra).
+ * 2013-11-05 Fixed bug with forced logback binding. Binding slf4j should be done by projects using DTR (ra).

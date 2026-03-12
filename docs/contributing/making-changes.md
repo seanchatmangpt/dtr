@@ -18,7 +18,7 @@ git checkout -b docs/improve-url-builder-reference
 
 ## Code style
 
-DocTester follows the standard Sun/Oracle Java code style (default IntelliJ/Eclipse formatting):
+DTR follows the standard Sun/Oracle Java code style (default IntelliJ/Eclipse formatting):
 
 - **4 spaces per indent** (no tabs)
 - **UTF-8** everywhere
@@ -27,7 +27,7 @@ DocTester follows the standard Sun/Oracle Java code style (default IntelliJ/Ecli
 
 ```java
 /**
- * Copyright (C) the DocTester contributors.
+ * Copyright (C) the DTR contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public void say(String text) {
 
 ## Java 25 idioms
 
-DocTester is a Java 25 project with `--enable-preview`. Prefer modern idioms:
+DTR is a Java 25 project with `--enable-preview`. Prefer modern idioms:
 
 **Use records for DTOs:**
 ```java
@@ -136,7 +136,7 @@ For a bug fix, write the test first:
 3. Verify the test passes
 
 For a new feature:
-1. Add a unit test to `doctester-core/src/test/`
+1. Add a unit test to `dtr-core/src/test/`
 2. If the feature affects end-to-end behavior, also add to the integration test
 
 **Run the full test suite before submitting:**

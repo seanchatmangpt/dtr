@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * This strategy logs warnings about lost features but does NOT fail the build
  * if Pandoc is unavailable or compilation fails.
  */
-public class PandocStrategy implements CompilerStrategy {
+public final class PandocStrategy implements CompilerStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(PandocStrategy.class);
 

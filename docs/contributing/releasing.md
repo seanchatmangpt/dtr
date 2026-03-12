@@ -4,7 +4,7 @@ This guide is for maintainers with write access and Sonatype credentials.
 
 ## Versioning
 
-DocTester uses [Semantic Versioning](https://semver.org/):
+DTR uses [Semantic Versioning](https://semver.org/):
 
 - **Patch** (`1.1.x`): Bug fixes, no API changes
 - **Minor** (`1.x.0`): New features, backwards-compatible API additions
@@ -27,7 +27,7 @@ Before cutting a release:
 
 ## Release process
 
-DocTester releases to Maven Central via Sonatype OSS.
+DTR releases to Maven Central via Sonatype OSS.
 
 ### Step 1: Prepare the release
 
@@ -40,7 +40,7 @@ This will:
 - Prompt for the release version (e.g., `1.1.12`)
 - Prompt for the next development version (e.g., `1.1.13-SNAPSHOT`)
 - Update `pom.xml` files
-- Create a git tag (e.g., `doctester-1.1.12`)
+- Create a git tag (e.g., `dtr-1.1.12`)
 - Commit and push the version changes
 
 ### Step 2: Perform the release
@@ -58,7 +58,7 @@ This will:
 
 1. Log in at [oss.sonatype.org](https://oss.sonatype.org)
 2. Navigate to **Staging Repositories**
-3. Find the `orgdoctester-XXXX` staging repository
+3. Find the `orgdtr-XXXX` staging repository
 4. Click **Close** — Sonatype runs validation checks
 5. Once closed, click **Release** to promote to Maven Central
 
@@ -113,11 +113,11 @@ After Maven Central sync:
 ```bash
 # Verify the artifact is available
 mvn dependency:get \
-    -Dartifact=org.doctester:doctester-core:1.1.12 \
-    -Ddest=/tmp/doctester-verify.jar
+    -Dartifact=org.doctester:dtr-core:1.1.12 \
+    -Ddest=/tmp/dtr-verify.jar
 ```
 
-Check the [Maven Central search](https://search.maven.org/artifact/org.doctester/doctester-core) page.
+Check the [Maven Central search](https://search.maven.org/artifact/org.doctester/dtr-core) page.
 
 ## Post-release
 

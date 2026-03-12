@@ -1,18 +1,18 @@
 # How to Troubleshoot Common Issues
 
 ## Problem
-Something is broken. Your command failed, files won't export, or the output looks wrong. You need a systematic way to diagnose and fix DocTester CLI issues.
+Something is broken. Your command failed, files won't export, or the output looks wrong. You need a systematic way to diagnose and fix DTR CLI issues.
 
 ## Solution Overview
 
-This guide covers the most common DocTester CLI errors, their causes, and solutions. Use the error table below to jump to your specific issue, or follow the diagnostic steps to identify the problem.
+This guide covers the most common DTR CLI errors, their causes, and solutions. Use the error table below to jump to your specific issue, or follow the diagnostic steps to identify the problem.
 
 ## Quick Diagnostic Checklist
 
 Before diving into specific errors, verify the basics:
 
 ```bash
-# 1. Check DocTester is installed
+# 1. Check DTR is installed
 dtr --version
 # Expected: dtr 2.5.0
 
@@ -259,8 +259,8 @@ dtr export src/docs/problematic-file.md --format html
 
 #### "Plugin not found"
 ```
-[ERROR] Failed to execute goal org.r10r:doctester-maven-plugin
-Error: Could not find artifact org.r10r:doctester-maven-plugin:2.5.0
+[ERROR] Failed to execute goal io.github.seanchatmangpt.dtr:dtr-maven-plugin
+Error: Could not find artifact io.github.seanchatmangpt.dtr:dtr-maven-plugin:2.5.0
 ```
 
 **Cause:** Maven plugin not installed or wrong version
@@ -268,17 +268,17 @@ Error: Could not find artifact org.r10r:doctester-maven-plugin:2.5.0
 **Solution:**
 ```bash
 # Check Maven can download plugin
-mvn help:describe -Dplugin=org.r10r:doctester-maven-plugin:2.5.0
+mvn help:describe -Dplugin=io.github.seanchatmangpt.dtr:dtr-maven-plugin:2.5.0
 
 # Force update of Maven cache
 mvn -U clean install
 
 # Verify plugin version exists
-mvn org.r10r:doctester-maven-plugin:2.5.0:help
+mvn io.github.seanchatmangpt.dtr:dtr-maven-plugin:2.5.0:help
 
 # Use correct groupId/artifactId (check pom.xml)
-# <groupId>org.r10r</groupId>
-# <artifactId>doctester-maven-plugin</artifactId>
+# <groupId>io.github.seanchatmangpt.dtr</groupId>
+# <artifactId>dtr-maven-plugin</artifactId>
 # <version>2.5.0</version>
 ```
 

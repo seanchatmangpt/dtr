@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * Medium, Substack, LinkedIn, and Hashnode. Generates social media queue
  * entries for tweets and platform-specific content.
  */
-public class BlogRenderMachine extends RenderMachine {
+public final class BlogRenderMachine extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(BlogRenderMachine.class);
 

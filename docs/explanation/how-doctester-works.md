@@ -1,4 +1,4 @@
-# Explanation: How DocTester Works
+# Explanation: How DTR Works
 
 This document describes the lifecycle of a DocTest run — from test startup through HTML output. Understanding this helps you predict what will appear in the documentation and debug unexpected behavior.
 
@@ -6,15 +6,15 @@ This document describes the lifecycle of a DocTest run — from test startup thr
 
 ## The three components
 
-DocTester separates concerns across three collaborating components:
+DTR separates concerns across three collaborating components:
 
 ```
-DocTester (orchestrator)
+DTR (orchestrator)
 ├── TestBrowser   (HTTP execution + cookie store)
 └── RenderMachine (HTML accumulation + file writing)
 ```
 
-**`DocTester`** is your test class's superclass. It coordinates between the other two: when you call `sayAndMakeRequest()`, DocTester delegates to `TestBrowser` for HTTP and to `RenderMachine` to generate the panel HTML.
+**`DocTester`** is your test class's superclass. It coordinates between the other two: when you call `sayAndMakeRequest()`, DTR delegates to `TestBrowser` for HTTP and to `RenderMachine` to generate the panel HTML.
 
 **`TestBrowser`** handles the actual HTTP connection (Apache HttpClient), serializes payloads, and maintains a persistent cookie jar. It is stateful — cookies set by the server in one request are automatically sent in the next.
 
@@ -34,7 +34,7 @@ One important subtlety: `TestBrowser` and `RenderMachine` have different scopes.
 `DocTester`'s `@Before` hook creates a new `TestBrowserImpl` instance for each test method:
 
 ```java
-// Simplified from DocTester.java
+// Simplified from DTR.java
 @Before
 public void setupForTestCaseMethod() {
     renderMachine.setTestBrowser(getTestBrowser());  // fresh browser per method
@@ -51,13 +51,13 @@ The `RenderMachine` is a class-level static field, so all test methods in a clas
 
 ### 1. JUnit starts the test class
 
-JUnit 4 discovers the test class via classpath scanning or explicit configuration. DocTester hooks into JUnit via `@Before` and `@AfterClass` annotations on methods in `DocTester` itself.
+JUnit 4 discovers the test class via classpath scanning or explicit configuration. DTR hooks into JUnit via `@Before` and `@AfterClass` annotations on methods in `DocTester` itself.
 
 ### 2. `@Before setupForTestCaseMethod()`
 
 Before each `@Test` method:
 
-1. DocTester calls `getTestBrowser()` to create a fresh browser
+1. DTR calls `getTestBrowser()` to create a fresh browser
 2. The browser is injected into the `RenderMachine` so it can execute requests
 
 The `RenderMachine` is initialized lazily on first use (first `say*` call in any test method).
@@ -90,7 +90,7 @@ After all `@Test` methods in the class complete:
 
 ### 5. Test results
 
-JUnit reports test pass/fail normally. DocTester adds no extra failures — if `sayAndAssertThat` throws `AssertionError`, JUnit catches it and marks the method as failed, same as any other assertion.
+JUnit reports test pass/fail normally. DTR adds no extra failures — if `sayAndAssertThat` throws `AssertionError`, JUnit catches it and marks the method as failed, same as any other assertion.
 
 ---
 

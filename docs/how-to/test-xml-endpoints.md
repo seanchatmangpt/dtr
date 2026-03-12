@@ -28,7 +28,7 @@ Response response = sayAndMakeRequest(
         .payload(request));
 ```
 
-DocTester serializes to XML using Jackson's `XmlMapper`. The HTML output shows the pretty-printed XML.
+DTR serializes to XML using Jackson's `XmlMapper`. The HTML output shows the pretty-printed XML.
 
 ## Receive and deserialize an XML response
 

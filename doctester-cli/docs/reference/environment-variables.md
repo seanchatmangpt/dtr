@@ -1,8 +1,8 @@
 # Environment Variables Reference
 
-All environment variables that affect DocTester CLI behavior and configuration.
+All environment variables that affect DTR CLI behavior and configuration.
 
-## DocTester Core Configuration
+## DTR Core Configuration
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
@@ -169,7 +169,7 @@ export MAVEN_OPTS="-Xmx2g --enable-preview"
 export DOCTESTER_TEST_SERVER_URL=http://localhost:8080
 export DOCTESTER_DATABASE_URL=jdbc:h2:mem:test
 
-mvnd test -pl doctester-integration-test
+mvnd test -pl dtr-integration-test
 ```
 
 ## Precedence & Override Order

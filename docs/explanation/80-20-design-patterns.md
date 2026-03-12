@@ -1,6 +1,6 @@
-# DocTester 80/20 Design Patterns — Understanding the Why
+# DTR 80/20 Design Patterns — Understanding the Why
 
-This document explains **why** DocTester is designed the way it is. Understanding the reasoning will help you use the framework more effectively.
+This document explains **why** DTR is designed the way it is. Understanding the reasoning will help you use the framework more effectively.
 
 ---
 
@@ -12,7 +12,7 @@ Developers update the code, forget to update the docs, and users inherit incorre
 
 **The Solution:** Make tests and documentation inseparable.
 
-DocTester is built on the principle that **your test is your documentation**. When you write a test, you simultaneously create a living document. Every request and response in your test becomes part of the documentation. When the API changes, the documentation changes with it (because the test breaks).
+DTR is built on the principle that **your test is your documentation**. When you write a test, you simultaneously create a living document. Every request and response in your test becomes part of the documentation. When the API changes, the documentation changes with it (because the test breaks).
 
 ### Example: The Problem It Solves
 
@@ -148,7 +148,7 @@ API consumers understand:
 
 ### Why Hamcrest Matchers?
 
-DocTester uses **Hamcrest matchers** instead of plain assertions. Why?
+DTR uses **Hamcrest matchers** instead of plain assertions. Why?
 
 **Without:**
 ```java
@@ -295,7 +295,7 @@ This ensures test isolation — each test is independent.
 
 ## Pattern 5: Three-Layer Architecture
 
-DocTester separates concerns into three layers:
+DTR separates concerns into three layers:
 
 ### Layer 1: Request/Response (testbrowser/)
 

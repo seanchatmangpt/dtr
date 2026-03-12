@@ -1,6 +1,6 @@
 # Tutorial: gRPC Streaming for Efficient Real-Time RPC
 
-Learn how to test gRPC services with DocTester. gRPC is a high-performance RPC framework built on HTTP/2 that supports streaming, multiplexing, and binary protocols — ideal for microservices and real-time applications.
+Learn how to test gRPC services with DTR. gRPC is a high-performance RPC framework built on HTTP/2 that supports streaming, multiplexing, and binary protocols — ideal for microservices and real-time applications.
 
 **Time:** ~45 minutes
 **Prerequisites:** Java 25, protobuf basics, understanding of RPC
@@ -65,15 +65,15 @@ Test a simple gRPC call:
 package com.example;
 
 import org.junit.Test;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import com.example.UserServiceGrpc;
 import com.example.UserProto;
 
-public class GrpcUnaryDocTest extends DocTester {
+public class GrpcUnaryDocTest extends DTR {
 
     @Test
     public void unaryRpcCall() throws Exception {

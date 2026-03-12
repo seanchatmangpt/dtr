@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This consolidation reduces the DocTester CLI test suite from **261 tests to 53 tests** (19% of original), maintaining 80% code coverage on critical paths while reducing execution time from ~15 minutes to ~3 minutes.
+This consolidation reduces the DTR CLI test suite from **261 tests to 53 tests** (19% of original), maintaining 80% code coverage on critical paths while reducing execution time from ~15 minutes to ~3 minutes.
 
 ## What Changed
 
@@ -48,7 +48,7 @@ This consolidation reduces the DocTester CLI test suite from **261 tests to 53 t
 - Resource pressure scenarios
 
 **Reduced from:** 43 original tests (88% consolidation)
-**Note:** Detailed performance benchmarks moved to `doctester-benchmarks/` module
+**Note:** Detailed performance benchmarks moved to `dtr-benchmarks/` module
 
 ### 4. `test_cli_maven_integration.py` (8 tests)
 **Coverage:** Maven integration (Phase 6a)
@@ -154,15 +154,15 @@ These files were completely subsumed by the consolidation:
 
 5. **Micro-Benchmarks** (all tests → moved)
    - Removed: Individual operation timing tests
-   - Moved to: `doctester-benchmarks/` JMH module
+   - Moved to: `dtr-benchmarks/` JMH module
    - Rationale: JMH provides better statistical analysis
 
-## New Module: `doctester-benchmarks`
+## New Module: `dtr-benchmarks`
 
 Performance testing moved from unit tests to dedicated JMH benchmark suite:
 
 ```
-doctester-benchmarks/
+dtr-benchmarks/
 ├── pom.xml
 ├── src/main/java/org/r10r/doctester/benchmarks/
 │   ├── ExportOperationBenchmark.java
@@ -178,7 +178,7 @@ doctester-benchmarks/
 - Wall-clock time tracking
 - Memory allocation profiling
 - Separate from functional tests
-- Can be run independently: `mvnd verify -pl doctester-benchmarks`
+- Can be run independently: `mvnd verify -pl dtr-benchmarks`
 
 ## Code Coverage Analysis
 
@@ -206,26 +206,26 @@ doctester-benchmarks/
 
 ```bash
 # Run all consolidated unit tests
-mvnd test -pl doctester-cli
+mvnd test -pl dtr-cli
 
 # Run specific test file
-mvnd test -pl doctester-cli -Dtest=test_cli_validation
+mvnd test -pl dtr-cli -Dtest=test_cli_validation
 
 # Run single test
-mvnd test -pl doctester-cli -Dtest=test_cli_validation#test_export_path_validation
+mvnd test -pl dtr-cli -Dtest=test_cli_validation#test_export_path_validation
 ```
 
 ### Benchmark Tests (Slow, ~30 minutes)
 
 ```bash
 # Build and run JMH benchmarks
-mvnd verify -pl doctester-benchmarks
+mvnd verify -pl dtr-benchmarks
 
 # Run specific benchmark
-java -jar doctester-benchmarks/target/benchmarks.jar ExportOperationBenchmark
+java -jar dtr-benchmarks/target/benchmarks.jar ExportOperationBenchmark
 
 # View benchmark results
-cat doctester-benchmarks/target/benchmark-results.json
+cat dtr-benchmarks/target/benchmark-results.json
 ```
 
 ### Full Suite (Unit + Benchmarks)
@@ -313,7 +313,7 @@ Example:
 
 Example:
 - BEFORE: `test_export_1gb_file_performance()` in `test_cli_stress.py`
-- AFTER: Moved to `ExportPerformanceBenchmark.java` in `doctester-benchmarks`
+- AFTER: Moved to `ExportPerformanceBenchmark.java` in `dtr-benchmarks`
 - REASON: Unit test framework not designed for statistical performance analysis
 
 ### Decision 4: Delete vs. Replace

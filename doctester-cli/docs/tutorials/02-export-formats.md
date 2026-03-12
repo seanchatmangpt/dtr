@@ -1,10 +1,10 @@
 # Creating Multi-Format Documentation
 
-Now that you can convert files, let's explore the power of DocTester CLI's format support. You'll learn how to export the same documentation to HTML, Markdown, JSON, and more.
+Now that you can convert files, let's explore the power of DTR CLI's format support. You'll learn how to export the same documentation to HTML, Markdown, JSON, and more.
 
 ## Overview: Supported Formats
 
-DocTester CLI supports three main conversion formats:
+DTR CLI supports three main conversion formats:
 
 | Format | Best For | File Extension |
 | --- | --- | --- |

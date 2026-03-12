@@ -1,6 +1,6 @@
 # Exit Codes Reference
 
-DocTester CLI uses standard exit codes to indicate success or failure. This reference documents all possible exit codes and what they mean.
+DTR CLI uses standard exit codes to indicate success or failure. This reference documents all possible exit codes and what they mean.
 
 ## Exit Code Summary
 

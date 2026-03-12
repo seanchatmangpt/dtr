@@ -33,7 +33,7 @@ export PATH=$JAVA_HOME/bin:$PATH
 ## Clone and build
 
 ```bash
-git clone https://github.com/r10r-org/doctester.git
+git clone https://github.com/seanchatmangpt/doctester.git
 cd doctester
 
 mvnd clean install
@@ -48,21 +48,21 @@ Expected output:
 
 ```bash
 # Core tests only (fast)
-mvnd test -pl doctester-core
+mvnd test -pl dtr-core
 
 # Integration tests (starts Jetty server — ~30 seconds)
-mvnd verify -pl doctester-integration-test
+mvnd verify -pl dtr-integration-test
 ```
 
 ## Run a specific test
 
 ```bash
-mvnd test -pl doctester-core -Dtest=DocTesterTest
+mvnd test -pl dtr-core -Dtest=DocTesterTest
 ```
 
 ## mvnd configuration
 
-mvnd stores settings in `~/.m2/mvnd.properties`. The recommended configuration for DocTester development:
+mvnd stores settings in `~/.m2/mvnd.properties`. The recommended configuration for DTR development:
 
 ```properties
 mvnd.javaHome=/usr/lib/jvm/java-25-openjdk-amd64
@@ -95,13 +95,13 @@ Install the "Extension Pack for Java". Open the project root. The `.mvn/maven.co
 ## Project structure reminder
 
 ```
-doctester-core/
+dtr-core/
   src/main/java/org/r10r/doctester/   # The library source
   src/test/java/org/r10r/doctester/   # Unit tests for the library
 
-doctester-integration-test/
+dtr-integration-test/
   src/test/java/controllers/           # Integration tests (require server)
   src/main/java/                       # Ninja web app used as test server
 ```
 
-Changes to `doctester-core` should include unit tests in `doctester-core/src/test/`. Changes that affect end-to-end behavior should be verified with the integration tests.
+Changes to `dtr-core` should include unit tests in `dtr-core/src/test/`. Changes that affect end-to-end behavior should be verified with the integration tests.

@@ -83,7 +83,7 @@ public record DocMetadata(
      *
      * @deprecated Use getInstance() for the cached global instance
      */
-    @Deprecated(since = "2.5.0", forRemoval = true)
+    @Deprecated(since = "2.5.0", forRemoval = false)
     public static DocMetadata fromBuild() {
         return getInstance();
     }

@@ -50,7 +50,7 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 
 | Guide | Task |
 |---|---|
-| [Add DocTester to a Maven Project](add-to-maven.md) | Dependencies and compiler config |
+| [Add DTR to a Maven Project](add-to-maven.md) | Dependencies and compiler config |
 | [Integrate with Frameworks](integrate-with-frameworks.md) | Ninja, Arquillian, Spring Boot, Jetty |
 
 ---

@@ -6,36 +6,36 @@ This document describes DocTester's module structure, class design, and the exte
 
 ## Module structure
 
-DocTester is a two-module Maven project:
+DTR is a two-module Maven project:
 
 ```
 doctester/
 ├── pom.xml                          # Parent POM (enforcer, versions)
-├── doctester-core/                  # The library
+├── dtr-core/                  # The library
 │   └── src/main/java/org/r10r/doctester/
-│       ├── DocTester.java
+│       ├── DTR.java
 │       ├── testbrowser/             # HTTP client
 │       └── rendermachine/           # HTML output
-└── doctester-integration-test/      # Full-stack integration tests
+└── dtr-integration-test/      # Full-stack integration tests
     └── src/test/java/controllers/
         └── ApiControllerDocTest.java
 ```
 
-**`doctester-core`** is the artifact you add to your project. It is a JAR with no runtime dependencies beyond test scope.
+**`dtr-core`** is the artifact you add to your project. It is a JAR with no runtime dependencies beyond test scope.
 
-**`doctester-integration-test`** spins up a real web server (Ninja Framework + Jetty) and runs `ApiControllerDocTest` against it. This module exists to:
-1. Verify DocTester works end-to-end
-2. Serve as a living example of all DocTester features
+**`dtr-integration-test`** spins up a real web server (Ninja Framework + Jetty) and runs `ApiControllerDocTest` against it. This module exists to:
+1. Verify DTR works end-to-end
+2. Serve as a living example of all DTR features
 
 ---
 
 ## Package layout
 
 ```
-org.r10r.doctester
-├── DocTester.java               # Abstract base class
+io.github.seanchatmangpt.dtr.doctester
+├── DTR.java               # Abstract base class
 
-org.r10r.doctester.testbrowser
+io.github.seanchatmangpt.dtr.doctester.testbrowser
 ├── TestBrowser.java             # HTTP client interface
 ├── TestBrowserImpl.java         # Apache HttpClient implementation
 ├── Request.java                 # Fluent request builder
@@ -44,7 +44,7 @@ org.r10r.doctester.testbrowser
 ├── HttpConstants.java           # HTTP string constants
 └── PayloadUtils.java            # JSON/XML formatting helpers
 
-org.r10r.doctester.rendermachine
+io.github.seanchatmangpt.dtr.doctester.rendermachine
 ├── RenderMachineCommands.java   # Output method interface
 ├── RenderMachine.java           # Full interface (commands + lifecycle)
 ├── RenderMachineImpl.java       # Bootstrap HTML implementation
@@ -57,7 +57,7 @@ org.r10r.doctester.rendermachine
 
 ```
      ┌─────────────────────────────────────────────┐
-     │              DocTester (abstract)            │
+     │              DTR (abstract)            │
      │                                              │
      │  + say(), sayNextSection(), sayRaw()         │
      │  + sayAndMakeRequest()                       │
@@ -140,7 +140,7 @@ HTML template snippets are in `RenderMachineHtml` as string constants (Bootstrap
 
 ## Extension points
 
-DocTester has three extension points, all in `DocTester.java`:
+DTR has three extension points, all in `DTR.java`:
 
 ### 1. `testServerUrl()` (override)
 
@@ -151,7 +151,7 @@ The simplest extension: just return a different `Url`. Used in every real projec
 Replace the HTTP client entirely. Useful for:
 - Using OkHttp or Java's `HttpClient` instead of Apache
 - Adding request logging, metrics, or tracing
-- Mocking HTTP responses in unit tests of DocTester itself
+- Mocking HTTP responses in unit tests of DTR itself
 - Custom SSL certificate handling
 
 ### 3. `getRenderMachine()` (override)
@@ -164,7 +164,7 @@ Replace the HTML renderer. Useful for:
 
 ---
 
-## Dependencies in doctester-core
+## Dependencies in dtr-core
 
 | Dependency | Purpose | Scope |
 |---|---|---|
@@ -177,25 +177,25 @@ Replace the HTML renderer. Useful for:
 | `guava:18.0` | `HtmlEscapers`, `Lists`, `Maps` utilities | compile |
 | `commons-fileupload:1.3.1` | Multipart parsing | compile |
 | `slf4j-api:1.7.12` | Logging API | compile |
-| `mockito-core:4.11.0` | Testing DocTester itself | test |
+| `mockito-core:4.11.0` | Testing DTR itself | test |
 
-The `provided` scope for JUnit means DocTester doesn't force a specific JUnit version on consumers — you supply it.
+The `provided` scope for JUnit means DTR doesn't force a specific JUnit version on consumers — you supply it.
 
 ---
 
 ## Design decisions
 
 **Why JUnit 4, not 5?**
-DocTester was designed before JUnit 5 became dominant. JUnit 4's `@Before`/`@AfterClass` are simpler to hook into than JUnit 5's extension model. Migrating to JUnit 5 is feasible but non-trivial.
+DTR was designed before JUnit 5 became dominant. JUnit 4's `@Before`/`@AfterClass` are simpler to hook into than JUnit 5's extension model. Migrating to JUnit 5 is feasible but non-trivial.
 
 **Why Apache HttpClient, not Java's built-in HttpClient?**
-Apache HttpClient 4.5 was the standard choice when DocTester was built. Java 11 introduced `java.net.http.HttpClient`, which would be a cleaner dependency. A migration would be a good contribution.
+Apache HttpClient 4.5 was the standard choice when DTR was built. Java 11 introduced `java.net.http.HttpClient`, which would be a cleaner dependency. A migration would be a good contribution.
 
 **Why static HTML, not live Swagger?**
-Static HTML is deployable anywhere, requires no runtime dependencies, and can be checked into version control. The trade-off is no interactivity (no "Try it" button). For interactive docs, combine DocTester with OpenAPI annotations on your server.
+Static HTML is deployable anywhere, requires no runtime dependencies, and can be checked into version control. The trade-off is no interactivity (no "Try it" button). For interactive docs, combine DTR with OpenAPI annotations on your server.
 
 **Why Bootstrap 3, not Bootstrap 5?**
-Bootstrap 3.0.0 is bundled in the JAR and has been there since DocTester was first released. It works. Upgrading to Bootstrap 5 would be a cosmetic improvement with no functional change — a reasonable contribution if you care about the look.
+Bootstrap 3.0.0 is bundled in the JAR and has been there since DTR was first released. It works. Upgrading to Bootstrap 5 would be a cosmetic improvement with no functional change — a reasonable contribution if you care about the look.
 
 **Why Guava?**
 Guava's `HtmlEscapers.htmlEscaper()` was used before `String.replace()` escaping was considered safe, and `Lists`/`Maps` factory methods predate Java 9's `List.of()`. Guava could be removed as a dependency and replaced with Java 9+ built-ins.

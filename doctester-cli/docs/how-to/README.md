@@ -1,6 +1,6 @@
-# DocTester CLI How-To Guides
+# DTR CLI How-To Guides
 
-This directory contains task-oriented guides to solve specific problems with the DocTester CLI. Each guide walks you through a common workflow with step-by-step instructions and copy-paste ready examples.
+This directory contains task-oriented guides to solve specific problems with the DTR CLI. Each guide walks you through a common workflow with step-by-step instructions and copy-paste ready examples.
 
 ## Guides Overview
 
@@ -60,7 +60,7 @@ Discover how to include rich content in your documentation:
 **Problem:** I want docs auto-generated during my Maven build
 
 Learn how to generate documentation automatically as part of your test suite:
-- Add DocTester plugin to pom.xml
+- Add DTR plugin to pom.xml
 - Configure output formats and directories
 - Use Maven profiles for different outputs
 - Control generation via CLI properties
@@ -69,8 +69,8 @@ Learn how to generate documentation automatically as part of your test suite:
 **Key configuration:**
 ```xml
 <plugin>
-    <groupId>org.r10r</groupId>
-    <artifactId>doctester-maven-plugin</artifactId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-maven-plugin</artifactId>
     <version>2.5.0</version>
     <configuration>
         <format>markdown</format>

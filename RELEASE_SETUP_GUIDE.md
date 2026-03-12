@@ -1,6 +1,6 @@
-# DocTester 2.0.0 Release — Quick Setup Guide
+# DTR 2.0.0 Release — Quick Setup Guide
 
-This guide walks you through the critical setup steps needed before releasing DocTester 2.0.0 to Maven Central.
+This guide walks you through the critical setup steps needed before releasing DTR 2.0.0 to Maven Central.
 
 **Status:** Release configuration is complete. You need to set up 2 credentials items.
 
@@ -36,9 +36,9 @@ cat .mvn/maven.config
 
 Visit https://central.sonatype.org/ and:
 1. Sign up for free account (or use existing)
-2. Verify ownership of `org.r10r` groupId
+2. Verify ownership of `io.github.seanchatmangpt.dtr` groupId
    - Option A: Domain verification (own `r10r.org` domain)
-   - Option B: GitHub repository proof (fork/contribute to `github.com/r10r-org`)
+   - Option B: GitHub repository proof (fork/contribute to `github.com/seanchatmangpt`)
 3. Wait for approval (typically 1 business day)
 
 ### 2b. Generate API Token
@@ -161,7 +161,7 @@ gpg --list-secret-keys
 ...
 sec   rsa4096 2026-03-10 [SC] [expires: 2029-03-10]
       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-uid           [ultimate] DocTester Release <release@r10r.org>
+uid           [ultimate] DTR Release <release@r10r.org>
 ```
 
 **Note:** The `XXXXXXXX...` is your **KEY_ID** (long form). Save this.
@@ -196,7 +196,7 @@ gpg -ab test.txt
 
 # Verify signature
 gpg --verify test.txt.asc
-# Expected: "Good signature from DocTester Release"
+# Expected: "Good signature from DTR Release"
 
 # Cleanup
 rm test.txt test.txt.asc
@@ -224,7 +224,7 @@ The release plugin will push tags via SSH. Verify:
 ```bash
 # Test SSH to GitHub
 ssh -T git@github.com
-# Expected: "Hi r10r-org! You've successfully authenticated..."
+# Expected: "Hi seanchatmangpt! You've successfully authenticated..."
 
 # If fails, add SSH key to GitHub:
 # 1. Generate: ssh-keygen -t ed25519 -f ~/.ssh/github
@@ -240,7 +240,7 @@ ssh -T git@github.com
 ```bash
 cd /home/user/doctester
 
-mvnd clean install -pl doctester-core -DskipTests
+mvnd clean install -pl dtr-core -DskipTests
 
 # Expected: BUILD SUCCESS
 ```
@@ -263,8 +263,8 @@ mvnd -P release release:prepare -DdryRun=true
 
 # Cleanup dry-run artifacts
 rm -f pom.xml.tag pom.xml.releaseBackup release.properties
-rm -f doctester-core/pom.xml.tag doctester-core/pom.xml.releaseBackup
-rm -f doctester-integration-test/pom.xml.tag doctester-integration-test/pom.xml.releaseBackup
+rm -f dtr-core/pom.xml.tag dtr-core/pom.xml.releaseBackup
+rm -f dtr-integration-test/pom.xml.tag dtr-integration-test/pom.xml.releaseBackup
 ```
 
 ---
@@ -283,10 +283,10 @@ You have two options:
 #### Option A: Manual Version Update Before Release
 ```bash
 # Edit all pom.xml files
-sed -i 's/<version>1.1.12-SNAPSHOT<\/version>/<version>2.0.0-SNAPSHOT<\/version>/g' pom.xml doctester-core/pom.xml doctester-integration-test/pom.xml
+sed -i 's/<version>1.1.12-SNAPSHOT<\/version>/<version>2.0.0-SNAPSHOT<\/version>/g' pom.xml dtr-core/pom.xml dtr-integration-test/pom.xml
 
 # Commit
-git add pom.xml doctester-core/pom.xml doctester-integration-test/pom.xml
+git add pom.xml dtr-core/pom.xml dtr-integration-test/pom.xml
 git commit -m "Prepare for 2.0.0 release"
 
 # Then run release
@@ -316,7 +316,7 @@ git status
 # Expected: nothing to commit (except untracked CHANGELOG, etc.)
 
 # Verify all tests pass (or skip with -DskipTests)
-mvnd clean verify -pl doctester-core
+mvnd clean verify -pl dtr-core
 # Expected: BUILD SUCCESS (core tests pass)
 
 # Verify credentials are ready
@@ -387,7 +387,7 @@ mvnd -P release release:prepare release:perform \
 
 ```bash
 # Search for artifact (1-2 minute delay)
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core:2.0.0 | jq .
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core:2.0.0 | jq .
 
 # Expected: artifact record found
 ```
@@ -396,10 +396,10 @@ curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core:2.0
 
 ```bash
 # Wait 2-5 minutes, then try downloading
-mvn dependency:get -Dartifact=org.r10r:doctester-core:2.0.0
+mvn dependency:get -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
 
 # Check cache
-ls -la ~/.m2/repository/org/r10r/doctester-core/2.0.0/
+ls -la ~/.m2/repository/org/r10r/dtr-core/2.0.0/
 
 # Expected: JAR, POM, and signature files present
 ```
@@ -430,7 +430,7 @@ gh release create v2.0.0 \
 ```
 
 Or manually via GitHub web UI:
-1. Go to https://github.com/r10r-org/doctester/releases
+1. Go to https://github.com/seanchatmangpt/doctester/releases
 2. Click "Create new release"
 3. Select tag: `v2.0.0`
 4. Add changelog content
@@ -475,7 +475,7 @@ gpg --list-secret-keys
 
 ```bash
 mvnd -P release release:prepare release:perform \
-  -pl doctester-core \
+  -pl dtr-core \
   -DskipTests
 ```
 
@@ -510,7 +510,7 @@ gpg --list-keys  # Restarts agent
 java -version && mvnd --version && gpg --list-secret-keys && git config --global user.email
 
 # Build core only
-mvnd clean install -pl doctester-core -DskipTests
+mvnd clean install -pl dtr-core -DskipTests
 
 # Dry-run release
 mvnd -P release release:prepare -DdryRun=true && rm -f pom.xml.tag pom.xml.releaseBackup release.properties
@@ -523,7 +523,7 @@ export GPG_PASSPHRASE="xyz"
 mvnd -P release release:prepare release:perform -DskipTests --batch-mode
 
 # Check publication
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core | jq '.[-1]'
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core | jq '.[-1]'
 ```
 
 ---
@@ -562,4 +562,4 @@ Before releasing, ensure you have:
 - Maven Central docs: https://central.sonatype.org/publish/publish-maven/
 - GPG setup: https://help.github.com/articles/signing-commits-with-gpg/
 
-**You're ready!** Follow steps 1-9 above and you'll have DocTester 2.0.0 on Maven Central.
+**You're ready!** Follow steps 1-9 above and you'll have DTR 2.0.0 on Maven Central.

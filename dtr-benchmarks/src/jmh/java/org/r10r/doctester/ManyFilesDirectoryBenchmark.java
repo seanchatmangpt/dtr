@@ -31,8 +31,8 @@ import java.util.concurrent.TimeUnit;
  * - 10000 file directory enumeration
  * - Memory and I/O efficiency
  *
- * Run with: mvnd clean package -pl doctester-benchmarks && \
- *           java -jar doctester-benchmarks/target/benchmarks.jar ManyFilesDirectoryBenchmark
+ * Run with: mvnd clean package -pl dtr-benchmarks && \
+ *           java -jar dtr-benchmarks/target/benchmarks.jar ManyFilesDirectoryBenchmark
  */
 @Fork(value = 1, jvmArgs = {"--enable-preview"})
 @Warmup(iterations = 2, time = 5, timeUnit = TimeUnit.SECONDS)

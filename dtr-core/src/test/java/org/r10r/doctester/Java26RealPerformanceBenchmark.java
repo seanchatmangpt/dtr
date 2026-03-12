@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Timeout;
  * - Real output generation (Markdown, LaTeX, OpenAPI, etc.)
  *
  * Instructions to validate results:
- * 1. Run: mvnd test -pl doctester-core -Dtest=Java26RealPerformanceBenchmark
+ * 1. Run: mvnd test -pl dtr-core -Dtest=Java26RealPerformanceBenchmark
  * 2. Check output: grep "Real measurement" target/surefire-reports/...
  * 3. Verify environment: java -version, mvnd --version
  *

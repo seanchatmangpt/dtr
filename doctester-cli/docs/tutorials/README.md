@@ -1,20 +1,20 @@
-# DocTester CLI Tutorials
+# DTR CLI Tutorials
 
-Welcome to the DocTester CLI tutorials! These guides teach you how to use DocTester CLI from the ground up.
+Welcome to the DTR CLI tutorials! These guides teach you how to use DTR CLI from the ground up.
 
 ## Learning Path
 
-Follow these tutorials in order to master DocTester CLI:
+Follow these tutorials in order to master DTR CLI:
 
-### 1. [Getting Started with DocTester CLI](01-getting-started.md)
+### 1. [Getting Started with DTR CLI](01-getting-started.md)
 **Duration:** 5-10 minutes | **Difficulty:** Beginner
 
 Learn to:
-- Install DocTester CLI
+- Install DTR CLI
 - Convert your first Markdown file to HTML
 - Verify the installation
 
-**Start here if:** You're new to DocTester CLI or command-line tools.
+**Start here if:** You're new to DTR CLI or command-line tools.
 
 ### 2. [Creating Multi-Format Documentation](02-export-formats.md)
 **Duration:** 10-15 minutes | **Difficulty:** Beginner
@@ -27,11 +27,11 @@ Learn to:
 
 **Start here if:** You understand basic commands and want to explore output formats.
 
-### 3. [Integrating DocTester CLI with Maven Projects](03-maven-integration.md)
+### 3. [Integrating DTR CLI with Maven Projects](03-maven-integration.md)
 **Duration:** 15-20 minutes | **Difficulty:** Intermediate
 
 Learn to:
-- Use DocTester CLI with Maven projects
+- Use DTR CLI with Maven projects
 - Generate reports from test documentation
 - Automate documentation with CI/CD
 - Publish to GitHub Pages from Maven
@@ -77,9 +77,9 @@ Before starting Tutorial 1, prepare your environment:
 # Check Python version
 python3 --version  # Should show 3.12+
 
-# Clone DocTester repo
+# Clone DTR repo
 git clone https://github.com/seanchatmangpt/doctester.git
-cd doctester/doctester-cli
+cd doctester/dtr-cli
 
 # Create virtual environment
 python3.12 -m venv venv
@@ -102,7 +102,7 @@ Then you're ready to begin!
 
 After completing these tutorials, you'll be able to:
 
-✅ Install and verify DocTester CLI
+✅ Install and verify DTR CLI
 ✅ Convert documentation to HTML, Markdown, and JSON
 ✅ Export in bulk using batch commands
 ✅ Generate reports from documentation

@@ -1,6 +1,6 @@
 # Tutorials
 
-Tutorials are **learning-oriented**. They take you through a series of steps to complete a project. When you finish, you'll have a working DocTester setup and a clear mental model of how it works.
+Tutorials are **learning-oriented**. They take you through a series of steps to complete a project. When you finish, you'll have a working DTR setup and a clear mental model of how it works.
 
 ## Available Tutorials
 
@@ -24,6 +24,10 @@ Tutorials are **learning-oriented**. They take you through a series of steps to 
 | Tutorial | What you'll build |
 |---|---|
 | [Your First DocTest](your-first-doctest.md) | A complete, runnable DocTest for a public API |
+| [Your First DTR Test: From Test to Living Docs](01-basic-test-documentation.md) | A simple test that generates HTML documentation automatically |
+| [Testing REST APIs and Generating API Documentation](02-http-api-testing.md) | A complete REST API test suite with multi-endpoint documentation |
+| [Generating OpenAPI 3.0 Specs from Tests](03-openapi-generation.md) | Machine-readable API specs generated directly from tests |
+| [Advanced: Multiple Formats, LaTeX, and PDF](04-advanced-rendering.md) | Generate HTML, LaTeX, PDF, Markdown, and JSON from a single test |
 | [Testing a REST API](testing-a-rest-api.md) | A full CRUD API documented end-to-end |
 
 ---

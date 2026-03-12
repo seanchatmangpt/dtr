@@ -1,4 +1,4 @@
-# DocTester 2.0.0 — Credentials & Setup Checklist
+# DTR 2.0.0 — Credentials & Setup Checklist
 
 Print this checklist and complete each item before attempting release.
 
@@ -9,7 +9,7 @@ Print this checklist and complete each item before attempting release.
 ### Item 1: Sonatype Central API Token
 
 - [ ] Sonatype Central account exists (https://central.sonatype.org/)
-- [ ] `org.r10r` groupId verified
+- [ ] `io.github.seanchatmangpt.dtr` groupId verified
 - [ ] API Token generated from account settings
 - [ ] Token Username (OAuth username): ________________
 - [ ] Token Password (OAuth password): ________________
@@ -101,9 +101,9 @@ git status
 ### File Locations
 
 - [ ] Root POM: `/home/user/doctester/pom.xml` ✓
-- [ ] Core POM: `/home/user/doctester/doctester-core/pom.xml` ✓
+- [ ] Core POM: `/home/user/doctester/dtr-core/pom.xml` ✓
 - [ ] Maven settings: `~/.m2/settings.xml` ✓
-- [ ] Maven local repo: `~/.m2/repository/` (has doctester-core)
+- [ ] Maven local repo: `~/.m2/repository/` (has dtr-core)
 
 ---
 
@@ -111,10 +111,10 @@ git status
 
 ### Build & Tests
 
-- [ ] Core module builds: `mvnd clean install -pl doctester-core -DskipTests`
+- [ ] Core module builds: `mvnd clean install -pl dtr-core -DskipTests`
   - Expected: `BUILD SUCCESS`
 - [ ] All tests pass (or documented skip reason)
-  - `mvnd test -pl doctester-core`
+  - `mvnd test -pl dtr-core`
   - Expected: `BUILD SUCCESS` or integration tests skipped
 - [ ] License headers present: `mvnd -P license license:check`
   - Expected: No license violations reported
@@ -124,7 +124,7 @@ git status
 - [ ] README.md updated with 2.0.0 features: ________________
 - [ ] CHANGELOG.md exists with 2.0.0 changes: ________________
 - [ ] MIGRATION guide (if breaking changes): ________________
-- [ ] Javadoc generates without errors: `mvnd javadoc:jar -pl doctester-core`
+- [ ] Javadoc generates without errors: `mvnd javadoc:jar -pl dtr-core`
 
 ---
 
@@ -180,7 +180,7 @@ unset HISTFILE
 
 **Check server status:**
 ```bash
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:junit | jq '.[-1].name'
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:junit | jq '.[-1].name'
 # Should return a name, indicating API is working
 ```
 
@@ -188,7 +188,7 @@ curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:junit | jq '.[-1].
 
 ```bash
 # Final build test
-mvnd clean install -pl doctester-core -DskipTests
+mvnd clean install -pl dtr-core -DskipTests
 # Must succeed
 
 # Verify git is ready
@@ -248,15 +248,15 @@ mvnd -P release release:prepare release:perform \
 
 - [ ] Check Maven Central search
   ```bash
-  curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core:2.0.0"
+  curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core:2.0.0"
   # Should return artifact record
   ```
 
 - [ ] Verify signatures
   ```bash
   # Download artifact and check signature
-  mvn dependency:get -Dartifact=org.r10r:doctester-core:2.0.0
-  ls -la ~/.m2/repository/org/r10r/doctester-core/2.0.0/
+  mvn dependency:get -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
+  ls -la ~/.m2/repository/org/r10r/dtr-core/2.0.0/
   # Should have: .jar, .pom, .jar.asc, .pom.asc
   ```
 

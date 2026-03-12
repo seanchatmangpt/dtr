@@ -1,4 +1,4 @@
-# DocTester 2.0.0 — Maven Central Publication Readiness Report
+# DTR 2.0.0 — Maven Central Publication Readiness Report
 
 **Report Date:** 2026-03-10
 **Project:** DocTester
@@ -12,7 +12,7 @@
 
 **Status:** READY FOR RELEASE with minor credential setup required
 
-DocTester is properly configured for Maven Central publication using the modern **central-publishing-maven-plugin** (0.6.0). The project:
+DTR is properly configured for Maven Central publication using the modern **central-publishing-maven-plugin** (0.6.0). The project:
 
 - ✅ Uses Java 25 with `--enable-preview` enabled
 - ✅ Uses Maven 4.0.0-rc-5 enforced by `maven-enforcer-plugin`
@@ -159,8 +159,8 @@ Configured correctly:
 
 ```
 doctester/
-├── doctester-core         (JAR artifact — main library)
-├── doctester-integration-test  (WAR artifact — integration tests only)
+├── dtr-core         (JAR artifact — main library)
+├── dtr-integration-test  (WAR artifact — integration tests only)
 └── (parent pom.xml)       (POM packaging — aggregates modules)
 ```
 
@@ -182,13 +182,13 @@ doctester/
 | Module | Type | Deploy? | Status |
 |--------|------|---------|--------|
 | `doctester` | POM (parent) | ⚠️ Yes* | Will be published (standard practice) |
-| `doctester-core` | JAR | ✅ Yes | Primary artifact for Maven Central |
-| `doctester-integration-test` | WAR | ⚠️ Yes* | Includes test cases; will be in Central |
+| `dtr-core` | JAR | ✅ Yes | Primary artifact for Maven Central |
+| `dtr-integration-test` | WAR | ⚠️ Yes* | Includes test cases; will be in Central |
 
 **Note:** Integration-test module is typically kept in source control but published. If you want to exclude from Central publication, add:
 
 ```xml
-<!-- In doctester-integration-test/pom.xml -->
+<!-- In dtr-integration-test/pom.xml -->
 <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
 </properties>
@@ -204,9 +204,9 @@ doctester/
 
 ```xml
 <scm>
-    <url>https://github.com/r10r-org/doctester</url>
-    <connection>scm:git:git://github.com/r10r-org/doctester.git</connection>
-    <developerConnection>scm:git:git@github.com:r10r-org/doctester.git</developerConnection>
+    <url>https://github.com/seanchatmangpt/doctester</url>
+    <connection>scm:git:git://github.com/seanchatmangpt/doctester.git</connection>
+    <developerConnection>scm:git:git@github.com:seanchatmangpt/doctester.git</developerConnection>
     <tag>HEAD</tag>
 </scm>
 ```
@@ -215,7 +215,7 @@ doctester/
 
 | Element | Value | Status | Notes |
 |---------|-------|--------|-------|
-| **url** | https://github.com/r10r-org/doctester | ✅ Valid | Public GitHub URL |
+| **url** | https://github.com/seanchatmangpt/doctester | ✅ Valid | Public GitHub URL |
 | **connection** | scm:git:git:// | ✅ Valid | Read-only clone URL (public) |
 | **developerConnection** | scm:git:git@github.com:... | ✅ Valid | SSH clone URL (requires GitHub auth) |
 | **tag** | HEAD | ⚠️ Default | Will be updated to `v2.0.0` during release:prepare |
@@ -242,7 +242,7 @@ scm.tagNameFormat=v@{project.version}
 
 **How to obtain:**
 1. Sign up for free account at https://central.sonatype.org/
-2. Verify ownership of `org.r10r` groupId (domain ownership + GitHub repo proof)
+2. Verify ownership of `io.github.seanchatmangpt.dtr` groupId (domain ownership + GitHub repo proof)
 3. Generate API token in Central account settings
 
 **Setup location:** `~/.m2/settings.xml`
@@ -303,7 +303,7 @@ $ gpg --list-secret-keys
 
 **Current repo setup:**
 ```
-developerConnection: scm:git:git@github.com:r10r-org/doctester.git
+developerConnection: scm:git:git@github.com:seanchatmangpt/doctester.git
 ```
 
 **Setup:**
@@ -347,8 +347,8 @@ mvnd -P release release:prepare -DdryRun=true
 
 **Generated release.properties:**
 ```properties
-project.rel.org.r10r\:doctester=1.1.12
-project.dev.org.r10r\:doctester=1.1.13-SNAPSHOT
+project.rel.io.github.seanchatmangpt.dtr\:doctester=1.1.12
+project.dev.io.github.seanchatmangpt.dtr\:doctester=1.1.13-SNAPSHOT
 scm.tag=v1.1.12
 ```
 
@@ -373,7 +373,7 @@ scm.tag=v1.1.12
 ```
 [ERROR] Tests run: 77, Failures: 0, Errors: 73, Skipped: 0
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test)
-       on project doctester-integration-test:
+       on project dtr-integration-test:
 ```
 
 **Root cause:** Jetty servlet container initialization issue in integration tests.
@@ -382,9 +382,9 @@ scm.tag=v1.1.12
 NoClassDefFound: Could not initialize class org.eclipse.jetty.servlet.ServletContextHandler
 ```
 
-**Scope:** Integration tests only (`doctester-integration-test` module)
+**Scope:** Integration tests only (`dtr-integration-test` module)
 
-**Impact:** **BLOCKING** for full build + release, but **NOT blocking for doctester-core artifact** (the main library)
+**Impact:** **BLOCKING** for full build + release, but **NOT blocking for dtr-core artifact** (the main library)
 
 **Recommended Fix:** See Section 6 for diagnostics.
 
@@ -449,7 +449,7 @@ gpg --full-generate-key
 # - Key type: RSA and RSA (default)
 # - Key size: 4096
 # - Validity: 3+ years
-# - Real name: DocTester Release
+# - Real name: DTR Release
 # - Email: release@r10r.org
 
 # List key
@@ -491,17 +491,17 @@ export GPG_PASSPHRASE="your-passphrase"
 NoClassDefFound: Could not initialize class org.eclipse.jetty.servlet.ServletContextHandler
 ```
 
-**Occurs in:** `doctester-integration-test` module (77 tests)
+**Occurs in:** `dtr-integration-test` module (77 tests)
 
 **Root Cause:** Likely Jetty 9.4.x classpath issue with Ninja framework 7.0.0 + Java 25
 
 **Workaround for Release:**
 ```bash
 # Release core module only (skip integration tests)
-mvnd -pl doctester-core -P release clean deploy -DskipTests
+mvnd -pl dtr-core -P release clean deploy -DskipTests
 
 # Or skip integration module entirely
-mvnd -pl doctester-core -P release clean deploy
+mvnd -pl dtr-core -P release clean deploy
 ```
 
 **Permanent Fix Options:**
@@ -518,7 +518,7 @@ mvnd -pl doctester-core -P release clean deploy
 
 3. **Debug full stack trace:**
    ```bash
-   mvnd clean test -pl doctester-integration-test -e
+   mvnd clean test -pl dtr-integration-test -e
    ```
 
 **Timeline:** Fix before integration tests required; not blocking for core artifact release.
@@ -563,7 +563,7 @@ Apache Maven 4.0.0-rc-5
 
 - [ ] **Sonatype Central Account**
   - [ ] Account created at https://central.sonatype.org/
-  - [ ] `org.r10r` groupId ownership verified
+  - [ ] `io.github.seanchatmangpt.dtr` groupId ownership verified
   - [ ] API token generated
   - [ ] Token saved to `~/.m2/settings.xml` (see Issue 1 fix)
 
@@ -586,7 +586,7 @@ Apache Maven 4.0.0-rc-5
 
 - [ ] **Code Quality**
   - [ ] All tests pass (except known Jetty issues)
-  - [ ] `mvnd clean verify` succeeds or use `-pl doctester-core` workaround
+  - [ ] `mvnd clean verify` succeeds or use `-pl dtr-core` workaround
   - [ ] License headers present (`mvnd -P license license:check`)
   - [ ] Code reviewed for Java 25 idioms
 
@@ -619,7 +619,7 @@ Apache Maven 4.0.0-rc-5
 
 ```bash
 # 1. Update version in pom.xml manually or let release plugin do it
-mvnd -P release clean verify -pl doctester-core  # Skip integration tests
+mvnd -P release clean verify -pl dtr-core  # Skip integration tests
 
 # 2. Prepare release (creates git tag, updates POMs)
 mvnd -P release release:prepare
@@ -629,7 +629,7 @@ mvnd -P release release:perform
 
 # 4. Monitor Central
 # Sonatype publishes within 2-15 minutes
-# Verify at: https://central.sonatype.com/artifact/org.r10r/doctester-core/2.0.0
+# Verify at: https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/2.0.0
 ```
 
 ### For CI/CD (GitHub Actions example)
@@ -649,11 +649,11 @@ git config --global user.name "DocTester Release Bot"
 # Release
 mvnd -P release release:prepare release:perform \
   -DskipTests \
-  -pl doctester-core  # Skip integration tests due to Jetty issue
+  -pl dtr-core  # Skip integration tests due to Jetty issue
 
 # Check status (optional wait)
 sleep 30
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core | jq .
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core | jq .
 ```
 
 ### For Central Publishing Plugin (alternative to release-plugin)
@@ -682,10 +682,10 @@ After successful `release:perform`:
 **Verification:**
 ```bash
 # Check CDN availability
-curl -s https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core:2.0.0
+curl -s https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
 
 # Or download directly
-mvn dependency:get -Dartifact=org.r10r:doctester-core:2.0.0
+mvn dependency:get -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
 ```
 
 ---
@@ -710,8 +710,8 @@ mvn dependency:get -Dartifact=org.r10r:doctester-core:2.0.0
 
 | Module | Inherits Release Profile | Deploy | Status |
 |--------|--------------------------|--------|--------|
-| doctester-core | Yes (parent) | ✅ Yes | Main artifact |
-| doctester-integration-test | Yes (parent) | ⚠️ Yes | Test artifact (optional) |
+| dtr-core | Yes (parent) | ✅ Yes | Main artifact |
+| dtr-integration-test | Yes (parent) | ⚠️ Yes | Test artifact (optional) |
 
 ---
 
@@ -739,7 +739,7 @@ mvn dependency:get -Dartifact=org.r10r:doctester-core:2.0.0
 1. **Fix Jetty integration test failures**
    - [ ] Upgrade Jetty or diagnose root cause
    - [ ] Ensure full `mvnd clean verify` passes
-   - [ ] Update release commands to remove `-pl doctester-core` skip
+   - [ ] Update release commands to remove `-pl dtr-core` skip
 
 2. **Finalize 2.0.0 documentation**
    - [ ] CHANGELOG with all changes
@@ -771,7 +771,7 @@ mvn dependency:get -Dartifact=org.r10r:doctester-core:2.0.0
 
 ### Symptom: "Could not initialize class org.eclipse.jetty.servlet.ServletContextHandler"
 
-**Solution:** Run release with `-pl doctester-core` to skip integration tests (workaround) or debug Jetty (Issue 3)
+**Solution:** Run release with `-pl dtr-core` to skip integration tests (workaround) or debug Jetty (Issue 3)
 
 ### Symptom: Release plugin asks for version/tag interactively
 
@@ -785,7 +785,7 @@ mvn dependency:get -Dartifact=org.r10r:doctester-core:2.0.0
 curl -s https://central.sonatype.com/api/v1/repositories
 
 # Search for artifact
-curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core"
+curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.dtr:dtr-core"
 
 # If stuck, check Central admin dashboard for manual approval
 ```
@@ -814,7 +814,7 @@ curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core"
 | Resource | Path | Purpose |
 |----------|------|---------|
 | Root POM | `/home/user/doctester/pom.xml` | Release profile, central-publishing config |
-| Core module | `/home/user/doctester/doctester-core/pom.xml` | Main artifact |
+| Core module | `/home/user/doctester/dtr-core/pom.xml` | Main artifact |
 | Maven config | `/home/user/doctester/.mvn/maven.config` | Build flags (--enable-preview) |
 | Settings | `~/.m2/settings.xml` | Credentials (to be updated) |
 | Maven home | `/opt/apache-maven-4.0.0-rc-5` | System Maven 4 installation |
@@ -846,7 +846,7 @@ curl -s "https://central.sonatype.com/api/v1/search?q=org.r10r:doctester-core"
 
 **Report generated:** 2026-03-10
 **By:** Maven 4 + mvnd Build Expert
-**Next review:** Before DocTester 3.0.0 release
+**Next review:** Before DTR 3.0.0 release
 
 For questions or issues, refer to:
 - CLAUDE.md — Project architecture & tools guide

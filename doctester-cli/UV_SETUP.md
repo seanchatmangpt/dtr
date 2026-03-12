@@ -1,4 +1,4 @@
-# Using `uv` with DocTester CLI
+# Using `uv` with DTR CLI
 
 This project uses [`uv`](https://docs.astral.sh/uv/), a modern, ultra-fast Python package manager written in Rust. It replaces `pip`, `pip-tools`, and `venv` with a single tool.
 
@@ -67,7 +67,7 @@ uv lock
 uv sync
 
 # Show dependency tree
-uv pip show -r doctester-cli  # or any package name
+uv pip show -r dtr-cli  # or any package name
 
 # List installed packages
 uv pip list

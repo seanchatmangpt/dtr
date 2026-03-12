@@ -1,6 +1,6 @@
-# DocTester CLI
+# DTR CLI
 
-A comprehensive, modern Python CLI tool for managing, converting, and publishing DocTester documentation exports.
+A comprehensive, modern Python CLI tool for managing, converting, and publishing DTR documentation exports.
 
 **Built with:** Python 3.12+ • Typer • uv • Pydantic • Rich
 
@@ -19,7 +19,7 @@ A comprehensive, modern Python CLI tool for managing, converting, and publishing
 ### Using `uv` (Recommended)
 
 ```bash
-cd doctester-cli
+cd dtr-cli
 uv sync
 ```
 
@@ -32,7 +32,7 @@ uv sync --all-extras
 ### Using pip
 
 ```bash
-cd doctester-cli
+cd dtr-cli
 pip install -e .
 ```
 
@@ -270,4 +270,4 @@ All code follows PEP 8 with 100-character line length. Import sorting is handled
 
 ## License
 
-Apache 2.0 — Same as DocTester core library
+Apache 2.0 — Same as DTR core library

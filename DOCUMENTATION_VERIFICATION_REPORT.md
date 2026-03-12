@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-All documentation files have been successfully created and verified. The DocTester CLI documentation follows the Diataxis framework with 4 sections (Tutorials, How-To Guides, Reference, Explanation) organized into 20 comprehensive guides plus master index and navigation files.
+All documentation files have been successfully created and verified. The DTR CLI documentation follows the Diataxis framework with 4 sections (Tutorials, How-To Guides, Reference, Explanation) organized into 20 comprehensive guides plus master index and navigation files.
 
 **Result:** ✅ **READY FOR PUBLICATION**
 
@@ -290,12 +290,12 @@ Status: ✅ ALL PASS
 
 ### New Files Created
 ```
-✅ /home/user/doctester/doctester-cli/docs/index.md (219 lines)
-✅ /home/user/doctester/doctester-cli/docs/reference/exit-codes.md (194 lines)
-✅ /home/user/doctester/doctester-cli/docs/reference/glossary.md (186 lines)
-✅ /home/user/doctester/doctester-cli/docs/explanation/performance-guide.md (274 lines)
-✅ /home/user/doctester/doctester-cli/docs/explanation/best-practices.md (510 lines)
-✅ /home/user/doctester/doctester-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
+✅ /home/user/doctester/dtr-cli/docs/index.md (219 lines)
+✅ /home/user/doctester/dtr-cli/docs/reference/exit-codes.md (194 lines)
+✅ /home/user/doctester/dtr-cli/docs/reference/glossary.md (186 lines)
+✅ /home/user/doctester/dtr-cli/docs/explanation/performance-guide.md (274 lines)
+✅ /home/user/doctester/dtr-cli/docs/explanation/best-practices.md (510 lines)
+✅ /home/user/doctester/dtr-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
 ✅ /home/user/doctester/DIATAXIS_DOCUMENTATION.md (Summary document)
 ```
 

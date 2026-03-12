@@ -2,7 +2,7 @@
 
 ## Output directory
 
-DocTester writes all output to:
+DTR writes all output to:
 
 ```
 target/site/doctester/
@@ -29,7 +29,7 @@ Place a file at:
 src/test/resources/org/doctester/custom_doctester_stylesheet.css
 ```
 
-DocTester copies it to the output directory and links it after Bootstrap in every HTML page.
+DTR copies it to the output directory and links it after Bootstrap in every HTML page.
 
 ## Custom output filename
 
@@ -46,7 +46,7 @@ Produces `target/site/doctester/user-api-v2.html` instead of the default class-n
 
 ## Build system integration
 
-DocTester generates documentation as a side effect of running tests. No additional Maven plugin is required.
+DTR generates documentation as a side effect of running tests. No additional Maven plugin is required.
 
 ```bash
 # Run tests and generate documentation
@@ -89,7 +89,7 @@ Required Surefire configuration to pass `--enable-preview` to the test JVM:
 
 ## Logging
 
-DocTester uses SLF4J for logging (via Apache HttpClient). Without an SLF4J binding you'll see:
+DTR uses SLF4J for logging (via Apache HttpClient). Without an SLF4J binding you'll see:
 
 ```
 SLF4J: No SLF4J providers were found.

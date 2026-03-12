@@ -20,16 +20,16 @@ pdflatex --version   # or xelatex, lualatex
 ## Step 1: Run the PhD Thesis Test
 
 ```bash
-# Navigate to DocTester project
+# Navigate to DTR project
 cd /home/user/doctester
 
 # Run the PhD thesis documentation test
-mvnd test -pl doctester-integration-test \
+mvnd test -pl dtr-integration-test \
   -Dtest=PhDThesisDocTest \
   -DargLine="--enable-preview"
 
 # Or with more detailed output
-mvnd test -pl doctester-integration-test \
+mvnd test -pl dtr-integration-test \
   -Dtest=PhDThesisDocTest \
   -X  # Enable debug output
 ```
@@ -40,7 +40,7 @@ The test will generate output in multiple formats:
 
 ```bash
 # Navigate to output directory
-cd doctester-integration-test/target
+cd dtr-integration-test/target
 
 # View Markdown output (version control friendly)
 cat docs/test-results/PhDThesisDocTest.md | head -100
@@ -57,7 +57,7 @@ open site/doctester/PhDThesisDocTest.html
 ### Option A: Using pdflatex (Recommended)
 
 ```bash
-cd doctester-integration-test/target/pdf
+cd dtr-integration-test/target/pdf
 
 # Generate PDF from LaTeX
 pdflatex -interaction=nonstopmode PhDThesisDocTest.tex
@@ -71,7 +71,7 @@ open PhDThesisDocTest.pdf
 ### Option B: Using xelatex (Unicode Support)
 
 ```bash
-cd doctester-integration-test/target/pdf
+cd dtr-integration-test/target/pdf
 
 # Generate PDF with xelatex (better Unicode support)
 xelatex -interaction=nonstopmode PhDThesisDocTest.tex
@@ -83,7 +83,7 @@ open PhDThesisDocTest.pdf
 ### Option C: Using latexmk (Automatic Multi-Pass)
 
 ```bash
-cd doctester-integration-test/target/pdf
+cd dtr-integration-test/target/pdf
 
 # latexmk handles multiple passes automatically
 latexmk -pdf PhDThesisDocTest.tex
@@ -125,7 +125,7 @@ The PDF will contain:
 ## Expected Output Files
 
 ```
-doctester-integration-test/target/
+dtr-integration-test/target/
 ├── docs/
 │   └── test-results/
 │       └── PhDThesisDocTest.md            # Markdown version
@@ -152,11 +152,11 @@ PhDThesisDocTest.html    ~200 KB  (HTML with styles)
 
 ## Customization: Change LaTeX Template
 
-DocTester supports multiple academic LaTeX templates:
+DTR supports multiple academic LaTeX templates:
 
 ```bash
 # In pom.xml or via environment variable, specify template:
-mvnd test -pl doctester-integration-test \
+mvnd test -pl dtr-integration-test \
   -Dtest=PhDThesisDocTest \
   -DlatexTemplate=IEEE  # Options: ACM, IEEE, ARXIV, NATURE, US_PATENT
 ```
@@ -180,18 +180,18 @@ mvnd test -pl doctester-integration-test \
 for TEMPLATE in ACM IEEE ARXIV NATURE US_PATENT; do
   echo "Generating PDF with $TEMPLATE template..."
 
-  mvnd test -pl doctester-integration-test \
+  mvnd test -pl dtr-integration-test \
     -Dtest=PhDThesisDocTest \
     -DlatexTemplate=$TEMPLATE \
     -DoutputName=PhDThesis_${TEMPLATE}
 
   # Move to versioned output
-  mv doctester-integration-test/target/pdf/PhDThesisDocTest.pdf \
-     doctester-integration-test/target/pdf/PhDThesis_${TEMPLATE}.pdf
+  mv dtr-integration-test/target/pdf/PhDThesisDocTest.pdf \
+     dtr-integration-test/target/pdf/PhDThesis_${TEMPLATE}.pdf
 done
 
 echo "Generated PDFs:"
-ls -lh doctester-integration-test/target/pdf/*.pdf
+ls -lh dtr-integration-test/target/pdf/*.pdf
 ```
 
 ## Troubleshooting
@@ -213,7 +213,7 @@ sudo dnf install texlive-latex
 
 ```bash
 # Check LaTeX log for errors
-cat doctester-integration-test/target/pdf/PhDThesisDocTest.log | tail -50
+cat dtr-integration-test/target/pdf/PhDThesisDocTest.log | tail -50
 
 # Try with more verbosity
 pdflatex -interaction=errorstopmode PhDThesisDocTest.tex
@@ -228,7 +228,7 @@ latexmk -pdf -pdflatex="pdflatex -interaction=nonstopmode" -f PhDThesisDocTest.t
 # Use xelatex instead (better Unicode support)
 xelatex -interaction=nonstopmode PhDThesisDocTest.tex
 
-# Or update LaTeX preamble in DocTester to use UTF-8 encoding:
+# Or update LaTeX preamble in DTR to use UTF-8 encoding:
 # \usepackage[utf8]{inputenc}
 ```
 
@@ -259,18 +259,18 @@ jobs:
           sudo apt-get install -y texlive-latex-base texlive-latex-extra
 
       - name: Run PhD Thesis Test
-        run: mvnd test -pl doctester-integration-test -Dtest=PhDThesisDocTest
+        run: mvnd test -pl dtr-integration-test -Dtest=PhDThesisDocTest
 
       - name: Compile LaTeX to PDF
         run: |
-          cd doctester-integration-test/target/pdf
+          cd dtr-integration-test/target/pdf
           pdflatex -interaction=nonstopmode PhDThesisDocTest.tex
 
       - name: Upload PDF Artifact
         uses: actions/upload-artifact@v2
         with:
           name: PhD Thesis PDF
-          path: doctester-integration-test/target/pdf/PhDThesisDocTest.pdf
+          path: dtr-integration-test/target/pdf/PhDThesisDocTest.pdf
 ```
 
 ## Performance Notes
@@ -293,4 +293,4 @@ jobs:
 - [JAVA_26_VERIFICATION_REPORT.md](./JAVA_26_VERIFICATION_REPORT.md)
 - [JAVA_26_DEVELOPER_GUIDE.md](./JAVA_26_DEVELOPER_GUIDE.md)
 - [CLAUDE.md](./CLAUDE.md) - Full project guide
-- [DocTester LaTeX API](./doctester-core/src/main/java/org/r10r/doctester/render/latex/)
+- [DocTester LaTeX API](./dtr-core/src/main/java/org/r10r/doctester/render/latex/)

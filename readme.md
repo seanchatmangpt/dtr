@@ -1,13 +1,13 @@
-DocTester [![Build Status](https://api.travis-ci.org/r10r-org/doctester.svg)](https://travis-ci.org/r10r-org/doctester)
+DTR [![Build Status](https://api.travis-ci.org/seanchatmangpt/doctester.svg)](https://travis-ci.org/seanchatmangpt/doctester)
 =========
 
-DocTester is a Java Testing Framework. 
-DocTester tests and generates documentation at the same time.
+DTR is a Java Testing Framework. 
+DTR tests and generates documentation at the same time.
 Built on top of JUnit. Works as simple drop-in for your build process.
 
 ## An example says more than a thousand words.
 
-When your test class extends DocTester you get some useful commands like:
+When your test class extends DTR you get some useful commands like:
 
  * sayNextSection(): A new headline for your test.
  * say(): Some fluent text wrapped inside a paragraph.
@@ -39,7 +39,7 @@ public void testMyApi() {
 
 This in turn generates the following output:
 
-![A screenshot of the generated html output](https://github.com/r10r-org/doctester/blob/master/img/doctester_example_output.png)
+![A screenshot of the generated html output](https://github.com/seanchatmangpt/doctester/blob/master/img/doctester_example_output.png)
 
 
 By default the resulting html is generated into src/target/site/doctester/
@@ -48,7 +48,7 @@ By default the resulting html is generated into src/target/site/doctester/
 There is an integration test that uses all of doctester. Check out for a more
 comprehensive example:
 
-https://github.com/r10r-org/doctester/blob/master/doctester-integration-test/src/test/java/controllers/ApiControllerDocTest.java
+https://github.com/seanchatmangpt/doctester/blob/master/dtr-integration-test/src/test/java/controllers/ApiControllerDocTest.java
 
 
 ## In-depth description of the problem we solve
@@ -72,12 +72,12 @@ Not a nice prospect.
 
 ## Our solution
 
-DocTester allows you to write tests and documentation at the same time! 
+DTR allows you to write tests and documentation at the same time! 
 By doing so you make sure that
 your documentation is always in sync with the current webservice. No more defunct
 documentation.
 
-In fact DocTester is just an add-on for JUnit that
+In fact DTR is just an add-on for JUnit that
 gives you some additional methods to create a html file and cleanly document
 all important parameters of a webservice call into that file.
 
@@ -87,20 +87,20 @@ your documentation is always in sync with your webservice. Horray!
 
 ## Some specs
 
-DocTester is heavily inspired by python doctests and also the Devbliss
-doctest library. However, DocTester is quite different to the alternatives.
+DTR is heavily inspired by python doctests and also the Devbliss
+doctest library. However, DTR is quite different to the alternatives.
 
  * DocTests are just plain old Java JUnit tests.
- * Hamcrest for unit testing. Keeps DocTester Api slick and simple.
+ * Hamcrest for unit testing. Keeps DTR Api slick and simple.
  * Webservice client with fluent interface for testing Json and Xml interfaces.
  * Simple - only a few classes.
  * Uses Bootstrap for styling
  * Works with Arquillian / JBoss 6.1EAP, JBehave, Ninja, simple servlet 
    setups and probably any test setup your throw it at.
 
-## What DocTester generates
+## What DTR generates
 
-Once your ran your testcase that extends DocTester you can find two files inside
+Once your ran your testcase that extends DTR you can find two files inside
 directory **target/site/doctester**. One file is named after your test.
 
 For instance the doctest of class com.mycompany.ApiControllerDocTest will be written to a file
@@ -109,19 +109,19 @@ For instance the doctest of class com.mycompany.ApiControllerDocTest will be wri
 The second file named **index.html** contains a listing of all DocTests
 you executed. This comes in handy if you want to publish your DocTests on a website.
 You can simply point the users to the index.html and they have access to all
-DocTester documentation of your project.
+DTR documentation of your project.
 
 
-## The Api of DocTester and what it means
+## The Api of DTR and what it means
 
-The basic idiom of DocTester is **say**. If you write DocTests always have in mind
+The basic idiom of DTR is **say**. If you write DocTests always have in mind
 that you are not writing a traditional test, but documentation for the user.
 Therefore your tests should depict a typical usecase. Getting data, querying and
 interface, posting data and so on.
 
 Always use natural language inside your say commands.
 
-And a bonus tip: Please actually read the documentation DocTester generates.
+And a bonus tip: Please actually read the documentation DTR generates.
 It should make sense and should really help to understand your application and your
 interface.
 
@@ -153,8 +153,8 @@ matchers like
 sayAndAssertThat("We get back all 3 articles of that user ", 3, equalTo(articlesDto.articles.size()));</code>.
 </pre>
 
-The big difference between a DocTester assert and a Hamcrest assert is that
-DocTester renders a green box with the message.
+The big difference between a DTR assert and a Hamcrest assert is that
+DTR renders a green box with the message.
 
 You can of course skip using DocTesters sayAndAssert and simply use 
 the regular assertThat. 
@@ -167,7 +167,7 @@ But sometimes it is just nice to assert something important visually.
 This method executes a request via a headless browser. You can configure
 the Request yourself by providing url, path, query parameters and payload.
 
-The cool thing is that DocTester automatically generates a nice box that
+The cool thing is that DTR automatically generates a nice box that
 will document the request (headers, cookies etc) and the response 
 (headers, payload...).
 
@@ -233,7 +233,7 @@ code completion and JavaDocs in your favorite IDE.
 
 ## Some more information
 
-You usually should extend DocTester and overwrite at least **testServerUrl()**.
+You usually should extend DTR and overwrite at least **testServerUrl()**.
 
 <pre class="prettyprint languague-java">
 public Url testServerUrl() {
@@ -251,8 +251,8 @@ Please find more information in chapter advanced integration.
 Advanced integration
 ====================
 
-If you are integrating DocTester into your project it often makes sense to wrap
-DocTester.java inside another class.
+If you are integrating DTR into your project it often makes sense to wrap
+DTR.java inside another class.
 
 Especially if you are using the integrated testbrowser to test an Api. In that
 case this allows you to overwrite **testServerUrl()** to get the
@@ -260,12 +260,12 @@ actual url of the server under test.
 
 ## Basic library dependencies
 
-Because DocTester is a library we do not specify 
+Because DTR is a library we do not specify 
 any hard dependencies to libraries by default.
 
 In general you'll need to configure and satisfy least the following dependencies:
 
- * DocTester itself uses SLF4J.
+ * DTR itself uses SLF4J.
  * Some Apache components use Log4J.
  * JUnit
  * Doctester itself.
@@ -274,7 +274,7 @@ It dependes what you want to achieve. A really basic setup would just tell use
 a Console based logger for SLF4J and add a Log4J implementation that will use
 that logger.
 
-The following example will get you started. But in general DocTester is not
+The following example will get you started. But in general DTR is not
 intrusive. Simply configure it the way it fits your project:
 
 <pre class="prettyprint languague-xml">
@@ -289,7 +289,7 @@ intrusive. Simply configure it the way it fits your project:
 
 		&lt;dependency&gt;
 			&lt;groupId&gt;org.doctester&lt;/groupId&gt;
-			&lt;artifactId&gt;doctester-core&lt;/artifactId&gt;
+			&lt;artifactId&gt;dtr-core&lt;/artifactId&gt;
 			&lt;version&gt;1.0.3&lt;/version&gt;
 			&lt;scope&gt;test&lt;/scope&gt;
 		&lt;/dependency&gt;
@@ -323,7 +323,7 @@ You can then map the server url into your test via **@ArquillianResource**
 <pre class="prettyprint languague-java">
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class ArquillianDocTester extends DocTester {
+public abstract class ArquillianDocTester extends DTR {
 	
 	@ArquillianResource
 	private URL baseUrl;
@@ -345,10 +345,10 @@ public abstract class ArquillianDocTester extends DocTester {
 
 
 
-## Customizing the html generated by DocTester via css
+## Customizing the html generated by DTR via css
 
-You can easily brand the css generated by DocTester. All css of 
-DocTester is built with Bootstrap. You can add your branding by adding
+You can easily brand the css generated by DTR. All css of 
+DTR is built with Bootstrap. You can add your branding by adding
 a file **/src/test/resources/org/doctester/custom_doctester_stylesheet.css**
 to your project.
 
@@ -376,7 +376,7 @@ How to contribute
 Great you want to contribute!!
 ------------------------------
 
-Contributing to DocTester is really simple. Well. There are some rules that you should follow:
+Contributing to DTR is really simple. Well. There are some rules that you should follow:
 
 - Make sure your feature is well tested.
 - Make sure your feature is well documented (Javadoc).
@@ -384,7 +384,7 @@ Contributing to DocTester is really simple. Well. There are some rules that you 
 - Make sure you are following the code style below.
 - Add your changes to changelog.md and your name to team.md.
 
-Then send us a pull request and you become a happy member of the DocTester family :)
+Then send us a pull request and you become a happy member of the DTR family :)
 
 
 Code style

@@ -1,6 +1,6 @@
-# DocTester 80/20 Quick Reference
+# DTR 80/20 Quick Reference
 
-**One-page cheat sheet** for the most common DocTester patterns. Print this or bookmark it.
+**One-page cheat sheet** for the most common DTR patterns. Print this or bookmark it.
 
 ---
 
@@ -233,14 +233,14 @@ public void testWithCookies() {
 ## Test Class Template
 
 ```java
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Request;
-import org.r10r.doctester.testbrowser.Response;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 
-public class MyApiDocTest extends DocTester {
+public class MyApiDocTest extends DTR {
 
     @Override
     public Url testServerUrl() {

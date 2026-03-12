@@ -1,7 +1,7 @@
 # Reference: HttpConstants
 
-**Package:** `org.r10r.doctester.testbrowser`
-**File:** `doctester-core/src/main/java/org/r10r/doctester/testbrowser/HttpConstants.java`
+**Package:** `io.github.seanchatmangpt.dtr.doctester.testbrowser`
+**File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/HttpConstants.java`
 
 `HttpConstants` provides string constants for HTTP methods, content types, and header names. You rarely need to use these directly — they are used internally by `Request` and `TestBrowserImpl`.
 
@@ -49,7 +49,7 @@ Use `Request.contentTypeApplicationJson()` or `Request.contentTypeApplicationXml
 Use these constants when checking response headers:
 
 ```java
-import org.r10r.doctester.testbrowser.HttpConstants;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.HttpConstants;
 
 Response response = sayAndMakeRequest(
     Request.GET().url(testServerUrl().path("/api/data")));

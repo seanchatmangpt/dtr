@@ -2,7 +2,7 @@
 
 ## Summary
 
-Successfully created comprehensive Maven CLI integration test suite in `/home/user/doctester/doctester-cli/tests/test_cli_maven_integration.py` with **26 total tests** covering all aspects of Maven-DocTester CLI integration.
+Successfully created comprehensive Maven CLI integration test suite in `/home/user/doctester/dtr-cli/tests/test_cli_maven_integration.py` with **26 total tests** covering all aspects of Maven-DocTester CLI integration.
 
 **Test Results (in environment with network access):**
 - ✅ **11 tests passing** (tests that don't require Maven network access)
@@ -15,7 +15,7 @@ Successfully created comprehensive Maven CLI integration test suite in `/home/us
 ## Test Coverage Breakdown
 
 ### 1. Maven Exec Plugin Integration (5 tests)
-Tests for Maven exec:java plugin integration with DocTester CLI.
+Tests for Maven exec:java plugin integration with DTR CLI.
 
 | Test | Status | Coverage |
 |------|--------|----------|
@@ -177,7 +177,7 @@ Execution time: ~180 seconds (Maven downloads and builds)
 ## Implementation Details
 
 ### File Location
-- **Test file:** `/home/user/doctester/doctester-cli/tests/test_cli_maven_integration.py`
+- **Test file:** `/home/user/doctester/dtr-cli/tests/test_cli_maven_integration.py`
 - **Size:** ~800 lines
 - **Test classes:** 6
 - **Total test methods:** 26
@@ -210,7 +210,7 @@ class TestMavenCLIIntegrationEdgeCases:      # 7 tests
 - POM-based validation for offline testing
 
 ✅ **Project-Root Detection**
-- Automatically finds DocTester repository root
+- Automatically finds DTR repository root
 - Works from any subdirectory
 - Uses pytest fixtures for clean setup/teardown
 
@@ -220,7 +220,7 @@ class TestMavenCLIIntegrationEdgeCases:      # 7 tests
 
 ### In Current Environment (Some Tests Skip)
 ```bash
-cd /home/user/doctester/doctester-cli
+cd /home/user/doctester/dtr-cli
 venv/bin/python -m pytest tests/test_cli_maven_integration.py -v
 ```
 
@@ -308,7 +308,7 @@ With standard internet access:
    - Track build artifact sizes
    - Monitor memory usage
 
-3. **Integration with DocTester Core**
+3. **Integration with DTR Core**
    - Test actual test documentation generation
    - Validate export formats (Markdown, LaTeX, HTML)
    - Verify bibliography and cross-references
@@ -346,4 +346,4 @@ Phase 6a Maven CLI Integration Testing has been **successfully completed** with:
 - **Production-ready test framework** suitable for CI/CD pipelines
 - **Complete documentation** and usage examples
 
-The test suite validates that DocTester CLI integrates cleanly with Maven's build lifecycle, handles properties/profiles correctly, and generates documentation outputs as expected. All tests are designed to be maintainable and extensible for future Maven versions and DocTester enhancements.
+The test suite validates that DTR CLI integrates cleanly with Maven's build lifecycle, handles properties/profiles correctly, and generates documentation outputs as expected. All tests are designed to be maintainable and extensible for future Maven versions and DTR enhancements.

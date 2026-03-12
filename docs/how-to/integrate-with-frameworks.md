@@ -1,6 +1,6 @@
 # How-to: Integrate with Frameworks
 
-DocTester works with any test framework that can start a server before your tests run. The pattern is the same in all cases: create a base class that overrides `testServerUrl()` to return the actual server address.
+DTR works with any test framework that can start a server before your tests run. The pattern is the same in all cases: create a base class that overrides `testServerUrl()` to return the actual server address.
 
 ---
 
@@ -13,15 +13,15 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.runner.RunWith;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class ArquillianDocTester extends DocTester {
+public abstract class ArquillianDocTester extends DTR {
 
     @ArquillianResource
     private URL baseUrl;
@@ -66,10 +66,10 @@ Start Ninja with a test rule and pass the port to the URL:
 
 ```java
 import ninja.NinjaTest;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
-public abstract class NinjaDocTester extends DocTester {
+public abstract class NinjaDocTester extends DTR {
 
     // Ninja assigns a random port; get it after server start
     protected int ninjaPort;
@@ -84,7 +84,7 @@ public abstract class NinjaDocTester extends DocTester {
 Or use a `@Rule` with a `TestServer`:
 
 ```java
-public abstract class NinjaApiDocTester extends DocTester {
+public abstract class NinjaApiDocTester extends DTR {
 
     @Rule
     public NinjaTestServer ninjaTestServer = new NinjaTestServer();
@@ -102,15 +102,15 @@ public abstract class NinjaApiDocTester extends DocTester {
 
 ```java
 import org.junit.runner.RunWith;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public abstract class SpringDocTester extends DocTester {
+public abstract class SpringDocTester extends DTR {
 
     @LocalServerPort
     private int port;
@@ -147,10 +147,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
-public abstract class JettyDocTester extends DocTester {
+public abstract class JettyDocTester extends DTR {
 
     private static Server server;
     private static int port;
@@ -191,7 +191,7 @@ The pattern is always the same:
 4. All DocTest classes extend this base class
 
 ```java
-public abstract class MyFrameworkDocTester extends DocTester {
+public abstract class MyFrameworkDocTester extends DTR {
 
     @Override
     public Url testServerUrl() {
@@ -207,7 +207,7 @@ public abstract class MyFrameworkDocTester extends DocTester {
 For smoke tests against a running environment, hard-code or configure the URL:
 
 ```java
-public abstract class StagingDocTester extends DocTester {
+public abstract class StagingDocTester extends DTR {
 
     @Override
     public Url testServerUrl() {

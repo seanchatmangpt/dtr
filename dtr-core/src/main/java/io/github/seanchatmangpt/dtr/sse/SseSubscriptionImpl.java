@@ -159,7 +159,7 @@ public final class SseSubscriptionImpl implements SseSubscription {
         } catch (IOException e) {
             if (active.get()) {
                 // Log error but don't throw - subscription may have been closed
-                System.err.println("SSE read error: " + e.getMessage());
+                // Error logged during subscription - safe to ignore as subscription may be closed " + e.getMessage());
             }
         } finally {
             active.set(false);

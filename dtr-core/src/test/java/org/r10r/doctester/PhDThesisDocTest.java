@@ -664,7 +664,7 @@ public class PhDThesisDocTest extends DocTester {
             "Root agent decomposes: sealed SayEvent subtype already exists; new renderer needed.",
             "java-25-expert agent implements ArXivTemplate using sealed switch, records, text blocks.",
             "maven-build-expert agent updates pom.xml with pandoc dependency if needed.",
-            "Root agent runs: mvnd test -pl doctester-core -Dtest=Java26ShowcaseTest.",
+            "Root agent runs: mvnd test -pl dtr-core -Dtest=Java26ShowcaseTest.",
             "Test output validates the new format compiles and renders correctly.",
             "Root agent generates documentation for the new feature — using DocTester itself.",
             "Commit: 'Add LaTeX/ArXiv render format with exhaustive sealed switch dispatch'."
@@ -681,7 +681,7 @@ public class PhDThesisDocTest extends DocTester {
                 "targetClass", "io.github.seanchatmangpt.dtr.rendermachine.latex.ArXivTemplate",
                 "pattern", "sealed switch over SayEvent hierarchy"
             ),
-            "buildCommand", "mvnd test -pl doctester-core --enable-preview"
+            "buildCommand", "mvnd test -pl dtr-core --enable-preview"
         ));
 
         sayCode("""
@@ -711,7 +711,7 @@ public class PhDThesisDocTest extends DocTester {
             "Output formats supported", "11",
             "AI-assisted development sessions", "Multiple",
             "Java features actively used", "7 (sealed, records, patterns, vthreads, unnamed, seqcoll, textblocks)",
-            "Test classes in doctester-core", "20+",
+            "Test classes in dtr-core", "20+",
             "Lines of production code", "~8000",
             "Documentation drift incidents", "0 — structurally impossible"
         ));
@@ -999,7 +999,7 @@ public class PhDThesisDocTest extends DocTester {
         sayNote("""
                 The thesis document was generated at 2026-03-11. The DocTester version \
                 at time of writing is 1.1.12-SNAPSHOT. All claims are reproducible by \
-                running: mvnd test -pl doctester-core -Dtest=PhDThesisDocTest --enable-preview""");
+                running: mvnd test -pl dtr-core -Dtest=PhDThesisDocTest --enable-preview""");
     }
 
     // === CHAPTER 9 ===
@@ -1102,8 +1102,8 @@ public class PhDThesisDocTest extends DocTester {
         sayRaw("""
                 ---
                 *All JEP references: https://openjdk.org/jeps/*
-                *DocTester source: see doctester-core/src/main/java/org/r10r/doctester/*
-                *Reproduction command: `mvnd test -pl doctester-core -Dtest=PhDThesisDocTest`*
+                *DocTester source: see dtr-core/src/main/java/org/r10r/doctester/*
+                *Reproduction command: `mvnd test -pl dtr-core -Dtest=PhDThesisDocTest`*
                 """);
 
         var bibManager = BibliographyManager.getInstance();

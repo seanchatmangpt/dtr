@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * Modern Unicode-aware compiler for international content.
  */
-public class XelatexStrategy implements CompilerStrategy {
+public final class XelatexStrategy implements CompilerStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(XelatexStrategy.class);
 

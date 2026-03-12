@@ -15,8 +15,6 @@
  */
 package io.github.seanchatmangpt.dtr.rendermachine;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.StructuredTaskScope;
@@ -42,11 +40,11 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Transparent to test code: use exactly like a single RenderMachine.</p>
  *
- * <p><strong>Java 25/26 showcase — structured concurrency:</strong> Each dispatch uses
- * {@link StructuredTaskScope} with {@link StructuredTaskScope.ShutdownOnFailure} semantics (JEP 525).
+ * <p><strong>Java 25 showcase — structured concurrency:</strong> Each dispatch uses
+ * {@link StructuredTaskScope} (JEP 492).
  * This replaces manual future waiting and error aggregation with JVM-native structured semantics:
- * if any renderer fails, all tasks are cancelled automatically, and the error is propagated
- * with full context. This is simpler, safer, and faster than CompletableFuture chains.</p>
+ * if any renderer fails, the error is propagated immediately with full context.
+ * This is simpler, safer, and faster than CompletableFuture chains.</p>
  *
  * <p><strong>Java 25/26 showcase — virtual threads:</strong> All tasks run on virtual threads
  * (Project Loom) which are JVM-scheduled, not OS-scheduled. They have near-zero creation overhead,
@@ -54,9 +52,9 @@ import org.slf4j.LoggerFactory;
  * When DocTester generates 8+ simultaneous output formats, wall-clock time is the slowest single
  * renderer, not the sum of all renderers.</p>
  *
- * <p><strong>Java 26 Enhancement (JEP 525):</strong> Uses StructuredTaskScope.ShutdownOnFailure
- * to ensure fail-fast semantics: if any renderer fails mid-rendering, all concurrent renderers
- * are cancelled immediately, preventing wasted computation and providing immediate error feedback.</p>
+ * <p><strong>Java 25 Enhancement:</strong> Structured concurrency with StructuredTaskScope
+ * ensures all rendering tasks are properly managed: if any renderer fails mid-rendering,
+ * the exception is propagated immediately, and all tasks are cleaned up properly.</p>
  *
  * <p>Example:</p>
  * <pre>{@code
@@ -93,28 +91,28 @@ public final class MultiRenderMachine extends RenderMachine {
     /**
      * Dispatches an action to all contained render machines concurrently using structured concurrency.
      *
-     * <p>Java 26 Enhancement (JEP 525 - Structured Concurrency):</p>
+     * <p>Java 25 Enhancement (JEP 492 - Structured Concurrency):</p>
      * <ol>
-     *   <li>Creates a {@link StructuredTaskScope.ShutdownOnFailure} scope (fail-fast semantics)</li>
+     *   <li>Creates a {@link StructuredTaskScope} scope</li>
      *   <li>Forks one task per machine — each task calls the action on its machine via a virtual thread</li>
-     *   <li>Joins when all tasks complete or any task fails (automatic cancellation)</li>
-     *   <li>Propagates first exception encountered, with full structured context</li>
+     *   <li>Joins when all tasks complete (blocks until all finish or an exception is thrown)</li>
+     *   <li>Propagates exceptions with full structured context</li>
      * </ol>
      *
      * <p>This replaces the previous manual future-waiting pattern with JVM-native semantics.
      * StructuredTaskScope ensures:</p>
      * <ul>
      *   <li><strong>No error swallowing:</strong> If any renderer fails, the failure is immediate</li>
-     *   <li><strong>Automatic cancellation:</strong> All other renderers stop if one fails</li>
-     *   <li><strong>Structured lifetime:</strong> All tasks must complete before method returns</li>
-     *   <li><strong>Zero boilerplate:</strong> Three lines instead of ten</li>
+     *   <li><strong>Automatic cleanup:</strong> All tasks are guaranteed to complete before method returns</li>
+     *   <li><strong>Structured lifetime:</strong> Try-with-resources ensures proper scope closure</li>
+     *   <li><strong>Zero boilerplate:</strong> Simple, declarative concurrency patterns</li>
      * </ul>
      *
      * @param action the operation to invoke on each render machine
      * @throws MultiRenderException if any machine fails (wraps first exception)
      */
     private void dispatchToAll(Consumer<RenderMachine> action) {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.open()) {
             // Fork one task per machine — all run concurrently on virtual threads
             for (RenderMachine machine : machines) {
                 scope.fork(() -> {
@@ -123,9 +121,8 @@ public final class MultiRenderMachine extends RenderMachine {
                 });
             }
 
-            // Join all tasks or fail fast on first exception
-            // ShutdownOnFailure automatically cancels remaining tasks if any fails
-            scope.joinUntil(Instant.now().plus(Duration.ofSeconds(300)));
+            // Join all tasks — blocks until all complete or first throws exception
+            scope.join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new MultiRenderException("Render dispatch interrupted", List.of(e));

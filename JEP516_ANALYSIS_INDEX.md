@@ -1,6 +1,6 @@
 # JEP 516 (AoT Object Caching) Performance Analysis - Complete Index
 
-## Project: DocTester 2.5.0-SNAPSHOT
+## Project: DTR 2.5.0-SNAPSHOT
 ## Date: March 11, 2026
 ## Component: `DocMetadata` - Singleton Caching for Build Metadata
 
@@ -14,8 +14,8 @@
 
 ### For Developers & Architects
 - **Technical deep dive:** `PERFORMANCE_REPORT_JEP516.md` (20 min read)
-- **Source code:** `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
-- **Unit tests:** `/home/user/doctester/doctester-core/src/test/java/org/r10r/doctester/metadata/DocMetadataBenchmarkTest.java`
+- **Source code:** `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
+- **Unit tests:** `/home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/metadata/DocMetadataBenchmarkTest.java`
 
 ### For QA & Testing
 - **Standalone benchmark:** `DocMetadataBenchmarkRunner.java` (no Maven required)
@@ -27,7 +27,7 @@
 
 ### JEP 516 Implementation in DocMetadata
 
-DocTester captures build metadata (Java version, Maven version, Git commit, hostname, timestamp) at test runtime. Previously, this metadata might have been recomputed for every test class or on-demand. 
+DTR captures build metadata (Java version, Maven version, Git commit, hostname, timestamp) at test runtime. Previously, this metadata might have been recomputed for every test class or on-demand. 
 
 **JEP 516 optimization:** Cache metadata at JVM startup (class initialization) and reuse it for all subsequent accesses.
 
@@ -135,7 +135,7 @@ JEP516_ANALYSIS_INDEX.md               THIS FILE
 ### Production Source
 ```
 DocMetadata.java
-- Location: doctester-core/src/main/java/org/r10r/doctester/metadata/
+- Location: dtr-core/src/main/java/org/r10r/doctester/metadata/
 - Type: Java 25 record
 - Pattern: Eager static initialization (JEP 516)
 - Status: Production-ready
@@ -144,10 +144,10 @@ DocMetadata.java
 ### Test Suite
 ```
 DocMetadataBenchmarkTest.java
-- Location: doctester-core/src/test/java/org/r10r/doctester/metadata/
+- Location: dtr-core/src/test/java/org/r10r/doctester/metadata/
 - Type: JUnit 5 test class
 - Coverage: Identity, performance, concurrency, content validation
-- Command: mvnd test -pl doctester-core -Dtest=DocMetadataBenchmarkTest
+- Command: mvnd test -pl dtr-core -Dtest=DocMetadataBenchmarkTest
 ```
 
 ---
@@ -242,7 +242,7 @@ java --enable-preview DocMetadataBenchmarkRunner
 
 ### If you want to run the unit test suite:
 ```bash
-mvnd test -pl doctester-core -Dtest=DocMetadataBenchmarkTest
+mvnd test -pl dtr-core -Dtest=DocMetadataBenchmarkTest
 ```
 
 ---

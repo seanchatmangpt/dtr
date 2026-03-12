@@ -1,13 +1,13 @@
-# DocTester 2.2.0 Cross-Reference System - Implementation Complete
+# DTR 2.2.0 Cross-Reference System - Implementation Complete
 
 ## Overview
 
-The DocTester 2.2.0 cross-reference system has been successfully implemented, enabling formal linking between DocTests with resolved section numbers and page references for both Markdown and LaTeX output formats.
+The DTR 2.2.0 cross-reference system has been successfully implemented, enabling formal linking between DocTests with resolved section numbers and page references for both Markdown and LaTeX output formats.
 
 ## Files Created (5 new files)
 
 ### 1. DocTestRef.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/crossref/DocTestRef.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/DocTestRef.java`
 
 Java 25 record representing an immutable cross-reference to another DocTest's section.
 
@@ -23,7 +23,7 @@ Java 25 record representing an immutable cross-reference to another DocTest's se
 - String.formatted() for string templating
 
 ### 2. CrossReferenceIndex.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/crossref/CrossReferenceIndex.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/CrossReferenceIndex.java`
 
 Singleton registry managing all cross-references with support for two-pass LaTeX compilation and validation.
 
@@ -43,7 +43,7 @@ Singleton registry managing all cross-references with support for two-pass LaTeX
 - Type inference with `var`
 
 ### 3. ReferenceResolver.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/crossref/ReferenceResolver.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/ReferenceResolver.java`
 
 Utility class parsing .tex files to extract section-to-label mappings.
 
@@ -62,29 +62,29 @@ Utility class parsing .tex files to extract section-to-label mappings.
 - Immutable Map.copyOf() for safe returns
 
 ### 4. InvalidDocTestRefException.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/crossref/InvalidDocTestRefException.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/InvalidDocTestRefException.java`
 
 Runtime exception thrown when a reference targets a non-existent DocTest class.
 
 ### 5. InvalidAnchorException.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/crossref/InvalidAnchorException.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/InvalidAnchorException.java`
 
 Runtime exception thrown when a reference targets a non-existent section anchor.
 
 ## Files Modified (4 existing files)
 
 ### 1. RenderMachineCommands.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineCommands.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineCommands.java`
 
 **Changes**:
 - Added method signature: `void sayRef(DocTestRef ref)`
 - Javadoc explaining the cross-reference rendering behavior
 
 ### 2. RenderMachineImpl.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
 
 **Changes**:
-- Added import: `org.r10r.doctester.crossref.DocTestRef`
+- Added import: `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)` for Markdown output
 - Renders cross-reference as: `[linkText](../ClassName.md#anchor)`
 
@@ -94,10 +94,10 @@ Runtime exception thrown when a reference targets a non-existent section anchor.
 ```
 
 ### 3. RenderMachineLatex.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/rendermachine/latex/RenderMachineLatex.java`
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/latex/RenderMachineLatex.java`
 
 **Changes**:
-- Added import: `org.r10r.doctester.crossref.DocTestRef`
+- Added import: `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)` for LaTeX output
 - Added helper method: `convertTextToLatexLabel(String text)` normalizing anchor strings
 - Renders cross-reference as: `See Section \ref{sec:anchor-name}`
@@ -107,13 +107,13 @@ Runtime exception thrown when a reference targets a non-existent section anchor.
 See Section \ref{sec:user-creation}
 ```
 
-### 4. DocTester.java
-**Location**: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/DocTester.java`
+### 4. DTR.java
+**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/DTR.java`
 
 **Changes**:
 - Added imports:
-  - `org.r10r.doctester.crossref.CrossReferenceIndex`
-  - `org.r10r.doctester.crossref.DocTestRef`
+  - `io.github.seanchatmangpt.dtr.doctester.crossref.CrossReferenceIndex`
+  - `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)`:
   - Registers reference via `CrossReferenceIndex.getInstance().register(ref)`
   - Delegates rendering to `renderMachine.sayRef(ref)`
@@ -376,7 +376,7 @@ void testCrossReferenceRegistration() {
 ### Integration Testing
 Full end-to-end testing with actual test execution:
 ```java
-public class ApiDocTest extends DocTester {
+public class ApiDocTest extends DTR {
     @Test
     void testUserFlow() {
         sayNextSection("User Creation");
@@ -402,14 +402,14 @@ public class ApiDocTest extends DocTester {
 
 ```
 /home/user/doctester/
-├── doctester-core/src/main/java/org/r10r/doctester/
+├── dtr-core/src/main/java/org/r10r/doctester/
 │   ├── crossref/
 │   │   ├── DocTestRef.java                    [NEW]
 │   │   ├── CrossReferenceIndex.java           [NEW]
 │   │   ├── ReferenceResolver.java             [NEW]
 │   │   ├── InvalidDocTestRefException.java    [NEW]
 │   │   └── InvalidAnchorException.java        [NEW]
-│   ├── DocTester.java                         [MODIFIED]
+│   ├── DTR.java                         [MODIFIED]
 │   └── rendermachine/
 │       ├── RenderMachineCommands.java         [MODIFIED]
 │       ├── RenderMachineImpl.java              [MODIFIED]
@@ -431,7 +431,7 @@ To compile the cross-reference system:
 
 ```bash
 # Compile just the core module
-mvnd clean compile -pl doctester-core
+mvnd clean compile -pl dtr-core
 
 # Or with full build:
 mvnd clean verify
@@ -449,7 +449,7 @@ mvnd clean verify
 
 ## Conclusion
 
-The DocTester 2.2.0 cross-reference system is fully implemented with:
+The DTR 2.2.0 cross-reference system is fully implemented with:
 - Clean Java 25 idioms and patterns
 - Thread-safe singleton registry
 - Two-pass LaTeX compilation support
@@ -459,4 +459,4 @@ The DocTester 2.2.0 cross-reference system is fully implemented with:
 - Complete Javadoc documentation
 - Apache 2.0 license compliance
 
-All components are production-ready and follow DocTester design principles.
+All components are production-ready and follow DTR design principles.

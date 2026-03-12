@@ -11,7 +11,7 @@ under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License. -->
 
-# Java 26 Developer Guide for DocTester
+# Java 26 Developer Guide for DTR
 
 **Target Release:** Java 26 (GA: March 17, 2026)
 **Status:** Release Candidate (RC)
@@ -50,7 +50,7 @@ Java 26 finalizes **10 JEPs** addressing three core concerns:
 2. **Concurrency maturity** — Structured Concurrency (`JEP 525`) reaches 6th preview; HTTP/3 (`JEP 517`) modernizes network I/O
 3. **Performance** — G1 GC synchronization reduction (`JEP 522`), AOT caching (`JEP 516`), and lazy constants (`JEP 526`)
 
-**For DocTester specifically:**
+**For DTR specifically:**
 
 - **JEP 530** (Primitive patterns) refines existing pattern matching used in render-machine dispatch
 - **JEP 525** (Structured Concurrency) enhances virtual thread orchestration in `MultiRenderMachine`
@@ -58,7 +58,7 @@ Java 26 finalizes **10 JEPs** addressing three core concerns:
 - **JEP 522** (G1 GC) improves throughput of concurrent multi-format rendering
 - **JEP 500** (Final means final) strengthens reflection barrier for security
 
-### Key Adoptions for DocTester 2.6.0+
+### Key Adoptions for DTR 2.6.0+
 
 | JEP | Impact | Adoption | Status |
 |-----|--------|----------|--------|
@@ -126,7 +126,7 @@ switch (parseInteger(input)) {
 }
 ```
 
-### DocTester Application
+### DTR Application
 
 **Current Use (Java 25):** `Java26ShowcaseTest.java` dispatches `SayEvent` hierarchy with pattern matching:
 
@@ -161,7 +161,7 @@ String render(SayEvent event) {
 
 ```bash
 # Continue using existing setup
-mvnd clean compile -pl doctester-core
+mvnd clean compile -pl dtr-core
 # Compiler flag --enable-preview is already set in pom.xml
 ```
 
@@ -169,7 +169,7 @@ mvnd clean compile -pl doctester-core
 
 ```bash
 # Test Java 26 primitive pattern enhancements
-mvnd test -pl doctester-core -Dtest=Java26InnovationsTest
+mvnd test -pl dtr-core -Dtest=Java26InnovationsTest
 
 # Full validation
 mvnd clean verify --enable-preview
@@ -250,9 +250,9 @@ class ConfigLoader {
 }
 ```
 
-### DocTester Application
+### DTR Application
 
-**Potential Use:** Lazy constants would benefit DocTester's initialization of shared resources:
+**Potential Use:** Lazy constants would benefit DTR's initialization of shared resources:
 
 ```java
 // Current: RenderMachineFactory creates machines on-demand
@@ -284,18 +284,18 @@ Lazy constants require `--enable-preview`:
 
 ```bash
 # Already enabled in pom.xml — no changes needed
-mvnd clean compile -pl doctester-core
+mvnd clean compile -pl dtr-core
 ```
 
 ### Testing
 
 ```bash
 # Verify lazy constant behavior
-mvnd test -pl doctester-core -Dtest=LazyConstantPoolTest
+mvnd test -pl dtr-core -Dtest=LazyConstantPoolTest
 
 # Performance validation: lazy constant cache hit rate
 mvnd clean verify -DskipTests && \
-    mvnd test -pl doctester-core -Darguments="-verbose:class"
+    mvnd test -pl dtr-core -Darguments="-verbose:class"
 ```
 
 ### Migration Path
@@ -362,7 +362,7 @@ private void dispatchToAll(Consumer<RenderMachine> action) throws Exception {
 | **Error Propagation** | Manual exception handling | Structured exception groups |
 | **Virtual Thread Customization** | Global executor | Per-scope thread factory |
 
-### DocTester Application
+### DTR Application
 
 **Current (Java 25):** `MultiRenderMachine` uses manual virtual thread executor:
 
@@ -401,7 +401,7 @@ private void dispatchToAllStructured(Consumer<RenderMachine> action)
     try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
         // Virtual thread customization in Java 26
         var virtualScope = StructuredTaskScope.virtual(
-            Thread.ofVirtual().name("doctester-render-", 0).factory()
+            Thread.ofVirtual().name("dtr-render-", 0).factory()
         );
 
         for (var machine : machines) {
@@ -423,21 +423,21 @@ private void dispatchToAllStructured(Consumer<RenderMachine> action)
 ```bash
 # Structured concurrency requires --enable-preview
 # Already configured in pom.xml
-mvnd clean compile -pl doctester-core -DskipTests
+mvnd clean compile -pl dtr-core -DskipTests
 ```
 
 ### Testing
 
 ```bash
 # Test structured concurrency lifecycle
-mvnd test -pl doctester-core -Dtest=MultiRenderMachineTest
+mvnd test -pl dtr-core -Dtest=MultiRenderMachineTest
 
 # Performance: measure deadline enforcement
-mvnd test -pl doctester-core -Dtest=StructuredConcurrencyBenchmark
+mvnd test -pl dtr-core -Dtest=StructuredConcurrencyBenchmark
 
 # Full validation
-mvnd clean verify -DskipTests -pl doctester-core && \
-    mvnd test -pl doctester-core
+mvnd clean verify -DskipTests -pl dtr-core && \
+    mvnd test -pl dtr-core
 ```
 
 ### Migration Path
@@ -511,7 +511,7 @@ var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 | **Connection Migration** | TCP bind to IP; breaks on WiFi↔5G switch | Transparent IP migration |
 | **Latency (mobile)** | Higher (TCP retransmission) | Lower (QUIC FEC) |
 
-### DocTester Application
+### DTR Application
 
 **Potential Enhancement:** TestBrowser could optionally use HTTP/3 for faster test execution:
 
@@ -570,7 +570,7 @@ HTTP/3 requires `--enable-preview`:
 
 ```bash
 # Already enabled
-mvnd clean compile -pl doctester-core
+mvnd clean compile -pl dtr-core
 ```
 
 ### Testing
@@ -578,10 +578,10 @@ mvnd clean compile -pl doctester-core
 ```bash
 # Requires test server with HTTP/3 support (e.g., nginx, Netty, Vert.x)
 # Test HTTP/3 availability
-mvnd test -pl doctester-core -Dtest=Http3IntegrationTest
+mvnd test -pl dtr-core -Dtest=Http3IntegrationTest
 
 # Performance: HTTP/3 vs HTTP/2 latency comparison
-mvnd test -pl doctester-core -Dtest=ProtocolBenchmark
+mvnd test -pl dtr-core -Dtest=ProtocolBenchmark
 ```
 
 ### Migration Path
@@ -632,21 +632,21 @@ AOT object caching provides **startup time reduction**:
 | **Garbage collection init** | ~10–15% reduction for large object caches (shared Java libraries) |
 | **Overall cold start** | ~5–20% depending on workload (container startup) |
 
-### DocTester Application
+### DTR Application
 
-**Not directly applicable** — DocTester is a testing library (not a long-running service). However, in CI/CD pipelines running many small test processes, AOT caching would reduce aggregate startup overhead:
+**Not directly applicable** — DTR is a testing library (not a long-running service). However, in CI/CD pipelines running many small test processes, AOT caching would reduce aggregate startup overhead:
 
 ```bash
-# Pre-build AOT cache for DocTester test suite
+# Pre-build AOT cache for DTR test suite
 # (Run once in CI setup)
 java -XX:+UseZGC \
      -XX:+WriteAOTSnapshot \
-     -XX:AOTSnapshot=/tmp/doctester-test.jsa \
-     -jar doctester-core-tests.jar
+     -XX:AOTSnapshot=/tmp/dtr-test.jsa \
+     -jar dtr-core-tests.jar
 
 # Run tests with cached objects (faster startup)
 java -XX:+UseZGC \
-     -XX:AOTSnapshot=/tmp/doctester-test.jsa \
+     -XX:AOTSnapshot=/tmp/dtr-test.jsa \
      -XX:+UseAOTSnapshot \
      org.junit.platform.console.ConsoleLauncher \
      --scan-classpath
@@ -658,14 +658,14 @@ No Maven configuration changes required. AOT caching is a JVM runtime option, no
 
 ```bash
 # Standard compile still applies
-mvnd clean compile -pl doctester-core
+mvnd clean compile -pl dtr-core
 ```
 
 ### Testing
 
 ```bash
 # Performance benchmark: AOT cache effectiveness
-mvnd test -pl doctester-core \
+mvnd test -pl dtr-core \
     -Dtest=AotCachingBenchmark \
     -DuseAotCache=true
 ```
@@ -720,7 +720,7 @@ List<Certificate> certs = PEM.readCertificates(
 );
 ```
 
-### DocTester Application
+### DTR Application
 
 **Potential Use:** OAuth2TokenManager and authentication providers could simplify key/certificate handling:
 
@@ -760,17 +760,17 @@ PEM encoding requires `--enable-preview`:
 
 ```bash
 # Already enabled
-mvnd clean compile -pl doctester-core
+mvnd clean compile -pl dtr-core
 ```
 
 ### Testing
 
 ```bash
 # Test PEM encoding round-trip
-mvnd test -pl doctester-core -Dtest=PemEncodingTest
+mvnd test -pl dtr-core -Dtest=PemEncodingTest
 
 # OAuth2 certificate loading with PEM
-mvnd test -pl doctester-core -Dtest=OAuth2TokenManagerTest
+mvnd test -pl dtr-core -Dtest=OAuth2TokenManagerTest
 ```
 
 ### Migration Path
@@ -792,7 +792,7 @@ mvnd test -pl doctester-core -Dtest=OAuth2TokenManagerTest
 
 ### Note for DocTester
 
-The Vector API targets **numerical/scientific computing** (matrix operations, image processing, signal analysis). **DocTester does not use SIMD operations** — it is a documentation generator and HTTP test framework. This JEP is not applicable to DocTester.
+The Vector API targets **numerical/scientific computing** (matrix operations, image processing, signal analysis). **DocTester does not use SIMD operations** — it is a documentation generator and HTTP test framework. This JEP is not applicable to DTR.
 
 For reference, the Vector API enables:
 
@@ -875,9 +875,9 @@ public final class Config {
 }
 ```
 
-### DocTester Application
+### DTR Application
 
-**Current State:** DocTester already uses records (`SayEvent` hierarchy) and `final` immutable classes. No reflection-based mutation occurs.
+**Current State:** DTR already uses records (`SayEvent` hierarchy) and `final` immutable classes. No reflection-based mutation occurs.
 
 ```java
 // DocTester-style: immutable events via records (correct pattern)
@@ -903,10 +903,10 @@ var event = new SayEvent.TextEvent("Hello");
 
 ### Build Setup
 
-No changes needed. DocTester already follows immutability best practices.
+No changes needed. DTR already follows immutability best practices.
 
 ```bash
-mvnd clean compile -pl doctester-core
+mvnd clean compile -pl dtr-core
 # No warnings expected (no reflection-based field mutation)
 ```
 
@@ -947,7 +947,7 @@ If found, convert to:
 
 ### For DocTester
 
-**Not applicable** — DocTester does not use the Applet API (it's for JApplet, AppletContext, etc.).
+**Not applicable** — DTR does not use the Applet API (it's for JApplet, AppletContext, etc.).
 
 If any dependencies in the classpath reference Applet classes, they will fail to load in Java 26+:
 
@@ -960,7 +960,7 @@ import java.applet.Applet;  // ERROR: Cannot resolve symbol 'applet'
 
 ```bash
 # Check for applet API usage in classpath
-mvnd dependency:tree -pl doctester-core | grep -i applet
+mvnd dependency:tree -pl dtr-core | grep -i applet
 # Should produce no matches
 ```
 
@@ -1058,7 +1058,7 @@ java --enable-preview -version
 **Step 5: Rebuild**
 
 ```bash
-mvnd clean install -pl doctester-core -DskipTests
+mvnd clean install -pl dtr-core -DskipTests
 
 # Or with full validation
 mvnd clean verify
@@ -1165,7 +1165,7 @@ When Java 27 GA is released (expected H2 2026), these features will likely gradu
 ```
 
 - [ ] Verify stabilization: `mvnd clean compile` without `--enable-preview`
-- [ ] Recompile: `mvnd clean compile -pl doctester-core`
+- [ ] Recompile: `mvnd clean compile -pl dtr-core`
 - [ ] Run tests: `mvnd test`
 
 **Phase 3: Java 28+ (2027+)**
@@ -1182,7 +1182,7 @@ Preview features are **not guaranteed stable** until a final preview release. Ch
 - Parameter name changes
 - Removal of entire features if they don't prove popular
 
-**Risk mitigation:** DocTester 2.6.0 targets Java 26 with preview features. When features stabilize, DocTester 3.0.0 will remove preview flags. Older versions (2.5.x) remain compatible with Java 25.
+**Risk mitigation:** DTR 2.6.0 targets Java 26 with preview features. When features stabilize, DTR 3.0.0 will remove preview flags. Older versions (2.5.x) remain compatible with Java 25.
 
 ---
 
@@ -1200,21 +1200,21 @@ Preview features are **not guaranteed stable** until a final preview release. Ch
 
 ### Benchmark Suite
 
-**New benchmarks added to DocTester for Java 26:**
+**New benchmarks added to DTR for Java 26:**
 
 ```bash
 # Throughput: concurrent multi-format rendering
-mvnd test -pl doctester-core \
+mvnd test -pl dtr-core \
     -Dtest=MultiRenderMachinePerformanceTest \
     -Dbenchmark.iterations=1000
 
 # Startup: AOT cache effectiveness
-mvnd test -pl doctester-core \
+mvnd test -pl dtr-core \
     -Dtest=AotStartupBenchmark \
     -Dbenchmark.iterations=100
 
 # Network: HTTP/3 vs HTTP/2 latency
-mvnd test -pl doctester-core \
+mvnd test -pl dtr-core \
     -Dtest=ProtocolLatencyBenchmark \
     -Dbenchmark.iterations=500
     -Duse.http3=true
@@ -1281,7 +1281,7 @@ void benchmarkRenderingThroughput() {
 
 ```bash
 # Run same test on Java 26
-mvnd test -pl doctester-core -Dtest=MultiRenderMachinePerformanceTest
+mvnd test -pl dtr-core -Dtest=MultiRenderMachinePerformanceTest
 
 # Expected: ~450-750 ms (5–15% improvement from G1 sync reduction)
 ```
@@ -1299,7 +1299,7 @@ java -XX:+UnlockDiagnosticVMOptions \
      --scan-classpath
 
 # Analyze
-jfr print --json doctester.jfr > doctester-profile.json
+jfr print --json doctester.jfr > dtr-profile.json
 
 # Extract: which renders are slowest?
 jfr print --events=jdk.ExecutionSample doctester.jfr | \
@@ -1342,7 +1342,7 @@ void benchmarkHttp3Latency() {
 
 ### Q: Do I need to change my code when upgrading Java 25 → 26?
 
-**A:** No breaking changes for DocTester. Update `<release>26</release>` in pom.xml and rebuild. All preview features continue to work with `--enable-preview`.
+**A:** No breaking changes for DTR. Update `<release>26</release>` in pom.xml and rebuild. All preview features continue to work with `--enable-preview`.
 
 ### Q: When will preview features graduate to stable?
 
@@ -1356,7 +1356,7 @@ void benchmarkHttp3Latency() {
 
 ### Q: What about the Vector API?
 
-**A:** Not applicable to DocTester (SIMD is for numerical computing). Skip JEP 529.
+**A:** Not applicable to DTR (SIMD is for numerical computing). Skip JEP 529.
 
 ### Q: Is Structured Concurrency stable?
 
@@ -1366,7 +1366,7 @@ void benchmarkHttp3Latency() {
 
 **A:** No changes. Java maintains **backward compatibility**. Java 25 code runs unchanged on Java 26, 27, 28, etc. Preview features just require `--enable-preview` flag.
 
-### Q: Should I target Java 26 or 25 for DocTester 2.6.0?
+### Q: Should I target Java 26 or 25 for DTR 2.6.0?
 
 **A:** Target Java **26 GA** (March 17, 2026):
 
@@ -1374,15 +1374,15 @@ void benchmarkHttp3Latency() {
 <maven.compiler.release>26</maven.compiler.release>
 ```
 
-This ensures access to all Java 26 features (stable and preview). Older Java versions (22–25) can still use DocTester 2.5.x.
+This ensures access to all Java 26 features (stable and preview). Older Java versions (22–25) can still use DTR 2.5.x.
 
 ### Q: What about Java 27 or 28?
 
 **A:** Java releases a new major version every 6 months (September and March). Java 27 GA: September 2026. No need to plan beyond Java 26 until then.
 
-### Q: Does DocTester 2.6.0 require Java 26?
+### Q: Does DTR 2.6.0 require Java 26?
 
-**A:** It requires **Java 26 minimum** (for sealed classes, records, pattern matching). Older Java versions should use DocTester 2.5.x (Java 25).
+**A:** It requires **Java 26 minimum** (for sealed classes, records, pattern matching). Older Java versions should use DTR 2.5.x (Java 25).
 
 ### Q: How do I verify my code has no illegal reflective access?
 
@@ -1395,11 +1395,11 @@ mvnd clean verify 2>&1 | grep -i "warning.*reflective"
 
 **A:** Yes, as long as `--enable-preview` is active **globally** in maven-compiler-plugin. Individual JEPs don't need per-feature flags.
 
-### Q: What's the minimum Java version for DocTester 2.6.0?
+### Q: What's the minimum Java version for DTR 2.6.0?
 
-**A:** Java 26 GA or RC (March 17, 2026+). Sealed classes, records, and pattern matching require Java 16+, but DocTester standardizes on Java 26.
+**A:** Java 26 GA or RC (March 17, 2026+). Sealed classes, records, and pattern matching require Java 16+, but DTR standardizes on Java 26.
 
-### Q: Will DocTester 2.5.x continue to work on Java 26?
+### Q: Will DTR 2.5.x continue to work on Java 26?
 
 **A:** Yes, but you'll miss Java 26–specific optimizations (G1 sync, AOT caching, HTTP/3). Recommended: upgrade to 2.6.0+ when available.
 
@@ -1412,7 +1412,7 @@ https://bugs.openjdk.org/browse/JDK
 Component: "Specification" (for JEP issues)
 ```
 
-Or report to DocTester GitHub: https://github.com/r10r-org/doctester/issues
+Or report to DTR GitHub: https://github.com/seanchatmangpt/doctester/issues
 
 ---
 
@@ -1448,10 +1448,10 @@ Or report to DocTester GitHub: https://github.com/r10r-org/doctester/issues
 - [Maven 4 Release](https://maven.apache.org/) — Maven 4.0.0+
 - [Maven Daemon (mvnd)](https://github.com/apache/maven-mvnd) — Fast Maven builds
 
-### DocTester Resources
+### DTR Resources
 
-- **Project:** https://github.com/r10r-org/doctester
-- **Issues:** https://github.com/r10r-org/doctester/issues
+- **Project:** https://github.com/seanchatmangpt/doctester
+- **Issues:** https://github.com/seanchatmangpt/doctester/issues
 - **Documentation:** [CLAUDE.md](./CLAUDE.md) (this repository)
 
 ### Performance & JVM Tuning
@@ -1464,7 +1464,7 @@ Or report to DocTester GitHub: https://github.com/r10r-org/doctester/issues
 
 ## Summary
 
-Java 26 (GA: March 17, 2026) introduces 10 JEPs that improve DocTester in three ways:
+Java 26 (GA: March 17, 2026) introduces 10 JEPs that improve DTR in three ways:
 
 1. **Language:** JEP 530 (primitive patterns) refines type-safe pattern dispatch
 2. **Concurrency:** JEP 525 (structured concurrency) improves virtual thread lifecycle; JEP 517 (HTTP/3) modernizes networking
@@ -1480,7 +1480,7 @@ Java 26 (GA: March 17, 2026) introduces 10 JEPs that improve DocTester in three 
 **Later (Java 27, H2 2026):**
 
 1. Remove `--enable-preview` when JEPs stabilize
-2. Upgrade DocTester 2.5.x → 2.6.0+ to adopt Java 26 optimizations
+2. Upgrade DTR 2.5.x → 2.6.0+ to adopt Java 26 optimizations
 3. Consider HTTP/3 if test servers support QUIC
 
 **Long-term (Java 28+, 2027):**
@@ -1488,7 +1488,7 @@ Java 26 (GA: March 17, 2026) introduces 10 JEPs that improve DocTester in three 
 1. Reassess JVM tuning based on latest GC improvements
 2. Adopt new features as they mature
 
-For questions or issues, refer to the [OpenJDK JEP tracker](https://openjdk.org/jeps/0) or [DocTester GitHub](https://github.com/r10r-org/doctester/issues).
+For questions or issues, refer to the [OpenJDK JEP tracker](https://openjdk.org/jeps/0) or [DocTester GitHub](https://github.com/seanchatmangpt/doctester/issues).
 
 ---
 

@@ -14,7 +14,7 @@ Response response = sayAndMakeRequest(
         .payload(new CreateUserRequest("alice", "alice@example.com")));
 ```
 
-DocTester serializes the payload to JSON using Jackson. The generated HTML shows the pretty-printed JSON body in the request panel.
+DTR serializes the payload to JSON using Jackson. The generated HTML shows the pretty-printed JSON body in the request panel.
 
 ## Receive and deserialize a JSON response
 

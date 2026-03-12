@@ -1,6 +1,6 @@
 # How-to: Use Cookies
 
-DocTester maintains a cookie jar across requests within a single test method. Cookies set by the server are automatically sent with subsequent requests — no manual cookie management needed.
+DTR maintains a cookie jar across requests within a single test method. Cookies set by the server are automatically sent with subsequent requests — no manual cookie management needed.
 
 ## Authenticate and carry the session cookie
 
@@ -91,7 +91,7 @@ public void testAsRegularUser() {
 }
 ```
 
-> Note: DocTester creates a fresh `TestBrowser` (and thus a fresh cookie jar) for each test method by default. `clearCookies()` is mainly useful within a single test method.
+> Note: DTR creates a fresh `TestBrowser` (and thus a fresh cookie jar) for each test method by default. `clearCookies()` is mainly useful within a single test method.
 
 ## Complete authentication flow example
 

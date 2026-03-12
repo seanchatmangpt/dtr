@@ -46,13 +46,62 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Markdown-based render machine for generating portable API documentation.
+ * Markdown-based render machine implementation for generating portable API documentation.
  *
- * Converts test execution into clean markdown files suitable for GitHub,
- * documentation platforms, and static site generators. No HTML/CSS/JS
- * dependencies—just clean, portable markdown.
+ * <p>Converts test execution into clean, portable markdown files suitable for GitHub,
+ * documentation platforms, and static site generators. Produces self-contained markdown
+ * with no external HTML/CSS/JavaScript dependencies.</p>
+ *
+ * <p><strong>Output Format:</strong></p>
+ * <ul>
+ *   <li>Auto-generated table of contents</li>
+ *   <li>Markdown tables for data</li>
+ *   <li>Syntax-highlighted code blocks</li>
+ *   <li>GitHub-style alert boxes ([!NOTE], [!WARNING])</li>
+ *   <li>Formatted JSON payloads</li>
+ *   <li>HTTP request/response documentation</li>
+ *   <li>Cross-references to other DocTests</li>
+ * </ul>
+ *
+ * <p><strong>Output Location:</strong></p>
+ * <p>Files are written to {@code docs/test/} directory (relative to project root):
+ * <ul>
+ *   <li>{@code &lt;TestClassName&gt;.md} - main documentation file</li>
+ *   <li>{@code &lt;TestClassName&gt;.json} - structured event data</li>
+ *   <li>{@code README.md} - index of all DocTest outputs</li>
+ * </ul>
+ *
+ * <p><strong>Usage:</strong></p>
+ * <pre>{@code
+ * RenderMachine markdown = new RenderMachineImpl();
+ * markdown.setFileName("UserApiDocTest");
+ * markdown.setTestBrowser(browser);
+ *
+ * markdown.sayNextSection("User Registration");
+ * markdown.say("Creates a new user account via POST /api/users");
+ * markdown.sayTable(new String[][] {
+ *     {"Field", "Type", "Required"},
+ *     {"email", "String", "Yes"},
+ *     {"password", "String", "Yes"}
+ * });
+ *
+ * // HTTP request/response with documentation
+ * Response resp = markdown.sayAndMakeRequest(
+ *     Request.POST().url(...).payload(...));
+ *
+ * markdown.finishAndWriteOut();  // Write to disk
+ * }</pre>
+ *
+ * <p><strong>Design Note:</strong></p>
+ * <p>This is a {@code final} class to enable JIT devirtualization of all method calls.
+ * While RenderMachine is not sealed (due to multi-package implementations), all
+ * concrete implementations are {@code final} for performance.</p>
+ *
+ * @since 1.0.0
+ * @see RenderMachine for interface contract
+ * @see RenderMachineCommands for documentation API
  */
-public class RenderMachineImpl extends RenderMachine {
+public final class RenderMachineImpl extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(RenderMachineImpl.class);
 
@@ -60,12 +109,24 @@ public class RenderMachineImpl extends RenderMachine {
     private static final String INDEX_FILE = "README";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    /** Accumulated section headings for table of contents. */
     final List<String> sections = new ArrayList<>();
+
+    /** Table of contents entries (markdown list format). */
     final List<String> toc = new ArrayList<>();
+
+    /** Accumulated markdown document lines. */
     List<String> markdownDocument = new ArrayList<>();
+
+    /** HTTP client for making requests and documenting them. */
     private TestBrowser testBrowser;
+
+    /** Output filename (typically the test class name). */
     private String fileName;
 
+    /**
+     * Creates a new RenderMachineImpl with empty documentation.
+     */
     public RenderMachineImpl() {
     }
 

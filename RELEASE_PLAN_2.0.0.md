@@ -1,4 +1,4 @@
-# DocTester 2.0.0 Release Plan
+# DTR 2.0.0 Release Plan
 
 **Release Date**: 2026-03-10
 **Release Manager**: Claude Code
@@ -13,8 +13,8 @@
 | File Path | Current Version | Target Version | Line |
 |-----------|-----------------|-----------------|------|
 | `/home/user/doctester/pom.xml` | `1.1.12-SNAPSHOT` | `2.0.0` | 14 |
-| `/home/user/doctester/doctester-core/pom.xml` | `1.1.12-SNAPSHOT` (inherited) | `2.0.0` (inherited) | 31 |
-| `/home/user/doctester/doctester-integration-test/pom.xml` | `1.1.12-SNAPSHOT` (inherited) | `2.0.0` (inherited) | 17 |
+| `/home/user/doctester/dtr-core/pom.xml` | `1.1.12-SNAPSHOT` (inherited) | `2.0.0` (inherited) | 31 |
+| `/home/user/doctester/dtr-integration-test/pom.xml` | `1.1.12-SNAPSHOT` (inherited) | `2.0.0` (inherited) | 17 |
 
 ### Update Strategy
 
@@ -30,7 +30,7 @@
 Child modules reference parent version via:
 ```xml
 <parent>
-    <groupId>org.r10r</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>doctester</artifactId>
     <version>1.1.12-SNAPSHOT</version>  <!-- Automatic update via parent -->
 </parent>
@@ -58,7 +58,7 @@ mvnd validate
 ### Step 3: Build All Modules
 ```bash
 mvnd clean install -DskipTests
-# Expected: All three modules (parent, doctester-core, doctester-integration-test) build to version 2.0.0
+# Expected: All three modules (parent, dtr-core, dtr-integration-test) build to version 2.0.0
 ```
 
 ### Step 4: Run Full Test Suite
@@ -70,7 +70,7 @@ mvnd clean verify
 ### Step 5: Create Release Git Commit
 ```bash
 git add pom.xml changelog.md CHANGELOG_2.0.0.md
-git commit -m "Release: bump DocTester to version 2.0.0
+git commit -m "Release: bump DTR to version 2.0.0
 
 Major release with breaking changes:
 - Markdown-first output format (replaces HTML)
@@ -132,7 +132,7 @@ After successful Maven Central deployment:
 1. **Verify published artifacts** (takes ~15 minutes):
    ```bash
    # Check Maven Central
-   https://central.sonatype.com/artifact/org.r10r/doctester-core/2.0.0
+   https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/2.0.0
    ```
 
 2. **Merge main branch**:
@@ -141,7 +141,7 @@ After successful Maven Central deployment:
    ```
 
 3. **Create GitHub Release**:
-   - Go to: https://github.com/r10r-org/doctester/releases/new
+   - Go to: https://github.com/seanchatmangpt/doctester/releases/new
    - Tag: `v2.0.0`
    - Title: `DocTester 2.0.0 - Major Release with Breaking Changes`
    - Body: Copy from `CHANGELOG_2.0.0.md`
@@ -263,7 +263,7 @@ git show v2.0.0      # Show tag details
 5. **Create Release Commit**
    ```bash
    git add pom.xml CHANGELOG_2.0.0.md
-   git commit -m "Release: bump DocTester to 2.0.0"
+   git commit -m "Release: bump DTR to 2.0.0"
    ```
 
 6. **Create Annotated Git Tag**
@@ -302,13 +302,13 @@ After executing all steps, verify:
 
 ### Generated Artifacts (Maven Central)
 
-For each module (`doctester-core`, `doctester-integration-test`):
+For each module (`dtr-core`, `dtr-integration-test`):
 
-- [ ] `doctester-{module}-2.0.0.jar` (compiled code)
-- [ ] `doctester-{module}-2.0.0-sources.jar` (source code)
-- [ ] `doctester-{module}-2.0.0-javadoc.jar` (API docs)
-- [ ] `doctester-{module}-2.0.0.pom` (Maven metadata)
-- [ ] `doctester-{module}-2.0.0.asc` (GPG signature)
+- [ ] `dtr-{module}-2.0.0.jar` (compiled code)
+- [ ] `dtr-{module}-2.0.0-sources.jar` (source code)
+- [ ] `dtr-{module}-2.0.0-javadoc.jar` (API docs)
+- [ ] `dtr-{module}-2.0.0.pom` (Maven metadata)
+- [ ] `dtr-{module}-2.0.0.asc` (GPG signature)
 
 **Total**: 10 artifacts (5 per module) + root POM
 

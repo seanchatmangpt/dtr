@@ -332,22 +332,22 @@ public class FormatVerificationDocTest extends DocTester {
         sayNextSection("Running This Verification Test");
 
         // Default (Markdown only)
-        sayCode("mvnd test -pl doctester-core -Dtest=FormatVerificationDocTest\n" +
+        sayCode("mvnd test -pl dtr-core -Dtest=FormatVerificationDocTest\n" +
                 "# Output: docs/test/FormatVerificationDocTest.md", "bash");
 
         // Patent format
-        sayCode("mvnd test -pl doctester-core -Dtest=FormatVerificationDocTest \\\n" +
+        sayCode("mvnd test -pl dtr-core -Dtest=FormatVerificationDocTest \\\n" +
                 "    -Ddoctester.output=latex \\\n" +
                 "    -Ddoctester.latex.format=patent\n" +
                 "# Output: docs/test/latex/FormatVerificationDocTest.tex (USPTO format)", "bash");
 
         // All formats
-        sayCode("mvnd test -pl doctester-core -Dtest=FormatVerificationDocTest \\\n" +
+        sayCode("mvnd test -pl dtr-core -Dtest=FormatVerificationDocTest \\\n" +
                 "    -Ddoctester.output=all\n" +
                 "# Output: Markdown + 5 blogs + 5 LaTeX formats + Slides + Social queue", "bash");
 
         // Blog only
-        sayCode("mvnd test -pl doctester-core -Dtest=FormatVerificationDocTest \\\n" +
+        sayCode("mvnd test -pl dtr-core -Dtest=FormatVerificationDocTest \\\n" +
                 "    -Ddoctester.output=blog\n" +
                 "# Output: All 5 blog platforms (Dev.to, Medium, Substack, LinkedIn, Hashnode)", "bash");
 

@@ -1,7 +1,7 @@
 # Reference: Response API
 
-**Package:** `org.r10r.doctester.testbrowser`
-**File:** `doctester-core/src/main/java/org/r10r/doctester/testbrowser/Response.java`
+**Package:** `io.github.seanchatmangpt.dtr.doctester.testbrowser`
+**File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Response.java`
 
 `Response` holds the result of an HTTP request. It provides access to the status code, headers, and body, with built-in JSON/XML deserialization.
 
@@ -51,7 +51,7 @@ Returns the response body formatted for readability:
 - XML: indented
 - Other: returned as-is
 
-This is what DocTester renders in the HTML response panel.
+This is what DTR renders in the HTML response panel.
 
 ```java
 String prettyBody = response.payloadAsPrettyString();

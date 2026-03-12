@@ -250,7 +250,7 @@ public class OpenApiCollector {
             case 202 -> "Accepted";
             case 204 -> "No Content";
             case 206 -> "Partial Content";
-            case 2__ -> "Success";  // JEP 530: Primitive pattern for 200-299
+            case int code when code >= 200 && code < 300 -> "Success";
 
             // Redirection responses (3xx)
             case 300 -> "Multiple Choices";
@@ -259,7 +259,7 @@ public class OpenApiCollector {
             case 304 -> "Not Modified";
             case 307 -> "Temporary Redirect";
             case 308 -> "Permanent Redirect";
-            case 3__ -> "Redirection";  // JEP 530: Primitive pattern for 300-399
+            case int code when code >= 300 && code < 400 -> "Redirection";
 
             // Client error responses (4xx)
             case 400 -> "Bad Request";
@@ -271,7 +271,7 @@ public class OpenApiCollector {
             case 410 -> "Gone";
             case 415 -> "Unsupported Media Type";
             case 429 -> "Too Many Requests";
-            case 4__ -> "Client Error";  // JEP 530: Primitive pattern for 400-499
+            case int code when code >= 400 && code < 500 -> "Client Error";
 
             // Server error responses (5xx)
             case 500 -> "Internal Server Error";
@@ -279,7 +279,7 @@ public class OpenApiCollector {
             case 502 -> "Bad Gateway";
             case 503 -> "Service Unavailable";
             case 504 -> "Gateway Timeout";
-            case 5__ -> "Server Error";  // JEP 530: Primitive pattern for 500-599
+            case int code when code >= 500 && code < 600 -> "Server Error";
 
             // Unknown status
             default -> "Unknown Status";

@@ -196,7 +196,7 @@ Speedup ≈ 200-600x (depending on external process latency)
 
 ### Current Implementation (Correct)
 
-**File:** `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
+**File:** `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
 
 ```java
 public record DocMetadata(...) {
@@ -342,7 +342,7 @@ JVM overhead:
 4. **Thread Safety:** ✓ Implicit JVM synchronization guarantees correctness
 5. **Memory Efficiency:** ✓ Single static instance, ~650 bytes total
 
-### Real-World Impact on DocTester
+### Real-World Impact on DTR
 
 **For a typical test suite:**
 ```
@@ -407,5 +407,5 @@ long nanos = nanoEnd - nanoStart;          // Nanosecond precision
 - [Java Language Specification 12.4.1 - Class Initialization](https://docs.oracle.com/javase/specs/jls/se25/html/jls-12.html#jls-12.4.1)
 - [JEP 516 (Projected) - AoT Object Caching for Java](https://openjdk.org/jeps/516)
 - [Project Leyden - Faster Startup & Time-to-Peak](https://openjdk.org/projects/leyden/)
-- DocMetadata Source: `/home/user/doctester/doctester-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
+- DocMetadata Source: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
 

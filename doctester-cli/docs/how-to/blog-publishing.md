@@ -5,7 +5,7 @@ Your documentation is great, but it's only visible on your internal docs site. Y
 
 ## Solution Overview
 
-DocTester can export documentation in formats compatible with major blogging platforms and manage a publishing queue. One Markdown file can be cross-posted to multiple platforms with a single command.
+DTR can export documentation in formats compatible with major blogging platforms and manage a publishing queue. One Markdown file can be cross-posted to multiple platforms with a single command.
 
 ## Supported Platforms
 
@@ -133,7 +133,7 @@ scheduled_for: "2026-03-15T10:00:00Z"
 
 ## Introduction
 
-DocTester is a comprehensive documentation generator...
+DTR is a comprehensive documentation generator...
 ```
 
 Supported metadata:

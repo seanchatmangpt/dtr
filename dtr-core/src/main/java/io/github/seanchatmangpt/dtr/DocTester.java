@@ -39,6 +39,71 @@ import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex;
 import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
 
+/**
+ * Abstract base class for documentation testing framework using JUnit 5.
+ *
+ * <p>DocTester bridges test execution and documentation generation, allowing developers
+ * to write tests that simultaneously verify API behavior and auto-generate comprehensive
+ * API documentation. Supports multiple output formats: Markdown, LaTeX/PDF, blog posts,
+ * and presentation slides.</p>
+ *
+ * <p><strong>Core Features:</strong></p>
+ * <ul>
+ *   <li>HTTP testing via {@link TestBrowser} (cookie persistence, multipart uploads, auth)</li>
+ *   <li>Documentation generation via {@link RenderMachine} (multiple output formats)</li>
+ *   <li>Annotation-driven documentation: {@link DocSection}, {@link DocDescription}, etc.</li>
+ *   <li>Reflection-based code introspection: {@link #sayCodeModel(Class)}, {@link #sayAnnotationProfile(Class)}</li>
+ *   <li>OpenAPI specification auto-generation from HTTP interactions</li>
+ *   <li>Cross-references between DocTests with automatic section numbering</li>
+ * </ul>
+ *
+ * <p><strong>Basic Usage:</strong></p>
+ * <pre>{@code
+ * @ExtendWith(DocTesterExtension.class)
+ * class UserApiDocTest extends DocTester {
+ *     @Override
+ *     public Url testServerUrl() {
+ *         return Url.host("http://localhost:8080");
+ *     }
+ *
+ *     @Test
+ *     @DocSection("User Registration")
+ *     @DocDescription("Creates a new user account")
+ *     void testCreateUser() {
+ *         var response = sayAndMakeRequest(
+ *             Request.POST()
+ *                 .url(testServerUrl().path("/api/users"))
+ *                 .contentTypeApplicationJson()
+ *                 .payload(new User("alice", "alice@example.com")));
+ *         sayAndAssertThat("Status is 201", response.httpStatus, equalTo(201));
+ *     }
+ * }
+ * }</pre>
+ *
+ * <p><strong>JUnit 5 Integration:</strong></p>
+ * <p>While this class is abstract and doesn't require {@code @ExtendWith(DocTesterExtension.class)},
+ * it is designed to work seamlessly with that extension. The extension manages the
+ * RenderMachine lifecycle (one per test class) and TestBrowser lifecycle (one per test method).</p>
+ *
+ * <p><strong>Annotation Processing:</strong></p>
+ * <p>The following annotations on test methods are automatically processed and rendered:</p>
+ * <ul>
+ *   <li>{@code @DocSection("title")} → H2 heading in output</li>
+ *   <li>{@code @DocDescription({"line1", "line2"})} → narrative paragraphs</li>
+ *   <li>{@code @DocNote({"note"})} → GitHub-style [!NOTE] alert boxes</li>
+ *   <li>{@code @DocWarning({"warn"})} → GitHub-style [!WARNING] alert boxes</li>
+ *   <li>{@code @DocCode({"code line"}, language="java")} → syntax-highlighted code blocks</li>
+ * </ul>
+ *
+ * <p><strong>Output Lifecycle:</strong></p>
+ * <p>Documentation is accumulated during test execution and written to disk after all tests
+ * in the class complete (via {@code @AfterAll} hook). Output location: {@code docs/test/&lt;ClassName&gt;.*}</p>
+ *
+ * @see DocTesterExtension for JUnit 5 integration
+ * @see RenderMachine for output format options
+ * @see TestBrowser for HTTP testing capabilities
+ * @since 1.0.0
+ */
 public abstract class DocTester implements TestBrowser, RenderMachineCommands {
 
     /**
@@ -262,10 +327,18 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     }
 
     /**
-     * Convenience method to create and render a reference to another DocTest's section.
+     * Convenience method to create and render a cross-reference to another DocTest's section.
      *
-     * @param docTestClass the target DocTest class
-     * @param anchor the section/anchor name within that DocTest
+     * <p>Creates a {@link DocTestRef} and delegates to {@link #sayRef(DocTestRef)}.
+     * The reference is rendered as a markdown link in Markdown mode or as a LaTeX
+     * cross-reference command in LaTeX mode. In LaTeX, the resolved section number
+     * (e.g., "Section 3.2") is automatically substituted after compilation.</p>
+     *
+     * @param docTestClass the target DocTest class (must not be null)
+     * @param anchor the section/anchor name within that DocTest, e.g., "user-registration"
+     *               (typically derived from @DocSection annotation value)
+     * @see DocTestRef#of(Class, String)
+     * @see CrossReferenceIndex for reference resolution
      */
     public final void sayRef(Class<?> docTestClass, String anchor) {
         sayRef(DocTestRef.of(docTestClass, anchor));

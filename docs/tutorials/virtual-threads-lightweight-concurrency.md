@@ -100,10 +100,10 @@ Extend `DocTester` and use virtual threads to make concurrent assertions:
 package com.example;
 
 import org.junit.Test;
-import org.r10r.doctester.DocTester;
-import org.r10r.doctester.testbrowser.Request;
-import org.r10r.doctester.testbrowser.Response;
-import org.r10r.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.doctester.DocTester;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +111,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-public class VirtualThreadsDocTest extends DocTester {
+public class VirtualThreadsDocTest extends DTR {
 
     @Test
     public void demonstrateVirtualThreads() throws Exception {
