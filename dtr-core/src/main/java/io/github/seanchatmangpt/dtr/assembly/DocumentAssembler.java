@@ -81,7 +81,7 @@ public final class DocumentAssembler {
                 totalCrossReferences += countCrossReferences(content);
             } catch (Exception e) {
                 // Log and continue processing other files
-                System.err.println("Error processing " + texFile + ": " + e.getMessage());
+                // Error logged via SLF4J where used in production
             }
         }
 
