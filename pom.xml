@@ -63,7 +63,7 @@ the specific language governing permissions and limitations under the License. -
     </developers>
 
     <properties>
-        <maven.compiler.release>26</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -97,8 +97,8 @@ the specific language governing permissions and limitations under the License. -
         <jaxb-api.version>2.3.1</jaxb-api.version>
         <jaxb-runtime.version>2.3.9</jaxb-runtime.version>
         <javax-servlet-api.version>3.1.0</javax-servlet-api.version>
-        <maven-deploy-plugin.version>2.7</maven-deploy-plugin.version>
-        <maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
+        <maven-deploy-plugin.version>3.1.3</maven-deploy-plugin.version>
+        <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
         <ninja-maven-plugin.version>${ninja.version}</ninja-maven-plugin.version>
         <!-- Crypto & hashing -->
         <bouncycastle.version>1.77</bouncycastle.version>
@@ -289,7 +289,7 @@ the specific language governing permissions and limitations under the License. -
 
     <build>
         <plugins>
-            <!-- Enforce Java 26+ and Maven 4+ on every build — inherited by all modules -->
+            <!-- Enforce Java 25+ and Maven 4+ on every build — inherited by all modules -->
             <!-- TEMPORARILY DISABLED: Maven Central auth rate limiting (environment issue, not code issue) -->
             <!--
             <plugin>
@@ -306,7 +306,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
                     <configuration>
-                        <release>26</release>
+                        <release>25</release>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                         </compilerArgs>
@@ -357,16 +357,15 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.11.2</version>
                     <configuration>
                         <additionalOptions>--enable-preview</additionalOptions>
-                        <release>26</release>
+                        <release>25</release>
                     </configuration>
                 </plugin>
 
-                <!-- Enforcer plugin disabled: Maven Central auth rate limiting (environment issue) -->
-                <!--
+                <!-- Enforcer plugin: validates Java version (enabled for Maven Central) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.6.2</version>
                     <executions>
                         <execution>
                             <id>enforce-versions</id>
@@ -376,8 +375,8 @@ the specific language governing permissions and limitations under the License. -
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[26,)</version>
-                                        <message>Java 26 or higher is required for JEP 526/530/525/516/500 features.</message>
+                                        <version>[25,)</version>
+                                        <message>Java 25 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
@@ -388,7 +387,28 @@ the specific language governing permissions and limitations under the License. -
                         </execution>
                     </executions>
                 </plugin>
-                -->
+
+                <!-- Default binding plugins with explicit versions -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.4.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.1.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -440,9 +460,11 @@ the specific language governing permissions and limitations under the License. -
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.6.0</version>
+                        <version>3.11.2</version>
                         <configuration>
                             <doclint>none</doclint>
+                            <additionalOptions>--enable-preview</additionalOptions>
+                            <release>25</release>
                         </configuration>
                         <executions>
                             <execution>

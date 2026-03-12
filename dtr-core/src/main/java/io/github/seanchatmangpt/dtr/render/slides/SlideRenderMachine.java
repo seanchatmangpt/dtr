@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * Converts test execution into presentation slides (Reveal.js HTML, etc.).
  * Maps say* methods to slide content: sayNextSection → new slide, say → bullets, etc.
  */
-public class SlideRenderMachine extends RenderMachine {
+public final class SlideRenderMachine extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(SlideRenderMachine.class);
     private static final String BASE_DIR = "target/site/doctester/slides";

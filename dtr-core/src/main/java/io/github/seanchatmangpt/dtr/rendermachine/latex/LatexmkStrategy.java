@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * Recommended compiler: handles multipass compilation, auxiliary file cleanup,
  * bibliography generation, and cross-reference resolution automatically.
  */
-public class LatexmkStrategy implements CompilerStrategy {
+public final class LatexmkStrategy implements CompilerStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(LatexmkStrategy.class);
 

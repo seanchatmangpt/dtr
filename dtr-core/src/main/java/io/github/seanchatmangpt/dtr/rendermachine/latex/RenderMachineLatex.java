@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  *
  * Output: .tex file written to docs/test/latex/ directory.
  */
-public class RenderMachineLatex extends RenderMachine {
+public final class RenderMachineLatex extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(RenderMachineLatex.class);
 

@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * Fallback compiler for direct PDF generation.
  */
-public class PdflatexStrategy implements CompilerStrategy {
+public final class PdflatexStrategy implements CompilerStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(PdflatexStrategy.class);
 
