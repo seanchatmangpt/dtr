@@ -67,7 +67,7 @@ the specific language governing permissions and limitations under the License. -
     </developers>
 
     <properties>
-        <maven.compiler.release>26</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -319,7 +319,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
                     <configuration>
-                        <release>26</release>
+                        <release>25</release>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                         </compilerArgs>
@@ -370,7 +370,7 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.11.2</version>
                     <configuration>
                         <additionalOptions>--enable-preview</additionalOptions>
-                        <release>26</release>
+                        <release>25</release>
                     </configuration>
                 </plugin>
 
@@ -477,7 +477,7 @@ the specific language governing permissions and limitations under the License. -
                         <configuration>
                             <doclint>none</doclint>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <release>26</release>
+                            <release>25</release>
                         </configuration>
                         <executions>
                             <execution>
