@@ -54,8 +54,15 @@ class MavenPublishManager:
         """
         self.project_root = project_root
         self.pom_path = project_root / "pom.xml"
-        self.maven_runner = MavenRunner(project_root)
+        self._maven_runner: Optional[MavenRunner] = None
         self.console = console or Console()
+
+    @property
+    def maven_runner(self) -> MavenRunner:
+        """Lazy-load Maven runner only when needed."""
+        if self._maven_runner is None:
+            self._maven_runner = MavenRunner(self.project_root)
+        return self._maven_runner
 
     def validate_environment(
         self, config: PublishCheckConfig

@@ -175,7 +175,7 @@ class ValidationResult:
     name: str
     passed: bool
     message: str = ""
-    hint: str = ""
+    hint: str | None = None
 
 
 @dataclass
