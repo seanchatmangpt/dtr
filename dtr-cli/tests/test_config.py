@@ -12,6 +12,7 @@ import yaml
 import pytest
 from typer.testing import CliRunner
 
+from dtr_cli.cli_errors import ConfigurationError
 from dtr_cli.config import (
     CONFIG_FILENAME,
     BuildConfig,
@@ -27,6 +28,7 @@ from dtr_cli.config import (
     load_config,
     save_config,
     set_value,
+    validate_config,
 )
 from dtr_cli.main import app
 

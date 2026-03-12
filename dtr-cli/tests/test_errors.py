@@ -46,19 +46,32 @@ from dtr_cli.cli_errors import (
 
 
 def test_every_error_has_unique_code():
-    """Joe Armstrong: every error has an identity."""
+    """Joe Armstrong: every error has an identity.
+
+    Each concrete subclass must set a unique DTR-XXX error_code in its
+    __init__ (not just inherit DTR-000 from the base). We instantiate
+    every subclass with no positional arguments to verify this.
+    """
     codes: dict[str, str] = {}
     for name, obj in inspect.getmembers(cli_errors, inspect.isclass):
         if not issubclass(obj, CLIError) or obj is CLIError:
             continue
-        # Attempt to read error_code from the class variable or a fresh instance.
-        code = getattr(obj, "error_code", None)
-        if code is None or code == "DTR-000":
-            try:
-                instance = obj.__new__(obj)
-                code = getattr(instance, "error_code", None)
-            except Exception:
-                pass
+        # Instantiate with all-defaults to trigger __init__ and capture the
+        # error_code that the constructor hard-codes.
+        try:
+            instance = obj()
+            code = instance.error_code
+        except Exception as exc:
+            # If the constructor requires mandatory positional args we can't
+            # avoid, fall back to a __new__-only read plus a direct search in
+            # the constructor's co_consts for a "DTR-" literal.
+            code = None
+            init_fn = getattr(obj, "__init__", None)
+            if init_fn is not None:
+                consts = getattr(getattr(init_fn, "__code__", None), "co_consts", ())
+                dtr_consts = [c for c in consts if isinstance(c, str) and c.startswith("DTR-")]
+                if dtr_consts:
+                    code = dtr_consts[0]
         assert code is not None and code != "DTR-000", (
             f"{name} must have a unique error_code (not None and not 'DTR-000')"
         )
