@@ -15,6 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr.openapi;
 
+import io.github.seanchatmangpt.dtr.util.StringEscapeUtils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -102,14 +103,14 @@ public final class OpenApiWriter {
         sb.append("{\n");
 
         // openapi version
-        sb.append("  \"openapi\": \"").append(escapeJson(spec.openapi())).append("\",\n");
+        sb.append("  \"openapi\": \"").append(StringEscapeUtils.escapeJson(spec.openapi())).append("\",\n");
 
         // info
         sb.append("  \"info\": {\n");
-        sb.append("    \"title\": \"").append(escapeJson(spec.info().title())).append("\",\n");
-        sb.append("    \"version\": \"").append(escapeJson(spec.info().version())).append("\"");
+        sb.append("    \"title\": \"").append(StringEscapeUtils.escapeJson(spec.info().title())).append("\",\n");
+        sb.append("    \"version\": \"").append(StringEscapeUtils.escapeJson(spec.info().version())).append("\"");
         if (spec.info().description() != null) {
-            sb.append(",\n    \"description\": \"").append(escapeJson(spec.info().description())).append("\"");
+            sb.append(",\n    \"description\": \"").append(StringEscapeUtils.escapeJson(spec.info().description())).append("\"");
         }
         sb.append("\n  },\n");
 
@@ -118,7 +119,7 @@ public final class OpenApiWriter {
         var pathEntries = spec.paths().entrySet().stream().toList();
         for (int i = 0; i < pathEntries.size(); i++) {
             var entry = pathEntries.get(i);
-            sb.append("    \"").append(escapeJson(entry.getKey())).append("\": {\n");
+            sb.append("    \"").append(StringEscapeUtils.escapeJson(entry.getKey())).append("\": {\n");
             sb.append(pathItemToJson(entry.getValue(), 6));
             sb.append(i < pathEntries.size() - 1 ? "    },\n" : "    }\n");
         }
@@ -148,10 +149,10 @@ public final class OpenApiWriter {
         var sb = new StringBuilder();
 
         if (op.summary() != null) {
-            sb.append(spaces).append("\"summary\": \"").append(escapeJson(op.summary())).append("\",\n");
+            sb.append(spaces).append("\"summary\": \"").append(StringEscapeUtils.escapeJson(op.summary())).append("\",\n");
         }
         if (op.description() != null) {
-            sb.append(spaces).append("\"description\": \"").append(escapeJson(op.description())).append("\",\n");
+            sb.append(spaces).append("\"description\": \"").append(StringEscapeUtils.escapeJson(op.description())).append("\",\n");
         }
 
         sb.append(spaces).append("\"responses\": {\n");
@@ -171,10 +172,10 @@ public final class OpenApiWriter {
         var spaces = " ".repeat(indent);
         var sb = new StringBuilder();
 
-        sb.append(spaces).append("\"description\": \"").append(escapeJson(resp.description())).append("\"");
+        sb.append(spaces).append("\"description\": \"").append(StringEscapeUtils.escapeJson(resp.description())).append("\"");
         if (resp.content() != null) {
             sb.append(",\n").append(spaces).append("\"content\": {\n");
-            sb.append(spaces).append("  \"").append(escapeJson(resp.content().mediaType())).append("\": {\n");
+            sb.append(spaces).append("  \"").append(StringEscapeUtils.escapeJson(resp.content().mediaType())).append("\": {\n");
             sb.append(spaces).append("    \"schema\": { \"type\": \"object\" }\n");
             sb.append(spaces).append("  }\n");
             sb.append(spaces).append("}");
@@ -195,15 +196,15 @@ public final class OpenApiWriter {
 
         sb.append("openapi: '").append(spec.openapi()).append("'\n");
         sb.append("info:\n");
-        sb.append("  title: '").append(escapeYaml(spec.info().title())).append("'\n");
-        sb.append("  version: '").append(escapeYaml(spec.info().version())).append("'\n");
+        sb.append("  title: '").append(StringEscapeUtils.escapeYaml(spec.info().title())).append("'\n");
+        sb.append("  version: '").append(StringEscapeUtils.escapeYaml(spec.info().version())).append("'\n");
         if (spec.info().description() != null) {
-            sb.append("  description: '").append(escapeYaml(spec.info().description())).append("'\n");
+            sb.append("  description: '").append(StringEscapeUtils.escapeYaml(spec.info().description())).append("'\n");
         }
 
         sb.append("paths:\n");
         for (var entry : spec.paths().entrySet()) {
-            sb.append("  '").append(escapeYaml(entry.getKey())).append("':\n");
+            sb.append("  '").append(StringEscapeUtils.escapeYaml(entry.getKey())).append("':\n");
             sb.append(pathItemToYaml(entry.getValue(), 4));
         }
 
@@ -227,32 +228,19 @@ public final class OpenApiWriter {
         var sb = new StringBuilder();
 
         if (op.summary() != null) {
-            sb.append(spaces).append("summary: '").append(escapeYaml(op.summary())).append("'\n");
+            sb.append(spaces).append("summary: '").append(StringEscapeUtils.escapeYaml(op.summary())).append("'\n");
         }
         if (op.description() != null) {
-            sb.append(spaces).append("description: '").append(escapeYaml(op.description())).append("'\n");
+            sb.append(spaces).append("description: '").append(StringEscapeUtils.escapeYaml(op.description())).append("'\n");
         }
 
         sb.append(spaces).append("responses:\n");
         for (var entry : op.responses().entrySet()) {
             sb.append(spaces).append("  '").append(entry.getKey()).append("':\n");
-            sb.append(spaces).append("    description: '").append(escapeYaml(entry.getValue().description())).append("'\n");
+            sb.append(spaces).append("    description: '").append(StringEscapeUtils.escapeYaml(entry.getValue().description())).append("'\n");
         }
 
         return sb.toString();
     }
 
-    private static String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
-    }
-
-    private static String escapeYaml(String s) {
-        if (s == null) return "";
-        return s.replace("'", "''");
-    }
 }

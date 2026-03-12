@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -81,9 +82,7 @@ public class CrossReferenceIndex {
      * @param ref the reference to register
      */
     public void register(DocTestRef ref) {
-        if (ref == null) {
-            throw new IllegalArgumentException("Reference cannot be null");
-        }
+        Objects.requireNonNull(ref, "Reference cannot be null");
         registeredReferences.add(ref);
         logger.trace("Registered reference: {} -> {}", ref.docTestClassName(), ref.anchor());
     }

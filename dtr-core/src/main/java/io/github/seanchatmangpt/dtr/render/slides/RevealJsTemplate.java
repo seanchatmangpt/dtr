@@ -15,6 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr.render.slides;
 
+import io.github.seanchatmangpt.dtr.util.StringEscapeUtils;
 import java.util.List;
 
 /**
@@ -31,24 +32,24 @@ public record RevealJsTemplate() implements SlideTemplate {
             <section>
                 <h2>%s</h2>
             </section>
-            """.formatted(escapeHtml(title));
+            """.formatted(StringEscapeUtils.escapeHtml(title));
     }
 
     @Override
     public String formatContentSlide(String title, List<String> bulletPoints, String speakerNotes) {
         StringBuilder html = new StringBuilder();
         html.append("<section>\n");
-        html.append("    <h3>").append(escapeHtml(title)).append("</h3>\n");
+        html.append("    <h3>").append(StringEscapeUtils.escapeHtml(title)).append("</h3>\n");
         if (bulletPoints != null && !bulletPoints.isEmpty()) {
             html.append("    <ul>\n");
             for (String bullet : bulletPoints) {
-                html.append("        <li>").append(escapeHtml(bullet)).append("</li>\n");
+                html.append("        <li>").append(StringEscapeUtils.escapeHtml(bullet)).append("</li>\n");
             }
             html.append("    </ul>\n");
         }
         if (speakerNotes != null && !speakerNotes.isEmpty()) {
             html.append("    <aside class=\"notes\">\n");
-            html.append("        ").append(escapeHtml(speakerNotes)).append("\n");
+            html.append("        ").append(StringEscapeUtils.escapeHtml(speakerNotes)).append("\n");
             html.append("    </aside>\n");
         }
         html.append("</section>\n");
@@ -62,7 +63,7 @@ public record RevealJsTemplate() implements SlideTemplate {
             <section>
                 <pre><code class="language-%s" data-trim>%s</code></pre>
             </section>
-            """.formatted(lang, escapeHtml(code));
+            """.formatted(lang, StringEscapeUtils.escapeHtml(code));
     }
 
     @Override
@@ -79,7 +80,7 @@ public record RevealJsTemplate() implements SlideTemplate {
             html.append("        <tr>\n");
             for (String cell : row) {
                 html.append("            <").append(tag).append(">")
-                    .append(escapeHtml(cell != null ? cell : "")).append("</")
+                    .append(StringEscapeUtils.escapeHtml(cell != null ? cell : "")).append("</")
                     .append(tag).append(">\n");
             }
             html.append("        </tr>\n");
@@ -102,7 +103,7 @@ public record RevealJsTemplate() implements SlideTemplate {
                     <p>%s</p>
                 </div>
             </section>
-            """.formatted(className, escapeHtml(text));
+            """.formatted(className, StringEscapeUtils.escapeHtml(text));
     }
 
     @Override
@@ -115,14 +116,4 @@ public record RevealJsTemplate() implements SlideTemplate {
         return "revealjs";
     }
 
-    private static String escapeHtml(String text) {
-        if (text == null) {
-            return "";
-        }
-        return text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&#39;");
-    }
 }
