@@ -7,12 +7,20 @@ from rich.console import Console
 from rich.table import Table
 
 from doctester_cli.managers.directory_manager import DirectoryManager
-from doctester_cli.model import ManageConfig
+from doctester_cli.managers.latex_manager import LatexManager
+from doctester_cli.model import (
+    ManageConfig,
+    LatexTemplate,
+    CompilerStrategy,
+)
 from doctester_cli.cli_errors import (
     FileNotFoundError_,
     DirectoryExpectedError,
     InvalidFormatError,
     InvalidArgumentError,
+    LatexTemplateMissingError,
+    LatexCompilationError,
+    NoLatexCompilerError,
     CLIError,
 )
 
@@ -268,6 +276,209 @@ def check(
         raise typer.Exit(1)
     except Exception as e:
         console.print(f"[red]✗[/red] Validation failed: {e}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def latex(
+    input_file: Path = typer.Argument(
+        ...,
+        help="Input file (Markdown, HTML, or LaTeX)",
+    ),
+    output_file: Optional[Path] = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Output .tex file (default: input.stem.tex)",
+    ),
+    template: str = typer.Option(
+        "arxiv",
+        "--template",
+        "-t",
+        help="LaTeX template: arxiv, patent, ieee, acm, nature",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Overwrite existing files",
+    ),
+) -> None:
+    """
+    Export documentation to LaTeX format.
+
+    Converts Markdown or HTML files to LaTeX format with academic templates.
+    Can also validate and copy existing LaTeX files.
+
+    \b
+    Examples:
+        dtr export latex docs/guide.md --template arxiv
+        dtr export latex docs/guide.html --template ieee -o guide.tex
+        dtr export latex generated.tex --force
+    """
+    try:
+        # Validate template
+        try:
+            template_enum = LatexTemplate(template)
+        except ValueError:
+            valid = [t.value for t in LatexTemplate]
+            raise LatexTemplateMissingError(template, valid)
+
+        # Create manager and convert
+        manager = LatexManager()
+        result = manager.generate_latex(
+            input_file, output_file, template_enum, force
+        )
+
+        console.print(
+            f"[green]✓[/green] LaTeX generated: {output_file or f'{input_file.stem}.tex'}"
+        )
+        if result.warnings:
+            for warning in result.warnings:
+                console.print(f"[yellow]⚠[/yellow] {warning}")
+
+    except LatexTemplateMissingError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
+    except CLIError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
+    except FileNotFoundError:
+        console.print(
+            f"[red]✗[/red] Input file not found: {input_file}\n"
+            "[cyan]Make sure the file exists and is readable"
+        )
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]✗[/red] LaTeX export failed: {e}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def pdf(
+    input_file: Path = typer.Argument(
+        ...,
+        help="Input file (.tex, Markdown, or HTML)",
+    ),
+    output_file: Optional[Path] = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Output PDF file (default: input.stem.pdf)",
+    ),
+    template: str = typer.Option(
+        "arxiv",
+        "--template",
+        "-t",
+        help="LaTeX template: arxiv, patent, ieee, acm, nature",
+    ),
+    compiler: str = typer.Option(
+        "auto",
+        "--compiler",
+        "-c",
+        help="Compiler: auto, latexmk, pdflatex, xelatex, pandoc",
+    ),
+    keep_tex: bool = typer.Option(
+        False,
+        "--keep-tex",
+        help="Keep intermediate LaTeX file",
+    ),
+    timeout: int = typer.Option(
+        300,
+        "--timeout",
+        help="Compilation timeout in seconds",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Overwrite existing files",
+    ),
+) -> None:
+    """
+    Compile LaTeX to PDF with automatic compiler selection.
+
+    Compiles LaTeX files to PDF using a fallback compiler chain:
+    latexmk (recommended) → pdflatex → xelatex → pandoc
+
+    If input is Markdown or HTML, converts to LaTeX first.
+
+    \b
+    Examples:
+        dtr export pdf docs/guide.tex
+        dtr export pdf docs/guide.tex --compiler pdflatex
+        dtr export pdf docs/guide.md --template ieee
+        dtr export pdf guide.tex --compiler auto --keep-tex
+    """
+    try:
+        # Validate template
+        try:
+            template_enum = LatexTemplate(template)
+        except ValueError:
+            valid = [t.value for t in LatexTemplate]
+            raise LatexTemplateMissingError(template, valid)
+
+        # Validate compiler strategy
+        try:
+            compiler_enum = CompilerStrategy(compiler)
+        except ValueError:
+            valid = [c.value for c in CompilerStrategy]
+            raise typer.BadParameter(
+                f"Invalid compiler: {compiler}\nValid options: {', '.join(valid)}"
+            )
+
+        # Create manager and compile
+        manager = LatexManager()
+
+        # If input is not .tex, convert first
+        if input_file.suffix.lower() != ".tex":
+            console.print(f"[cyan]Converting {input_file.suffix} to LaTeX...[/cyan]")
+            tex_file = input_file.parent / f"{input_file.stem}.tex"
+            manager.generate_latex(input_file, tex_file, template_enum, force)
+        else:
+            tex_file = input_file
+
+        # Compile to PDF
+        console.print(f"[cyan]Compiling LaTeX to PDF...{' ' if compiler == 'auto' else f' ({compiler})'}[/cyan]")
+        result = manager.compile_pdf(
+            tex_file,
+            output_file,
+            template_enum,
+            compiler_enum,
+            keep_tex,
+            timeout,
+            force,
+        )
+
+        console.print(
+            f"[green]✓[/green] PDF generated: {output_file or f'{tex_file.stem}.pdf'}"
+        )
+        if result.warnings:
+            for warning in result.warnings:
+                console.print(f"[yellow]⚠[/yellow] {warning}")
+
+    except NoLatexCompilerError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(2)
+    except LatexCompilationError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        if e.details:
+            console.print(f"\n[yellow]Error details:[/yellow]\n{e.details}")
+        raise typer.Exit(2)
+    except LatexTemplateMissingError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
+    except CLIError as e:
+        console.print(f"[red]✗[/red] {e.format_message()}")
+        raise typer.Exit(1)
+    except FileNotFoundError:
+        console.print(
+            f"[red]✗[/red] Input file not found: {input_file}\n"
+            "[cyan]Make sure the file exists and is readable"
+        )
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]✗[/red] PDF compilation failed: {e}")
         raise typer.Exit(1)
 
 

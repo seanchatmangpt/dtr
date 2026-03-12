@@ -13,7 +13,7 @@ import typer
 from rich.console import Console
 
 from doctester_cli import __version__
-from doctester_cli.commands import fmt, export, push, report
+from doctester_cli.commands import fmt, export, push, report, build, publish
 
 # Configure logging
 logging.basicConfig(
@@ -29,10 +29,12 @@ app = typer.Typer(
 )
 
 # Add sub-command groups
+app.add_typer(build.app, name="build", help="Orchestrate Maven builds")
 app.add_typer(fmt.app, name="fmt", help="Convert exports between formats")
 app.add_typer(export.app, name="export", help="Manage export directories")
 app.add_typer(report.app, name="report", help="Generate reports from exports")
 app.add_typer(push.app, name="push", help="Publish exports to platforms")
+app.add_typer(publish.app, name="publish", help="Publish to Maven Central")
 
 
 @app.command()

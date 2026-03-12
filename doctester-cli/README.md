@@ -6,6 +6,7 @@ A comprehensive, modern Python CLI tool for managing, converting, and publishing
 
 ## Features
 
+- **Maven Orchestration** — Run Maven builds directly: `dtr build` replaces `mvnd clean verify`
 - **Format Conversion** — Convert between HTML, Markdown, and JSON formats
 - **Report Generation** — Generate summaries, coverage reports, and changelogs
 - **Directory Management** — List, archive, cleanup, and validate exports
@@ -39,6 +40,33 @@ pip install -e .
 
 The CLI is available as both `dtr` (shorthand) and `doctester` (full name):
 
+### Complete Workflow: Build → Convert → Report → Publish
+
+```bash
+# 1. Run Maven build (replaces 'mvnd clean verify')
+dtr build
+
+# 2. Convert exports to Markdown
+dtr fmt md target/site/doctester -o ./markdown_docs -r
+
+# 3. Generate summary report
+dtr report sum target/site/doctester
+
+# 4. Publish to GitHub Pages
+export GITHUB_TOKEN=your_token_here
+dtr push gh target/site/doctester --repo owner/repo
+```
+
+### Build Maven Project
+
+```bash
+dtr build                                    # Default: clean verify
+dtr build --goals test                       # Custom goals
+dtr build --profiles docs-html               # Activate profiles
+dtr build --modules module-a,module-b        # Build specific modules
+dtr build --verbose                          # Show full Maven output
+```
+
 ### Convert HTML to Markdown
 
 ```bash
@@ -64,6 +92,28 @@ dtr push gh target/site/doctester --repo owner/repo
 ```
 
 ## Commands
+
+### Build Commands (`build`)
+
+Orchestrate Maven builds directly from the CLI, eliminating the need to run `mvnd`/`mvn` separately.
+
+```bash
+dtr build                          # Default: clean verify
+dtr build --goals test             # Custom Maven goals (comma-separated)
+dtr build --profiles docs-html     # Activate Maven profiles (comma-separated)
+dtr build --properties key=val     # Pass Maven properties (format: k1=v1,k2=v2)
+dtr build --modules mod-a,mod-b    # Build specific modules only
+dtr build --verbose                # Show full Maven output
+dtr build --timeout 1200           # Set build timeout in seconds
+dtr build --help                   # Show all build options
+```
+
+**Why use `dtr build`?**
+- ✅ Single unified CLI for docs generation
+- ✅ Auto-detects mvnd (faster) or mvn
+- ✅ Auto-discovers available modules from pom.xml
+- ✅ Clear error messages with troubleshooting hints
+- ✅ Works seamlessly with other `dtr` commands
 
 ### Format Commands (`fmt`)
 
@@ -146,10 +196,23 @@ dtr push gh target/site/doctester --repo myorg/myrepo
 ### CI/CD Integration
 
 ```bash
-# In your CI/CD pipeline
-dtr export check target/site/doctester          # Validate first
-dtr push local target/site/doctester --target ./build/docs
+# In your CI/CD pipeline (e.g., GitHub Actions, GitLab CI, Jenkins)
+
+# Run Maven build
+dtr build
+
+# Validate exports were generated
+dtr export check target/site/doctester
+
+# Convert to Markdown for storage
+dtr fmt md target/site/doctester -o ./build/docs -r
+
+# Publish to S3
 dtr push s3 ./build/docs --bucket my-docs --region us-west-2
+
+# Or publish to GitHub Pages
+export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+dtr push gh ./build/docs --repo owner/repo
 ```
 
 ## Architecture
