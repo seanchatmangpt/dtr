@@ -39,7 +39,7 @@ CRITICAL (Blocking Release):
      - Impact: BUILD FAILS
 
   2. Test package mismatch (45 files in org.r10r)
-     - Files: org/r10r/doctester/ (38 test files + 7 benchmark files)
+     - Files: org/r10r/dtr/ (38 test files + 7 benchmark files)
      - Fix: Move to io/github/seanchatmangpt/dtr/
      - Time: 20 minutes
      - Impact: MAVEN CENTRAL REJECTS
@@ -172,13 +172,13 @@ ISSUE #2: Test Package Mismatch
 ──────────────────────────────
 
 Affected Files: 45 total
-  Location 1: /home/user/dtr/dtr-core/src/test/java/org/r10r/doctester/
+  Location 1: /home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/
              (38 test files)
-  Location 2: /home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/doctester/
+  Location 2: /home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/dtr/
              (7 benchmark files)
 
 Problem:
-  Test files are in deprecated org.r10r.doctester package.
+  Test files are in deprecated org.r10r.dtr package.
   Main code is in io.github.seanchatmangpt.dtr package.
   Maven Central requires package structure matching GroupId.
 

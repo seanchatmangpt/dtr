@@ -41,7 +41,7 @@ package io.github.seanchatmangpt.dtr.reflectiontoolkit;
  *   <li>{@code lineNumber} is positive (>= 0)</li>
  * </ul>
  *
- * @param className    The fully-qualified class name (e.g., "io.github.seanchatmangpt.dtr.DocTester")
+ * @param className    The fully-qualified class name (e.g., "io.github.seanchatmangpt.dtr.DTR")
  * @param methodName   The method name (e.g., "sayNextSection")
  * @param lineNumber   The source code line number (0-based or 1-based depending on convention)
  *

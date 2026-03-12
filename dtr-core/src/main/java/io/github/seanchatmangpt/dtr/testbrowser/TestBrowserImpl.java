@@ -211,7 +211,7 @@ public class TestBrowserImpl implements TestBrowser {
 
             apacheHttpClientResponse = httpClient.execute(apacheHttpRequest, context);
 
-            response = convertFromApacheHttpResponseToDocTesterHttpResponse(apacheHttpClientResponse);
+            response = convertFromApacheHttpResponseToDtrHttpResponse(apacheHttpClientResponse);
 
             EntityUtils.consumeQuietly(apacheHttpClientResponse.getEntity());
 
@@ -333,7 +333,7 @@ public class TestBrowserImpl implements TestBrowser {
 
             // Here we go!
             apacheHttpClientResponse = httpClient.execute(apacheHttpRequest, context);
-            response = convertFromApacheHttpResponseToDocTesterHttpResponse(apacheHttpClientResponse);
+            response = convertFromApacheHttpResponseToDtrHttpResponse(apacheHttpClientResponse);
 
             EntityUtils.consumeQuietly(apacheHttpClientResponse.getEntity());
 
@@ -346,7 +346,7 @@ public class TestBrowserImpl implements TestBrowser {
 
     }
 
-    private io.github.seanchatmangpt.dtr.testbrowser.Response convertFromApacheHttpResponseToDocTesterHttpResponse(ClassicHttpResponse httpResponse) {
+    private io.github.seanchatmangpt.dtr.testbrowser.Response convertFromApacheHttpResponseToDtrHttpResponse(ClassicHttpResponse httpResponse) {
 
         Map<String, String> headers = new HashMap<>();
 

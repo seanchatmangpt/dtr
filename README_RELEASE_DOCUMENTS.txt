@@ -3,7 +3,7 @@
                          COMPLETE FILE LISTING
 ================================================================================
 
-This directory contains comprehensive documentation for releasing DocTester
+This directory contains comprehensive documentation for releasing DTR
 2.0.0 to Maven Central. All analysis, setup guides, and checklists are here.
 
 ================================================================================
@@ -254,12 +254,12 @@ MAVEN_CENTRAL_RELEASE_INDEX.md
                           FILE LOCATIONS
 ================================================================================
 
-All release documents are in: /home/user/doctester/
+All release documents are in: /home/user/dtr/
 
 Project files to review:
-  /home/user/doctester/pom.xml                (root, release profile)
-  /home/user/doctester/dtr-core/pom.xml (main artifact)
-  /home/user/doctester/.mvn/maven.config      (build configuration)
+  /home/user/dtr/pom.xml                (root, release profile)
+  /home/user/dtr/dtr-core/pom.xml (main artifact)
+  /home/user/dtr/.mvn/maven.config      (build configuration)
 
 Maven configuration:
   ~/.m2/settings.xml                          (to be updated with credentials)

@@ -180,7 +180,7 @@ mvnd clean test -pl dtr-benchmarks \
 ```java
 @Test
 @BenchmarkTest  // Custom annotation
-public void benchmarkRestApiTest(DocTesterContext ctx) throws Exception {
+public void benchmarkRestApiTest(DTRContext ctx) throws Exception {
     ctx.sayNextSection("Benchmark: REST API Testing");
 
     final int iterations = 100;
@@ -236,7 +236,7 @@ Java Version: 25.0.2
 
 ```java
 @Test
-public void benchmarkWebSocketMessaging(DocTesterContext ctx) throws Exception {
+public void benchmarkWebSocketMessaging(DTRContext ctx) throws Exception {
     ctx.sayNextSection("WebSocket Message Throughput");
 
     final int messageCount = 1000;
@@ -273,7 +273,7 @@ public void benchmarkWebSocketMessaging(DocTesterContext ctx) throws Exception {
 
 ```java
 @Test
-public void benchmarkVirtualThreads(DocTesterContext ctx) throws Exception {
+public void benchmarkVirtualThreads(DTRContext ctx) throws Exception {
     ctx.sayNextSection("Virtual Thread Performance");
 
     final int taskCount = 1000;

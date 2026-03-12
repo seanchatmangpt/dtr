@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Stress tests with SLA-bound assertions to find DocTester performance envelopes.
+ * Stress tests with SLA-bound assertions to find DTR performance envelopes.
  *
  * <p>Joe Armstrong: "A test without an assertion is not a test — it is a demo."
  * Every stress test here measures performance AND asserts against a production SLA.
@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <p>SLA definitions follow Fortune 5 operational standards:
  * maximum acceptable latency and memory growth per operation class.</p>
  */
-public class StressTest extends DocTester {
+public class StressTest extends DtrTest {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
 

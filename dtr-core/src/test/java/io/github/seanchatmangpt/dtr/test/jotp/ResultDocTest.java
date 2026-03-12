@@ -16,7 +16,7 @@
 package io.github.seanchatmangpt.dtr.jotp;
 
 import org.junit.Test;
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -24,7 +24,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 /**
- * DocTester documentation for {@link Result} — a sealed interface that models
+ * DTR documentation for {@link Result} — a sealed interface that models
  * either a successful value ({@code Success<T>}) or a failure ({@code Failure<E>}).
  *
  * <p>Sourced from
@@ -45,7 +45,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
  *   <li>{@code of()} — checked-exception lifting via {@link Result.ThrowingSupplier}</li>
  * </ul>
  */
-public class ResultDocTest extends DocTester {
+public class ResultDocTest extends DtrTest {
 
     // -------------------------------------------------------------------------
     // Factory methods

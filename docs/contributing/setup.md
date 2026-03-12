@@ -33,8 +33,8 @@ export PATH=$JAVA_HOME/bin:$PATH
 ## Clone and build
 
 ```bash
-git clone https://github.com/seanchatmangpt/doctester.git
-cd doctester
+git clone https://github.com/seanchatmangpt/dtr.git
+cd dtr
 
 mvnd clean install
 ```
@@ -57,7 +57,7 @@ mvnd verify -pl dtr-integration-test
 ## Run a specific test
 
 ```bash
-mvnd test -pl dtr-core -Dtest=DocTesterTest
+mvnd test -pl dtr-core -Dtest=DTRTest
 ```
 
 ## mvnd configuration
@@ -96,8 +96,8 @@ Install the "Extension Pack for Java". Open the project root. The `.mvn/maven.co
 
 ```
 dtr-core/
-  src/main/java/org/r10r/doctester/   # The library source
-  src/test/java/org/r10r/doctester/   # Unit tests for the library
+  src/main/java/org/r10r/dtr/   # The library source
+  src/test/java/org/r10r/dtr/   # Unit tests for the library
 
 dtr-integration-test/
   src/test/java/controllers/           # Integration tests (require server)

@@ -179,7 +179,7 @@ Generating documentation (capturing requests, rendering output) adds measurable 
 
 **Measured Impact:** ~50MB base + ~1-5MB per 1000 test assertions
 
-Large test suites may exhaust heap memory. Typical `DocTesterContext` overhead is minimal, but accumulated across hundreds of tests it becomes visible.
+Large test suites may exhaust heap memory. Typical `DTRContext` overhead is minimal, but accumulated across hundreds of tests it becomes visible.
 
 **Workaround:**
 - Set `MAVEN_OPTS="-Xmx2g"` for large test suites

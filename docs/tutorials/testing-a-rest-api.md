@@ -64,10 +64,10 @@ When testing a real server, create a base class that sets the server URL once. T
 ```java
 package com.example;
 
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 
-public abstract class ApiDocTester extends DTR {
+public abstract class ApiDTR extends DTR {
 
     @Override
     public Url testServerUrl() {
@@ -78,7 +78,7 @@ public abstract class ApiDocTester extends DTR {
 }
 ```
 
-All your DocTest classes extend `ApiDocTester` instead of `DocTester` directly.
+All your DocTest classes extend `ApiDTR` instead of `DTR` directly.
 
 ---
 
@@ -95,14 +95,14 @@ import com.example.dto.ArticleRequest;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)  // ensures test order
-public class ArticlesApiDocTest extends ApiDocTester {
+public class ArticlesApiDocTest extends ApiDTR {
 
     // shared state across tests
     private static Long createdArticleId;
@@ -192,8 +192,8 @@ public class ArticlesApiDocTest extends ApiDocTester {
             + "Requires an authenticated session.");
 
         var newArticle = new ArticleRequest(
-            "Getting Started with DocTester",
-            "DocTester makes API documentation effortless...",
+            "Getting Started with DTR",
+            "DTR makes API documentation effortless...",
             "Alice");
 
         Response response = sayAndMakeRequest(
@@ -213,7 +213,7 @@ public class ArticlesApiDocTest extends ApiDocTester {
         sayAndAssertThat("Created article has an ID", created.id(), notNullValue());
         sayAndAssertThat(
             "Title matches what was sent",
-            "Getting Started with DocTester",
+            "Getting Started with DTR",
             equalTo(created.title()));
 
         say("The `Location` header in the response contains the URL of the "
@@ -248,7 +248,7 @@ public class ArticlesApiDocTest extends ApiDocTester {
 
         sayAndAssertThat(
             "Title is correct",
-            "Getting Started with DocTester",
+            "Getting Started with DTR",
             equalTo(article.title()));
     }
 ```
@@ -295,7 +295,7 @@ public class ArticlesApiDocTest extends ApiDocTester {
 
 ```bash
 mvnd test -Dtest=ArticlesApiDocTest
-open target/site/doctester/com.example.ArticlesApiDocTest.html
+open target/site/dtr/com.example.ArticlesApiDocTest.html
 ```
 
 The generated page now has five sections with full request/response documentation for each, plus your narrative text woven throughout.

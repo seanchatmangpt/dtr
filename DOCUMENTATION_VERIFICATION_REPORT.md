@@ -133,7 +133,7 @@ Sample verification:
 
 ### Terminology Consistency
 - ✅ Glossary defined with 25+ terms
-- ✅ Consistent use of DocTester, dtr, CLI, etc.
+- ✅ Consistent use of DTR, dtr, CLI, etc.
 - ✅ Standardized formatting conventions
 - ✅ Unified voice and style throughout
 
@@ -290,13 +290,13 @@ Status: ✅ ALL PASS
 
 ### New Files Created
 ```
-✅ /home/user/doctester/dtr-cli/docs/index.md (219 lines)
-✅ /home/user/doctester/dtr-cli/docs/reference/exit-codes.md (194 lines)
-✅ /home/user/doctester/dtr-cli/docs/reference/glossary.md (186 lines)
-✅ /home/user/doctester/dtr-cli/docs/explanation/performance-guide.md (274 lines)
-✅ /home/user/doctester/dtr-cli/docs/explanation/best-practices.md (510 lines)
-✅ /home/user/doctester/dtr-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
-✅ /home/user/doctester/DIATAXIS_DOCUMENTATION.md (Summary document)
+✅ /home/user/dtr/dtr-cli/docs/index.md (219 lines)
+✅ /home/user/dtr/dtr-cli/docs/reference/exit-codes.md (194 lines)
+✅ /home/user/dtr/dtr-cli/docs/reference/glossary.md (186 lines)
+✅ /home/user/dtr/dtr-cli/docs/explanation/performance-guide.md (274 lines)
+✅ /home/user/dtr/dtr-cli/docs/explanation/best-practices.md (510 lines)
+✅ /home/user/dtr/dtr-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
+✅ /home/user/dtr/DIATAXIS_DOCUMENTATION.md (Summary document)
 ```
 
 ### Files Already Existing (Verified)

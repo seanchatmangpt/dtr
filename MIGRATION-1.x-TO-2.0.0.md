@@ -15,7 +15,7 @@ DTR 2.0.0 is a major release with **breaking changes** that modernize the framew
 | Aspect | 1.x | 2.0.0 | Breaking? |
 |--------|-----|-------|-----------|
 | Output Format | Bootstrap HTML | Markdown (portable) | **YES** |
-| Output Location | `target/site/doctester/` | `docs/test/` | **YES** |
+| Output Location | `target/site/dtr/` | `docs/test/` | **YES** |
 | Java Version | 1.8+ | **25 (LTS only)** | **YES** |
 | Annotations | Manual method calls | `@DocSection`, `@DocDescription`, etc. | No (optional) |
 | WebSocket Support | None | Full support | No (new) |
@@ -31,7 +31,7 @@ DTR 2.0.0 is a major release with **breaking changes** that modernize the framew
 
 **Version 1.x:**
 ```
-target/site/doctester/
+target/site/dtr/
 ├── index.html
 ├── ApiControllerDocTest.html
 ├── bootstrap/
@@ -49,7 +49,7 @@ docs/test/
 **Why:** Markdown is portable, version-control friendly, and works natively on GitHub. No external CSS/JS dependencies.
 
 **Migration Impact:**
-- Update CI/CD to look for docs in `docs/test/` instead of `target/site/doctester/`
+- Update CI/CD to look for docs in `docs/test/` instead of `target/site/dtr/`
 - If you deploy HTML docs, render Markdown via a static site generator (Jekyll, MkDocs, Hugo, etc.)
 - No Javadoc configuration needed—Markdown integrates directly into your README
 
@@ -88,7 +88,7 @@ All documentation is now written to `docs/test/` at the module level:
 **Version 1.x:**
 ```
 mvnd test -pl dtr-core
-# → target/site/doctester/ created in dtr-core/
+# → target/site/dtr/ created in dtr-core/
 ```
 
 **Version 2.0.0:**
@@ -103,7 +103,7 @@ mvnd test -pl dtr-core
 
 **Version 1.x:**
 ```
-target/site/doctester/
+target/site/dtr/
 ├── bootstrap/css/bootstrap.min.css
 ├── bootstrap/js/bootstrap.min.js
 └── jquery/jquery-1.9.0.min.js
@@ -111,7 +111,7 @@ target/site/doctester/
 
 **Version 2.0.0:** No static assets—Markdown is self-contained.
 
-**Migration:** If you had custom CSS in `src/test/resources/custom_doctester_stylesheet.css`, it is no longer used. Instead, customize via:
+**Migration:** If you had custom CSS in `src/test/resources/custom_dtr_stylesheet.css`, it is no longer used. Instead, customize via:
 - Markdown front matter (YAML)
 - Static site generator theme config
 - Custom CSS in your site generator
@@ -225,7 +225,7 @@ public void testTokenRefresh() { ... }
 
 ### 2. WebSocket Support
 
-**New Package:** `io.github.seanchatmangpt.dtr.doctester.websocket`
+**New Package:** `io.github.seanchatmangpt.dtr.dtr.websocket`
 
 ```java
 // Create a WebSocket session
@@ -247,7 +247,7 @@ sayAndAssertThat("Server echoes the message",
 
 ### 3. Server-Sent Events (SSE) Support
 
-**New Package:** `io.github.seanchatmangpt.dtr.doctester.sse`
+**New Package:** `io.github.seanchatmangpt.dtr.dtr.sse`
 
 ```java
 // Subscribe to SSE stream
@@ -267,7 +267,7 @@ subscription.unsubscribe();
 
 ### 4. OpenAPI Specification Generation
 
-**New Package:** `io.github.seanchatmangpt.dtr.doctester.openapi`
+**New Package:** `io.github.seanchatmangpt.dtr.dtr.openapi`
 
 Automatically generate OpenAPI 3.0 specs from your DocTests:
 
@@ -278,14 +278,14 @@ OpenApiCollector collector = new OpenApiCollector();
 // Your tests automatically record HTTP calls
 // After testing:
 OpenApiSpec spec = collector.buildSpec("My API", "1.0.0");
-OpenApiWriter.write(spec, OutputFormat.YAML);  // → target/site/doctester/openapi.yaml
+OpenApiWriter.write(spec, OutputFormat.YAML);  // → target/site/dtr/openapi.yaml
 ```
 
 **Output:** Machine-readable OpenAPI specs for Swagger UI, code generation, etc.
 
 ### 5. Advanced Authentication Providers
 
-**New Package:** `io.github.seanchatmangpt.dtr.doctester.auth`
+**New Package:** `io.github.seanchatmangpt.dtr.dtr.auth`
 
 Instead of manual header manipulation:
 
@@ -362,7 +362,7 @@ Request.GET()
 ```xml
 <!-- OLD -->
 <dependency>
-    <groupId>org.doctester</groupId>
+    <groupId>org.dtr</groupId>
     <artifactId>dtr-core</artifactId>
     <version>1.1.12</version>
     <scope>test</scope>
@@ -385,8 +385,8 @@ Request.GET()
 # OLD
 - name: Publish Documentation
   run: |
-    if [ -d "target/site/doctester" ]; then
-      cp -r target/site/doctester ./docs
+    if [ -d "target/site/dtr" ]; then
+      cp -r target/site/dtr ./docs
     fi
 
 # NEW
@@ -481,7 +481,7 @@ public class UserApiDocTest extends DTR {
 
 **Version 1.x:**
 ```
-src/test/resources/custom_doctester_stylesheet.css
+src/test/resources/custom_dtr_stylesheet.css
 ```
 
 **Version 2.0.0:** Not applicable (Markdown is self-contained).
@@ -527,7 +527,7 @@ ls -la docs/test/
 
 **1.x Output Structure:**
 ```
-target/site/doctester/
+target/site/dtr/
 ├── index.html              # Lists all test docs
 ├── UserApiDocTest.html     # Bootstrap-styled HTML
 ├── bootstrap/              # CSS/JS assets
@@ -561,7 +561,7 @@ docs/test/
 
 **Not backward compatible:**
 - HTML output format (Markdown now)
-- Output directory (`docs/test/` instead of `target/site/doctester/`)
+- Output directory (`docs/test/` instead of `target/site/dtr/`)
 - Java version requirement (25 only)
 
 ### Dependencies
@@ -657,7 +657,7 @@ public static void afterTests() {
 - [ ] Tests run and output Markdown to `docs/test/`
 - [ ] CI/CD pipeline updated to use `docs/test/` path
 - [ ] Documentation build process updated (MkDocs, Jekyll, etc.)
-- [ ] Old `target/site/doctester/` references removed from scripts
+- [ ] Old `target/site/dtr/` references removed from scripts
 - [ ] Team documentation updated
 
 ---
@@ -681,7 +681,7 @@ public static void afterTests() {
 
 ### Get Help
 
-- **Official Docs:** https://github.com/seanchatmangpt/doctester (updated for 2.0.0)
+- **Official Docs:** https://github.com/seanchatmangpt/dtr (updated for 2.0.0)
 - **Issue Tracker:** Report bugs or request features
 - **Community:** Discuss on GitHub Discussions
 

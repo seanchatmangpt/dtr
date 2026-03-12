@@ -38,7 +38,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Verification test for Java 26 JEP optimizations integrated into DocTester.
+ * Verification test for Java 26 JEP optimizations integrated into DTR.
  *
  * <p>Each test is a theorem: it asserts a measurable property of the JEP integration,
  * not merely that code runs without throwing. Following Joe Armstrong's principle —
@@ -57,7 +57,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Run with: mvnd test -pl dtr-core -Dtest=Java26JepIntegrationTest
  */
 @DisplayName("Java 26 JEP Integration Test")
-public class Java26JepIntegrationTest extends DocTester {
+public class Java26JepIntegrationTest extends DtrTest {
 
     /** Benchmark result: operation name, average nanoseconds, iteration count. */
     record BenchmarkResult(String operation, long avgNs, int iterations) {

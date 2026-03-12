@@ -553,7 +553,7 @@ public class TestBrowserImpl implements TestBrowser {
 
 // Usage in test
 @Test
-void testWithHttp3(DocTesterContext ctx) {
+void testWithHttp3(DTRContext ctx) {
     ctx.setTestBrowser(TestBrowserImpl.withHttp3());
 
     Response response = ctx.sayAndMakeRequest(
@@ -790,14 +790,14 @@ mvnd test -pl dtr-core -Dtest=OAuth2TokenManagerTest
 - Additional vector reduction operations
 - Performance improvements for lane-wise operations
 
-### Note for DocTester
+### Note for DTR
 
-The Vector API targets **numerical/scientific computing** (matrix operations, image processing, signal analysis). **DocTester does not use SIMD operations** — it is a documentation generator and HTTP test framework. This JEP is not applicable to DTR.
+The Vector API targets **numerical/scientific computing** (matrix operations, image processing, signal analysis). **DTR does not use SIMD operations** — it is a documentation generator and HTTP test framework. This JEP is not applicable to DTR.
 
 For reference, the Vector API enables:
 
 ```java
-// Not applicable to DocTester, but shown for context
+// Not applicable to DTR, but shown for context
 import jdk.incubator.vector.*;
 
 IntVector a = IntVector.fromArray(SPECIES_256, arr, 0);
@@ -880,7 +880,7 @@ public final class Config {
 **Current State:** DTR already uses records (`SayEvent` hierarchy) and `final` immutable classes. No reflection-based mutation occurs.
 
 ```java
-// DocTester-style: immutable events via records (correct pattern)
+// DTR-style: immutable events via records (correct pattern)
 sealed interface SayEvent permits SayEvent.TextEvent, SayEvent.CodeEvent {
     record TextEvent(String text) implements SayEvent {
         public TextEvent {
@@ -945,7 +945,7 @@ If found, convert to:
 
 **Java 26:** Applet API removed completely.
 
-### For DocTester
+### For DTR
 
 **Not applicable** — DTR does not use the Applet API (it's for JApplet, AppletContext, etc.).
 
@@ -1294,15 +1294,15 @@ mvnd test -pl dtr-core -Dtest=MultiRenderMachinePerformanceTest
 # Start recording
 java -XX:+UnlockDiagnosticVMOptions \
      -XX:+DebugNonSafepoints \
-     -XX:StartFlightRecording=duration=60s,filename=doctester.jfr \
+     -XX:StartFlightRecording=duration=60s,filename=dtr.jfr \
      org.junit.platform.console.ConsoleLauncher \
      --scan-classpath
 
 # Analyze
-jfr print --json doctester.jfr > dtr-profile.json
+jfr print --json dtr.jfr > dtr-profile.json
 
 # Extract: which renders are slowest?
-jfr print --events=jdk.ExecutionSample doctester.jfr | \
+jfr print --events=jdk.ExecutionSample dtr.jfr | \
     grep -i "RenderMachine" | \
     head -20
 ```
@@ -1412,7 +1412,7 @@ https://bugs.openjdk.org/browse/JDK
 Component: "Specification" (for JEP issues)
 ```
 
-Or report to DTR GitHub: https://github.com/seanchatmangpt/doctester/issues
+Or report to DTR GitHub: https://github.com/seanchatmangpt/dtr/issues
 
 ---
 
@@ -1450,8 +1450,8 @@ Or report to DTR GitHub: https://github.com/seanchatmangpt/doctester/issues
 
 ### DTR Resources
 
-- **Project:** https://github.com/seanchatmangpt/doctester
-- **Issues:** https://github.com/seanchatmangpt/doctester/issues
+- **Project:** https://github.com/seanchatmangpt/dtr
+- **Issues:** https://github.com/seanchatmangpt/dtr/issues
 - **Documentation:** [CLAUDE.md](./CLAUDE.md) (this repository)
 
 ### Performance & JVM Tuning
@@ -1488,11 +1488,11 @@ Java 26 (GA: March 17, 2026) introduces 10 JEPs that improve DTR in three ways:
 1. Reassess JVM tuning based on latest GC improvements
 2. Adopt new features as they mature
 
-For questions or issues, refer to the [OpenJDK JEP tracker](https://openjdk.org/jeps/0) or [DocTester GitHub](https://github.com/seanchatmangpt/doctester/issues).
+For questions or issues, refer to the [OpenJDK JEP tracker](https://openjdk.org/jeps/0) or [DTR GitHub](https://github.com/seanchatmangpt/dtr/issues).
 
 ---
 
 **Document Version:** 1.0
 **Last Updated:** March 11, 2026
-**Target Audience:** Java developers adopting Java 26 in DocTester
+**Target Audience:** Java developers adopting Java 26 in DTR
 **License:** Apache 2.0

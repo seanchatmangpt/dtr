@@ -82,7 +82,7 @@ def validate_report_format(format: str) -> str:
 def sum(
     export_dir: Path = typer.Argument(
         ...,
-        help="DTR export directory (target/site/doctester)",
+        help="DTR export directory (target/site/dtr)",
         callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(
@@ -107,8 +107,8 @@ def sum(
 
     \b
     Examples:
-        dtr report sum target/site/doctester
-        dtr report sum target/site/doctester -o report.html -f html
+        dtr report sum target/site/dtr
+        dtr report sum target/site/dtr -o report.html -f html
     """
     if output_file is None:
         output_file = Path(f"summary.{get_extension(format)}")
@@ -155,8 +155,8 @@ def cov(
 
     \b
     Examples:
-        dtr report cov target/site/doctester
-        dtr report cov target/site/doctester -o coverage.html
+        dtr report cov target/site/dtr
+        dtr report cov target/site/dtr -o coverage.html
     """
     if output_file is None:
         output_file = Path("coverage.html")
@@ -206,8 +206,8 @@ def log(
 
     \b
     Examples:
-        dtr report log target/site/doctester
-        dtr report log target/site/doctester --since v1.0.0
+        dtr report log target/site/dtr
+        dtr report log target/site/dtr --since v1.0.0
     """
     if output_file is None:
         output_file = Path("changelog.md")

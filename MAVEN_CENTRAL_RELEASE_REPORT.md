@@ -1,7 +1,7 @@
 # DTR 2.0.0 — Maven Central Publication Readiness Report
 
 **Report Date:** 2026-03-10
-**Project:** DocTester
+**Project:** DTR
 **Current Version:** 1.1.12-SNAPSHOT
 **Target Release Version:** 2.0.0 (to be bumped during release)
 **Target Publish Platform:** Maven Central (Sonatype Central Publisher Portal)
@@ -29,7 +29,7 @@ DTR is properly configured for Maven Central publication using the modern **cent
 
 ### Central Publishing Plugin Configuration
 
-**File:** `/home/user/doctester/pom.xml` (lines 387–397)
+**File:** `/home/user/dtr/pom.xml` (lines 387–397)
 
 ```xml
 <plugin>
@@ -61,7 +61,7 @@ DTR is properly configured for Maven Central publication using the modern **cent
 
 ### Release Plugin Configuration
 
-**File:** `/home/user/doctester/pom.xml` (lines 451–463)
+**File:** `/home/user/dtr/pom.xml` (lines 451–463)
 
 ```xml
 <plugin>
@@ -95,7 +95,7 @@ DTR is properly configured for Maven Central publication using the modern **cent
 
 ### GPG Signing Configuration
 
-**File:** `/home/user/doctester/pom.xml` (lines 428–449)
+**File:** `/home/user/dtr/pom.xml` (lines 428–449)
 
 ```xml
 <plugin>
@@ -142,7 +142,7 @@ gpg: /root/.gnupg/trustdb.gpg: trustdb created
 
 ### Source & Javadoc Artifacts
 
-**File:** `/home/user/doctester/pom.xml` (lines 399–426)
+**File:** `/home/user/dtr/pom.xml` (lines 399–426)
 
 Configured correctly:
 - ✅ `maven-source-plugin:3.3.1` — generates source JAR
@@ -158,7 +158,7 @@ Configured correctly:
 ### Module Configuration
 
 ```
-doctester/
+dtr/
 ├── dtr-core         (JAR artifact — main library)
 ├── dtr-integration-test  (WAR artifact — integration tests only)
 └── (parent pom.xml)       (POM packaging — aggregates modules)
@@ -181,7 +181,7 @@ doctester/
 
 | Module | Type | Deploy? | Status |
 |--------|------|---------|--------|
-| `doctester` | POM (parent) | ⚠️ Yes* | Will be published (standard practice) |
+| `dtr` | POM (parent) | ⚠️ Yes* | Will be published (standard practice) |
 | `dtr-core` | JAR | ✅ Yes | Primary artifact for Maven Central |
 | `dtr-integration-test` | WAR | ⚠️ Yes* | Includes test cases; will be in Central |
 
@@ -200,13 +200,13 @@ doctester/
 
 ## 3. SCM (Git) Configuration
 
-**File:** `/home/user/doctester/pom.xml` (lines 34–39)
+**File:** `/home/user/dtr/pom.xml` (lines 34–39)
 
 ```xml
 <scm>
-    <url>https://github.com/seanchatmangpt/doctester</url>
-    <connection>scm:git:git://github.com/seanchatmangpt/doctester.git</connection>
-    <developerConnection>scm:git:git@github.com:seanchatmangpt/doctester.git</developerConnection>
+    <url>https://github.com/seanchatmangpt/dtr</url>
+    <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
+    <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
     <tag>HEAD</tag>
 </scm>
 ```
@@ -215,7 +215,7 @@ doctester/
 
 | Element | Value | Status | Notes |
 |---------|-------|--------|-------|
-| **url** | https://github.com/seanchatmangpt/doctester | ✅ Valid | Public GitHub URL |
+| **url** | https://github.com/seanchatmangpt/dtr | ✅ Valid | Public GitHub URL |
 | **connection** | scm:git:git:// | ✅ Valid | Read-only clone URL (public) |
 | **developerConnection** | scm:git:git@github.com:... | ✅ Valid | SSH clone URL (requires GitHub auth) |
 | **tag** | HEAD | ⚠️ Default | Will be updated to `v2.0.0` during release:prepare |
@@ -303,7 +303,7 @@ $ gpg --list-secret-keys
 
 **Current repo setup:**
 ```
-developerConnection: scm:git:git@github.com:seanchatmangpt/doctester.git
+developerConnection: scm:git:git@github.com:seanchatmangpt/dtr.git
 ```
 
 **Setup:**
@@ -311,7 +311,7 @@ developerConnection: scm:git:git@github.com:seanchatmangpt/doctester.git
 ssh-keygen -t ed25519 -f ~/.ssh/github
 # Add public key to GitHub account Settings > SSH Keys
 git config --global user.email "release@r10r.org"
-git config --global user.name "DocTester Release Bot"
+git config --global user.name "DTR Release Bot"
 ```
 
 **Current Status:** ⚠️ **LIKELY NOT CONFIGURED** for automated release
@@ -347,8 +347,8 @@ mvnd -P release release:prepare -DdryRun=true
 
 **Generated release.properties:**
 ```properties
-project.rel.io.github.seanchatmangpt.dtr\:doctester=1.1.12
-project.dev.io.github.seanchatmangpt.dtr\:doctester=1.1.13-SNAPSHOT
+project.rel.io.github.seanchatmangpt.dtr\:dtr=1.1.12
+project.dev.io.github.seanchatmangpt.dtr\:dtr=1.1.13-SNAPSHOT
 scm.tag=v1.1.12
 ```
 
@@ -357,7 +357,7 @@ scm.tag=v1.1.12
 #### 5.2 GPG Signing Failure (EXPECTED)
 
 ```
-[INFO] --- gpg:3.2.7:sign (sign-artifacts) @ doctester ---
+[INFO] --- gpg:3.2.7:sign (sign-artifacts) @ dtr ---
 [INFO] Signer 'gpg' is signing 2 files with key default
 [INFO] [stdout] gpg: no default secret key: No secret key
 [INFO] [stdout] gpg: signing failed: No secret key
@@ -537,7 +537,7 @@ Apache Maven 4.0.0-rc-5
 ✅ **All versions correct and compatible**
 
 ### Maven Configuration
-**File:** `/home/user/doctester/.mvn/maven.config`
+**File:** `/home/user/dtr/.mvn/maven.config`
 
 ```
 --no-transfer-progress
@@ -644,7 +644,7 @@ export GPG_PASSPHRASE="$GPG_KEY_PASSPHRASE"
 
 # Setup Git
 git config --global user.email "release-bot@r10r.org"
-git config --global user.name "DocTester Release Bot"
+git config --global user.name "DTR Release Bot"
 
 # Release
 mvnd -P release release:prepare release:perform \
@@ -694,7 +694,7 @@ mvn dependency:get -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.0.0
 
 ### Parent POM
 
-**File:** `/home/user/doctester/pom.xml`
+**File:** `/home/user/dtr/pom.xml`
 
 | Section | Status | Notes |
 |---------|--------|-------|
@@ -813,9 +813,9 @@ curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.d
 
 | Resource | Path | Purpose |
 |----------|------|---------|
-| Root POM | `/home/user/doctester/pom.xml` | Release profile, central-publishing config |
-| Core module | `/home/user/doctester/dtr-core/pom.xml` | Main artifact |
-| Maven config | `/home/user/doctester/.mvn/maven.config` | Build flags (--enable-preview) |
+| Root POM | `/home/user/dtr/pom.xml` | Release profile, central-publishing config |
+| Core module | `/home/user/dtr/dtr-core/pom.xml` | Main artifact |
+| Maven config | `/home/user/dtr/.mvn/maven.config` | Build flags (--enable-preview) |
 | Settings | `~/.m2/settings.xml` | Credentials (to be updated) |
 | Maven home | `/opt/apache-maven-4.0.0-rc-5` | System Maven 4 installation |
 | mvnd home | `/opt/mvnd` | Maven Daemon installation |

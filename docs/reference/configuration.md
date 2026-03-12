@@ -5,7 +5,7 @@
 DTR writes all output to:
 
 ```
-target/site/doctester/
+target/site/dtr/
 ```
 
 This path is hard-coded in `RenderMachineImpl`. To change it, supply a custom `RenderMachine`.
@@ -19,30 +19,30 @@ This path is hard-coded in `RenderMachineImpl`. To change it, supply a custom `R
 | `assets/bootstrap/3.0.0/css/bootstrap.min.css` | Bootstrap CSS |
 | `assets/bootstrap/3.0.0/js/bootstrap.min.js` | Bootstrap JS |
 | `assets/jquery/1.9.0/jquery.min.js` | jQuery |
-| `org/doctester/custom_doctester_stylesheet.css` | Your custom CSS (if present) |
+| `org/dtr/custom_dtr_stylesheet.css` | Your custom CSS (if present) |
 
 ## Custom CSS
 
 Place a file at:
 
 ```
-src/test/resources/org/doctester/custom_doctester_stylesheet.css
+src/test/resources/org/dtr/custom_dtr_stylesheet.css
 ```
 
 DTR copies it to the output directory and links it after Bootstrap in every HTML page.
 
 ## Custom output filename
 
-Call `setClassNameForDocTesterOutputFile(String)` in a `@Before` method:
+Call `setClassNameForDTROutputFile(String)` in a `@Before` method:
 
 ```java
 @Before
 public void configureOutput() {
-    setClassNameForDocTesterOutputFile("user-api-v2");
+    setClassNameForDTROutputFile("user-api-v2");
 }
 ```
 
-Produces `target/site/doctester/user-api-v2.html` instead of the default class-name-based filename.
+Produces `target/site/dtr/user-api-v2.html` instead of the default class-name-based filename.
 
 ## Build system integration
 
@@ -56,7 +56,7 @@ mvnd test
 mvnd verify
 ```
 
-The `target/site/doctester/` directory is excluded from `mvnd clean` by default (since `clean` only deletes `target/` entirely).
+The `target/site/dtr/` directory is excluded from `mvnd clean` by default (since `clean` only deletes `target/` entirely).
 
 ## Compiler settings
 

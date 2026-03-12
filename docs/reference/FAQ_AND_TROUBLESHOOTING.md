@@ -155,10 +155,10 @@ public class MyDocTest {
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(DocTesterExtension.class)
+@ExtendWith(DTRExtension.class)
 public class MyDocTest {
     @Test
-    void testExample(DocTesterContext ctx) {
+    void testExample(DTRContext ctx) {
         // test code
     }
 }
@@ -247,13 +247,13 @@ cat target/docs/test-results/YourTestClass.md  # Should exist now
 **Solution:**
 1. Check the HTML file exists:
    ```bash
-   ls -la target/site/doctester/*.html
+   ls -la target/site/dtr/*.html
    ```
 
 2. Open directly in browser:
    ```bash
-   open target/site/doctester/YourTest.html  # macOS
-   xdg-open target/site/doctester/YourTest.html  # Linux
+   open target/site/dtr/YourTest.html  # macOS
+   xdg-open target/site/dtr/YourTest.html  # Linux
    ```
 
 3. If assets are missing, rebuild with full output:

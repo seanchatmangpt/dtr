@@ -218,7 +218,7 @@ def _run_maven_build(project_root: Path, module: str, skip_tests: bool = False) 
         skip_tests: If True, builds without running tests
 
     Returns:
-        Path to generated exports directory (target/site/doctester/)
+        Path to generated exports directory (target/site/dtr/)
 
     Raises:
         RuntimeError: If Java not found, mvnd not in PATH, build fails, or exports not generated
@@ -258,7 +258,7 @@ def _run_maven_build(project_root: Path, module: str, skip_tests: bool = False) 
         )
 
     # Verify exports were generated
-    export_dir = project_root / module / "target" / "site" / "doctester"
+    export_dir = project_root / module / "target" / "site" / "dtr"
     if not export_dir.exists():
         raise RuntimeError(
             f"Exports directory not found: {export_dir}\n"
@@ -295,7 +295,7 @@ def maven_dtr_core_exports(project_root: Path) -> Path:
     REAL END-TO-END TEST:
     - Runs: mvnd clean verify -pl dtr-core -DskipTests=false
     - Executes all JUnit tests in dtr-core
-    - DTR generates HTML exports in target/site/doctester/
+    - DTR generates HTML exports in target/site/dtr/
     - Returns path to actual generated documentation
 
     FAILS LOUDLY if:

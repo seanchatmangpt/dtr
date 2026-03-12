@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Blue Ocean Innovations: 5 DocTester capabilities no other testing library provides,
+ * Blue Ocean Innovations: 5 DTR capabilities no other testing library provides,
  * implemented using only Java reflection APIs and string APIs.
  *
  * <p>These are not incremental improvements. They are capabilities that are impossible
@@ -45,7 +45,7 @@ import java.util.Map;
  * and Java string APIs — no external dependencies.</p>
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class Java26InnovationsTest extends DocTester {
+public class Java26InnovationsTest extends DtrTest {
 
     @AfterAll
     static void afterAll() {
@@ -70,7 +70,7 @@ public class Java26InnovationsTest extends DocTester {
             "carries provenance automatically.");
 
         say("`sayCallSite()` uses `StackWalker.getInstance(RETAIN_CLASS_REFERENCE)` " +
-            "to walk the live call stack, skip DocTester's own frames, and surface " +
+            "to walk the live call stack, skip DTR's own frames, and surface " +
             "the first frame from the actual test code.");
 
         sayCode(
@@ -97,7 +97,7 @@ public class Java26InnovationsTest extends DocTester {
         sayAssertions(Map.of(
             "sayCallSite() does not throw", "✓ PASS",
             "No manual labeling required", "✓ PASS",
-            "StackWalker skips DocTester internals", "✓ PASS"
+            "StackWalker skips DTR internals", "✓ PASS"
         ));
     }
 
@@ -169,8 +169,8 @@ public class Java26InnovationsTest extends DocTester {
             "}",
             "java");
 
-        say("Hierarchy of `DocTester` (DocTester's own base class):");
-        sayClassHierarchy(DocTester.class);
+        say("Hierarchy of `DTR` (DTR's own base class):");
+        sayClassHierarchy(DtrTest.class);
 
         say("Hierarchy of `Exception` (classic Java hierarchy):");
         sayClassHierarchy(Exception.class);

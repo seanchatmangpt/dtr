@@ -65,8 +65,8 @@ Test a simple gRPC call:
 package com.example;
 
 import org.junit.Test;
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;

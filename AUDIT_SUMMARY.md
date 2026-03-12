@@ -60,7 +60,7 @@
 
 **None.** Full backward compatibility with v1.1.x maintained.
 
-- JUnit 4 API (`DocTester` base class) unchanged
+- JUnit 4 API (`DTR` base class) unchanged
 - HTTP APIs (`Request`, `Response`, `TestBrowser`) unchanged
 - New features (WebSocket, SSE, OpenAPI, JUnit 5 extension) are **additive only**
 
@@ -88,20 +88,20 @@ Then proceed to release.
 
 ---
 
-**Full audit report:** `/home/user/doctester/CODE_QUALITY_AUDIT_2_0_0.md`
+**Full audit report:** `/home/user/dtr/CODE_QUALITY_AUDIT_2_0_0.md`
 
 ---
 
 ## File Locations
 
-- **Audit Report:** `/home/user/doctester/CODE_QUALITY_AUDIT_2_0_0.md`
-- **Source Root:** `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/`
+- **Audit Report:** `/home/user/dtr/CODE_QUALITY_AUDIT_2_0_0.md`
+- **Source Root:** `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/`
 
 ### Key Files for String.format() Migration
-- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java` (6 locations)
-- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java` (2 locations)
+- `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineImpl.java` (6 locations)
+- `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/openapi/OpenApiCollector.java` (2 locations)
 
 ### Key Files for Guava Cleanup
-- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/testbrowser/Request.java` (4 locations)
-- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/testbrowser/Url.java` (1 location)
-- `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java` (4 locations)
+- `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/testbrowser/Request.java` (4 locations)
+- `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/testbrowser/Url.java` (1 location)
+- `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/testbrowser/TestBrowserImpl.java` (4 locations)

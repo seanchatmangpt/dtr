@@ -18,29 +18,29 @@ package io.github.seanchatmangpt.dtr.junit5;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
 
 /**
- * Marker interface for JUnit 5 DocTester test classes.
+ * Marker interface for JUnit 5 DTR test classes.
  *
- * <p>Test classes can implement this interface to indicate they use DocTester
- * functionality. When combined with {@link DocTesterExtension}, this provides
- * full access to the DocTester API.
+ * <p>Test classes can implement this interface to indicate they use DTR
+ * functionality. When combined with {@link DtrExtension}, this provides
+ * full access to the DTR API.
  *
  * <p>Usage:
  * <pre>{@code
- * @ExtendWith(DocTesterExtension.class)
- * class MyApiDocTest implements DocTesterCommands {
+ * @ExtendWith(DtrExtension.class)
+ * class MyApiDocTest implements DtrCommands {
  *
- *     // Test methods can inject DocTesterContext
+ *     // Test methods can inject DtrContext
  *     @Test
- *     void testGetUsers(DocTesterContext ctx) {
+ *     void testGetUsers(DtrContext ctx) {
  *         ctx.sayNextSection("User API");
  *         // ...
  *     }
  * }
  * }</pre>
  *
- * @see DocTesterExtension
- * @see DocTesterContext
+ * @see DtrExtension
+ * @see DtrContext
  */
-public interface DocTesterCommands extends RenderMachineCommands {
+public interface DtrCommands extends RenderMachineCommands {
     // Marker interface - all methods inherited from RenderMachineCommands
 }

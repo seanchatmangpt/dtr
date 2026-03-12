@@ -46,10 +46,10 @@ Connect to an SSE endpoint:
 package com.example;
 
 import org.junit.Test;
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

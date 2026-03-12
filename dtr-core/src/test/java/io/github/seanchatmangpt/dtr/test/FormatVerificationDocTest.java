@@ -34,16 +34,16 @@ import java.util.Map;
  * - Esoteric testing patterns
  * - Multi-format output capabilities
  */
-public class FormatVerificationDocTest extends DocTester {
+public class FormatVerificationDocTest extends DtrTest {
 
     @Test
     public void testMultiFormatRenderingCapabilities() {
-        sayNextSection("DocTester 2.3.0 Format Verification");
+        sayNextSection("DTR 2.3.0 Format Verification");
         say("This test demonstrates the complete multi-format rendering pipeline " +
             "with all output formats: Markdown, Blog (5 platforms), LaTeX (5 academic/patent formats), and Slides.");
 
         sayTldr("Comprehensive verification that all output formats render correctly from a single test execution.");
-        sayTweetable("DocTester 2.3.0 generates API docs, blog posts, patents, & slides from one test. Zero additional work. Everything provably correct.");
+        sayTweetable("DTR 2.3.0 generates API docs, blog posts, patents, & slides from one test. Zero additional work. Everything provably correct.");
 
         demonstrateExtendedDocumentationAPI();
         demonstratePatentTestingMethodology();
@@ -327,7 +327,7 @@ public class FormatVerificationDocTest extends DocTester {
         };
         sayTable(formatMatrix);
 
-        sayCallToAction("https://github.com/r10r/doctester/blob/main/QUICKSTART.md");
+        sayCallToAction("https://github.com/r10r/dtr/blob/main/QUICKSTART.md");
 
         sayNextSection("Running This Verification Test");
 

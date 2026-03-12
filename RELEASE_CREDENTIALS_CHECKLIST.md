@@ -92,7 +92,7 @@ cat .mvn/maven.config
 
 **Verify:**
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 git status
 # Should show: "On branch <name>"
 #              "nothing to commit, working tree clean"
@@ -100,8 +100,8 @@ git status
 
 ### File Locations
 
-- [ ] Root POM: `/home/user/doctester/pom.xml` ✓
-- [ ] Core POM: `/home/user/doctester/dtr-core/pom.xml` ✓
+- [ ] Root POM: `/home/user/dtr/pom.xml` ✓
+- [ ] Core POM: `/home/user/dtr/dtr-core/pom.xml` ✓
 - [ ] Maven settings: `~/.m2/settings.xml` ✓
 - [ ] Maven local repo: `~/.m2/repository/` (has dtr-core)
 
@@ -263,14 +263,14 @@ mvnd -P release release:prepare release:perform \
 ### GitHub Release (Optional but Recommended)
 
 - [ ] Create GitHub Release
-  - Title: `DocTester 2.0.0`
+  - Title: `DTR 2.0.0`
   - Tag: `v2.0.0`
   - Description: Copy from CHANGELOG_2.0.0.md
   - Assets: (none needed, JAR is on Maven Central)
 
 **Command:**
 ```bash
-gh release create v2.0.0 -t "DocTester 2.0.0" -n "Release 2.0.0: New features and improvements..."
+gh release create v2.0.0 -t "DTR 2.0.0" -n "Release 2.0.0: New features and improvements..."
 ```
 
 ---

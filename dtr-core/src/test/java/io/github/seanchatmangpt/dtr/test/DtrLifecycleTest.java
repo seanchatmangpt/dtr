@@ -15,7 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr;
 
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
@@ -26,7 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.mockito.Mockito;
 
-public class DocTesterLifecycleTest extends DocTester {
+public class DtrLifecycleTest extends DtrTest {
 
     // A static mock to test lifecycle of class
     public static RenderMachine renderMachineMock = Mockito.mock(RenderMachine.class);

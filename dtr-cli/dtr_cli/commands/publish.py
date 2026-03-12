@@ -280,9 +280,9 @@ def release(
 
     \b
     Examples:
-        dtr publish release iogithubseanchatmangptdoctester-1234567890
-        dtr publish release iogithubseanchatmangptdoctester-1234567890 --wait
-        dtr publish release iogithubseanchatmangptdoctester-1234567890 --timeout 3600
+        dtr publish release iogithubseanchatmangptdtr-1234567890
+        dtr publish release iogithubseanchatmangptdtr-1234567890 --wait
+        dtr publish release iogithubseanchatmangptdtr-1234567890 --timeout 3600
     """
     try:
         manager = MavenPublishManager(project_dir)

@@ -22,22 +22,22 @@ The project has **multiple blocking issues** preventing Maven Central deployment
 **Severity:** BLOCKING
 
 **Details:**
-- Test files are in package `org.r10r.doctester` (old/obsolete groupId)
+- Test files are in package `org.r10r.dtr` (old/obsolete groupId)
 - Main code is in package `io.github.seanchatmangpt.dtr`
 - **45 test files affected:**
-  - `/dtr-core/src/test/java/org/r10r/doctester/**/*.java` (38 files)
-  - `/dtr-benchmarks/src/jmh/java/org/r10r/doctester/**/*.java` (7 files)
+  - `/dtr-core/src/test/java/org/r10r/dtr/**/*.java` (38 files)
+  - `/dtr-benchmarks/src/jmh/java/org/r10r/dtr/**/*.java` (7 files)
 
 **Examples:**
 ```
-/home/user/dtr/dtr-core/src/test/java/org/r10r/doctester/DocTesterTest.java
-/home/user/dtr/dtr-core/src/test/java/org/r10r/doctester/PhDThesisDocTest.java
-/home/user/dtr/dtr-core/src/test/java/org/r10r/doctester/junit5/DocTesterExtensionTest.java
-/home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/doctester/ConcurrentRenderingBenchmark.java
+/home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/DTRTest.java
+/home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/PhDThesisDocTest.java
+/home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/junit5/DTRExtensionTest.java
+/home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/dtr/ConcurrentRenderingBenchmark.java
 ```
 
 **Fix Required:**
-- Move ALL test files from `org/r10r/doctester/` → `io/github/seanchatmangpt/dtr/`
+- Move ALL test files from `org/r10r/dtr/` → `io/github/seanchatmangpt/dtr/`
 - Update import statements in all test files
 - Ensure consistent package naming across entire project
 
@@ -352,7 +352,7 @@ Spot check on major dependencies:
    - Estimated: 30 minutes
 
 2. **Fix Test Package Names** (Issue #1)
-   - [ ] Move 45 test files from `org/r10r/doctester/` → `io/github/seanchatmangpt/dtr/`
+   - [ ] Move 45 test files from `org/r10r/dtr/` → `io/github/seanchatmangpt/dtr/`
    - [ ] Update all import statements
    - Estimated: 20 minutes
 
@@ -406,7 +406,7 @@ Spot check on major dependencies:
 ### Dependency Checks
 
 - [x] No org.r10r artifacts in dependencies
-- [x] No doctester artifacts (old name)
+- [x] No dtr artifacts (old name)
 - [x] All external dependencies from Maven Central
 - [x] No custom repositories configured
 - [x] Versions pinned (no floating versions)
@@ -462,7 +462,7 @@ Spot check on major dependencies:
 2. `/home/user/dtr/.mvn/maven.config`
    - Add `--enable-preview` flag
 
-3. All 45 test files in `/org/r10r/doctester/`
+3. All 45 test files in `/org/r10r/dtr/`
    - Move to `/io/github/seanchatmangpt/dtr/`
 
 ### Should Fix
@@ -480,18 +480,18 @@ Spot check on major dependencies:
 
 ### Test Files Needing Package Rename (45 files)
 
-**Directory:** `/home/user/dtr/dtr-core/src/test/java/org/r10r/doctester/`
+**Directory:** `/home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/`
 **New Directory:** `/home/user/dtr/dtr-core/src/test/java/io/github/seanchatmangpt/dtr/`
 
 ```
-dtr-core/src/test/java/org/r10r/doctester/
+dtr-core/src/test/java/org/r10r/dtr/
 ├── AnnotationDocTest.java
-├── DocTesterChaosTest.java
-├── DocTesterFuzzTest.java
-├── DocTesterLifecycleTest.java
-├── DocTesterPropertyTest.java
-├── DocTesterSelfDocTest.java
-├── DocTesterTest.java
+├── DTRChaosTest.java
+├── DTRFuzzTest.java
+├── DTRLifecycleTest.java
+├── DTRPropertyTest.java
+├── DTRSelfDocTest.java
+├── DTRTest.java
 ├── ExtendedSayApiDocTest.java
 ├── FormatVerificationDocTest.java
 ├── Java26InnovationsTest.java
@@ -511,7 +511,7 @@ dtr-core/src/test/java/org/r10r/doctester/
 │   ├── Result.java
 │   └── ResultDocTest.java
 ├── junit5/
-│   └── DocTesterExtensionTest.java
+│   └── DTRExtensionTest.java
 ├── metadata/
 │   └── DocMetadataBenchmarkTest.java
 ├── openapi/
@@ -538,9 +538,9 @@ dtr-core/src/test/java/org/r10r/doctester/
     └── WebSocketClientTest.java
 ```
 
-**Benchmarks:** `/home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/doctester/`
+**Benchmarks:** `/home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/dtr/`
 ```
-dtr-benchmarks/src/jmh/java/org/r10r/doctester/
+dtr-benchmarks/src/jmh/java/org/r10r/dtr/
 ├── ConcurrentRenderingBenchmark.java
 ├── LargeFileBenchmark.java
 └── ManyFilesDirectoryBenchmark.java

@@ -1,4 +1,4 @@
-# Contributing to DocTester
+# Contributing to DTR
 
 This section is for developers who want to contribute to DTR itself — fix bugs, add features, or improve the codebase.
 
@@ -17,8 +17,8 @@ This section is for developers who want to contribute to DTR itself — fix bugs
 
 ```bash
 # Clone
-git clone https://github.com/seanchatmangpt/doctester.git
-cd doctester
+git clone https://github.com/seanchatmangpt/dtr.git
+cd dtr
 
 # Verify toolchain
 java -version          # openjdk 25.x.x

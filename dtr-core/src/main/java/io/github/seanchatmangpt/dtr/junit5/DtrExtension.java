@@ -27,18 +27,18 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
- * JUnit 5 extension for DocTester integration.
+ * JUnit 5 extension for DTR integration.
  *
- * <p>This extension provides native JUnit 5 support for DocTester, replacing
+ * <p>This extension provides native JUnit 5 support for DTR, replacing
  * the JUnit 4 {@code @Rule} based approach with JUnit 5's extension model.
  *
  * <p>Usage:
  * <pre>{@code
- * @ExtendWith(DocTesterExtension.class)
- * class MyApiDocTest implements DocTesterCommands {
+ * @ExtendWith(DtrExtension.class)
+ * class MyApiDocTest implements DtrCommands {
  *
  *     @Test
- *     void testGetUsers(DocTesterContext context) {
+ *     void testGetUsers(DtrContext context) {
  *         context.sayNextSection("User API");
  *         var response = context.sayAndMakeRequest(
  *             Request.GET().url(context.testServerUrl().path("/api/users")));
@@ -54,7 +54,7 @@ import java.util.Optional;
  *   <li>Documentation output generation after all tests complete</li>
  * </ul>
  */
-public class DocTesterExtension implements BeforeEachCallback, AfterAllCallback {
+public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
 
     private static final String RENDER_MACHINE_KEY = "dtr.renderMachine";
     private static final String TEST_BROWSER_KEY = "dtr.testBrowser";
@@ -99,7 +99,7 @@ public class DocTesterExtension implements BeforeEachCallback, AfterAllCallback 
             renderMachine = createRenderMachine();
             var fileName = context.getTestClass()
                 .map(Class::getName)
-                .orElse("DocTesterOutput");
+                .orElse("DtrOutput");
             renderMachine.setFileName(fileName);
             store.put(RENDER_MACHINE_KEY, renderMachine);
             store.put(FILE_NAME_KEY, fileName);

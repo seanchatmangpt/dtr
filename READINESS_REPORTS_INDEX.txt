@@ -105,9 +105,9 @@ ISSUE #1: Sealed Class Compilation Errors
   Details: See MAVEN_CENTRAL_READINESS_CHECK.md (Issue #1)
 
 ISSUE #2: Test Package Mismatch
-  Files:   45 test files in org/r10r/doctester/
-  Location: dtr-core/src/test/java/org/r10r/doctester/ (38 files)
-           dtr-benchmarks/src/jmh/java/org/r10r/doctester/ (7 files)
+  Files:   45 test files in org/r10r/dtr/
+  Location: dtr-core/src/test/java/org/r10r/dtr/ (38 files)
+           dtr-benchmarks/src/jmh/java/org/r10r/dtr/ (7 files)
   Impact:  Maven Central REJECTS on package validation
   Fix:     Move to io/github/seanchatmangpt/dtr/
   Time:    20 minutes

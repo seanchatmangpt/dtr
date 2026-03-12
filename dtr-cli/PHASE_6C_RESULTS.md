@@ -10,7 +10,7 @@ Successfully implemented and executed comprehensive real-world error recovery te
 - **All Passing:** 29/29 (100%)
 - **Execution Time:** 2.80 seconds
 - **Test Coverage:** Multi-category error scenarios
-- **Test File:** `/home/user/doctester/dtr-cli/tests/test_cli_real_scenarios.py` (1,200+ lines)
+- **Test File:** `/home/user/dtr/dtr-cli/tests/test_cli_real_scenarios.py` (1,200+ lines)
 
 ## Test Breakdown by Category
 

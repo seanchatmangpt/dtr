@@ -29,7 +29,7 @@ DTR 2.0.0 is a **major release** with significant architectural improvements, mo
 ### 1. Markdown-First Documentation
 
 - **Native Markdown output** for all documentation (better for version control, diffs, and documentation generators like Sphinx/Pandoc)
-- Documents are now generated as `.md` files in `target/docs/` instead of `.html` in `target/site/doctester/`
+- Documents are now generated as `.md` files in `target/docs/` instead of `.html` in `target/site/dtr/`
 - Markdown renderer produces cleaner, more portable documentation
 - Bootstrap HTML output available via optional plugin
 - No external CSS/JS dependencies required
@@ -56,7 +56,7 @@ public void testCreateUser() {
 
 ### 3. JUnit 5 Support
 
-- `DocTesterExtension`: New Jupiter-compatible extension replacing JUnit 4 base class pattern
+- `DTRExtension`: New Jupiter-compatible extension replacing JUnit 4 base class pattern
 - Full integration with JUnit 5 lifecycle hooks and parameterized tests
 - Support for property-based testing via jqwik integration
 - Mockito JUnit Jupiter support for advanced mocking patterns
@@ -151,7 +151,7 @@ String describe(HttpResult r) {
 
 **Version 1.x:**
 ```
-target/site/doctester/
+target/site/dtr/
 ├── index.html
 ├── ApiControllerDocTest.html
 ├── bootstrap/
@@ -167,7 +167,7 @@ target/docs/
 ```
 
 **Migration Impact:**
-- Update CI/CD to look for docs in `target/docs/` instead of `target/site/doctester/`
+- Update CI/CD to look for docs in `target/docs/` instead of `target/site/dtr/`
 - If you deploy HTML docs, render Markdown via a static site generator (Jekyll, MkDocs, Hugo, Docusaurus)
 - No Javadoc configuration needed—Markdown integrates directly into your README
 
@@ -205,7 +205,7 @@ export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 
 ## Migration Guide
 
-See the detailed migration guide: **[MIGRATION-1.x-TO-2.0.0.md](https://github.com/seanchatmangpt/doctester/blob/main/MIGRATION-1.x-TO-2.0.0.md)**
+See the detailed migration guide: **[MIGRATION-1.x-TO-2.0.0.md](https://github.com/seanchatmangpt/dtr/blob/main/MIGRATION-1.x-TO-2.0.0.md)**
 
 ### Quick Start for Upgrading
 
@@ -258,8 +258,8 @@ java -version  # Verify: openjdk 25.x.x
 # OLD
 - name: Publish Documentation
   run: |
-    if [ -d "target/site/doctester" ]; then
-      cp -r target/site/doctester ./docs
+    if [ -d "target/site/dtr" ]; then
+      cp -r target/site/dtr ./docs
     fi
 
 # NEW
@@ -381,10 +381,10 @@ mvnd validate
 
 ## Documentation
 
-- **[CHANGELOG_2.0.0.md](https://github.com/seanchatmangpt/doctester/blob/main/CHANGELOG_2.0.0.md)** — Detailed changelog
-- **[MIGRATION-1.x-TO-2.0.0.md](https://github.com/seanchatmangpt/doctester/blob/main/MIGRATION-1.x-TO-2.0.0.md)** — Complete migration guide
-- **[CLAUDE.md](https://github.com/seanchatmangpt/doctester/blob/main/CLAUDE.md)** — Project architecture and Java 25 features
-- **[README-2.0.0.md](https://github.com/seanchatmangpt/doctester/blob/main/README-2.0.0.md)** — New documentation for 2.0.0
+- **[CHANGELOG_2.0.0.md](https://github.com/seanchatmangpt/dtr/blob/main/CHANGELOG_2.0.0.md)** — Detailed changelog
+- **[MIGRATION-1.x-TO-2.0.0.md](https://github.com/seanchatmangpt/dtr/blob/main/MIGRATION-1.x-TO-2.0.0.md)** — Complete migration guide
+- **[CLAUDE.md](https://github.com/seanchatmangpt/dtr/blob/main/CLAUDE.md)** — Project architecture and Java 25 features
+- **[README-2.0.0.md](https://github.com/seanchatmangpt/dtr/blob/main/README-2.0.0.md)** — New documentation for 2.0.0
 
 ---
 
@@ -438,7 +438,7 @@ Apache License 2.0
 
 - **Release Date:** March 10, 2026
 - **Git Tag:** `v2.0.0`
-- **Repository:** https://github.com/seanchatmangpt/doctester
+- **Repository:** https://github.com/seanchatmangpt/dtr
 - **Maven Central:** https://mvnrepository.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/2.0.0
 
 ---
@@ -447,8 +447,8 @@ Apache License 2.0
 
 ```bash
 # Clone the repository
-git clone https://github.com/seanchatmangpt/doctester.git
-cd doctester
+git clone https://github.com/seanchatmangpt/dtr.git
+cd dtr
 
 # Set up Java 25
 export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64

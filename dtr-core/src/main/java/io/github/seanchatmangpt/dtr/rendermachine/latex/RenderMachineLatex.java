@@ -405,7 +405,7 @@ public final class RenderMachineLatex extends RenderMachine {
 
         // Title page
         doc.add("\\title{" + template.escapeLatex(fileName) + "}");
-        doc.add("\\author{DocTester}");
+        doc.add("\\author{DTR}");
         doc.add("\\date{\\today}");
         doc.add("\\maketitle");
         doc.add("");

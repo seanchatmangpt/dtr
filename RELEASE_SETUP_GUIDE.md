@@ -19,7 +19,7 @@ mvnd --version
 
 # Check project location
 pwd
-# Expected: /home/user/doctester
+# Expected: /home/user/dtr
 
 # Verify .mvn/maven.config
 cat .mvn/maven.config
@@ -142,9 +142,9 @@ Follow the prompts:
 | What keysize? | `4096` | Strong encryption |
 | How long valid? | `3y` | 3 years or longer |
 | Is this correct? | `y` | Confirm |
-| Real name | `DocTester Release` | Clear name |
+| Real name | `DTR Release` | Clear name |
 | Email address | `release@r10r.org` | Official email |
-| Comment | `DocTester 2.0.0+` | Optional |
+| Comment | `DTR 2.0.0+` | Optional |
 | O=Okay, C=Cancel | `O` | Confirm |
 
 **Create passphrase:** Use a strong, unique password. You'll need it during release.
@@ -210,7 +210,7 @@ rm test.txt test.txt.asc
 
 ```bash
 git config --global user.email "release@r10r.org"
-git config --global user.name "DocTester Release Bot"
+git config --global user.name "DTR Release Bot"
 
 # Verify
 git config --global user.email
@@ -238,7 +238,7 @@ ssh -T git@github.com
 ### 5a. Build Core Module
 
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 
 mvnd clean install -pl dtr-core -DskipTests
 
@@ -330,7 +330,7 @@ git config --global user.email
 **Option 1: Interactive (Recommended for first release)**
 
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 
 mvnd -P release release:prepare release:perform
 ```
@@ -344,7 +344,7 @@ Follow prompts:
 **Option 2: Non-Interactive (for CI/CD)**
 
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 
 # Set environment variables
 export GPG_PASSPHRASE="your-gpg-passphrase"
@@ -425,12 +425,12 @@ git log --oneline -5
 ```bash
 # Create release on GitHub with changelog
 gh release create v2.0.0 \
-  -t "DocTester 2.0.0" \
+  -t "DTR 2.0.0" \
   -n "$(cat CHANGELOG_2.0.0.md)"
 ```
 
 Or manually via GitHub web UI:
-1. Go to https://github.com/seanchatmangpt/doctester/releases
+1. Go to https://github.com/seanchatmangpt/dtr/releases
 2. Click "Create new release"
 3. Select tag: `v2.0.0`
 4. Add changelog content

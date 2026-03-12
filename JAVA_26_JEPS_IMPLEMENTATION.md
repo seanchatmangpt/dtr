@@ -23,7 +23,7 @@ This positions DTR as a **reference implementation** for Java 26+ documentation 
 ## JEP 526: Lazy Constants (Zero-Cost Template Initialization)
 
 ### File
-`dtr-core/src/main/java/org/r10r/doctester/render/RenderMachineFactory.java`
+`dtr-core/src/main/java/org/r10r/dtr/render/RenderMachineFactory.java`
 
 ### Implementation Details
 
@@ -126,7 +126,7 @@ machines.add(new BlogRenderMachine(DEV_TO.get()));
 ## JEP 530: Primitive Types in Patterns (Zero-Boxing HTTP Dispatch)
 
 ### File
-`dtr-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java`
+`dtr-core/src/main/java/org/r10r/dtr/openapi/OpenApiCollector.java`
 
 ### Implementation Details
 
@@ -196,15 +196,15 @@ private String getStatusDescription(int status) {
 ### Related Code
 
 Similar patterns used in:
-- `dtr-core/src/main/java/org/r10r/doctester/rendermachine/latex/LatexCompiler.java` (exit code dispatch)
-- `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Response.java` (status assertions)
+- `dtr-core/src/main/java/org/r10r/dtr/rendermachine/latex/LatexCompiler.java` (exit code dispatch)
+- `dtr-core/src/main/java/org/r10r/dtr/testbrowser/Response.java` (status assertions)
 
 ---
 
 ## JEP 525: Structured Concurrency (Zero-Overhead Async Rendering)
 
 ### File
-`dtr-core/src/main/java/org/r10r/doctester/rendermachine/MultiRenderMachine.java`
+`dtr-core/src/main/java/org/r10r/dtr/rendermachine/MultiRenderMachine.java`
 
 ### Implementation Details
 
@@ -279,7 +279,7 @@ try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
 ## JEP 516: AoT Object Caching (Zero Cold-Start)
 
 ### File
-`dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
+`dtr-core/src/main/java/org/r10r/dtr/metadata/DocMetadata.java`
 
 ### Implementation Details
 
@@ -360,7 +360,7 @@ When Project Leyden's `CRaC` (Checkpoint/Restore as Chosen) lands in Java 26+, t
 
 ### 1. RenderMachine (Abstract Sealed Class)
 
-**File**: `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachine.java`
+**File**: `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachine.java`
 
 **Lines 39-41**: Sealed declaration:
 ```java
@@ -378,7 +378,7 @@ public abstract sealed class RenderMachine implements RenderMachineCommands
 
 ### 2. CompilerStrategy (Sealed Interface)
 
-**File**: `dtr-core/src/main/java/org/r10r/doctester/rendermachine/latex/CompilerStrategy.java`
+**File**: `dtr-core/src/main/java/org/r10r/dtr/rendermachine/latex/CompilerStrategy.java`
 
 **Lines 40-41**: Sealed declaration:
 ```java
@@ -394,7 +394,7 @@ public sealed interface CompilerStrategy
 
 ### 3. AuthProvider (Sealed Interface)
 
-**File**: `dtr-core/src/main/java/org/r10r/doctester/testbrowser/auth/AuthProvider.java`
+**File**: `dtr-core/src/main/java/org/r10r/dtr/testbrowser/auth/AuthProvider.java`
 
 **Lines 47-48**: Sealed declaration with `@FunctionalInterface`:
 ```java
@@ -508,7 +508,7 @@ mvnd test -pl dtr-integration-test --enable-preview
 
 ## Valhalla (Java 27+) Preparation
 
-DocTester's sealed classes and records are forward-compatible with Project Valhalla value classes:
+DTR's sealed classes and records are forward-compatible with Project Valhalla value classes:
 
 ### Records Candidates for Value Class Flattening
 

@@ -147,7 +147,7 @@ This index provides quick navigation to all verification reports and documents c
 2. **Maven Naming:** All modules use `dtr-*` naming convention
 3. **GroupId:** All modules use `io.github.seanchatmangpt.dtr`
 4. **GitHub URLs:** All point to `seanchatmangpt/dtr`
-5. **Deprecated References:** ZERO `org.r10r` and `doctester-` in active code
+5. **Deprecated References:** ZERO `org.r10r` and `dtr-` in active code
 6. **Build Configuration:** Maven Central publishing profile complete
 
 ### ⚠️ Awaiting Agent 4

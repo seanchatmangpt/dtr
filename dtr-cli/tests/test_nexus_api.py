@@ -48,7 +48,7 @@ def valid_pom(tmp_path: Path) -> Path:
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.seanchatmangpt</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>2.5.0</version>
     <licenses>
         <license><name>Apache License 2.0</name></license>
@@ -61,8 +61,8 @@ def valid_pom(tmp_path: Path) -> Path:
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:https://github.com/seanchatmangpt/doctester.git</connection>
-        <url>https://github.com/seanchatmangpt/doctester</url>
+        <connection>scm:git:https://github.com/seanchatmangpt/dtr.git</connection>
+        <url>https://github.com/seanchatmangpt/dtr</url>
     </scm>
     <distributionManagement>
         <repository>

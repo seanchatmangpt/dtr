@@ -31,7 +31,7 @@ public record DevToTemplate() implements BlogTemplate {
             description: %s
             tags: %s
             canonical_url: %s
-            series: DocTester Tests
+            series: DTR Tests
             ---
             """.formatted(
             meta.title(),

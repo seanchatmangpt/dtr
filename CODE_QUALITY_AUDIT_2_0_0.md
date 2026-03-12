@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-DocTester's core module is **production-ready** for a 2.0.0 release. The codebase demonstrates excellent adoption of Java 25 features, complete Apache license headers, comprehensive Javadoc coverage, and zero TODOs/FIXMEs. Minor optimizations around Guava usage and string formatting are recommended but not blocking.
+DTR's core module is **production-ready** for a 2.0.0 release. The codebase demonstrates excellent adoption of Java 25 features, complete Apache license headers, comprehensive Javadoc coverage, and zero TODOs/FIXMEs. Minor optimizations around Guava usage and string formatting are recommended but not blocking.
 
 **Overall Quality Score: A (95/100)**
 
@@ -80,8 +80,8 @@ Javadoc is comprehensive across all public APIs:
 - ✓ `OpenApiWriter.java` — YAML/JSON serialization documented
 
 **JUnit 5 Extension:**
-- ✓ `DocTesterExtension.java` — JUnit 5 lifecycle integration documented
-- ✓ `DocTesterContext.java` — Parameter injection documented
+- ✓ `DTRExtension.java` — JUnit 5 lifecycle integration documented
+- ✓ `DTRContext.java` — Parameter injection documented
 
 #### Files with Internal Implementations (Package-Private or Implementation Classes)
 
@@ -343,7 +343,7 @@ All source files include proper Apache 2.0 license text:
 ### Build Output Analysis
 
 ```
-[INFO] /home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/AnnotationDocTest.java:
+[INFO] /home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/AnnotationDocTest.java:
 Some input files use or override a deprecated API.
 [INFO] Recompile with -Xlint:deprecation for details.
 ```
@@ -382,8 +382,8 @@ This is **future-proof** and removes legacy servlet dependencies.
 ### From v1.1.x to v2.0.0
 
 #### Major Additions (Not Breaking)
-1. **JUnit 5 Extension Support** — `DocTesterExtension` and `DocTesterContext`
-   - JUnit 4 compatibility maintained via existing `DocTester` base class
+1. **JUnit 5 Extension Support** — `DTRExtension` and `DTRContext`
+   - JUnit 4 compatibility maintained via existing `DTR` base class
    - Recommendation: JUnit 4 users can stay on v1.1.x; JUnit 5 users should upgrade
 
 2. **WebSocket Client** — Full WebSocket support via `WebSocketClient`/`WebSocketSession`
@@ -564,9 +564,9 @@ The codebase demonstrates professional standards, sophisticated use of modern Ja
 - OutputFormat.java
 
 ### JUnit 5 Extension
-- DocTesterExtension.java
-- DocTesterContext.java
-- DocTesterCommands.java
+- DTRExtension.java
+- DTRContext.java
+- DTRCommands.java
 
 ### Annotations
 - DocSection.java

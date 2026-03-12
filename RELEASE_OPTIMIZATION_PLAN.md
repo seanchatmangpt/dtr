@@ -69,8 +69,8 @@ Replace any `String.format(...)` with `"...".formatted(...)`
 ### Validation
 ```bash
 # After changes, verify no String.format() remains in these files
-grep -n "String\.format" dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java
-grep -n "String\.format" dtr-core/src/main/java/org/r10r/doctester/openapi/OpenApiCollector.java
+grep -n "String\.format" dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineImpl.java
+grep -n "String\.format" dtr-core/src/main/java/org/r10r/dtr/openapi/OpenApiCollector.java
 
 # Should return 0 matches
 ```
@@ -171,15 +171,15 @@ Map<String, String> headers = new HashMap<>();
 ```bash
 # After changes, verify no Guava collection factories remain
 grep -r "Maps\.newHashMap\|Maps\.newHashMap\|Lists\.newArrayList\|Sets\.newHashSet" \
-    dtr-core/src/main/java/org/r10r/doctester/testbrowser/ \
-    dtr-core/src/main/java/org/r10r/doctester/rendermachine/
+    dtr-core/src/main/java/org/r10r/dtr/testbrowser/ \
+    dtr-core/src/main/java/org/r10r/dtr/rendermachine/
 
 # Should return 0 matches
 
 # Verify imports are removed
-grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/doctester/testbrowser/Request.java
-grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/doctester/testbrowser/Url.java
-grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java
+grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/dtr/testbrowser/Request.java
+grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/dtr/testbrowser/Url.java
+grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/dtr/testbrowser/TestBrowserImpl.java
 
 # Should return 0 matches
 ```
@@ -199,7 +199,7 @@ grep "com.google.common.collect" dtr-core/src/main/java/org/r10r/doctester/testb
 
 **Issue:**
 ```
-[INFO] /home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/AnnotationDocTest.java:
+[INFO] /home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/AnnotationDocTest.java:
        Some input files use or override a deprecated API.
 ```
 

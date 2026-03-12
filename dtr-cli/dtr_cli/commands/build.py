@@ -8,7 +8,7 @@ Usage:
     dtr build --goals test              # Custom goals: test
     dtr build --profiles docs-html      # Activate profile: docs-html
     dtr build --properties key=value    # Pass property: -Dkey=value
-    dtr build --modules doctester-core  # Build specific module
+    dtr build --modules dtr-core  # Build specific module
     dtr build --verbose                 # Show full Maven output
     dtr build --export                  # Run format conversion after build
 """
@@ -174,7 +174,7 @@ def build_command(
         $ dtr build --profiles docs-html --export
 
         Build specific modules:
-        $ dtr build --modules doctester-core,doctester-integration-test
+        $ dtr build --modules dtr-core,dtr-integration-test
 
         Pass properties:
         $ dtr build --properties key1=val1,key2=val2
@@ -315,13 +315,13 @@ def build_command(
                         )
                 else:
                     console.print(
-                        "[yellow]No LaTeX files found. "
-                        "Run build with -Ddoctester.output=latex to generate LaTeX.[/yellow]"
+                        "[yellow]ℹ️  No LaTeX files found. "
+                        "Run build with -Ddtr.output=latex to generate LaTeX.[/yellow]"
                     )
             else:
                 console.print(
-                    "[yellow]No LaTeX files found. "
-                    "Run build with -Ddoctester.output=latex to generate LaTeX.[/yellow]"
+                    "[yellow]ℹ️  No LaTeX files found. "
+                    "Run build with -Ddtr.output=latex to generate LaTeX.[/yellow]"
                 )
 
         # JSON output mode: emit structured result to stdout

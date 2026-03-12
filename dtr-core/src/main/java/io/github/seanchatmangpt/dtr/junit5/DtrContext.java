@@ -29,19 +29,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Context object for JUnit 5 DocTester tests.
+ * Context object for JUnit 5 DTR tests.
  *
- * <p>Provides access to all DocTester functionality within JUnit 5 test methods.
+ * <p>Provides access to all DTR functionality within JUnit 5 test methods.
  * Can be injected as a parameter into test methods when using
- * {@link DocTesterExtension}.
+ * {@link DtrExtension}.
  *
  * <p>Usage:
  * <pre>{@code
- * @ExtendWith(DocTesterExtension.class)
+ * @ExtendWith(DtrExtension.class)
  * class MyApiDocTest {
  *
  *     @Test
- *     void testGetUsers(DocTesterContext ctx) {
+ *     void testGetUsers(DtrContext ctx) {
  *         ctx.sayNextSection("User API");
  *         var response = ctx.sayAndMakeRequest(
  *             Request.GET().url(ctx.testServerUrl().path("/api/users")));
@@ -50,20 +50,20 @@ import java.util.Map;
  * }
  * }</pre>
  */
-public class DocTesterContext implements RenderMachineCommands {
+public class DtrContext implements RenderMachineCommands {
 
     private final RenderMachine renderMachine;
     private final TestBrowser testBrowser;
     private final String testServerUrl;
 
     /**
-     * Creates a new DocTesterContext.
+     * Creates a new DtrContext.
      *
      * @param renderMachine the render machine for documentation output
      * @param testBrowser the HTTP test browser
      * @param testServerUrl the base URL for the test server (can be null)
      */
-    public DocTesterContext(RenderMachine renderMachine, TestBrowser testBrowser, String testServerUrl) {
+    public DtrContext(RenderMachine renderMachine, TestBrowser testBrowser, String testServerUrl) {
         this.renderMachine = renderMachine;
         this.testBrowser = testBrowser;
         this.testServerUrl = testServerUrl != null ? testServerUrl : "http://localhost:8080";

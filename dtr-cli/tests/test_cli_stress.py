@@ -1,4 +1,4 @@
-"""Phase 5a-5b Consolidated: Stress Testing for DocTester CLI.
+"""Phase 5a-5b Consolidated: Stress Testing for DTR CLI.
 
 Consolidated stress tests combining Phase 5a (large files) and Phase 5b (concurrency).
 This file contains only essential stress tests (5 tests total) that verify:
@@ -9,7 +9,7 @@ This file contains only essential stress tests (5 tests total) that verify:
 5. Shared state isolation between test methods
 
 Detailed stress variations, performance profiling, and load testing have been moved
-to the JMH benchmarks module: doctester-benchmarks/
+to the JMH benchmarks module: dtr-benchmarks/
 
 Test Categories:
 1. Large File Handling (1 parametrized test covering 100MB-1GB)

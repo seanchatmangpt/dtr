@@ -103,7 +103,7 @@ All threads see the same instance after initialization.
 
 ### Option 1: Standalone (No Maven)
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 javac --release 25 --enable-preview DocMetadataBenchmarkRunner.java
 java --enable-preview DocMetadataBenchmarkRunner
 ```

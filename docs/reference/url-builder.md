@@ -1,7 +1,7 @@
 # Reference: Url Builder
 
-**Package:** `io.github.seanchatmangpt.dtr.doctester.testbrowser`
-**File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Url.java`
+**Package:** `io.github.seanchatmangpt.dtr.dtr.testbrowser`
+**File:** `dtr-core/src/main/java/org/r10r/dtr/testbrowser/Url.java`
 
 `Url` is a fluent URL builder. It is used to compose the target URL for `Request` objects, typically starting from `testServerUrl()`.
 

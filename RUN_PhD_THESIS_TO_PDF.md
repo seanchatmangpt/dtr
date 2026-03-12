@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide demonstrates how to use **DocTester** to automatically generate a complete PhD thesis, render it to LaTeX, and compile to PDF.
+This guide demonstrates how to use **DTR** to automatically generate a complete PhD thesis, render it to LaTeX, and compile to PDF.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ pdflatex --version   # or xelatex, lualatex
 
 ```bash
 # Navigate to DTR project
-cd /home/user/doctester
+cd /home/user/dtr
 
 # Run the PhD thesis documentation test
 mvnd test -pl dtr-integration-test \
@@ -49,7 +49,7 @@ cat docs/test-results/PhDThesisDocTest.md | head -100
 cat pdf/PhDThesisDocTest.tex | head -150
 
 # View HTML output (web browsable)
-open site/doctester/PhDThesisDocTest.html
+open site/dtr/PhDThesisDocTest.html
 ```
 
 ## Step 3: Render LaTeX to PDF
@@ -133,11 +133,11 @@ dtr-integration-test/target/
 │   ├── PhDThesisDocTest.tex               # LaTeX source
 │   ├── PhDThesisDocTest.pdf               # ✅ FINAL PDF (generated)
 │   └── PhDThesisDocTest.log               # pdflatex log
-├── site/doctester/
+├── site/dtr/
 │   ├── PhDThesisDocTest.html              # HTML version
 │   └── assets/
 │       ├── bootstrap/
-│       └── custom_doctester_stylesheet.css
+│       └── custom_dtr_stylesheet.css
 └── openapi.json                           # OpenAPI spec (if applicable)
 ```
 
@@ -293,4 +293,4 @@ jobs:
 - [JAVA_26_VERIFICATION_REPORT.md](./JAVA_26_VERIFICATION_REPORT.md)
 - [JAVA_26_DEVELOPER_GUIDE.md](./JAVA_26_DEVELOPER_GUIDE.md)
 - [CLAUDE.md](./CLAUDE.md) - Full project guide
-- [DocTester LaTeX API](./dtr-core/src/main/java/org/r10r/doctester/render/latex/)
+- [DTR LaTeX API](./dtr-core/src/main/java/org/r10r/dtr/render/latex/)

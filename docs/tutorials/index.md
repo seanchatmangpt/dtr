@@ -19,7 +19,7 @@ Tutorials are **learning-oriented**. They take you through a series of steps to 
 | [gRPC Streaming](grpc-streaming.md) | Efficient RPC with unary, streaming, and bidirectional patterns |
 | [Server-Sent Events](server-sent-events.md) | One-way HTTP-based push notifications and live updates |
 
-### API Testing with DocTester
+### API Testing with DTR
 
 | Tutorial | What you'll build |
 |---|---|

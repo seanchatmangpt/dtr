@@ -6,47 +6,47 @@ A quick orientation to the key files before you make changes.
 
 ### The public API your users call
 
-**`DTR.java`** — `dtr-core/src/main/java/org/r10r/doctester/DTR.java`
+**`DTR.java`** — `dtr-core/src/main/java/org/r10r/dtr/DTR.java`
 
 The abstract base class. All `say*` methods here. This is what user-facing changes touch. Read it first.
 
-**`Request.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Request.java`
+**`Request.java`** — `dtr-core/src/main/java/org/r10r/dtr/testbrowser/Request.java`
 
 The fluent request builder. Adding new HTTP options (new headers, new authentication types) goes here.
 
-**`Response.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Response.java`
+**`Response.java`** — `dtr-core/src/main/java/org/r10r/dtr/testbrowser/Response.java`
 
 Response holder with deserialization methods. If Jackson serialization breaks, look here.
 
-**`Url.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/Url.java`
+**`Url.java`** — `dtr-core/src/main/java/org/r10r/dtr/testbrowser/Url.java`
 
 URL builder. Very simple. Rarely needs changes.
 
 ### The HTTP engine
 
-**`TestBrowserImpl.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java`
+**`TestBrowserImpl.java`** — `dtr-core/src/main/java/org/r10r/dtr/testbrowser/TestBrowserImpl.java`
 
 Where HTTP actually happens. Apache HttpClient calls are here. If a request type doesn't work (wrong headers, missing content type), start here.
 
-**`PayloadUtils.java`** — `dtr-core/src/main/java/org/r10r/doctester/testbrowser/PayloadUtils.java`
+**`PayloadUtils.java`** — `dtr-core/src/main/java/org/r10r/dtr/testbrowser/PayloadUtils.java`
 
 Content type detection and pretty-printing. If JSON/XML isn't being detected correctly, look here.
 
 ### The HTML generator
 
-**`RenderMachineImpl.java`** — `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
+**`RenderMachineImpl.java`** — `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineImpl.java`
 
 HTML assembly. The `finishAndWriteOut()` method is where the full page is built. If the HTML output looks wrong, this is the file.
 
-**`RenderMachineHtml.java`** — `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineHtml.java`
+**`RenderMachineHtml.java`** — `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineHtml.java`
 
 HTML template string constants. Bootstrap panel HTML, navbar, sidebar template. If you're updating the Bootstrap version or changing the page layout, this is where the templates live.
 
 ### Tests
 
-**`DocTesterTest.java`** — `dtr-core/src/test/java/org/r10r/doctester/DocTesterTest.java`
+**`DTRTest.java`** — `dtr-core/src/test/java/org/r10r/dtr/DTRTest.java`
 
-Unit tests for DocTester's core functionality. Uses Mockito to mock `TestBrowser` and `RenderMachine`.
+Unit tests for DTR's core functionality. Uses Mockito to mock `TestBrowser` and `RenderMachine`.
 
 **`ApiControllerDocTest.java`** — `dtr-integration-test/src/test/java/controllers/ApiControllerDocTest.java`
 
@@ -78,13 +78,13 @@ Three key interfaces define the extension contracts:
 When you add a new `say*` method:
 1. Add it to `RenderMachineCommands` (the minimal output interface)
 2. Implement it in `RenderMachineImpl`
-3. Add a delegating call in `DocTester`
-4. Add a test in `DocTesterTest`
+3. Add a delegating call in `DTR`
+4. Add a test in `DTRTest`
 
 When you add a new HTTP feature:
 1. Add the option to `Request` (builder method)
 2. Handle it in `TestBrowserImpl.makeRequest()`
-3. Add a test in `DocTesterTest` or the integration test
+3. Add a test in `DTRTest` or the integration test
 
 ---
 
@@ -94,7 +94,7 @@ When you add a new HTTP feature:
 
 **Content type detection:** `PayloadUtils.isContentTypeApplicationJson(headers)` and `isContentTypeApplicationXml(headers)` check for both `application/json` and `application/json; charset=utf-8`. New content type variants need to be added there.
 
-**Static render machine:** `RenderMachineImpl` is stored as a static field in `DocTester`. This is why it accumulates output across all test methods in a class. Don't change this without understanding the lifecycle implications.
+**Static render machine:** `RenderMachineImpl` is stored as a static field in `DTR`. This is why it accumulates output across all test methods in a class. Don't change this without understanding the lifecycle implications.
 
 **Per-method browser:** `TestBrowserImpl` is created fresh in `@Before`. The cookie jar is per `TestBrowserImpl` instance, which is why cookies don't persist between test methods.
 
@@ -150,14 +150,14 @@ When you add a new HTTP feature:
 3. Implement in `RenderMachineImpl.java`
 4. Add HTML template (if needed) in `RenderMachineHtml.java`
 5. Add delegating method in `DTR.java`
-6. Add unit test in `DocTesterTest.java`
+6. Add unit test in `DTRTest.java`
 7. Add usage example in `PhDThesisDocTest.java`
 
 **Verify:**
 ```bash
 mvnd test -pl dtr-core
 mvnd test -pl dtr-integration-test
-open target/site/doctester/PhDThesisDocTest.html
+open target/site/dtr/PhDThesisDocTest.html
 ```
 
 ---
@@ -166,7 +166,7 @@ open target/site/doctester/PhDThesisDocTest.html
 
 **Steps:**
 1. Locate issue in `TestBrowserImpl.java`
-2. Write test in `DocTesterTest.java` (mocked)
+2. Write test in `DTRTest.java` (mocked)
 3. Fix the bug
 4. Add end-to-end test in `PhDThesisDocTest.java` if needed
 
@@ -184,7 +184,7 @@ mvnd test -pl dtr-integration-test
 1. Add builder method to `Request.java`
 2. Handle it in `TestBrowserImpl.makeRequest()`
 3. Add constant to `HttpConstants.java` if needed
-4. Test in `DocTesterTest.java`
+4. Test in `DTRTest.java`
 5. Example in `PhDThesisDocTest.java`
 
 **Verify:**
@@ -205,7 +205,7 @@ mvnd test -pl dtr-integration-test
 **Verify:**
 ```bash
 mvnd test -pl dtr-integration-test
-open target/site/doctester/PhDThesisDocTest.html  # Visually inspect
+open target/site/dtr/PhDThesisDocTest.html  # Visually inspect
 ```
 
 ---
@@ -245,7 +245,7 @@ mvnd clean verify                      # All tests
 
 **Check integration test output:**
 ```bash
-open target/site/doctester/PhDThesisDocTest.html
+open target/site/dtr/PhDThesisDocTest.html
 ```
 
 ---

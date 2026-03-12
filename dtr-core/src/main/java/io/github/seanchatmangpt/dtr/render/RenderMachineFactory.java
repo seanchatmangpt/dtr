@@ -119,7 +119,7 @@ public final class RenderMachineFactory {
      * @return configured render machine instance
      */
     public static RenderMachine createRenderMachine(String testClassName, DocMetadata docMetadata) {
-        String output = System.getProperty("doctester.output", "markdown").toLowerCase();
+        String output = System.getProperty("dtr.output", "markdown").toLowerCase();
 
         logger.debug("Creating render machine for output format(s): {}", output);
 
@@ -253,7 +253,7 @@ public final class RenderMachineFactory {
      * @return selected cached LaTeX template
      */
     private static LatexTemplate selectLatexTemplateLazy() {
-        String format = System.getProperty("doctester.latex.format", "arxiv").toLowerCase();
+        String format = System.getProperty("dtr.latex.format", "arxiv").toLowerCase();
 
         return switch (format.trim()) {
             case "patent" -> PATENT.get();

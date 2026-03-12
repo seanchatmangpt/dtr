@@ -1,1 +1,1 @@
-"""Tests for doctester-cli."""
+"""Tests for dtr-cli."""

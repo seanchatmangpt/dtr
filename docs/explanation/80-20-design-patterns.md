@@ -16,13 +16,13 @@ DTR is built on the principle that **your test is your documentation**. When you
 
 ### Example: The Problem It Solves
 
-**Without DocTester:**
+**Without DTR:**
 ```
 Code:     POST /api/users returns 201
 Docs:     POST /api/users returns 200    ← WRONG! Docs are outdated
 ```
 
-**With DocTester:**
+**With DTR:**
 ```
 Test:     sayAndAssertThat("Status is 201", response.httpStatus(), equalTo(201))
 Docs:     Auto-generated from test
@@ -35,7 +35,7 @@ Result:   Code and docs stay in sync
 
 ### Why This Method Exists
 
-`sayAndMakeRequest()` is the **heart of DocTester**. It does two things:
+`sayAndMakeRequest()` is the **heart of DTR**. It does two things:
 1. Executes the HTTP request (like `makeRequest()`)
 2. Captures and documents the request/response in HTML/Markdown
 
@@ -240,7 +240,7 @@ public void testWithAuth() {
 
 ### The Design Decision
 
-DocTester's `TestBrowser` maintains a **cookie jar** across requests:
+DTR's `TestBrowser` maintains a **cookie jar** across requests:
 
 ```java
 @Test
@@ -354,11 +354,11 @@ Each layer is independent:
 
 @AfterEach (automatic via TestWatcher)
   └─ finishAndWriteOut()
-  └─ Write target/site/doctester/TestClassName.html
+  └─ Write target/site/dtr/TestClassName.html
 
 @AfterAll (manual)
   └─ finishDocTest()
-  └─ Generate target/site/doctester/index.html
+  └─ Generate target/site/dtr/index.html
 ```
 
 ### The Design Decision
@@ -407,4 +407,4 @@ You know exactly what server your tests hit, no guessing.
 | Fresh state per test method | Isolation and independent documentation |
 | Override `testServerUrl()` | Explicit, clear, environment-aware |
 
-**Central idea:** Tests + documentation are one thing. When you write a good test in DocTester, you automatically write good documentation. The two stay in sync because they're the same artifact.
+**Central idea:** Tests + documentation are one thing. When you write a good test in DTR, you automatically write good documentation. The two stay in sync because they're the same artifact.

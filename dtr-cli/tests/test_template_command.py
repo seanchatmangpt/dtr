@@ -64,8 +64,8 @@ class TestTemplateShow:
     def test_shows_basic_template_source(self):
         result = runner.invoke(app, ["template", "show", "basic"])
         assert result.exit_code == 0, f"stdout: {result.stdout}"
-        assert "DocTesterContext" in result.stdout
-        assert "DocTesterExtension" in result.stdout
+        assert "DTRContext" in result.stdout
+        assert "DTRExtension" in result.stdout
         assert "@Test" in result.stdout
 
     def test_shows_api_template_source(self):
@@ -408,10 +408,10 @@ class TestTemplatesRegistry:
                     f"Template '{name}' missing placeholder {placeholder!r}"
                 )
 
-    def test_each_template_source_has_doctester_import(self):
+    def test_each_template_source_has_dtr_import(self):
         for name, meta in TEMPLATES.items():
-            assert "DocTesterContext" in meta["source"], (
-                f"Template '{name}' missing DocTesterContext import"
+            assert "DTRContext" in meta["source"], (
+                f"Template '{name}' missing DTRContext import"
             )
 
     def test_class_name_to_title_strips_doctest_suffix(self):

@@ -382,7 +382,7 @@ public final class BlogRenderMachine extends RenderMachine {
                 // Write front matter
                 BlogTemplate.BlogMetadata meta = new BlogTemplate.BlogMetadata(
                     fileName,
-                    "DocTester",
+                    "DTR",
                     tldr.isEmpty() ? "API Documentation" : tldr,
                     java.time.LocalDate.now().toString(),
                     wordCount,

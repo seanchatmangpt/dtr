@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Self-documentation test: DocTester documents itself via reflection and
+ * Self-documentation test: DTR documents itself via reflection and
  * introspection. This class demonstrates the "fixed point" property where
  * the framework's own API is used to generate its documentation.
  *
@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Tests execute in alphabetical order to establish clear narrative flow.
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class DocTesterSelfDocTest extends DocTester {
+public class DtrSelfDocTest extends DtrTest {
 
     private static int sayMethodCount = 0;
     private static int testMethodCount = 0;
@@ -80,35 +80,35 @@ public class DocTesterSelfDocTest extends DocTester {
     }
 
     @Test
-    @DocSection("DocTester Base Class Entry Point")
+    @DocSection("DTR Base Class Entry Point")
     @DocDescription({
-        "DocTester is an abstract base class that serves as the primary entry point for test authors.",
+        "DTR is an abstract base class that serves as the primary entry point for test authors.",
         "It implements two critical interfaces: TestBrowser (for HTTP execution) and RenderMachineCommands (for documentation generation).",
-        "By extending DocTester, you inherit both HTTP testing capabilities and fluent documentation rendering."
+        "By extending DTR, you inherit both HTTP testing capabilities and fluent documentation rendering."
     })
     public void test01_documentApiEntryPoint() {
-        say("The DocTester class is the bridge between test execution and documentation generation.");
+        say("The DTR class is the bridge between test execution and documentation generation.");
 
         // Document the class hierarchy
-        sayNextSection("DocTester Type Hierarchy");
-        sayClassHierarchy(DocTester.class);
-        sayNote("DocTester uses multiple inheritance via interface implementation to provide both TestBrowser and RenderMachineCommands APIs in a single class.");
+        sayNextSection("DTR Type Hierarchy");
+        sayClassHierarchy(DtrTest.class);
+        sayNote("DTR uses multiple inheritance via interface implementation to provide both TestBrowser and RenderMachineCommands APIs in a single class.");
 
         // Document the code model
-        sayNextSection("DocTester Code Model");
-        sayCodeModel(DocTester.class);
+        sayNextSection("DTR Code Model");
+        sayCodeModel(DtrTest.class);
 
-        // Document annotations on DocTester
-        sayNextSection("DocTester Annotation Profile");
-        sayAnnotationProfile(DocTester.class);
+        // Document annotations on DTR
+        sayNextSection("DTR Annotation Profile");
+        sayAnnotationProfile(DtrTest.class);
 
         // Verify correctness
         testMethodCount++;
         sayAssertions(Map.ofEntries(
-            Map.entry("DocTester extends Object", "✓ PASS"),
-            Map.entry("DocTester implements TestBrowser", "✓ PASS"),
-            Map.entry("DocTester implements RenderMachineCommands", "✓ PASS"),
-            Map.entry("DocTester is abstract", "✓ PASS")
+            Map.entry("DTR extends Object", "✓ PASS"),
+            Map.entry("DTR implements TestBrowser", "✓ PASS"),
+            Map.entry("DTR implements RenderMachineCommands", "✓ PASS"),
+            Map.entry("DTR is abstract", "✓ PASS")
         ));
     }
 
@@ -167,7 +167,7 @@ public class DocTesterSelfDocTest extends DocTester {
     @Test
     @DocSection("Core say* Methods for Documentation")
     @DocDescription({
-        "DocTester provides 9 core say* methods that form the foundation of documentation generation.",
+        "DTR provides 9 core say* methods that form the foundation of documentation generation.",
         "Each method generates Markdown output suitable for HTML, PDF, and other renderers."
     })
     public void test03_documentCoreSayApi() {
@@ -206,7 +206,7 @@ public class DocTesterSelfDocTest extends DocTester {
     @Test
     @DocSection("Introspection API — Blue Ocean Features")
     @DocDescription({
-        "DocTester includes 6 introspection methods that extract documentation directly from bytecode.",
+        "DTR includes 6 introspection methods that extract documentation directly from bytecode.",
         "These methods represent 'Blue Ocean' innovations: the code documents itself via reflection.",
         "No manual description drift — documentation IS the implementation."
     })
@@ -251,7 +251,7 @@ public class DocTesterSelfDocTest extends DocTester {
     @Test
     @DocSection("Rendering Pipeline and Lifecycle")
     @DocDescription({
-        "DocTester manages a complete lifecycle from test method entry to HTML/Markdown output.",
+        "DTR manages a complete lifecycle from test method entry to HTML/Markdown output.",
         "The RenderMachine buffers all say* calls and writes them at @AfterAll time."
     })
     public void test05_documentRenderingPipeline() {
@@ -289,7 +289,7 @@ public class DocTesterSelfDocTest extends DocTester {
     @Test
     @DocSection("Annotation-Driven Documentation")
     @DocDescription({
-        "DocTester supports 5 annotations for declarative documentation of test methods.",
+        "DTR supports 5 annotations for declarative documentation of test methods.",
         "Annotations are processed automatically at @BeforeEach time, before test code runs."
     })
     public void test06_documentAnnotationProfile() {
@@ -309,7 +309,7 @@ public class DocTesterSelfDocTest extends DocTester {
 
         // Document annotations on this test method
         sayNextSection("Annotations on This Test Method");
-        sayAnnotationProfile(DocTesterSelfDocTest.class);
+        sayAnnotationProfile(DtrSelfDocTest.class);
 
         testMethodCount++;
         sayAssertions(Map.ofEntries(
@@ -324,12 +324,12 @@ public class DocTesterSelfDocTest extends DocTester {
     @Test
     @DocSection("Extended say* Methods for Multi-Format Output")
     @DocDescription({
-        "Beyond core documentation, DocTester includes 7 additional say* methods",
+        "Beyond core documentation, DTR includes 7 additional say* methods",
         "that support slide presentations, blogs, social media, and speaker notes.",
         "Each method is format-agnostic — HTML renderers ignore slide-only content, etc."
     })
     public void test07_documentExtendedSayApi() {
-        say("Extended methods enable DocTester output to drive multiple documentation formats.");
+        say("Extended methods enable DTR output to drive multiple documentation formats.");
 
         // Create extended methods table
         sayNextSection("7 Extended say* Methods");
@@ -369,11 +369,11 @@ public class DocTesterSelfDocTest extends DocTester {
     @DocSection("Self-Awareness Fixed Point")
     @DocDescription({
         "This final test demonstrates the 'fixed point' property:",
-        "DocTester uses its own introspection API to document itself.",
+        "DTR uses its own introspection API to document itself.",
         "The output IS the proof that introspection works."
     })
     public void test08_selfAwarenessFixedPoint() {
-        say("The fixed point property: DocTester's self-documentation validates the framework.");
+        say("The fixed point property: DTR's self-documentation validates the framework.");
 
         // Demonstrate string profiling on this output
         sayNextSection("Captured Output Analysis");
@@ -408,13 +408,13 @@ public class DocTesterSelfDocTest extends DocTester {
         sayTable(layerTable);
 
         // Verify DocTester class structure via real reflection assertions
-        sayNextSection("DocTester Class Verification");
-        assertTrue(Modifier.isAbstract(DocTester.class.getModifiers()),
-            "DocTester must be abstract (confirmed via reflection)");
-        assertFalse(DocTester.class.isInterface(),
-            "DocTester must be a class, not an interface");
-        assertNotNull(DocTester.class.getSuperclass(),
-            "DocTester must have a superclass");
+        sayNextSection("DtrTest Class Verification");
+        assertTrue(Modifier.isAbstract(DtrTest.class.getModifiers()),
+            "DtrTest must be abstract (confirmed via reflection)");
+        assertFalse(DtrTest.class.isInterface(),
+            "DtrTest must be a class, not an interface");
+        assertNotNull(DtrTest.class.getSuperclass(),
+            "DtrTest must have a superclass");
 
         // Summary statistics
         sayNextSection("Self-Documentation Metrics");
@@ -446,15 +446,15 @@ public class DocTesterSelfDocTest extends DocTester {
             Map.entry("String analysis via sayStringProfile()", "✓ PASS"),
             Map.entry("Sealed DocumentationLayer hierarchy (JEP 500)", "✓ PASS"),
             Map.entry("Pattern matching — exhaustive switch, no default", "✓ PASS"),
-            Map.entry("DocTester.class is abstract (verified by reflection)", "✓ PASS"),
+            Map.entry("DtrTest.class is abstract (verified by reflection)", "✓ PASS"),
             Map.entry("Metrics capture via sayKeyValue()", "✓ PASS"),
             Map.entry("Provenance via sayCallSite()", "✓ PASS"),
-            Map.entry("Fixed point achieved — DocTester documents itself", "✓ PASS"),
+            Map.entry("Fixed point achieved — DTR documents itself", "✓ PASS"),
             Map.entry("All 8 test methods confirmed (assertEquals(8, testMethodCount))", "✓ PASS")
         ));
 
         // Final message
-        say("\nFixed point achieved: DocTester has successfully documented itself using its own APIs. " +
+        say("\nFixed point achieved: DTR has successfully documented itself using its own APIs. " +
             "The output IS the proof that all 4 documentation layers, 6 introspection methods, " +
             "and the JEP 500 sealed hierarchy all work correctly.");
     }

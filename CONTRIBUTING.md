@@ -151,15 +151,15 @@ Use conventional commit prefixes:
 mvnd clean test -pl dtr-core
 
 # Run specific test
-mvnd test -pl dtr-core -Dtest=DocTesterTest
+mvnd test -pl dtr-core -Dtest=DTRTest
 
 # Build documentation from tests
 mvnd clean test -pl dtr-integration-test -Dtest=PhDThesisDocTest
 ```
 
-### CLI Development (doctester-cli - Python)
+### CLI Development (dtr-cli - Python)
 
-See [doctester-cli/CONTRIBUTING.md](./doctester-cli/CONTRIBUTING.md) for Python-specific guidelines.
+See [dtr-cli/CONTRIBUTING.md](./dtr-cli/CONTRIBUTING.md) for Python-specific guidelines.
 
 ## Documentation
 
@@ -196,7 +196,7 @@ dtr/
 │   └── src/test/java/
 ├── dtr-integration-test/        # Integration tests (Ninja Framework app)
 ├── dtr-benchmarks/              # JMH performance benchmarks
-├── doctester-cli/               # Python CLI wrapper
+├── dtr-cli/               # Python CLI wrapper
 ├── docs/                        # User documentation (Diataxis structure)
 ├── pom.xml                      # Root Maven configuration
 └── CLAUDE.md                    # Developer quick reference

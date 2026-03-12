@@ -161,7 +161,7 @@ public interface RenderMachineCommands {
     public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher);
 
     /**
-     * Documents a class's structure using Java reflection — the DocTester stand-in for
+     * Documents a class's structure using Java reflection — the DTR stand-in for
      * Project Babylon's Code Reflection API (JEP 494).
      *
      * <p>Renders the class's sealed hierarchy (if sealed), record components (if a record),
@@ -210,7 +210,7 @@ public interface RenderMachineCommands {
      * derived from the live JVM stack at the moment of invocation.</p>
      *
      * <p>Uses {@code StackWalker.getInstance(RETAIN_CLASS_REFERENCE)} to walk the
-     * call stack and find the first frame outside of DocTester's own machinery.</p>
+     * call stack and find the first frame outside of DTR's own machinery.</p>
      */
     void sayCallSite();
 

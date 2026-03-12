@@ -1,6 +1,6 @@
-"""Phase 6a: Maven CLI Integration Testing for DocTester CLI (Consolidated).
+"""Phase 6a: Maven CLI Integration Testing for DTR CLI (Consolidated).
 
-Tests essential integration between DocTester CLI and Maven build lifecycle.
+Tests essential integration between DTR CLI and Maven build lifecycle.
 Consolidated from 26 tests to 8 core tests using 80/20 principle.
 
 CORE FEATURES (8 tests):
@@ -27,7 +27,7 @@ CORE FEATURES (8 tests):
 
 6. test_maven_enforcer_java_version — Java 25+ requirement enforced (NEW)
    - Validates: Maven enforcer prevents old JDK usage
-   - Validates: Environment is correct for DocTester
+   - Validates: Environment is correct for DTR
 
 7. test_dependency_resolution_completeness — All dependencies resolved
    - Validates: mvn dependency:tree shows clean output
@@ -464,16 +464,16 @@ def test_maven_cli_help_documentation(project_root: Path) -> None:
     help_text = result.stdout + result.stderr
     assert len(help_text) > 0, "Maven --help produced no output"
 
-    # Verify doctester is mentioned in pom
+    # Verify dtr is mentioned in pom
     parent_pom = (project_root / "pom.xml").read_text()
     assert (
-        "doctester" in parent_pom.lower()
-    ), "pom.xml should reference doctester"
+        "dtr" in parent_pom.lower()
+    ), "pom.xml should reference dtr"
 
 
 @pytest.fixture
 def project_root() -> Generator[Path, None, None]:
-    """Pytest fixture providing DocTester project root directory.
+    """Pytest fixture providing DTR project root directory.
 
     Used by all test classes to locate Maven and build configuration.
     """
@@ -485,6 +485,6 @@ def project_root() -> Generator[Path, None, None]:
         current = current.parent
 
     raise RuntimeError(
-        "Cannot find DocTester project root (pom.xml). "
-        "Tests must be run from within the DocTester repository."
+        "Cannot find DTR project root (pom.xml). "
+        "Tests must be run from within the DTR repository."
     )

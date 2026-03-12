@@ -8,7 +8,7 @@
 
 ## Overview
 
-DocTester's publication pipeline to Maven Central is **fully configured and tested**. The infrastructure is production-ready. You need to complete 2 credential setup tasks before release can proceed.
+DTR's publication pipeline to Maven Central is **fully configured and tested**. The infrastructure is production-ready. You need to complete 2 credential setup tasks before release can proceed.
 
 ---
 
@@ -148,7 +148,7 @@ Once credentials are set up:
 
 ### Interactive Release (Recommended)
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 mvnd -P release release:prepare release:perform
 ```
 
@@ -256,7 +256,7 @@ All common issues and solutions are in `MAVEN_CENTRAL_RELEASE_REPORT.md` Section
 
 ## File Inventory
 
-**Generated documents (in `/home/user/doctester/`):**
+**Generated documents (in `/home/user/dtr/`):**
 
 ```
 MAVEN_CENTRAL_RELEASE_REPORT.md          (70+ pages, comprehensive analysis)

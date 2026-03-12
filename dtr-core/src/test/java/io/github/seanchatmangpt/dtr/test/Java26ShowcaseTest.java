@@ -59,7 +59,7 @@ import java.util.concurrent.Executors;
  * </ol>
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class Java26ShowcaseTest extends DocTester {
+public class Java26ShowcaseTest extends DtrTest {
 
     @AfterAll
     static void afterAll() {

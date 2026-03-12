@@ -215,8 +215,8 @@ def test_fmt_html_converts_markdown_to_html(tmp_markdown_file: Path, tmp_path: P
 # ============================================================================
 
 
-# NOTE: Most format conversion tests use REAL DocTester-generated HTML (from Maven builds)
-# because converters from HTML require specific DocTester structure.
+# NOTE: Most format conversion tests use REAL DTR-generated HTML (from Maven builds)
+# because converters from HTML require specific DTR structure.
 # However, Markdown->HTML conversion is reliable enough to unit test with sample Markdown.
 #
 # Strong integration tests:

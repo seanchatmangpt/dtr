@@ -23,7 +23,7 @@ Comprehensive code quality review of DTR core module in preparation for 2.0.0 re
 - Breaking changes summary
 - 5-minute read
 
-**Location:** `/home/user/doctester/AUDIT_SUMMARY.md`
+**Location:** `/home/user/dtr/AUDIT_SUMMARY.md`
 
 ---
 
@@ -46,7 +46,7 @@ Comprehensive code quality review of DTR core module in preparation for 2.0.0 re
 **Length:** 30-minute read
 **Key Finding:** 0 technical debt, 100% documentation, exemplary Java 25 adoption
 
-**Location:** `/home/user/doctester/CODE_QUALITY_AUDIT_2_0_0.md`
+**Location:** `/home/user/dtr/CODE_QUALITY_AUDIT_2_0_0.md`
 
 ---
 
@@ -72,7 +72,7 @@ Comprehensive code quality review of DTR core module in preparation for 2.0.0 re
 - Risk: Minimal
 - Impact: Zero API breaking changes
 
-**Location:** `/home/user/doctester/RELEASE_READINESS_REPORT.md`
+**Location:** `/home/user/dtr/RELEASE_READINESS_REPORT.md`
 
 ---
 
@@ -98,7 +98,7 @@ Comprehensive code quality review of DTR core module in preparation for 2.0.0 re
 **Total Effort:** 60-75 minutes (optional but recommended)
 **Benefit:** Java 25 score 90 → 95, dependency cleanup, demonstrates commitment to modern idioms
 
-**Location:** `/home/user/doctester/RELEASE_OPTIMIZATION_PLAN.md`
+**Location:** `/home/user/dtr/RELEASE_OPTIMIZATION_PLAN.md`
 
 ---
 
@@ -219,7 +219,7 @@ Comprehensive code quality review of DTR core module in preparation for 2.0.0 re
 All audit documents located in repository root:
 
 ```
-/home/user/doctester/
+/home/user/dtr/
 ├── AUDIT_INDEX.md                          ← You are here
 ├── AUDIT_SUMMARY.md                        ← Quick reference
 ├── CODE_QUALITY_AUDIT_2_0_0.md             ← Detailed findings
@@ -227,7 +227,7 @@ All audit documents located in repository root:
 ├── RELEASE_OPTIMIZATION_PLAN.md            ← Action items
 ├── dtr-core/
 │   ├── pom.xml
-│   └── src/main/java/org/r10r/doctester/
+│   └── src/main/java/org/r10r/dtr/
 │       ├── [41 source files analyzed]
 │       ├── testbrowser/
 │       ├── rendermachine/
@@ -262,7 +262,7 @@ AUDIT_SUMMARY.md (5 min) ← Executive overview
 - **Audit Conducted:** March 10, 2026
 - **Reviewed By:** Code Quality Audit Team
 - **For Questions:** See CLAUDE.md in repository for contacts
-- **GitHub Issues:** https://github.com/seanchatmangpt/doctester/issues
+- **GitHub Issues:** https://github.com/seanchatmangpt/dtr/issues
 
 ---
 

@@ -118,7 +118,7 @@ API Changes Summary:
   ✓ Cookie-based authentication: UNCHANGED
 
 New Features Added (Additive Only):
-  + JUnit 5 Extension (DocTesterExtension, DocTesterContext)
+  + JUnit 5 Extension (DtrExtension, DtrContext)
   + WebSocket Client (WebSocketClient, WebSocketSession)
   + Server-Sent Events (SseClient, SseSubscription)
   + OpenAPI Integration (OpenApiSpec, OpenApiCollector, OpenApiWriter)
@@ -182,7 +182,7 @@ Major Features:
   ✓ Server-Sent Events (event streaming, subscription management)
   ✓ OpenAPI Integration (automatic API spec generation from tests)
   ✓ Enhanced Authentication (5 providers: Basic, Bearer, ApiKey, OAuth2, Session)
-  ✓ JUnit 5 Native Support (DocTesterExtension with parameter injection)
+  ✓ JUnit 5 Native Support (DtrExtension with parameter injection)
   ✓ Advanced Configuration (TestBrowserConfig for timeout/redirect control)
 
 Java 25 Highlights:

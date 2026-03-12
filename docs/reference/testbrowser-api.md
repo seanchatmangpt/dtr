@@ -1,9 +1,9 @@
 # Reference: TestBrowser Interface
 
-**Package:** `io.github.seanchatmangpt.dtr.doctester.testbrowser`
-**File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowser.java`
+**Package:** `io.github.seanchatmangpt.dtr.dtr.testbrowser`
+**File:** `dtr-core/src/main/java/org/r10r/dtr/testbrowser/TestBrowser.java`
 
-`TestBrowser` is the HTTP client interface used by `DocTester`. The default implementation is `TestBrowserImpl` (Apache HttpClient 4). Override `getTestBrowser()` in your `DocTester` subclass to supply a custom implementation.
+`TestBrowser` is the HTTP client interface used by `DTR`. The default implementation is `TestBrowserImpl` (Apache HttpClient 4). Override `getTestBrowser()` in your `DTR` subclass to supply a custom implementation.
 
 ---
 
@@ -34,7 +34,7 @@ Clears all cookies from the cookie jar.
 
 ## Default implementation: TestBrowserImpl
 
-**File:** `dtr-core/src/main/java/org/r10r/doctester/testbrowser/TestBrowserImpl.java`
+**File:** `dtr-core/src/main/java/org/r10r/dtr/testbrowser/TestBrowserImpl.java`
 
 `TestBrowserImpl` wraps Apache HttpClient 4.5 with:
 
@@ -78,7 +78,7 @@ public class OkHttpTestBrowser implements TestBrowser {
 Inject it by overriding `getTestBrowser()` in your DocTest base class:
 
 ```java
-public abstract class MyDocTester extends DTR {
+public abstract class MyDTR extends DTR {
 
     @Override
     public TestBrowser getTestBrowser() {

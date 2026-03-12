@@ -260,7 +260,7 @@ Static type checking:
 
 ```bash
 mypy dtr_cli         # Type check
-mypy --strict doctester_cli  # Strict mode
+mypy --strict dtr_cli  # Strict mode
 ```
 
 ### pytest (Test Framework)

@@ -206,24 +206,24 @@ FILES & REFERENCES
 ================================================================================
 
 Benchmark Implementation:
-  /home/user/doctester/DocMetadataBenchmarkRunner.java
+  /home/user/dtr/DocMetadataBenchmarkRunner.java
   - Standalone, no Maven dependency
   - 5 comprehensive tests
   - Output: human-readable metrics
 
 Unit Test Suite:
-  /home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/metadata/DocMetadataBenchmarkTest.java
+  /home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/metadata/DocMetadataBenchmarkTest.java
   - JUnit 5 tests
   - Runnable via: mvnd test -Dtest=DocMetadataBenchmarkTest
 
 Production Source:
-  /home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java
+  /home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/metadata/DocMetadata.java
   - Java 25 record
   - Immutable singleton
   - Safe static initialization
 
 Full Report:
-  /home/user/doctester/PERFORMANCE_REPORT_JEP516.md
+  /home/user/dtr/PERFORMANCE_REPORT_JEP516.md
   - Detailed analysis
   - Alternative approaches comparison
   - JLS references

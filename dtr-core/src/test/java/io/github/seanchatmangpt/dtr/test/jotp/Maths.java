@@ -19,7 +19,7 @@ package io.github.seanchatmangpt.dtr.jotp;
  * Simple arithmetic operations expressed as pure functions over Java records.
  *
  * <p>Sourced from <a href="https://github.com/cchacin/java-maven-template">
- * cchacin/java-maven-template</a> and adapted for DocTester's JOTP doctests.
+ * cchacin/java-maven-template</a> and adapted for DTR's JOTP doctests.
  *
  * <p>Demonstrates Java 25 features:
  * <ul>

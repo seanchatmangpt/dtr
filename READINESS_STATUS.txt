@@ -23,10 +23,10 @@ BLOCKING ISSUES (Must Fix Before Release)
 2. TEST FILES IN WRONG PACKAGE (org.r10r vs io.github.seanchatmangpt.dtr)
    ✗ CRITICAL - Package validation will fail on Maven Central
 
-   Affected: 45 test files in org/r10r/doctester/ package
+   Affected: 45 test files in org/r10r/dtr/ package
    Location:
-     - dtr-core/src/test/java/org/r10r/doctester/** (38 files)
-     - dtr-benchmarks/src/jmh/java/org/r10r/doctester/** (7 files)
+     - dtr-core/src/test/java/org/r10r/dtr/** (38 files)
+     - dtr-benchmarks/src/jmh/java/org/r10r/dtr/** (7 files)
 
    Fix: Move all files to io/github/seanchatmangpt/dtr/
    Time: 20 minutes

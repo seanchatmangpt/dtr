@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Crash occurs at @AfterClass during finishAndWriteOut(), NOT during say() accumulation.</p>
  */
 @DisplayName("Stress: near-OOM boundary — 50 scaled test methods")
-public class StressFinalTest extends DocTester {
+public class StressFinalTest extends DtrTest {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
 

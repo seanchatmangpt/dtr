@@ -65,8 +65,8 @@ def list(
 
     \b
     Examples:
-        dtr export list target/site/doctester
-        dtr export list target/site/doctester -d
+        dtr export list target/site/dtr
+        dtr export list target/site/dtr -d
     """
     manager = DirectoryManager()
     config = ManageConfig(
@@ -123,7 +123,7 @@ def save(
         None,
         "--output",
         "-o",
-        help="Archive file (default: doctester_export.tar.gz)",
+        help="Archive file (default: dtr_export.tar.gz)",
     ),
     format: str = typer.Option(
         "tar.gz",
@@ -140,11 +140,11 @@ def save(
 
     \b
     Examples:
-        dtr export save target/site/doctester
-        dtr export save target/site/doctester -o exports_backup.zip -f zip
+        dtr export save target/site/dtr
+        dtr export save target/site/dtr -o exports_backup.zip -f zip
     """
     if output_file is None:
-        output_file = Path(f"doctester_export.{format}")
+        output_file = Path(f"dtr_export.{format}")
 
     manager = DirectoryManager()
     config = ManageConfig(
@@ -201,8 +201,8 @@ def clean(
 
     \b
     Examples:
-        dtr export clean target/site/doctester
-        dtr export clean target/site/doctester --keep 3 --no-dry-run
+        dtr export clean target/site/dtr
+        dtr export clean target/site/dtr --keep 3 --no-dry-run
     """
     manager = DirectoryManager()
     config = ManageConfig(
@@ -249,7 +249,7 @@ def check(
 
     \b
     Examples:
-        dtr export check target/site/doctester
+        dtr export check target/site/dtr
     """
     manager = DirectoryManager()
     config = ManageConfig(export_path=export_dir)

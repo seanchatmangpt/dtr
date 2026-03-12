@@ -21,10 +21,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Declares one or more description paragraphs for a DocTester test method.
+ * Declares one or more description paragraphs for a DTR test method.
  *
- * <p>When placed on a {@code @Test} method, DocTester automatically calls
- * {@link DocTester#say(String)} for each line in {@link #value()} at the start
+ * <p>When placed on a {@code @Test} method, DTR automatically calls
+ * {@link DTR#say(String)} for each line in {@link #value()} at the start
  * of the test (after any {@link DocSection} heading). This is equivalent to
  * writing {@code say("...")} calls as the first lines of the test body.
  *

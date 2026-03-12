@@ -15,18 +15,18 @@ Phase 1 implementation is complete. The DTR CLI now supports Maven orchestration
 ```bash
 # Old way
 mvnd clean verify
-dtr fmt md target/site/doctester
+dtr fmt md target/site/dtr
 
 # New way (using dtr build)
 dtr build
-dtr fmt md target/site/doctester
+dtr fmt md target/site/dtr
 ```
 
 ---
 
 ## What Was Implemented
 
-### 1. Maven Runner Module (`doctester_cli/managers/maven_manager.py`)
+### 1. Maven Runner Module (`dtr_cli/managers/maven_manager.py`)
 **126 lines of code**, 76% test coverage
 
 **MavenRunner Class:**
@@ -49,7 +49,7 @@ dtr fmt md target/site/doctester
 - Export directory validation
 - Proper subprocess management
 
-### 2. Build Command Module (`doctester_cli/commands/build.py`)
+### 2. Build Command Module (`dtr_cli/commands/build.py`)
 **215 lines of code**, 54% test coverage
 
 **Command Interface:**
@@ -71,7 +71,7 @@ dtr build --project-dir /path/to/pom     # Custom project root
 - Export validation after build completes
 - Post-build hook for format conversion (placeholder for future)
 
-### 3. Error Handling Enhancements (`doctester_cli/cli_errors.py`)
+### 3. Error Handling Enhancements (`dtr_cli/cli_errors.py`)
 **3 new custom exceptions** added:
 - `MavenBuildFailedError` — Maven build failed with helpful hints
 - `MavenNotFoundError` — Maven not found in PATH
@@ -187,17 +187,17 @@ All tests passing: ✅
 ### Basic Build
 ```bash
 $ dtr build
-📦 Maven root: /home/user/doctester
+📦 Maven root: /home/user/dtr
 📚 Available modules: dtr-core, dtr-integration-test, dtr-benchmarks
 🔨 Starting Maven build...
 ✅ Maven build completed successfully
-✅ Exports generated in target/site/doctester/
+✅ Exports generated in target/site/dtr/
 ```
 
 ### Custom Build with Profiles
 ```bash
 $ dtr build --goals test --profiles docs-html
-📦 Maven root: /home/user/doctester
+📦 Maven root: /home/user/dtr
 📚 Available modules: dtr-core, dtr-integration-test, dtr-benchmarks
 🔨 Starting Maven build...
 Running: mvnd clean verify -P docs-html...
@@ -207,7 +207,7 @@ Running: mvnd clean verify -P docs-html...
 ### Build Specific Module
 ```bash
 $ dtr build --modules dtr-core
-📦 Maven root: /home/user/doctester
+📦 Maven root: /home/user/dtr
 📚 Available modules: dtr-core, dtr-integration-test, dtr-benchmarks
 🔨 Starting Maven build...
 Running: mvnd clean verify -pl dtr-core...
@@ -220,14 +220,14 @@ Running: mvnd clean verify -pl dtr-core...
 $ dtr build
 
 # Convert to Markdown
-$ dtr fmt md target/site/doctester -o docs -r
+$ dtr fmt md target/site/dtr -o docs -r
 
 # Generate report
-$ dtr report sum target/site/doctester
+$ dtr report sum target/site/dtr
 
 # Publish to GitHub
 $ export GITHUB_TOKEN=your_token_here
-$ dtr push gh target/site/doctester --repo owner/repo
+$ dtr push gh target/site/dtr --repo owner/repo
 ```
 
 ---
@@ -236,8 +236,8 @@ $ dtr push gh target/site/doctester --repo owner/repo
 
 ### New Files (565 lines)
 ```
-dtr-cli/doctester_cli/commands/build.py         (215 lines)
-dtr-cli/doctester_cli/managers/maven_manager.py  (126 lines)
+dtr-cli/dtr_cli/commands/build.py         (215 lines)
+dtr-cli/dtr_cli/managers/maven_manager.py  (126 lines)
 dtr-cli/tests/test_cli_build_command.py          (425 lines)
 CLI_PRODUCTION_READINESS_EVALUATION.md                 (500+ lines)
 ```
@@ -245,10 +245,10 @@ CLI_PRODUCTION_READINESS_EVALUATION.md                 (500+ lines)
 ### Modified Files (12 lines net)
 ```
 dtr-cli/README.md                               (+50 -5)
-dtr-cli/doctester_cli/cli_errors.py             (+45 lines)
-dtr-cli/doctester_cli/main.py                   (+1 line)
-dtr-cli/doctester_cli/commands/__init__.py       (+1 line)
-dtr-cli/doctester_cli/managers/__init__.py       (+3 lines)
+dtr-cli/dtr_cli/cli_errors.py             (+45 lines)
+dtr-cli/dtr_cli/main.py                   (+1 line)
+dtr-cli/dtr_cli/commands/__init__.py       (+1 line)
+dtr-cli/dtr_cli/managers/__init__.py       (+3 lines)
 ```
 
 ### Total
@@ -290,7 +290,7 @@ dtr-cli/doctester_cli/managers/__init__.py       (+3 lines)
 - Implement `dtr config --show/--set` commands
 - Profile support (dev, staging, prod)
 - Credential storage and default values
-- `.doctester/config.yaml` support
+- `.dtr/config.yaml` support
 
 **Effort:** 6-8 hours
 **Impact:** 80% (usability)

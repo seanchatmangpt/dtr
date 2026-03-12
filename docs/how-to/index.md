@@ -63,4 +63,4 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 
 ---
 
-If you're new to DocTester, start with the [Tutorials](../tutorials/index.md) instead.
+If you're new to DTR, start with the [Tutorials](../tutorials/index.md) instead.

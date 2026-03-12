@@ -1,7 +1,7 @@
 # Implementation Plan: Extend say* API for Rich Documentation
 
 ## Objective
-Add new `say*` methods to `DocTester` and `RenderMachineCommands` to make documentation generation more versatile and less HTTP-centric. Enable richer formatting (tables, code blocks, callouts, lists) beyond the current paragraph/section/raw triumvirate.
+Add new `say*` methods to `DTR` and `RenderMachineCommands` to make documentation generation more versatile and less HTTP-centric. Enable richer formatting (tables, code blocks, callouts, lists) beyond the current paragraph/section/raw triumvirate.
 
 ## Current API
 ```
@@ -82,7 +82,7 @@ Render assertion results in a table (similar to sayAndAssertThat but for non-tes
 
 ### Phase 1: Interface Contracts
 1. Add all 9 new method signatures to `RenderMachineCommands` interface
-2. Add corresponding delegation methods to `DocTester` class
+2. Add corresponding delegation methods to `DTR` class
 3. Each method has a Javadoc explaining purpose and markdown output
 
 ### Phase 2: RenderMachineImpl Implementation
@@ -115,10 +115,10 @@ Render assertion results in a table (similar to sayAndAssertThat but for non-tes
 
 | File | Changes |
 |------|---------|
-| `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineCommands.java` | Add 9 method signatures |
-| `dtr-core/src/main/java/org/r10r/doctester/DTR.java` | Add 9 delegation methods |
-| `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java` | Implement 9 methods |
-| `dtr-core/src/test/java/org/r10r/doctester/rendermachine/RenderMachineExtensionTest.java` | New test class (create) |
+| `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineCommands.java` | Add 9 method signatures |
+| `dtr-core/src/main/java/org/r10r/dtr/DTR.java` | Add 9 delegation methods |
+| `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineImpl.java` | Implement 9 methods |
+| `dtr-core/src/test/java/org/r10r/dtr/rendermachine/RenderMachineExtensionTest.java` | New test class (create) |
 | `CLAUDE.md` | Update API reference section |
 
 ## Testing Plan
@@ -131,7 +131,7 @@ Render assertion results in a table (similar to sayAndAssertThat but for non-tes
 ## Acceptance Criteria
 
 - [ ] All 9 new methods defined in `RenderMachineCommands`
-- [ ] All 9 methods delegated in `DocTester`
+- [ ] All 9 methods delegated in `DTR`
 - [ ] All 9 methods implemented in `RenderMachineImpl`
 - [ ] Unit tests pass with >95% line coverage for new code
 - [ ] Integration test produces valid markdown output
@@ -144,7 +144,7 @@ Render assertion results in a table (similar to sayAndAssertThat but for non-tes
 ## Next Steps
 1. Confirm plan with user
 2. Start with `RenderMachineCommands` interface
-3. Parallel: implement in `RenderMachineImpl` and `DocTester`
+3. Parallel: implement in `RenderMachineImpl` and `DTR`
 4. Write tests as we go (TDD style)
 5. Update documentation
 6. Commit and push to `claude/plan-major-release-LmHxG`

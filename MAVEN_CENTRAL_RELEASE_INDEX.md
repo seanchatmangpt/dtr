@@ -131,7 +131,7 @@
 ## File Structure & Locations
 
 ```
-/home/user/doctester/
+/home/user/dtr/
 ├── MAVEN_CENTRAL_RELEASE_INDEX.md          (this file)
 ├── RELEASE_PREPARATION_SUMMARY.md          (start here)
 ├── MAVEN_CENTRAL_RELEASE_REPORT.md         (deep technical analysis)
@@ -251,7 +251,7 @@ Total: ~70 minutes
 
 ### For Technical Review
 1. `MAVEN_CENTRAL_RELEASE_REPORT.md` (comprehensive technical analysis)
-2. `/home/user/doctester/pom.xml` (release profile configuration)
+2. `/home/user/dtr/pom.xml` (release profile configuration)
 3. `.mvn/maven.config` (build configuration)
 
 ### For CI/CD Integration

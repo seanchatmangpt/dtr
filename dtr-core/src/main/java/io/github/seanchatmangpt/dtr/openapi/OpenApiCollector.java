@@ -27,7 +27,7 @@ import java.util.SequencedMap;
 /**
  * Collects HTTP request/response pairs and generates an OpenAPI specification.
  *
- * <p>This collector observes all HTTP interactions made through DocTester
+ * <p>This collector observes all HTTP interactions made through DTR
  * and builds an OpenAPI 3.1 specification that can be exported to JSON or YAML.
  *
  * <p>Usage:
