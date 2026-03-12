@@ -34,20 +34,20 @@ import org.slf4j.LoggerFactory;
  * Central configuration for render machine selection and instantiation.
  *
  * Parses system properties to determine which render machines to activate:
- * - {@code -Ddoctester.output=markdown}: Markdown only (default, backward compatible)
- * - {@code -Ddoctester.output=latex}: LaTeX/PDF only
- * - {@code -Ddoctester.output=markdown,latex}: Both formats simultaneously
+ * - {@code -Ddtr.output=markdown}: Markdown only (default, backward compatible)
+ * - {@code -Ddtr.output=latex}: LaTeX/PDF only
+ * - {@code -Ddtr.output=markdown,latex}: Both formats simultaneously
  *
  * LaTeX template selection:
- * - {@code -Ddoctester.latex.template=arxiv}: ArXiv format (default)
- * - {@code -Ddoctester.latex.template=patent}: USPTO/patent format
+ * - {@code -Ddtr.latex.template=arxiv}: ArXiv format (default)
+ * - {@code -Ddtr.latex.template=patent}: USPTO/patent format
  */
 public final class RenderConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(RenderConfig.class);
 
-    private static final String PROP_OUTPUT_FORMATS = "doctester.output";
-    private static final String PROP_LATEX_TEMPLATE = "doctester.latex.template";
+    private static final String PROP_OUTPUT_FORMATS = "dtr.output";
+    private static final String PROP_LATEX_TEMPLATE = "dtr.latex.template";
 
     private static final String DEFAULT_FORMATS = "markdown";
     private static final String DEFAULT_TEMPLATE = "arxiv";

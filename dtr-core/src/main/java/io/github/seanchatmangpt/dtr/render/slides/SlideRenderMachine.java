@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public final class SlideRenderMachine extends RenderMachine {
 
     private static final Logger logger = LoggerFactory.getLogger(SlideRenderMachine.class);
-    private static final String BASE_DIR = "target/site/doctester/slides";
+    private static final String BASE_DIR = "target/site/dtr/slides";
 
     private final SlideTemplate template;
     private final StringBuilder slideBuffer = new StringBuilder();

@@ -41,7 +41,7 @@ public record NatureTemplate(String codeRepositoryUrl) implements LatexTemplate 
      * Creates a Nature template with optional code repository URL.
      */
     public NatureTemplate() {
-        this("https://github.com/r10r/doctester");
+        this("https://github.com/seanchatmangpt/dtr");
     }
 
     @Override

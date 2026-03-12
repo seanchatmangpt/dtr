@@ -45,8 +45,8 @@ import org.slf4j.LoggerFactory;
  * Factory for creating configured render machine instances.
  *
  * Supports selecting output format(s) via Maven system properties:
- * - -Ddoctester.output=markdown,blog,slides,latex,all
- * - -Ddoctester.latex.format=arxiv|patent|ieee|acm|nature (for LaTeX output)
+ * - -Ddtr.output=markdown,blog,slides,latex,all
+ * - -Ddtr.latex.format=arxiv|patent|ieee|acm|nature (for LaTeX output)
  *
  * LaTeX Format Selection:
  * - arxiv (default): arXiv pre-print submissions
@@ -61,10 +61,10 @@ import org.slf4j.LoggerFactory;
  * allocation overhead for subsequent factory calls.
  *
  * Examples:
- * - -Ddoctester.output=markdown (default, single render machine)
- * - -Ddoctester.output=all (all formats simultaneously)
- * - -Ddoctester.output=latex -Ddoctester.latex.format=patent (USPTO patents)
- * - -Ddoctester.output=blog,slides (blog posts + slides only)
+ * - -Ddtr.output=markdown (default, single render machine)
+ * - -Ddtr.output=all (all formats simultaneously)
+ * - -Ddtr.output=latex -Ddtr.latex.format=patent (USPTO patents)
+ * - -Ddtr.output=blog,slides (blog posts + slides only)
  */
 public final class RenderMachineFactory {
 
@@ -106,7 +106,7 @@ public final class RenderMachineFactory {
     /**
      * Create a render machine instance based on system property configuration.
      *
-     * The -Ddoctester.output property controls which format(s) to generate:
+     * The -Ddtr.output property controls which format(s) to generate:
      * - "markdown" (default): Markdown documentation only
      * - "latex": LaTeX PDF only
      * - "blog": Blog posts (all platforms) only
@@ -243,7 +243,7 @@ public final class RenderMachineFactory {
     /**
      * Select LaTeX template based on system property (uses cached instances for JEP 526).
      *
-     * The -Ddoctester.latex.format property controls which academic/patent format:
+     * The -Ddtr.latex.format property controls which academic/patent format:
      * - arxiv (default): arXiv pre-print submissions
      * - patent: USPTO patent exhibit format
      * - ieee: IEEE journal articles

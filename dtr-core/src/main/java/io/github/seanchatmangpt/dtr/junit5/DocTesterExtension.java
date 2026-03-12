@@ -56,9 +56,9 @@ import java.util.Optional;
  */
 public class DocTesterExtension implements BeforeEachCallback, AfterAllCallback {
 
-    private static final String RENDER_MACHINE_KEY = "doctester.renderMachine";
-    private static final String TEST_BROWSER_KEY = "doctester.testBrowser";
-    private static final String FILE_NAME_KEY = "doctester.fileName";
+    private static final String RENDER_MACHINE_KEY = "dtr.renderMachine";
+    private static final String TEST_BROWSER_KEY = "dtr.testBrowser";
+    private static final String FILE_NAME_KEY = "dtr.fileName";
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
