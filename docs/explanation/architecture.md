@@ -1,6 +1,6 @@
 # Explanation: Architecture
 
-This document describes DocTester's module structure, class design, and the extension points available to customize its behavior.
+This document describes DTR's module structure, class design, and the extension points available to customize its behavior.
 
 ---
 
@@ -9,10 +9,10 @@ This document describes DocTester's module structure, class design, and the exte
 DTR is a two-module Maven project:
 
 ```
-doctester/
+dtr/
 ├── pom.xml                          # Parent POM (enforcer, versions)
 ├── dtr-core/                  # The library
-│   └── src/main/java/org/r10r/doctester/
+│   └── src/main/java/org/r10r/dtr/
 │       ├── DTR.java
 │       ├── testbrowser/             # HTTP client
 │       └── rendermachine/           # HTML output
@@ -32,10 +32,10 @@ doctester/
 ## Package layout
 
 ```
-io.github.seanchatmangpt.dtr.doctester
+io.github.seanchatmangpt.dtr.dtr
 ├── DTR.java               # Abstract base class
 
-io.github.seanchatmangpt.dtr.doctester.testbrowser
+io.github.seanchatmangpt.dtr.dtr.testbrowser
 ├── TestBrowser.java             # HTTP client interface
 ├── TestBrowserImpl.java         # Apache HttpClient implementation
 ├── Request.java                 # Fluent request builder
@@ -44,7 +44,7 @@ io.github.seanchatmangpt.dtr.doctester.testbrowser
 ├── HttpConstants.java           # HTTP string constants
 └── PayloadUtils.java            # JSON/XML formatting helpers
 
-io.github.seanchatmangpt.dtr.doctester.rendermachine
+io.github.seanchatmangpt.dtr.dtr.rendermachine
 ├── RenderMachineCommands.java   # Output method interface
 ├── RenderMachine.java           # Full interface (commands + lifecycle)
 ├── RenderMachineImpl.java       # Bootstrap HTML implementation
@@ -80,7 +80,7 @@ io.github.seanchatmangpt.dtr.doctester.rendermachine
    └─────────────────┘     └──────────────────────┘
 ```
 
-`DocTester` depends on interfaces, not implementations. This is the primary extension point: inject different `TestBrowser` or `RenderMachine` implementations via `getTestBrowser()` and `getRenderMachine()`.
+`DTR` depends on interfaces, not implementations. This is the primary extension point: inject different `TestBrowser` or `RenderMachine` implementations via `getTestBrowser()` and `getRenderMachine()`.
 
 ---
 
@@ -256,7 +256,7 @@ The `provided` scope for JUnit means DTR doesn't force a specific JUnit version 
   - Sections tracked in a list (for table of contents)
   - Request/response pairs stored as objects, rendered on `finishAndWriteOut()`
   - Lifecycle: static field in `DTR` (persists across test methods in one class)
-  - File output: writes to `target/site/doctester/{TestClassName}.html`
+  - File output: writes to `target/site/dtr/{TestClassName}.html`
 
 - `RenderMachineHtml` (constants) — HTML template strings
   - Bootstrap navbar, sidebar, footer templates
@@ -291,7 +291,7 @@ The project contains three Maven modules:
 
 **Who uses it:** Your project (add as `<scope>test</scope>`)
 
-**Output:** `target/site/doctester/*.html` files
+**Output:** `target/site/dtr/*.html` files
 
 ---
 
@@ -356,7 +356,7 @@ User writes test:
     RenderMachine.finishAndWriteOut()
     ↓
   File written:
-    target/site/doctester/TestClass.html
+    target/site/dtr/TestClass.html
 ```
 
 ### Output Assembly (RenderMachineImpl.finishAndWriteOut)

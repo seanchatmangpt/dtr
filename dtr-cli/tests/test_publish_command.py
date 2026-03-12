@@ -45,7 +45,7 @@ def valid_pom_path(tmp_path):
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.seanchatmangpt</groupId>
-    <artifactId>doctester-core</artifactId>
+    <artifactId>dtr-core</artifactId>
     <version>2.5.0</version>
     <licenses>
         <license>
@@ -60,8 +60,8 @@ def valid_pom_path(tmp_path):
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:https://github.com/seanchatmangpt/doctester.git</connection>
-        <url>https://github.com/seanchatmangpt/doctester</url>
+        <connection>scm:git:https://github.com/seanchatmangpt/dtr.git</connection>
+        <url>https://github.com/seanchatmangpt/dtr</url>
     </scm>
     <distributionManagement>
         <repository>
@@ -87,7 +87,7 @@ def snapshot_pom_path(tmp_path):
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.seanchatmangpt</groupId>
-    <artifactId>doctester</artifactId>
+    <artifactId>dtr</artifactId>
     <version>2.5.0-SNAPSHOT</version>
 </project>
 """
@@ -119,7 +119,7 @@ def missing_licenses_pom_path(tmp_path):
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.seanchatmangpt</groupId>
-    <artifactId>doctester</artifactId>
+    <artifactId>dtr</artifactId>
     <version>1.0.0</version>
     <developers>
         <developer><id>test</id></developer>

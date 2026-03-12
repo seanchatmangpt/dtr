@@ -53,7 +53,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Comprehensive tests for {@link DocTesterExtension}.
+ * Comprehensive tests for {@link DtrExtension}.
  *
  * <p>Tests verify:
  * <ul>
@@ -64,8 +64,8 @@ import static org.mockito.Mockito.when;
  *   <li>Factory method customization</li>
  * </ul>
  */
-@DisplayName("DocTesterExtension Tests")
-class DocTesterExtensionTest {
+@DisplayName("DtrExtension Tests")
+class DtrExtensionTest {
 
     // =========================================================================
     // Unit Tests - RenderMachine creation
@@ -78,7 +78,7 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should create RenderMachineImpl by default")
         void shouldCreateRenderMachineImplByDefault() {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             RenderMachine renderMachine = extension.createRenderMachine();
 
@@ -90,7 +90,7 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should create new instance each call")
         void shouldCreateNewInstanceEachCall() {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             RenderMachine first = extension.createRenderMachine();
             RenderMachine second = extension.createRenderMachine();
@@ -110,7 +110,7 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should create TestBrowserImpl by default")
         void shouldCreateTestBrowserImplByDefault() {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             TestBrowser testBrowser = extension.createTestBrowser();
 
@@ -122,7 +122,7 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should create new instance each call")
         void shouldCreateNewInstanceEachCall() {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             TestBrowser first = extension.createTestBrowser();
             TestBrowser second = extension.createTestBrowser();
@@ -149,10 +149,10 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should create RenderMachine when not present in store")
         void shouldCreateRenderMachineWhenNotPresent() {
-            DocTesterExtension extension = new DocTesterExtension();
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            DtrExtension extension = new DtrExtension();
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
-            when(mockContext.getTestClass()).thenReturn(Optional.of(DocTesterExtensionTest.class));
+            when(mockContext.getTestClass()).thenReturn(Optional.of(DtrExtensionTest.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
 
             RenderMachine result = extension.getOrCreateRenderMachine(mockContext);
@@ -164,10 +164,10 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should return same RenderMachine on subsequent calls")
         void shouldReturnSameRenderMachineOnSubsequentCalls() {
-            DocTesterExtension extension = new DocTesterExtension();
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            DtrExtension extension = new DtrExtension();
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
-            when(mockContext.getTestClass()).thenReturn(Optional.of(DocTesterExtensionTest.class));
+            when(mockContext.getTestClass()).thenReturn(Optional.of(DtrExtensionTest.class));
 
             RenderMachine first = extension.getOrCreateRenderMachine(mockContext);
             when(mockStore.get("dtr.renderMachine")).thenReturn(first);
@@ -180,10 +180,10 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should set fileName from test class name")
         void shouldSetFileNameFromTestClassName() {
-            DocTesterExtension extension = new DocTesterExtension();
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            DtrExtension extension = new DtrExtension();
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
-            when(mockContext.getTestClass()).thenReturn(Optional.of(DocTesterExtensionTest.class));
+            when(mockContext.getTestClass()).thenReturn(Optional.of(DtrExtensionTest.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
 
             RenderMachineImpl renderMachine = (RenderMachineImpl) extension.getOrCreateRenderMachine(mockContext);
@@ -195,8 +195,8 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should use default fileName when test class is not available")
         void shouldUseDefaultFileNameWhenTestClassNotAvailable() {
-            DocTesterExtension extension = new DocTesterExtension();
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            DtrExtension extension = new DtrExtension();
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.empty());
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -225,10 +225,10 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should return TestBrowser from store when present")
         void shouldReturnTestBrowserFromStoreWhenPresent() {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
             TestBrowser expectedBrowser = mock(TestBrowser.class);
 
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockStore.get("dtr.testBrowser")).thenReturn(expectedBrowser);
 
@@ -240,9 +240,9 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should create and store TestBrowser when not present")
         void shouldCreateAndStoreTestBrowserWhenNotPresent() {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockStore.get("dtr.testBrowser")).thenReturn(null);
 
@@ -271,11 +271,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should process @DocSection annotation")
         void shouldProcessDocSectionAnnotation() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = AnnotationTestClass.class.getMethod("methodWithDocSection");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(AnnotationTestClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -286,11 +286,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should process @DocDescription annotation")
         void shouldProcessDocDescriptionAnnotation() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = AnnotationTestClass.class.getMethod("methodWithDocDescription");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(AnnotationTestClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -302,11 +302,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should process @DocNote annotation")
         void shouldProcessDocNoteAnnotation() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = AnnotationTestClass.class.getMethod("methodWithDocNote");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(AnnotationTestClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -317,11 +317,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should process @DocWarning annotation")
         void shouldProcessDocWarningAnnotation() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = AnnotationTestClass.class.getMethod("methodWithDocWarning");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(AnnotationTestClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -332,11 +332,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should process @DocCode annotation")
         void shouldProcessDocCodeAnnotation() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = AnnotationTestClass.class.getMethod("methodWithDocCode");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(AnnotationTestClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -347,11 +347,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should handle method without annotations")
         void shouldHandleMethodWithoutAnnotations() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = AnnotationTestClass.class.getMethod("methodWithoutAnnotations");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(AnnotationTestClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -362,10 +362,10 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should handle empty test method optional")
         void shouldHandleEmptyTestMethodOptional() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             when(mockContext.getTestMethod()).thenReturn(Optional.empty());
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(AnnotationTestClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -415,11 +415,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("beforeEach should store TestBrowser in context")
         void beforeEachShouldStoreTestBrowser() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
-            when(mockContext.getTestClass()).thenReturn(Optional.of(DocTesterExtensionTest.class));
+            when(mockContext.getTestClass()).thenReturn(Optional.of(DtrExtensionTest.class));
             when(mockContext.getTestMethod()).thenReturn(Optional.empty());
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
 
@@ -432,11 +432,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("afterAll should call finishAndWriteOut when RenderMachine exists")
         void afterAllShouldCallFinishAndWriteOut() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
             RenderMachineImpl renderMachine = new RenderMachineImpl();
             renderMachine.setFileName("TestClass");
 
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockStore.get("dtr.renderMachine")).thenReturn(renderMachine);
 
@@ -451,9 +451,9 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("afterAll should handle null RenderMachine gracefully")
         void afterAllShouldHandleNullRenderMachine() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
 
@@ -473,7 +473,7 @@ class DocTesterExtensionTest {
         Path tempDir;
 
         @Test
-        @ExtendWith(DocTesterExtension.class)
+        @ExtendWith(DtrExtension.class)
         @DisplayName("extension should work with @ExtendWith annotation")
         void extensionShouldWorkWithExtendWithAnnotation() {
             // This test verifies the extension can be loaded via @ExtendWith
@@ -486,7 +486,7 @@ class DocTesterExtensionTest {
         @DisplayName("custom extension should allow overriding factory methods")
         void customExtensionShouldAllowOverridingFactoryMethods() {
             // Create a custom extension that overrides factory methods
-            DocTesterExtension customExtension = new DocTesterExtension() {
+            DtrExtension customExtension = new DtrExtension() {
                 @Override
                 protected RenderMachine createRenderMachine() {
                     RenderMachineImpl rm = new RenderMachineImpl();
@@ -520,7 +520,7 @@ class DocTesterExtensionTest {
         @DisplayName("should use consistent store keys")
         void shouldUseConsistentStoreKeys() {
             // This test documents the expected store key values
-            // These should match the private constants in DocTesterExtension
+            // These should match the private constants in DtrExtension
             String expectedRenderMachineKey = "dtr.renderMachine";
             String expectedTestBrowserKey = "dtr.testBrowser";
             String expectedFileNameKey = "dtr.fileName";
@@ -549,11 +549,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should handle multiple @DocDescription values")
         void shouldHandleMultipleDocDescriptionValues() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = MultiValueAnnotationClass.class.getMethod("methodWithMultipleDescriptions");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(MultiValueAnnotationClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -564,11 +564,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should handle @DocCode with language specified")
         void shouldHandleDocCodeWithLanguage() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = MultiValueAnnotationClass.class.getMethod("methodWithCodeLanguage");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(MultiValueAnnotationClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -579,11 +579,11 @@ class DocTesterExtensionTest {
         @Test
         @DisplayName("should handle all annotations on single method")
         void shouldHandleAllAnnotationsOnSingleMethod() throws Exception {
-            DocTesterExtension extension = new DocTesterExtension();
+            DtrExtension extension = new DtrExtension();
 
             Method testMethod = MultiValueAnnotationClass.class.getMethod("methodWithAllAnnotations");
             when(mockContext.getTestMethod()).thenReturn(Optional.of(testMethod));
-            when(mockContext.getStore(ExtensionContext.Namespace.create(DocTesterExtension.class)))
+            when(mockContext.getStore(ExtensionContext.Namespace.create(DtrExtension.class)))
                     .thenReturn(mockStore);
             when(mockContext.getTestClass()).thenReturn(Optional.of(MultiValueAnnotationClass.class));
             when(mockStore.get("dtr.renderMachine")).thenReturn(null);
@@ -621,7 +621,7 @@ class DocTesterExtensionTest {
         File docsDir = new File("target/docs");
         if (docsDir.exists() && docsDir.isDirectory()) {
             File[] testFiles = docsDir.listFiles((dir, name) ->
-                    name.contains("DocTesterExtensionTest") ||
+                    name.contains("DtrExtensionTest") ||
                     name.contains("AnnotationTestClass") ||
                     name.contains("MultiValueAnnotationClass"));
             if (testFiles != null) {

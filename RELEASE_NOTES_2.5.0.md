@@ -249,7 +249,7 @@ abstract class RenderMachine implements RenderMachineCommands {
 **Public API (No Change):**
 ```java
 // All of this still works identically
-DocTesterContext ctx;
+DTRContext ctx;
 RenderMachine machine = ctx.getRenderMachine();  // ✓
 machine.say("content");                          // ✓
 machine.sayJson(data);                           // ✓

@@ -53,7 +53,7 @@ import java.util.Optional;
  * @param anchor the section/anchor name within that DocTest, e.g., "user-registration"
  *               (typically matches @DocSection annotation value with spaces-to-hyphens conversion)
  * @param resolvedLabel the resolved label after compilation (e.g., "Section 3.2"), initially empty
- * @see DocTester#sayRef(Class, String) for convenience method
+ * @see DTR#sayRef(Class, String) for convenience method
  * @see CrossReferenceIndex for reference tracking and resolution
  * @since 1.0.0
  */

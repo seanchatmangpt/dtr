@@ -4,13 +4,13 @@
 
 ### Run Unit Tests (Fast - <30 seconds)
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 pytest dtr-cli/tests/test_cli_stress.py -v
 ```
 
 ### Run Benchmarks (Detailed - ~2 minutes)
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 mvnd clean package -pl dtr-benchmarks -am
 java -jar dtr-benchmarks/target/benchmarks.jar
 ```
@@ -97,7 +97,7 @@ java -jar dtr-benchmarks/target/benchmarks.jar -rf json -rff results.json
 
 ### Unit Tests Not Found
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 python -m pytest dtr-cli/tests/test_cli_stress.py -v --collect-only
 ```
 
@@ -119,7 +119,7 @@ java -jar target/benchmarks.jar -w 10 -i 20  # More iterations = more stable
 ## File Locations
 
 ```
-/home/user/doctester/
+/home/user/dtr/
 ├── dtr-cli/tests/
 │   ├── test_cli_stress.py              ← NEW: 5 consolidated tests
 │   ├── test_cli_stress_large_files.py  (original, not deleted)

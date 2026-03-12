@@ -56,15 +56,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       handling and memory behaviour.</li>
  * </ol>
  */
-@Label("DocTester — fuzz tests (jqwik adversarial generators)")
-class DocTesterFuzzTest {
+@Label("DTR — fuzz tests (jqwik adversarial generators)")
+class DtrFuzzTest {
 
     private RenderMachineImpl rm;
 
     @BeforeProperty
     void freshRenderMachine() {
         rm = new RenderMachineImpl();
-        rm.setFileName("DocTesterFuzzTest");
+        rm.setFileName("DtrFuzzTest");
     }
 
     // =========================================================================

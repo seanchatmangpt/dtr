@@ -14,7 +14,7 @@ DTR (orchestrator)
 └── RenderMachine (HTML accumulation + file writing)
 ```
 
-**`DocTester`** is your test class's superclass. It coordinates between the other two: when you call `sayAndMakeRequest()`, DTR delegates to `TestBrowser` for HTTP and to `RenderMachine` to generate the panel HTML.
+**`DTR`** is your test class's superclass. It coordinates between the other two: when you call `sayAndMakeRequest()`, DTR delegates to `TestBrowser` for HTTP and to `RenderMachine` to generate the panel HTML.
 
 **`TestBrowser`** handles the actual HTTP connection (Apache HttpClient), serializes payloads, and maintains a persistent cookie jar. It is stateful — cookies set by the server in one request are automatically sent in the next.
 
@@ -31,7 +31,7 @@ One important subtlety: `TestBrowser` and `RenderMachine` have different scopes.
 | `TestBrowser` | Per test method | Cookie jar is fresh for each `@Test` |
 | `RenderMachine` | Per test class | All `@Test` methods write to the same HTML page |
 
-`DocTester`'s `@Before` hook creates a new `TestBrowserImpl` instance for each test method:
+`DTR`'s `@Before` hook creates a new `TestBrowserImpl` instance for each test method:
 
 ```java
 // Simplified from DTR.java
@@ -51,7 +51,7 @@ The `RenderMachine` is a class-level static field, so all test methods in a clas
 
 ### 1. JUnit starts the test class
 
-JUnit 4 discovers the test class via classpath scanning or explicit configuration. DTR hooks into JUnit via `@Before` and `@AfterClass` annotations on methods in `DocTester` itself.
+JUnit 4 discovers the test class via classpath scanning or explicit configuration. DTR hooks into JUnit via `@Before` and `@AfterClass` annotations on methods in `DTR` itself.
 
 ### 2. `@Before setupForTestCaseMethod()`
 
@@ -84,7 +84,7 @@ After all `@Test` methods in the class complete:
    - Bootstrap navbar
    - Sidebar with section links
    - Main content from the accumulated buffer
-3. HTML is written to `target/site/doctester/{ClassName}.html`
+3. HTML is written to `target/site/dtr/{ClassName}.html`
 4. Bootstrap/jQuery assets are copied if not already present
 5. `index.html` is regenerated with a link to the new page
 
@@ -153,7 +153,7 @@ Use `makeRequest` for HTTP calls that are test setup (login, data seeding, clean
 
 `RenderMachineImpl` maintains a running list of generated documentation pages. Each time `finishAndWriteOut()` runs:
 
-1. It scans `target/site/doctester/` for existing `*.html` files
+1. It scans `target/site/dtr/` for existing `*.html` files
 2. Regenerates `index.html` with links to all of them
 
 This means `index.html` is updated incrementally — if you run tests from class A and then class B, `index.html` will link to both.

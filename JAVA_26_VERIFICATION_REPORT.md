@@ -1,7 +1,7 @@
 # Java 26 Compatibility & Feature Verification Report
 
 **Date:** March 11, 2026
-**DocTester Version:** 2.5.0-SNAPSHOT
+**DTR Version:** 2.5.0-SNAPSHOT
 **Java Version Tested:** OpenJDK 25.0.2 (Java 26 features via `--enable-preview`)
 **Maven Version:** Apache Maven 4.0.0-rc-5
 **mvnd Version:** 2.0.0-rc-3
@@ -39,7 +39,7 @@ String result = switch (value) {
 // Output: "medium: 42"
 ```
 
-**DocTester Impact:** Enhanced dispatch logic in `RenderMachineImpl` for format selection:
+**DTR Impact:** Enhanced dispatch logic in `RenderMachineImpl` for format selection:
 ```java
 // Example: render engine dispatch
 String format = switch (renderMode) {
@@ -71,7 +71,7 @@ class LazyTemplate {
 }
 ```
 
-**DocTester Impact:** Perfect for template caching in LaTeX/OpenAPI rendering:
+**DTR Impact:** Perfect for template caching in LaTeX/OpenAPI rendering:
 - **Before:** Template re-initialized on every render call
 - **After:** First access initializes, subsequent calls return cached instance (zero overhead)
 - **Expected Improvement:** 5-10% reduction in PDF generation latency
@@ -99,7 +99,7 @@ try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
 }
 ```
 
-**DocTester Impact:** Parallel rendering of multiple output formats:
+**DTR Impact:** Parallel rendering of multiple output formats:
 - **Current:** Sequential rendering (Markdown → LaTeX → Blog → Slides)
 - **Java 26:** Concurrent rendering via virtual threads
 - **Expected Improvement:** 3-4x throughput increase for multi-format generation
@@ -110,7 +110,7 @@ try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
 **Compilation:** ✅ Key import/export utilities compile
 **Runtime:** ✅ Cryptographic operations functional
 
-**DocTester Impact:** Cleaner SSL/TLS certificate handling in `TestBrowserImpl`:
+**DTR Impact:** Cleaner SSL/TLS certificate handling in `TestBrowserImpl`:
 ```java
 // JEP 524: Simplified PEM key loading
 java.security.KeyStore ks = KeyStore.getInstance("PKCS12");
@@ -123,7 +123,7 @@ java.security.KeyStore ks = KeyStore.getInstance("PKCS12");
 **Compilation:** ✅ No code changes needed (GC improvement is automatic)
 **Runtime:** ✅ Throughput improvements automatic
 
-**DocTester Impact:** No code changes required; automatic gains:
+**DTR Impact:** No code changes required; automatic gains:
 - **Expected Improvement:** 5-15% throughput improvement for multi-threaded document assembly
 - **Memory Efficiency:** Better heap management for large document batches
 
@@ -140,7 +140,7 @@ After (cached):     78 ns
 Improvement:        6,667x faster (99.98% reduction)
 ```
 
-**DocTester Impact:** Template and metadata caching:
+**DTR Impact:** Template and metadata caching:
 - `DocMetadata` instances now cached in AOT object cache
 - `LatexTemplate` static instances benefit from pre-cached initialization
 - **Expected Improvement:** 50-100ms saved per 1000-page batch PDF generation
@@ -151,7 +151,7 @@ Improvement:        6,667x faster (99.98% reduction)
 **Compilation:** ✅ All 16 sealed classes verified
 **Runtime:** ✅ Reflection barrier strengthening transparent
 
-**DocTester Sealed Class Inventory:**
+**DTR Sealed Class Inventory:**
 - `HttpResult` (2 implementations)
 - `LatexTemplate` (5 implementations: ACM, IEEE, arXiv, Nature, Patent)
 - `RenderMachine` (4 implementations)

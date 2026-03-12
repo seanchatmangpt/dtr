@@ -41,7 +41,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
-import controllers.utils.NinjaApiDoctester;
+import controllers.utils.NinjaApiDtr;
 
 /**
  * Production API Design and Security Reference — Article Management API.
@@ -66,7 +66,7 @@ import controllers.utils.NinjaApiDoctester;
  * any article). Stateless JWT tokens were evaluated and rejected — see the authentication
  * design note in {@code testGetAndPostArticleViaJson()}.</p>
  */
-public class ApiControllerDocTest extends NinjaApiDoctester {
+public class ApiControllerDocTest extends NinjaApiDtr {
 
     // =========================================================================
     // API Endpoint Definitions
@@ -126,7 +126,7 @@ public class ApiControllerDocTest extends NinjaApiDoctester {
         sayKeyValue(new LinkedHashMap<>(Map.of(
             "Request",        "HEAD " + testServerUrl(),
             "Response time",  ms + " ms",
-            "Framework",      "Ninja Framework (NinjaApiDoctester)"
+            "Framework",      "Ninja Framework (NinjaApiDtr)"
         )));
 
         sayAndAssertThat("Response headers are present (HEAD contract fulfilled)", response.headers, notNullValue());

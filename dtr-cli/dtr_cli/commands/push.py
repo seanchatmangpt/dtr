@@ -45,8 +45,8 @@ def gh(
 
     \b
     Examples:
-        dtr push gh target/site/doctester --repo myorg/myrepo
-        dtr push gh target/site/doctester \\
+        dtr push gh target/site/dtr --repo myorg/myrepo
+        dtr push gh target/site/dtr \\
             --repo myorg/myrepo --branch docs --token ghp_xxx
     """
     from dtr_cli.publishers.github_publisher import GithubPublisher
@@ -109,8 +109,8 @@ def s3(
 
     \b
     Examples:
-        dtr push s3 target/site/doctester --bucket my-docs
-        dtr push s3 target/site/doctester \\
+        dtr push s3 target/site/dtr --bucket my-docs
+        dtr push s3 target/site/dtr \\
             --bucket my-docs --prefix api-docs/ --public
     """
     from dtr_cli.publishers.s3_publisher import S3Publisher
@@ -172,8 +172,8 @@ def gcs(
 
     \b
     Examples:
-        dtr push gcs target/site/doctester --bucket my-docs
-        dtr push gcs target/site/doctester \\
+        dtr push gcs target/site/dtr --bucket my-docs
+        dtr push gcs target/site/dtr \\
             --bucket my-docs --project my-gcp-project --prefix api-docs/
     """
     from dtr_cli.publishers.gcs_publisher import GcsPublisher
@@ -220,8 +220,8 @@ def local(
 
     \b
     Examples:
-        dtr push local target/site/doctester --target ./docs
-        dtr push local target/site/doctester --target /var/www/html
+        dtr push local target/site/dtr --target ./docs
+        dtr push local target/site/dtr --target /var/www/html
     """
     from dtr_cli.publishers.local_publisher import LocalPublisher
 

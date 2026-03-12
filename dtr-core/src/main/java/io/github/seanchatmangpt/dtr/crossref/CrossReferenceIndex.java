@@ -76,7 +76,7 @@ public class CrossReferenceIndex {
     /**
      * Register a cross-reference during test execution.
      *
-     * Called by DocTester.sayRef() to record each cross-reference made
+     * Called by DTR.sayRef() to record each cross-reference made
      * during test execution.
      *
      * @param ref the reference to register

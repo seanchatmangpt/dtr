@@ -2,7 +2,7 @@
 
 ## Summary
 
-Successfully created comprehensive Maven CLI integration test suite in `/home/user/doctester/dtr-cli/tests/test_cli_maven_integration.py` with **26 total tests** covering all aspects of Maven-DocTester CLI integration.
+Successfully created comprehensive Maven CLI integration test suite in `/home/user/dtr/dtr-cli/tests/test_cli_maven_integration.py` with **26 total tests** covering all aspects of Maven-DTR CLI integration.
 
 **Test Results (in environment with network access):**
 - ✅ **11 tests passing** (tests that don't require Maven network access)
@@ -177,7 +177,7 @@ Execution time: ~180 seconds (Maven downloads and builds)
 ## Implementation Details
 
 ### File Location
-- **Test file:** `/home/user/doctester/dtr-cli/tests/test_cli_maven_integration.py`
+- **Test file:** `/home/user/dtr/dtr-cli/tests/test_cli_maven_integration.py`
 - **Size:** ~800 lines
 - **Test classes:** 6
 - **Total test methods:** 26
@@ -220,7 +220,7 @@ class TestMavenCLIIntegrationEdgeCases:      # 7 tests
 
 ### In Current Environment (Some Tests Skip)
 ```bash
-cd /home/user/doctester/dtr-cli
+cd /home/user/dtr/dtr-cli
 venv/bin/python -m pytest tests/test_cli_maven_integration.py -v
 ```
 

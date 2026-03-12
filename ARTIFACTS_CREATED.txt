@@ -3,24 +3,24 @@ CONSOLIDATION ARTIFACTS - Complete File List
 ================================================================================
 
 1. CONSOLIDATED UNIT TEST FILE
-   /home/user/doctester/dtr-cli/tests/test_cli_stress.py
+   /home/user/dtr/dtr-cli/tests/test_cli_stress.py
    - 12 KB, 9 parametrized test cases, 380 lines
    - Python pytest format, syntax verified
    - Covers: Large files (100-500MB), Many files (1K-10K), Parallel rendering, Concurrency
 
 2. BENCHMARKS MODULE STRUCTURE
-   /home/user/doctester/dtr-benchmarks/
+   /home/user/dtr/dtr-benchmarks/
    ├── pom.xml (4.5 KB)
    │   - Maven 4 configuration with Java 25 and JMH 1.37
    │   - Shade plugin for executable JAR
-   │   - Parent: org.r10r:doctester
+   │   - Parent: org.r10r:dtr
    │
    ├── README.md (5.4 KB)
    │   - Comprehensive guide for running and customizing benchmarks
    │   - Detailed explanation of each benchmark class
    │   - Performance targets and troubleshooting
    │
-   └── src/jmh/java/org/r10r/doctester/
+   └── src/jmh/java/org/r10r/dtr/
        ├── LargeFileBenchmark.java (3.2 KB)
        │   - benchmark100MBFileStreaming()
        │   - benchmark500MBFileStreaming()
@@ -38,25 +38,25 @@ CONSOLIDATION ARTIFACTS - Complete File List
            - benchmarkMixedConcurrentOperations()
 
 3. UPDATED ROOT POM
-   /home/user/doctester/pom.xml
+   /home/user/dtr/pom.xml
    - Added <module>dtr-benchmarks</module>
    - Registers new module in multi-module build
 
 4. DOCUMENTATION FILES
-   /home/user/doctester/CONSOLIDATION_SUMMARY_5AB.md (10+ KB)
+   /home/user/dtr/CONSOLIDATION_SUMMARY_5AB.md (10+ KB)
    - Detailed consolidation report
    - Explains what tests were kept vs moved
    - Provides migration checklist
    - Includes FAQ and rationale
 
-   /home/user/doctester/STRESS_TESTS_QUICK_START.md (5 KB)
+   /home/user/dtr/STRESS_TESTS_QUICK_START.md (5 KB)
    - Quick reference guide for developers
    - TL;DR sections with essential commands
    - Common tasks and troubleshooting
 
 5. ORIGINAL FILES (NOT DELETED)
-   /home/user/doctester/dtr-cli/tests/test_cli_stress_large_files.py (22 KB, 22 tests)
-   /home/user/doctester/dtr-cli/tests/test_cli_stress_concurrent.py (60 KB, 21 tests)
+   /home/user/dtr/dtr-cli/tests/test_cli_stress_large_files.py (22 KB, 22 tests)
+   /home/user/dtr/dtr-cli/tests/test_cli_stress_concurrent.py (60 KB, 21 tests)
    - Preserved for reference
    - Can be archived or deleted after consolidation is verified
 

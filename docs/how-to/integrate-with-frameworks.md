@@ -13,15 +13,15 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.runner.RunWith;
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class ArquillianDocTester extends DTR {
+public abstract class ArquillianDTR extends DTR {
 
     @ArquillianResource
     private URL baseUrl;
@@ -38,11 +38,11 @@ public abstract class ArquillianDocTester extends DTR {
 }
 ```
 
-Your DocTest classes then extend `ArquillianDocTester`:
+Your DocTest classes then extend `ArquillianDTR`:
 
 ```java
 @RunWith(Arquillian.class)
-public class UserApiDocTest extends ArquillianDocTester {
+public class UserApiDocTest extends ArquillianDTR {
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -66,10 +66,10 @@ Start Ninja with a test rule and pass the port to the URL:
 
 ```java
 import ninja.NinjaTest;
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 
-public abstract class NinjaDocTester extends DTR {
+public abstract class NinjaDTR extends DTR {
 
     // Ninja assigns a random port; get it after server start
     protected int ninjaPort;
@@ -84,7 +84,7 @@ public abstract class NinjaDocTester extends DTR {
 Or use a `@Rule` with a `TestServer`:
 
 ```java
-public abstract class NinjaApiDocTester extends DTR {
+public abstract class NinjaApiDTR extends DTR {
 
     @Rule
     public NinjaTestServer ninjaTestServer = new NinjaTestServer();
@@ -102,15 +102,15 @@ public abstract class NinjaApiDocTester extends DTR {
 
 ```java
 import org.junit.runner.RunWith;
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public abstract class SpringDocTester extends DTR {
+public abstract class SpringDTR extends DTR {
 
     @LocalServerPort
     private int port;
@@ -122,12 +122,12 @@ public abstract class SpringDocTester extends DTR {
 }
 ```
 
-DocTest classes extend `SpringDocTester`:
+DocTest classes extend `SpringDTR`:
 
 ```java
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserApiDocTest extends SpringDocTester {
+public class UserApiDocTest extends SpringDTR {
 
     @Test
     public void testCreateUser() {
@@ -147,10 +147,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 
-public abstract class JettyDocTester extends DTR {
+public abstract class JettyDTR extends DTR {
 
     private static Server server;
     private static int port;
@@ -191,7 +191,7 @@ The pattern is always the same:
 4. All DocTest classes extend this base class
 
 ```java
-public abstract class MyFrameworkDocTester extends DTR {
+public abstract class MyFrameworkDTR extends DTR {
 
     @Override
     public Url testServerUrl() {
@@ -207,7 +207,7 @@ public abstract class MyFrameworkDocTester extends DTR {
 For smoke tests against a running environment, hard-code or configure the URL:
 
 ```java
-public abstract class StagingDocTester extends DTR {
+public abstract class StagingDTR extends DTR {
 
     @Override
     public Url testServerUrl() {

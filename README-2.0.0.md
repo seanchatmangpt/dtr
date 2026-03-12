@@ -1,10 +1,10 @@
 # DTR — Living API Documentation for Java
 
-[![Build Status](https://github.com/seanchatmangpt/doctester/actions/workflows/build.yml/badge.svg)](https://github.com/seanchatmangpt/doctester/actions)
+[![Build Status](https://github.com/seanchatmangpt/dtr/actions/workflows/build.yml/badge.svg)](https://github.com/seanchatmangpt/dtr/actions)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.seanchatmangpt.dtr/dtr-core/badge.svg)](https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
-**DocTester 2.0.0** generates **Markdown documentation while running JUnit tests**. Write tests once, get living API documentation for free.
+**DTR 2.0.0** generates **Markdown documentation while running JUnit tests**. Write tests once, get living API documentation for free.
 
 > **Upgrading from 1.x?** See the [Migration Guide](MIGRATION-1.x-TO-2.0.0.md) for breaking changes and new features.
 
@@ -19,7 +19,7 @@ You build a REST API with multiple endpoints, payloads, and response codes. You 
 - Users follow outdated examples
 - Integration breaks silently
 
-**DocTester's answer:** Make tests *and* documentation the same thing. Every test generates a clean, readable page. When your test runs, your docs stay accurate.
+**DTR's answer:** Make tests *and* documentation the same thing. Every test generates a clean, readable page. When your test runs, your docs stay accurate.
 
 ```java
 @Test
@@ -218,12 +218,12 @@ In your root `pom.xml`:
 ### 4. Write Your First Test
 
 ```java
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
-import io.github.seanchatmangpt.dtr.doctester.DocSection;
-import io.github.seanchatmangpt.dtr.doctester.DocDescription;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DocSection;
+import io.github.seanchatmangpt.dtr.dtr.DocDescription;
 import org.junit.Test;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -604,7 +604,7 @@ GitHub automatically renders Markdown in your repo.
 - **🎓 Tutorials:** [Your First DocTest](docs/tutorials/your-first-doctest.md)
 - **🔍 API Reference:** [Complete API Docs](docs/reference/index.md)
 - **💬 GitHub Discussions:** Ask questions, share ideas
-- **🐛 Bug Reports:** [Issue Tracker](https://github.com/seanchatmangpt/doctester/issues)
+- **🐛 Bug Reports:** [Issue Tracker](https://github.com/seanchatmangpt/dtr/issues)
 
 ---
 
@@ -631,11 +631,11 @@ Apache 2.0 — See [LICENSE.txt](LICENSE.txt)
 
 #### Major Changes
 - **Breaking:** Output format changed from HTML to Markdown
-- **Breaking:** Output location changed from `target/site/doctester/` to `target/docs/`
+- **Breaking:** Output location changed from `target/site/dtr/` to `target/docs/`
 - **Breaking:** Java 25 (LTS) required — no earlier versions supported
 - **New:** Annotation-based API (`@DocSection`, `@DocDescription`, etc.)
-- **New:** WebSocket support via `io.github.seanchatmangpt.dtr.doctester.websocket`
-- **New:** Server-Sent Events (SSE) support via `io.github.seanchatmangpt.dtr.doctester.sse`
+- **New:** WebSocket support via `io.github.seanchatmangpt.dtr.dtr.websocket`
+- **New:** Server-Sent Events (SSE) support via `io.github.seanchatmangpt.dtr.dtr.sse`
 - **New:** OpenAPI 3.0 specification generation
 - **New:** JUnit 5 support (backward compatible with JUnit 4)
 - **New:** Advanced authentication providers (Bearer, JWT, API Key, etc.)
@@ -663,4 +663,4 @@ DTR is inspired by Python doctests and the Devbliss doctest library. Thanks to a
 
 **Happy documenting!** 🚀
 
-For questions or suggestions, [open an issue](https://github.com/seanchatmangpt/doctester/issues) on GitHub.
+For questions or suggestions, [open an issue](https://github.com/seanchatmangpt/dtr/issues) on GitHub.

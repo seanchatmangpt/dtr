@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * <p>WireMock is an embedded HTTP server that can simulate real-world failure
  * modes at the protocol level. These tests verify that {@link TestBrowserImpl}
- * (and therefore the full DocTester stack) reacts predictably under each fault.
+ * (and therefore the full DTR stack) reacts predictably under each fault.
  *
  * <h2>Fault taxonomy tested</h2>
  * <ul>
@@ -56,8 +56,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * </ul>
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DisplayName("DocTester chaos / fault-injection tests (WireMock)")
-class DocTesterChaosTest {
+@DisplayName("DTR chaos / fault-injection tests (WireMock)")
+class DtrChaosTest {
 
     private WireMockServer server;
 

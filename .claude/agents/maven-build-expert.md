@@ -4,7 +4,7 @@ description: Expert in Maven 4, mvnd (Maven Daemon), and build optimization for 
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-You are a Maven 4 + mvnd expert for the DocTester project.
+You are a Maven 4 + mvnd expert for the DTR project.
 
 ## Toolchain Constraints (STRICT)
 
@@ -62,26 +62,26 @@ mvnd clean verify
 mvnd clean install -DskipTests
 
 # Build single module
-mvnd clean install -pl doctester-core -DskipTests
+mvnd clean install -pl dtr-core -DskipTests
 
 # Build with dependency chain
-mvnd clean install -pl doctester-core,doctester-integration-test -am
+mvnd clean install -pl dtr-core,dtr-integration-test -am
 
 # Parallel build (all CPU cores)
 mvnd clean verify -T 1C
 
 # Run specific test class
-mvnd test -pl doctester-core -Dtest=DocTesterTest
+mvnd test -pl dtr-core -Dtest=DtrCoreTest
 
 # Generate site/docs
-mvnd site -pl doctester-core
+mvnd site -pl dtr-core
 ```
 
 ## Dependency Management
 
 ```bash
 # Show dependency tree
-mvnd dependency:tree -pl doctester-core
+mvnd dependency:tree -pl dtr-core
 
 # Check for updates
 mvnd versions:display-dependency-updates versions:display-plugin-updates
@@ -159,10 +159,10 @@ mvnd dependency:tree -Dincludes=groupId:artifactId
 ## Multi-Module Build Order
 
 This project has:
-1. `doctester-core` — base library (must build first)
-2. `doctester-integration-test` — depends on `doctester-core`
+1. `dtr-core` — base library (must build first)
+2. `dtr-integration-test` — depends on `dtr-core`
 
 Always build from the root, or use `-pl` + `-am` for partial builds:
 ```bash
-mvnd clean install -pl doctester-integration-test -am  # builds core first
+mvnd clean install -pl dtr-integration-test -am  # builds core first
 ```

@@ -6,7 +6,7 @@ By the end you will have:
 
 - A Maven project with DTR configured
 - A working test that documents a GET request
-- An HTML page in `target/site/doctester/` you can open in a browser
+- An HTML page in `target/site/dtr/` you can open in a browser
 
 **Time:** ~20 minutes
 **Prerequisites:** Java 25, Maven 4 (`mvnd`)
@@ -35,7 +35,7 @@ Open your `pom.xml` and add DTR to the test dependencies:
         <scope>test</scope>
     </dependency>
 
-    <!-- SLF4J (required by DocTester's HTTP client) -->
+    <!-- SLF4J (required by DTR's HTTP client) -->
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
@@ -81,10 +81,10 @@ Create the file `src/test/java/com/example/HttpBinDocTest.java`:
 package com.example;
 
 import org.junit.Test;
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -122,7 +122,7 @@ public class HttpBinDocTest extends DTR {
 
 **What's happening here?**
 
-- `extends DocTester` — inherits the documentation and HTTP methods
+- `extends DTR` — inherits the documentation and HTTP methods
 - `sayNextSection(...)` — creates a heading in the HTML output
 - `say(...)` — adds a paragraph of explanatory text
 - `sayAndMakeRequest(...)` — executes the HTTP request **and** documents it
@@ -140,7 +140,7 @@ mvnd test -Dtest=HttpBinDocTest
 You'll see normal JUnit output in the console. After it completes:
 
 ```bash
-ls target/site/doctester/
+ls target/site/dtr/
 ```
 
 You should see:
@@ -154,7 +154,7 @@ assets/
 
 ## Step 4 — Open the documentation
 
-Open `target/site/doctester/com.example.HttpBinDocTest.html` in your browser.
+Open `target/site/dtr/com.example.HttpBinDocTest.html` in your browser.
 
 You'll see a Bootstrap-styled page with:
 
@@ -226,10 +226,10 @@ Refresh the HTML page — all three scenarios are now documented.
 ## What you learned
 
 - How to add DTR to a Maven project
-- The structure of a DocTest class (`extends DocTester`, override `testServerUrl()`)
+- The structure of a DocTest class (`extends DTR`, override `testServerUrl()`)
 - The core `say*` methods: `sayNextSection`, `say`, `sayAndMakeRequest`, `sayAndAssertThat`
 - How to build URLs with `Url.host()`, `.path()`, `.addQueryParameter()`
-- Where DTR writes its output (`target/site/doctester/`)
+- Where DTR writes its output (`target/site/dtr/`)
 
 ---
 

@@ -57,11 +57,11 @@ public void documentAsAcmPaper() {
 In your test class:
 
 ```java
-@ExtendWith(DocTesterExtension.class)
+@ExtendWith(DTRExtension.class)
 public class ApiDocTest {
 
     @Test
-    void testWithLatex(DocTesterContext ctx) {
+    void testWithLatex(DTRContext ctx) {
         // DTR automatically uses RenderMachine with LaTeX configuration
 
         ctx.sayNextSection("Research Methodology");
@@ -74,7 +74,7 @@ public class ApiDocTest {
 
     // Configure template in setup if needed
     @BeforeEach
-    void setupLatexTemplate(DocTesterContext ctx) {
+    void setupLatexTemplate(DTRContext ctx) {
         // Set template preference
         // ctx.setLatexTemplate(LatexTemplate.ARXIV);
     }

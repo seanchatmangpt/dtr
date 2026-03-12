@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * <p><strong>Java 25/26 showcase — virtual threads:</strong> All tasks run on virtual threads
  * (Project Loom) which are JVM-scheduled, not OS-scheduled. They have near-zero creation overhead,
  * making one-virtual-thread-per-machine-per-call practical even for high-frequency {@code say*} calls.
- * When DocTester generates 8+ simultaneous output formats, wall-clock time is the slowest single
+ * When DTR generates 8+ simultaneous output formats, wall-clock time is the slowest single
  * renderer, not the sum of all renderers.</p>
  *
  * <p><strong>Java 25 Enhancement:</strong> Structured concurrency with StructuredTaskScope

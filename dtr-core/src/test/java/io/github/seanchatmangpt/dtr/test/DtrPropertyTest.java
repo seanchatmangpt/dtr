@@ -45,8 +45,8 @@ import static org.junit.jupiter.api.Assertions.*;
  *       matching value never throws for any comparable type.</li>
  * </ol>
  */
-@Label("DocTester — property-based tests (jqwik)")
-class DocTesterPropertyTest {
+@Label("DTR — property-based tests (jqwik)")
+class DtrPropertyTest {
 
     // A fresh RenderMachineImpl for each property trial avoids cross-trial
     // state pollution. The constructor only allocates lists (no I/O).
@@ -55,7 +55,7 @@ class DocTesterPropertyTest {
     @BeforeProperty
     void freshRenderMachine() {
         rm = new RenderMachineImpl();
-        rm.setFileName("DocTesterPropertyTest");
+        rm.setFileName("DtrPropertyTest");
     }
 
     // =========================================================================

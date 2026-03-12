@@ -519,7 +519,7 @@ class TestMavenRunnerInit:
         _create_valid_pom(tmp_path)
         runner = MavenRunner(project_root=tmp_path)
 
-        expected = tmp_path / "target" / "site" / "doctester"
+        expected = tmp_path / "target" / "site" / "dtr"
         assert runner.get_export_dir() == expected
 
     def test_pom_path_attribute(self, tmp_path: Path) -> None:

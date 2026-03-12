@@ -13,19 +13,19 @@ Status: PLANNING (Ready to Execute)
 Three pom.xml files contain version 1.1.12-SNAPSHOT requiring update to 2.0.0:
 
 ROOT POM:
-  File:    /home/user/doctester/pom.xml
+  File:    /home/user/dtr/pom.xml
   Line:    14
   Current: <version>1.1.12-SNAPSHOT</version>
   Update:  <version>2.0.0</version>
 
 CORE MODULE (inherits from parent):
-  File:    /home/user/doctester/dtr-core/pom.xml
+  File:    /home/user/dtr/dtr-core/pom.xml
   Line:    31
   Current: Version inherited from parent
   Note:    No direct change needed; inherits via <parent> tag
 
 INTEGRATION TEST MODULE (inherits from parent):
-  File:    /home/user/doctester/dtr-integration-test/pom.xml
+  File:    /home/user/dtr/dtr-integration-test/pom.xml
   Line:    17
   Current: Version inherited from parent
   Note:    No direct change needed; inherits via <parent> tag
@@ -40,7 +40,7 @@ SINGLE-POINT UPDATE APPROACH:
   - No manual changes required for child POMs
   
 BUILD VALIDATION SEQUENCE:
-  1. Edit /home/user/doctester/pom.xml line 14
+  1. Edit /home/user/dtr/pom.xml line 14
   2. Run: mvnd validate
   3. Run: mvnd clean install -DskipTests
   4. Run: mvnd clean verify (full test suite)
@@ -56,7 +56,7 @@ EXPECTED BUILD TIME:
 3. CHANGELOG GENERATED
 ================================================================================
 
-New CHANGELOG_2.0.0.md created at: /home/user/doctester/CHANGELOG_2.0.0.md
+New CHANGELOG_2.0.0.md created at: /home/user/dtr/CHANGELOG_2.0.0.md
 
 Contents:
   - Release date: 2026-03-10
@@ -103,7 +103,7 @@ COMMIT MESSAGE:
 
 TAG MESSAGE:
   git tag -a v2.0.0 \
-    -m "DocTester 2.0.0 Release
+    -m "DTR 2.0.0 Release
   
   Major version bump with significant architectural changes.
   See CHANGELOG_2.0.0.md for migration guide and new features."
@@ -135,7 +135,7 @@ IMMEDIATELY AFTER VERSION UPDATES:
    $ git commit -m "Release: bump DTR to 2.0.0"
 
 5. Create annotated tag
-   $ git tag -a v2.0.0 -m "DocTester 2.0.0 Release"
+   $ git tag -a v2.0.0 -m "DTR 2.0.0 Release"
 
 6. Push to remote
    $ git push origin main
@@ -158,17 +158,17 @@ IMMEDIATELY AFTER VERSION UPDATES:
 
 Created Files:
 
-1. /home/user/doctester/CHANGELOG_2.0.0.md
+1. /home/user/dtr/CHANGELOG_2.0.0.md
    - Complete changelog with breaking changes, features, and migration guide
    - Size: ~600 lines
    - Includes: All version history back to 1.0.1
 
-2. /home/user/doctester/RELEASE_PLAN_2.0.0.md
+2. /home/user/dtr/RELEASE_PLAN_2.0.0.md
    - Detailed step-by-step release execution plan
    - Size: ~450 lines
    - Includes: Timeline, rollback procedures, sign-off checklist
 
-3. /home/user/doctester/RELEASE_SUMMARY_2.0.0.txt (this file)
+3. /home/user/dtr/RELEASE_SUMMARY_2.0.0.txt (this file)
    - Executive summary of all release information
    - Quick reference guide
 
@@ -179,13 +179,13 @@ Created Files:
 For Library Users:
 
 1. MARKDOWN OUTPUT
-   - Before: HTML files in target/site/doctester/*.html
-   - After:  Markdown files in target/site/doctester/*.md
+   - Before: HTML files in target/site/dtr/*.html
+   - After:  Markdown files in target/site/dtr/*.md
    - Action: Update documentation pipelines to handle Markdown
 
 2. JUNIT 5 REQUIRED
    - Before: Extend DTR (JUnit 4 base class)
-   - After:  @ExtendWith(DocTesterExtension.class) + JUnit 5 annotations
+   - After:  @ExtendWith(DtrExtension.class) + JUnit 5 annotations
    - Action: Migrate test classes to Jupiter API (see CHANGELOG)
 
 3. HTTPCLIENT 5.X
@@ -261,9 +261,9 @@ Maven Central:
   https://central.sonatype.com/artifact/org.r10r/dtr-core/2.0.0
 
 Project:
-  GitHub: https://github.com/r10r-org/doctester
+  GitHub: https://github.com/r10r-org/dtr
   License: Apache 2.0
-  SCM: https://github.com/r10r-org/doctester.git
+  SCM: https://github.com/r10r-org/dtr.git
 
 Build Tools:
   Maven 4: https://maven.apache.org/maven-4/

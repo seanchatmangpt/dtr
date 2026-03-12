@@ -14,8 +14,8 @@
 
 ### For Developers & Architects
 - **Technical deep dive:** `PERFORMANCE_REPORT_JEP516.md` (20 min read)
-- **Source code:** `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/metadata/DocMetadata.java`
-- **Unit tests:** `/home/user/doctester/dtr-core/src/test/java/org/r10r/doctester/metadata/DocMetadataBenchmarkTest.java`
+- **Source code:** `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/metadata/DocMetadata.java`
+- **Unit tests:** `/home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/metadata/DocMetadataBenchmarkTest.java`
 
 ### For QA & Testing
 - **Standalone benchmark:** `DocMetadataBenchmarkRunner.java` (no Maven required)
@@ -135,7 +135,7 @@ JEP516_ANALYSIS_INDEX.md               THIS FILE
 ### Production Source
 ```
 DocMetadata.java
-- Location: dtr-core/src/main/java/org/r10r/doctester/metadata/
+- Location: dtr-core/src/main/java/org/r10r/dtr/metadata/
 - Type: Java 25 record
 - Pattern: Eager static initialization (JEP 516)
 - Status: Production-ready
@@ -144,7 +144,7 @@ DocMetadata.java
 ### Test Suite
 ```
 DocMetadataBenchmarkTest.java
-- Location: dtr-core/src/test/java/org/r10r/doctester/metadata/
+- Location: dtr-core/src/test/java/org/r10r/dtr/metadata/
 - Type: JUnit 5 test class
 - Coverage: Identity, performance, concurrency, content validation
 - Command: mvnd test -pl dtr-core -Dtest=DocMetadataBenchmarkTest
@@ -232,7 +232,7 @@ The JEP 516 implementation in DocMetadata is:
 
 ### If you want to run the benchmark yourself:
 ```bash
-cd /home/user/doctester
+cd /home/user/dtr
 javac --release 25 --enable-preview DocMetadataBenchmarkRunner.java
 java --enable-preview DocMetadataBenchmarkRunner
 ```

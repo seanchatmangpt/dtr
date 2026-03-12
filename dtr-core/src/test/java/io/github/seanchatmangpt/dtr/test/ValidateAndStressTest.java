@@ -36,7 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Comprehensive validation and stress test for DocTester.
+ * Comprehensive validation and stress test for DTR.
  *
  * This test class is ordered alphabetically so validation tests (prefixed "t1_")
  * run before stress tests (prefixed "t2_") and output validation (prefixed "t3_")
@@ -67,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * </ul>
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class ValidateAndStressTest extends DocTester {
+public class ValidateAndStressTest extends DtrTest {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
     private static final String OUTPUT_DIR = "docs/test";

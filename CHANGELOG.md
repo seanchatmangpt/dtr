@@ -115,7 +115,7 @@ DTR 2.4.0 ships five JVM-introspective documentation primitives that extract str
 - Default no-op implementations in `RenderMachine` base class (backward compatible)
 - Full implementations in `RenderMachineImpl` (markdown rendering)
 - Virtual thread dispatchers in `MultiRenderMachine` (safe concurrent rendering)
-- Final delegations in `DocTester` and `DocTesterContext` (public API)
+- Final delegations in `DTR` and `DTRContext` (public API)
 
 #### Zero New Dependencies
 
@@ -175,7 +175,7 @@ All five new methods have:
 
 - Minimum Java version: **Java 25 LTS with `--enable-preview`**
 - All documentation now renders to clean Markdown (no HTML generation)
-- Output directory: `docs/test/` (instead of `target/site/doctester/`)
+- Output directory: `docs/test/` (instead of `target/site/dtr/`)
 
 ---
 
@@ -210,5 +210,5 @@ All five new methods have:
 ### Initial Release
 
 - Core DTR framework
-- Abstract `DocTester` base class
+- Abstract `DTR` base class
 - Basic `say()` and `sayAndMakeRequest()` methods

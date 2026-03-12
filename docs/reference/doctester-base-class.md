@@ -1,13 +1,13 @@
 # Reference: DTR Base Class
 
-**Package:** `io.github.seanchatmangpt.dtr.doctester`
-**File:** `dtr-core/src/main/java/org/r10r/doctester/DTR.java`
+**Package:** `io.github.seanchatmangpt.dtr.dtr`
+**File:** `dtr-core/src/main/java/org/r10r/dtr/DTR.java`
 
-`DocTester` is the abstract JUnit base class your test classes extend. It orchestrates both HTTP execution (via `TestBrowser`) and HTML documentation generation (via `RenderMachine`).
+`DTR` is the abstract JUnit base class your test classes extend. It orchestrates both HTTP execution (via `TestBrowser`) and HTML documentation generation (via `RenderMachine`).
 
 ---
 
-## Extending DocTester
+## Extending DTR
 
 ```java
 public class MyApiDocTest extends DTR {
@@ -240,18 +240,18 @@ public RenderMachine getRenderMachine() {
 
 ---
 
-#### `setClassNameForDocTesterOutputFile(String name)`
+#### `setClassNameForDTROutputFile(String name)`
 
 Sets an alternative filename for the HTML output file (without `.html` extension). Call this in a `@Before` method.
 
 ```java
 @Before
 public void configureOutput() {
-    setClassNameForDocTesterOutputFile("user-api-reference");
+    setClassNameForDTROutputFile("user-api-reference");
 }
 ```
 
-Produces: `target/site/doctester/user-api-reference.html`
+Produces: `target/site/dtr/user-api-reference.html`
 
 **Default:** Uses the fully-qualified test class name, e.g., `com.example.UserApiDocTest`
 
@@ -264,7 +264,7 @@ DTR uses JUnit 4 lifecycle hooks internally:
 | Hook | What happens |
 |---|---|
 | `@Before setupForTestCaseMethod()` | Creates a fresh `TestBrowser` for the test method |
-| `@AfterClass finishDocTest()` | Writes HTML output to `target/site/doctester/` |
+| `@AfterClass finishDocTest()` | Writes HTML output to `target/site/dtr/` |
 
 The `RenderMachine` is shared across all test methods in a class; the `TestBrowser` (and its cookie jar) is reset per test method.
 

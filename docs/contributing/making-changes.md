@@ -170,7 +170,7 @@ public void sayCodeBlock(String code) {
 }
 ```
 
-**3. Delegate in `DocTester`:**
+**3. Delegate in `DTR`:**
 ```java
 /**
  * Renders a preformatted code block in the documentation output.
@@ -182,7 +182,7 @@ public void sayCodeBlock(String code) {
 }
 ```
 
-**4. Test in `DocTesterTest`:**
+**4. Test in `DTRTest`:**
 ```java
 @Test
 public void sayCodeBlock_rendersPreformattedCode() {

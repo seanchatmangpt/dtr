@@ -21,18 +21,18 @@ import ninja.standalone.NinjaJetty;
 import ninja.utils.NinjaConstant;
 import ninja.utils.NinjaTestServer;
 
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 import io.github.seanchatmangpt.dtr.testbrowser.Url;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Optional;
 
-public abstract class NinjaApiDoctester extends DocTester {
+public abstract class NinjaApiDtr extends DtrTest {
 
 	public NinjaTestServer ninjaTestServer;
 
-    public NinjaApiDoctester() {
+    public NinjaApidtr() {
     }
 
     @BeforeEach

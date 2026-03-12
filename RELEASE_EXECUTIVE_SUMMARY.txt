@@ -51,13 +51,13 @@ PUBLICATION INFRASTRUCTURE
 PROJECT METADATA
   ✅ Group ID: org.r10r
   ✅ Artifact ID: dtr-core (main library)
-  ✅ SCM: GitHub (git@github.com:r10r-org/doctester.git)
+  ✅ SCM: GitHub (git@github.com:r10r-org/dtr.git)
   ✅ License: Apache 2.0
   ✅ Developers: Listed with contact info
   ✅ Issue tracker: GitHub Issues
 
 MULTI-MODULE STRUCTURE
-  ✅ Parent POM (doctester) - aggregates modules
+  ✅ Parent POM (dtr) - aggregates modules
   ✅ dtr-core JAR - main artifact for publication
   ✅ dtr-integration-test WAR - integration tests
 
@@ -153,7 +153,7 @@ Four comprehensive guides created (total: 84 KB, 2,472 lines):
    Read time:   30-45 minutes (reference as needed)
    Contains:    Dry-run results, 13 sections of analysis, troubleshooting
 
-All files in: /home/user/doctester/
+All files in: /home/user/dtr/
 
 ================================================================================
                            RECOMMENDED ACTION PLAN
@@ -191,7 +191,7 @@ ENVIRONMENT VERIFIED:
   Java home:  /usr/lib/jvm/java-25-openjdk-amd64 ✅
 
 PROJECT LOCATION:
-  /home/user/doctester/
+  /home/user/dtr/
 
 RELEASE COMMAND (once credentials are set up):
   mvnd -P release release:prepare release:perform

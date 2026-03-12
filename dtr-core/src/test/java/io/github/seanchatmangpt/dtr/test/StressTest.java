@@ -25,10 +25,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
- * Stress tests to find DocTester breakpoints for maximum
+ * Stress tests to find DTR breakpoints for maximum
  * documentation generation size and count.
  */
-public class StressTest extends DocTester {
+public class StressTest extends DtrTest {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
 

@@ -115,7 +115,7 @@ def test_maven_runner_export_dir_path(tmp_pom: Path) -> None:
     """Test that MavenRunner returns correct export directory path."""
     maven = MavenRunner(tmp_pom.parent)
     export_dir = maven.get_export_dir()
-    expected = tmp_pom.parent / "target" / "site" / "doctester"
+    expected = tmp_pom.parent / "target" / "site" / "dtr"
     assert export_dir == expected
 
 
@@ -291,7 +291,7 @@ def test_cli_build_success(
     mock_build.return_value = 0
 
     # Create exports directory so validation passes
-    target_dir = tmp_pom.parent / "target" / "site" / "doctester"
+    target_dir = tmp_pom.parent / "target" / "site" / "dtr"
     target_dir.mkdir(parents=True, exist_ok=True)
     (target_dir / "test.html").write_text("<html></html>")
 

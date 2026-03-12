@@ -1,6 +1,6 @@
 # Reference
 
-Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DocTester's API. Use it when you need to look up a specific method, class, or configuration option.
+Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DTR's API. Use it when you need to look up a specific method, class, or configuration option.
 
 ## Quick Reference (80/20 Fast Path)
 
@@ -28,7 +28,7 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 
 | Class | Description |
 |---|---|
-| [DocTester](dtr-base-class.md) | Abstract base class — the core API your tests extend |
+| [DTR](dtr-base-class.md) | Abstract base class — the core API your tests extend |
 | [Request](request-api.md) | Fluent HTTP request builder |
 | [Response](response-api.md) | HTTP response with deserialization |
 | [Url](url-builder.md) | URL builder with path and query parameter support |

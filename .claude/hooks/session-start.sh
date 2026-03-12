@@ -1,5 +1,5 @@
 #!/bin/bash
-# DocTester Session Start Hook
+# DTR Session Start Hook
 # Enforces ONLY: Java 25, Maven 4 (4.0.0-rc-5), and mvnd 2 (Maven Daemon).
 # No other Java or Maven version is acceptable.
 set -euo pipefail
@@ -151,7 +151,7 @@ PATH="$JAVA_25_HOME/bin:$MAVEN4_HOME/bin:$MVND_HOME/bin:$PATH" \
     --no-transfer-progress \
     -B \
     dependency:resolve \
-    -pl doctester-core \
+    -pl dtr-core \
     -DincludeScope=test \
     2>&1 | tail -10 || log "Cache warm-up skipped (network/proxy issue — will resolve on first build)"
 

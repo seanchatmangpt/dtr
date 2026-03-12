@@ -24,7 +24,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
- * Extreme stress tests to find actual breakpoints where DocTester
+ * Extreme stress tests to find actual breakpoints where DTR
  * runs out of memory or becomes unacceptably slow.
  *
  * Key bottleneck: RenderMachineImpl accumulates all HTML in a List of String
@@ -32,7 +32,7 @@ import static org.hamcrest.CoreMatchers.is;
  * String before writing to file. This means peak memory is ~2x the total
  * content size (list + joined string).
  */
-public class StressBreakpointTest extends DocTester {
+public class StressBreakpointTest extends DtrTest {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
 

@@ -31,7 +31,7 @@ import java.lang.management.MemoryMXBean;
  * - The crash occurs at @AfterClass during finishAndWriteOut(), NOT during say() accumulation
  * - This test keeps content under the limit to remain green.
  */
-public class StressFinalTest extends DocTester {
+public class StressFinalTest extends DtrTest {
 
     private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
 

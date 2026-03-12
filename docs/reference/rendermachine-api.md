@@ -1,9 +1,9 @@
 # Reference: RenderMachine Interface
 
-**Package:** `io.github.seanchatmangpt.dtr.doctester.rendermachine`
-**File:** `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachine.java`
+**Package:** `io.github.seanchatmangpt.dtr.dtr.rendermachine`
+**File:** `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachine.java`
 
-`RenderMachine` is the HTML documentation generator interface. The default implementation is `RenderMachineImpl`. Override `getRenderMachine()` in your `DocTester` subclass to supply a custom renderer.
+`RenderMachine` is the HTML documentation generator interface. The default implementation is `RenderMachineImpl`. Override `getRenderMachine()` in your `DTR` subclass to supply a custom renderer.
 
 ---
 
@@ -19,7 +19,7 @@ RenderMachineCommands          (output methods)
 
 ## RenderMachineCommands
 
-Defines the documentation output methods (the `say*` API). All of these are called by `DocTester` when you use the `say*` methods in your tests.
+Defines the documentation output methods (the `say*` API). All of these are called by `DTR` when you use the `say*` methods in your tests.
 
 #### `say(String text)`
 Render a paragraph.
@@ -56,15 +56,15 @@ Injects the `TestBrowser` used for HTTP calls.
 Sets the output filename (based on the test class name).
 
 #### `finishAndWriteOut()`
-Finalizes the HTML and writes the output files. Called once per test class by `DocTester`'s `@AfterClass`.
+Finalizes the HTML and writes the output files. Called once per test class by `DTR`'s `@AfterClass`.
 
 ---
 
 ## Default implementation: RenderMachineImpl
 
-**File:** `dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
+**File:** `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineImpl.java`
 
-**Output directory:** `target/site/doctester/`
+**Output directory:** `target/site/dtr/`
 
 **Output files per test run:**
 1. `{FullyQualifiedClassName}.html` — The test's documentation page
@@ -131,7 +131,7 @@ public class MarkdownRenderMachine implements RenderMachine {
 
     @Override
     public void finishAndWriteOut() {
-        Path out = Path.of("target/site/doctester/" + fileName + ".md");
+        Path out = Path.of("target/site/dtr/" + fileName + ".md");
         Files.createDirectories(out.getParent());
         Files.writeString(out, sb.toString());
     }
@@ -143,7 +143,7 @@ public class MarkdownRenderMachine implements RenderMachine {
 Inject it:
 
 ```java
-public abstract class MarkdownDocTester extends DTR {
+public abstract class MarkdownDTR extends DTR {
 
     @Override
     public RenderMachine getRenderMachine() {

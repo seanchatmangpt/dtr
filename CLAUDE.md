@@ -14,7 +14,7 @@
 - **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26.0.2)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
-- ✅ JUnit 5 tests with DocTesterContext
+- ✅ JUnit 5 tests with DtrContext
 - ✅ Output through RenderMachine rendering pipeline
 - ❌ Never bypass with standalone generators
 
@@ -75,10 +75,10 @@ export https_proxy=http://user:pass@proxy.company.com:8080
 ## 📝 HOW TO ADD A TEST
 
 ```java
-@ExtendWith(DocTesterExtension.class)
+@ExtendWith(DtrExtension.class)
 class PhDThesisDocTest {
     @Test
-    void testThesis(DocTesterContext ctx) {
+    void testThesis(DtrContext ctx) {
         ctx.sayNextSection("Chapter Title");
         ctx.say("Content here.");
         ctx.sayCode("System.out.println(\"code\");", "java");
@@ -111,7 +111,7 @@ class PhDThesisDocTest {
 
 ---
 
-## 🎯 DOCTESTER ARCHITECTURE (80/20)
+## 🎯 DTR ARCHITECTURE (80/20)
 
 **Input:** JUnit 5 test calls `say*` methods
 **Process:** RenderMachine captures calls → formats → routes to output engines

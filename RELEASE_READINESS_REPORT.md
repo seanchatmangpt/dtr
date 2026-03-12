@@ -33,7 +33,7 @@ DTR 2.0.0 is **production-ready** with zero technical debt, complete documentati
 2. **Server-Sent Events (SSE)** — Event streaming with subscription management
 3. **OpenAPI Integration** — Automatic API spec generation from tests
 4. **Enhanced Auth** — 5 authentication providers (Basic, Bearer, API Key, OAuth2, Session)
-5. **JUnit 5 Extension** — Native `@ExtendWith(DocTesterExtension.class)` support
+5. **JUnit 5 Extension** — Native `@ExtendWith(DTRExtension.class)` support
 6. **Advanced Config** — `TestBrowserConfig` for timeout/redirect control
 
 ### Java 25 Features Leveraged
@@ -44,7 +44,7 @@ DTR 2.0.0 is **production-ready** with zero technical debt, complete documentati
 - ✓ **var Keyword** — Consistent local type inference (50+ uses)
 
 ### Backward Compatibility
-- JUnit 4 `DocTester` base class unchanged
+- JUnit 4 `DTR` base class unchanged
 - HTTP API (`Request`, `Response`, `TestBrowser`) unchanged
 - All v1.1.x tests run without modification
 - Cookie-based auth still supported
@@ -148,7 +148,7 @@ These **three 20-minute tasks** improve Java 25 idiom score from 90 → 95:
 **Benefit:** Push Java 25 score from 90 → 95, demonstrates commitment to modern idioms
 **Risk:** Minimal (no API changes, identical behavior)
 
-See `/home/user/doctester/RELEASE_OPTIMIZATION_PLAN.md` for detailed instructions.
+See `/home/user/dtr/RELEASE_OPTIMIZATION_PLAN.md` for detailed instructions.
 
 ---
 
@@ -160,7 +160,7 @@ See `/home/user/doctester/RELEASE_OPTIMIZATION_PLAN.md` for detailed instruction
 - **Compile:** `--enable-preview` enabled in pom.xml
 
 ### Optional
-- **JUnit:** 5.6+ (or 4.12+ for legacy `DocTester` base class)
+- **JUnit:** 5.6+ (or 4.12+ for legacy `DTR` base class)
 - **Spring:** 5.0+ (if using Spring integration tests)
 
 ---
@@ -175,7 +175,7 @@ See `/home/user/doctester/RELEASE_OPTIMIZATION_PLAN.md` for detailed instruction
 - ✓ WebSocket and SSE integration examples
 
 ### Recommended Documentation Additions
-- [ ] Migration guide: JUnit 4 → JUnit 5 (for users on legacy DocTester)
+- [ ] Migration guide: JUnit 4 → JUnit 5 (for users on legacy DTR)
 - [ ] OpenAPI feature overview with examples
 - [ ] WebSocket and SSE quick-start guide
 - [ ] Java 25 feature highlights document
@@ -218,8 +218,8 @@ No production code deprecations.
 - [x] Custom headers and form parameters
 - [x] Authentication providers (5 types)
 - [x] HTML/Markdown documentation generation
-- [x] JUnit 4 support (DocTester base class)
-- [x] JUnit 5 support (DocTesterExtension)
+- [x] JUnit 4 support (DTR base class)
+- [x] JUnit 5 support (DTRExtension)
 
 ### Advanced Features ✓
 - [x] WebSocket support (client)
@@ -299,7 +299,7 @@ No production code deprecations.
 
 ### GO / NO-GO Decision: **GO**
 
-**DocTester 2.0.0 is approved for immediate release.**
+**DTR 2.0.0 is approved for immediate release.**
 
 **Optional Enhancement:** Execute 60-minute optimization plan to increase Java 25 score from 90 → 95.
 
@@ -308,7 +308,7 @@ No production code deprecations.
 ## Contact & Support
 
 For questions or issues:
-- GitHub Issues: https://github.com/seanchatmangpt/doctester/issues
+- GitHub Issues: https://github.com/seanchatmangpt/dtr/issues
 - Email: ra@r10r.org
 - Documentation: See CLAUDE.md in repository
 
@@ -359,9 +359,9 @@ For questions or issues:
 - OutputFormat.java (enum)
 
 ### JUnit 5 Integration (3 files)
-- DocTesterExtension.java
-- DocTesterContext.java
-- DocTesterCommands.java
+- DTRExtension.java
+- DTRContext.java
+- DTRCommands.java
 
 ### Annotations & Core (6 files)
 - DTR.java (abstract base class)

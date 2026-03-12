@@ -233,10 +233,10 @@ public void testWithCookies() {
 ## Test Class Template
 
 ```java
-import io.github.seanchatmangpt.dtr.doctester.DocTester;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.doctester.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.dtr.DTR;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
+import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 
@@ -273,7 +273,7 @@ mvnd clean test
 mvnd test -Dtest=MyApiDocTest
 
 # View output (generated HTML docs)
-open target/site/doctester/index.html
+open target/site/dtr/index.html
 ```
 
 ---

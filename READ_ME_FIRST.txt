@@ -134,9 +134,9 @@ How:     Edit RenderMachine.java and related sealed classes
 
 FIX #2: Test Package Mismatch
 ──────────────────────────────
-What:    45 test files in deprecated org.r10r.doctester package
-Files:   - dtr-core/src/test/java/org/r10r/doctester/ (38 files)
-         - dtr-benchmarks/src/jmh/java/org/r10r/doctester/ (7 files)
+What:    45 test files in deprecated org.r10r.dtr package
+Files:   - dtr-core/src/test/java/org/r10r/dtr/ (38 files)
+         - dtr-benchmarks/src/jmh/java/org/r10r/dtr/ (7 files)
 Action:  Move to io/github/seanchatmangpt/dtr/
 Time:    20 minutes
 How:     Use IDE to refactor package (safer than manual move)
@@ -167,8 +167,8 @@ Detailed Reports:
 
 Files Requiring Fixes:
   /home/user/dtr/dtr-core/src/main/java/.../rendermachine/RenderMachine.java
-  /home/user/dtr/dtr-core/src/test/java/org/r10r/doctester/ (38 files)
-  /home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/doctester/ (7 files)
+  /home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/ (38 files)
+  /home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/dtr/ (7 files)
   /home/user/dtr/.mvn/maven.config
 
 Verification:

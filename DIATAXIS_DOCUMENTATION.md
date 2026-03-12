@@ -14,7 +14,7 @@ Complete Diataxis-structured documentation for DTR CLI, providing comprehensive 
 ## Documentation Structure
 
 ### Master Index
-**Location:** `/home/user/doctester/dtr-cli/docs/index.md`
+**Location:** `/home/user/dtr/dtr-cli/docs/index.md`
 
 The entry point for all documentation. Users choose their learning path based on their needs:
 - Quick start guide
@@ -26,7 +26,7 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 1. TUTORIALS (Learning-Oriented)
 
-**Path:** `/home/user/doctester/dtr-cli/docs/tutorials/`
+**Path:** `/home/user/dtr/dtr-cli/docs/tutorials/`
 
 **Purpose:** Step-by-step guides for beginners. Each tutorial walks through a complete task with hands-on examples.
 
@@ -51,7 +51,7 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 2. HOW-TO GUIDES (Problem-Oriented)
 
-**Path:** `/home/user/doctester/dtr-cli/docs/how-to/`
+**Path:** `/home/user/dtr/dtr-cli/docs/how-to/`
 
 **Purpose:** Focused solutions to specific problems. Each guide answers a "how do I...?" question.
 
@@ -79,7 +79,7 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 3. REFERENCE (Information-Oriented)
 
-**Path:** `/home/user/doctester/dtr-cli/docs/reference/`
+**Path:** `/home/user/dtr/dtr-cli/docs/reference/`
 
 **Purpose:** Complete, structured reference material for lookup. Users find all available options and configurations here.
 
@@ -106,7 +106,7 @@ The entry point for all documentation. Users choose their learning path based on
 
 ## 4. EXPLANATION (Understanding-Oriented)
 
-**Path:** `/home/user/doctester/dtr-cli/docs/explanation/`
+**Path:** `/home/user/dtr/dtr-cli/docs/explanation/`
 
 **Purpose:** Conceptual understanding and design philosophy. Explores the "why" and "how" behind DTR.
 
@@ -323,12 +323,12 @@ The documentation is designed to meet users at different stages:
 ## Publishing
 
 ### Location
-All documentation is in: `/home/user/doctester/dtr-cli/docs/`
+All documentation is in: `/home/user/dtr/dtr-cli/docs/`
 
 ### Build and Deploy
 ```bash
 # Generate HTML from Markdown
-cd /home/user/doctester/dtr-cli/docs
+cd /home/user/dtr/dtr-cli/docs
 dtr batch --input '**/*.md' --output ./html/
 
 # Or use a static site generator
@@ -380,10 +380,10 @@ jekyll build
 
 ## Related Files
 
-- **Project README:** `/home/user/doctester/README.md`
-- **Contributing Guide:** `/home/user/doctester/CONTRIBUTING.md`
-- **Source Code:** `/home/user/doctester/dtr-cli/`
-- **Main Index:** `/home/user/doctester/dtr-cli/docs/index.md` ← **START HERE**
+- **Project README:** `/home/user/dtr/README.md`
+- **Contributing Guide:** `/home/user/dtr/CONTRIBUTING.md`
+- **Source Code:** `/home/user/dtr/dtr-cli/`
+- **Main Index:** `/home/user/dtr/dtr-cli/docs/index.md` ← **START HERE**
 
 ---
 
@@ -405,10 +405,10 @@ Each type serves a different user need. By organizing documentation this way, we
 - **Created:** 2026-03-11
 - **Last Updated:** 2026-03-11
 - **Diataxis Version:** 2.5.0
-- **DocTester Version:** 0.1.0
+- **DTR Version:** 0.1.0
 - **Status:** ✅ Production-Ready
 - **License:** Apache 2.0
 
 ---
 
-*For questions or feedback, see [CONTRIBUTING.md](/home/user/doctester/CONTRIBUTING.md) or visit https://github.com/seanchatmangpt/doctester*
+*For questions or feedback, see [CONTRIBUTING.md](/home/user/dtr/CONTRIBUTING.md) or visit https://github.com/seanchatmangpt/dtr*

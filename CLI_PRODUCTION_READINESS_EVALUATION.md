@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The **DocTester CLI is 87% production-ready** with excellent architecture, comprehensive testing, and robust error handling. The primary gap is **no Maven orchestration**—users must manually invoke `mvnd clean verify` before using the CLI.
+The **DTR CLI is 87% production-ready** with excellent architecture, comprehensive testing, and robust error handling. The primary gap is **no Maven orchestration**—users must manually invoke `mvnd clean verify` before using the CLI.
 
 **Key Finding:** By adding a single `dtr build` command, the CLI becomes a complete workflow tool: `dtr build && dtr fmt md && dtr report sum && dtr push gh`
 
@@ -137,7 +137,7 @@ Two-tier strategy:
 
 ### Custom Exceptions (15 types)
 
-All exceptions inherit from `DocTesterCLIError` with:
+All exceptions inherit from `DTRCLIError` with:
 - User-friendly error messages (no Python tracebacks)
 - Suggested fixes in error output
 - Proper exit codes (1 = user error, 2 = system error)
@@ -186,7 +186,7 @@ Help: Get token from https://github.com/settings/tokens
 
 **Optional extras:** All cloud dependencies are optional (install with `pip install -e .[all]`)
 
-**Python version:** 3.12+ only (matches DocTester's modern stance)
+**Python version:** 3.12+ only (matches DTR's modern stance)
 
 ---
 
@@ -211,7 +211,7 @@ warn_no_return = true
 
 ✅ **Pytest** — Coverage reporting
 ```
-pyproject.toml: --cov=doctester_cli, --cov-report=term-missing
+pyproject.toml: --cov=dtr_cli, --cov-report=term-missing
 Current coverage: ~92% (based on test count)
 ```
 
@@ -233,7 +233,7 @@ Current coverage: ~92% (based on test count)
 
 ✅ **Excellent:**
 - Installable via `pip install -e .`
-- Entry points defined: `dtr` (shorthand) + `doctester` (full)
+- Entry points defined: `dtr` (shorthand) + `dtr` (full)
 - Optional extras: `[aws]`, `[gcs]`, `[all]`
 - Uses `uv` for fast dependency management (recommended)
 - Published on PyPI (assumed)
@@ -253,7 +253,7 @@ Current coverage: ~92% (based on test count)
 ❌ **Gap:**
 - No `dtr config` command (placeholder only)
 - No profiles (dev, staging, prod)
-- No dotenv support for `.doctester.env`
+- No dotenv support for `.dtr.env`
 
 ### 3. Cloud Publishing: 7.5/10 ⚠️
 
@@ -325,7 +325,7 @@ Current coverage: ~92% (based on test count)
 ### Current Integration
 
 ✅ **File system:**
-- Reads from `target/site/doctester/` (Maven standard)
+- Reads from `target/site/dtr/` (Maven standard)
 - Writes to user-specified directories
 - Respects `--force` flag for overwrites
 
@@ -345,7 +345,7 @@ Current coverage: ~92% (based on test count)
 1. Detect `pom.xml` in current directory
 2. Auto-detect modules (via XML parsing)
 3. Run `mvnd clean verify` (or custom goals)
-4. Validate exports in `target/site/doctester/`
+4. Validate exports in `target/site/dtr/`
 5. Optionally pipe to `dtr fmt md` (post-build hook)
 
 ---
@@ -481,11 +481,11 @@ Current behavior:
 
 ### Files to Create
 
-1. **`doctester_cli/commands/build.py`** (~80 lines)
+1. **`dtr_cli/commands/build.py`** (~80 lines)
    - New command group: `dtr build`
    - Subcommands: default, --goals, --profiles, --modules, --export
 
-2. **`doctester_cli/managers/maven_manager.py`** (~120 lines)
+2. **`dtr_cli/managers/maven_manager.py`** (~120 lines)
    - MavenRunner class
    - Auto-detect mvnd/mvn
    - Parse pom.xml for modules
@@ -493,10 +493,10 @@ Current behavior:
 
 ### Files to Modify
 
-1. **`doctester_cli/main.py`** (+5 lines)
+1. **`dtr_cli/main.py`** (+5 lines)
    - Register `build` command group
 
-2. **`doctester_cli/commands/__init__.py`** (+1 line)
+2. **`dtr_cli/commands/__init__.py`** (+1 line)
    - Export BuildCommand
 
 3. **`pyproject.toml`** (optional)
@@ -536,7 +536,7 @@ Current behavior:
 
 ## Conclusion
 
-The **DocTester CLI is architecturally excellent** with strong code quality and comprehensive testing. The single missing piece for production readiness is Maven orchestration.
+The **DTR CLI is architecturally excellent** with strong code quality and comprehensive testing. The single missing piece for production readiness is Maven orchestration.
 
 **Recommendation:** ✅ **Proceed with Phase 1 implementation immediately.** Adding `dtr build` command (10-12 hours of work) achieves the stated goal: "use CLI for everything instead of calling mvnd directly."
 

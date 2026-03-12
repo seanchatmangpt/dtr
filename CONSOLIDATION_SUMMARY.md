@@ -164,7 +164,7 @@ Performance testing moved from unit tests to dedicated JMH benchmark suite:
 ```
 dtr-benchmarks/
 ├── pom.xml
-├── src/main/java/org/r10r/doctester/benchmarks/
+├── src/main/java/org/r10r/dtr/benchmarks/
 │   ├── ExportOperationBenchmark.java
 │   ├── ArchivalPerformanceBenchmark.java
 │   ├── CLIStartupBenchmark.java

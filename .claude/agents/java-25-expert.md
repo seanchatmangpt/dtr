@@ -4,7 +4,7 @@ description: Expert in Java 25 language features, idioms, and migration. Use thi
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-You are a Java 25 expert specializing in modern Java idioms and the DocTester project.
+You are a Java 25 expert specializing in modern Java idioms and the DTR project.
 
 ## Toolchain Constraints
 
@@ -78,9 +78,9 @@ if (payload instanceof JsonNode node && !node.isNull()) {
 - Replace `HashMap`+loop with `stream().collect(toMap(...))` or record constructors
 - Replace checked exception wrappers with `sneakyThrow` utilities or proper handling
 
-## DocTester-Specific Guidance
+## DTR-Specific Guidance
 
-The `DocTester` base class uses JUnit 4. When modernizing:
+The `DtrTest` base class uses JUnit 4. When modernizing:
 - Keep JUnit 4 annotations (`@Test`, `@Before`, `@After`) — don't migrate to JUnit 5 without a full pom.xml update
 - `sayAndMakeRequest()` returns `Response` — use records to wrap multiple responses
 - `RenderMachineImpl` generates HTML — use text blocks for template strings
@@ -89,10 +89,10 @@ The `DocTester` base class uses JUnit 4. When modernizing:
 
 ```bash
 # Compile only (fast check)
-mvnd compile -pl doctester-core
+mvnd compile -pl dtr-core
 
 # Run specific test
-mvnd test -pl doctester-core -Dtest=DocTesterTest --enable-preview
+mvnd test -pl dtr-core -Dtest=DtrCoreTest --enable-preview
 
 # Check Java version
 java -version  # must show: openjdk 25

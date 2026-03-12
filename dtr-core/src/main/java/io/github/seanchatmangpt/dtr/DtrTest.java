@@ -42,7 +42,7 @@ import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
 /**
  * Abstract base class for documentation testing framework using JUnit 5.
  *
- * <p>DocTester bridges test execution and documentation generation, allowing developers
+ * <p>DtrTest bridges test execution and documentation generation, allowing developers
  * to write tests that simultaneously verify API behavior and auto-generate comprehensive
  * API documentation. Supports multiple output formats: Markdown, LaTeX/PDF, blog posts,
  * and presentation slides.</p>
@@ -59,8 +59,8 @@ import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
  *
  * <p><strong>Basic Usage:</strong></p>
  * <pre>{@code
- * @ExtendWith(DocTesterExtension.class)
- * class UserApiDocTest extends DocTester {
+ * @ExtendWith(DtrExtension.class)
+ * class UserApiDocTest extends DtrTest {
  *     @Override
  *     public Url testServerUrl() {
  *         return Url.host("http://localhost:8080");
@@ -81,7 +81,7 @@ import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
  * }</pre>
  *
  * <p><strong>JUnit 5 Integration:</strong></p>
- * <p>While this class is abstract and doesn't require {@code @ExtendWith(DocTesterExtension.class)},
+ * <p>While this class is abstract and doesn't require {@code @ExtendWith(DtrExtension.class)},
  * it is designed to work seamlessly with that extension. The extension manages the
  * RenderMachine lifecycle (one per test class) and TestBrowser lifecycle (one per test method).</p>
  *
@@ -99,26 +99,26 @@ import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
  * <p>Documentation is accumulated during test execution and written to disk after all tests
  * in the class complete (via {@code @AfterAll} hook). Output location: {@code docs/test/&lt;ClassName&gt;.*}</p>
  *
- * @see DocTesterExtension for JUnit 5 integration
+ * @see DtrExtension for JUnit 5 integration
  * @see RenderMachine for output format options
  * @see TestBrowser for HTTP testing capabilities
  * @since 1.0.0
  */
-public abstract class DocTester implements TestBrowser, RenderMachineCommands {
+public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
 
     /**
-     * classNameForDocTesterOutputFile will be set by the testWatcher. That way
+     * classNameForDtrOutputFile will be set by the testWatcher. That way
      * we can easily generate a filename as output filename. Usually it is
      * something like "com.mycompany.NameOfClassTest".
      */
-    private String classNameForDocTesterOutputFile;
+    private String classNameForDtrOutputFile;
 
     /**
      * Captured from TestInfo for annotation processing in setupForTestCaseMethod.
      */
     private Method currentTestMethod;
 
-    private final Logger logger = LoggerFactory.getLogger(DocTester.class);
+    private final Logger logger = LoggerFactory.getLogger(DtrTest.class);
 
     // Unique for each test method.
     private TestBrowser testBrowser;
@@ -131,7 +131,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     public void setupForTestCaseMethod(TestInfo testInfo) {
 
         // Capture class name and test method from TestInfo (JUnit 5 replacement for @Rule TestWatcher)
-        classNameForDocTesterOutputFile = testInfo.getTestClass()
+        classNameForDtrOutputFile = testInfo.getTestClass()
                 .map(Class::getName)
                 .orElse(getClass().getName());
         currentTestMethod = testInfo.getTestMethod().orElse(null);
@@ -146,7 +146,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
         // is static. Therefore the only possibility to transmit
         // the filename to the renderMachine is here.
         // We accept that we set the fileName too often.
-        renderMachine.setFileName(classNameForDocTesterOutputFile);
+        renderMachine.setFileName(classNameForDtrOutputFile);
 
         // Process @DocSection / @DocDescription annotations declared on the test method.
         processDocAnnotations(currentTestMethod);
@@ -452,12 +452,12 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
 
     /**
      * Alternative way to set the output file name. This can be handy when
-     * DocTester is not part of JUnit lifecycle.
+     * DTR is not part of JUnit lifecycle.
      *
      * @param name alternative name of output file
      */
-    public void setClassNameForDocTesterOutputFile(final String name) {
-        this.classNameForDocTesterOutputFile = name;
+    public void setClassNameForDtrOutputFile(final String name) {
+        this.classNameForDtrOutputFile = name;
     }
 
     /**
@@ -524,7 +524,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
     }
 
     /**
-     * Documents a class's structure using Java reflection — the DocTester stand-in for
+     * Documents a class's structure using Java reflection — the DtrTest stand-in for
      * Project Babylon's Code Reflection API (JEP 494).
      *
      * <p>Renders the class's sealed hierarchy (if sealed), record components (if a record),
@@ -532,7 +532,7 @@ public abstract class DocTester implements TestBrowser, RenderMachineCommands {
      * developer-written descriptions. The documentation cannot drift from the implementation
      * because it IS the implementation.</p>
      *
-     * <p>This is the most uniquely DocTester application of Project Babylon's vision:
+     * <p>This is the most uniquely DtrTest application of Project Babylon's vision:
      * instead of a developer describing what code does, the code describes itself.</p>
      *
      * @param clazz the class to introspect and document

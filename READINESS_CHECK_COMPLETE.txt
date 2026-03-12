@@ -36,13 +36,13 @@ CRITICAL BLOCKING ISSUES (Must Fix Now)
    Action:  Refactor sealed class hierarchy or move subclasses
 
 2. TEST FILES IN WRONG PACKAGE
-   Files:   45 test files in org/r10r/doctester/ (deprecated package)
+   Files:   45 test files in org/r10r/dtr/ (deprecated package)
    Impact:  Maven Central validation FAILS on package mismatch
    Effort:  ~20 minutes
    Action:  Move to io/github/seanchatmangpt/dtr/
    Details: 
-     - dtr-core/src/test/java/org/r10r/doctester/ (38 files)
-     - dtr-benchmarks/src/jmh/java/org/r10r/doctester/ (7 files)
+     - dtr-core/src/test/java/org/r10r/dtr/ (38 files)
+     - dtr-benchmarks/src/jmh/java/org/r10r/dtr/ (7 files)
 
 3. MISSING --enable-preview IN .mvn/maven.config
    File:    /home/user/dtr/.mvn/maven.config
@@ -107,7 +107,7 @@ Release Profile: READY
 Dependencies: ALL FROM MAVEN CENTRAL
   [✓] No custom repositories
   [✓] No org.r10r artifacts in dependencies
-  [✓] No "doctester" artifacts (old naming)
+  [✓] No "dtr" artifacts (old naming)
   [✓] All versions pinned (no SNAPSHOTs in deps)
   [✓] Jackson, HttpClient, JUnit, etc. all verified
 
@@ -143,12 +143,12 @@ Effort: 30 minutes (analysis + refactoring)
 ISSUE #2: Test Package Mismatch (org.r10r vs io.github.seanchatmangpt.dtr)
 ────────────────────────────────────────────────────────────────────────
 
-Location: All test files under org.r10r.doctester
+Location: All test files under org.r10r.dtr
 
 Files Affected: 45 total
-  - dtr-core/src/test/java/org/r10r/doctester/
+  - dtr-core/src/test/java/org/r10r/dtr/
     ├── AnnotationDocTest.java
-    ├── DocTesterTest.java
+    ├── DtrCoreTest.java
     ├── PhDThesisDocTest.java
     ├── Java26*.java (6 files)
     ├── jotp/
@@ -161,7 +161,7 @@ Files Affected: 45 total
     ├── websocket/
     └── 20+ more test files
 
-  - dtr-benchmarks/src/jmh/java/org/r10r/doctester/
+  - dtr-benchmarks/src/jmh/java/org/r10r/dtr/
     ├── ConcurrentRenderingBenchmark.java
     ├── LargeFileBenchmark.java
     └── ManyFilesDirectoryBenchmark.java
@@ -371,10 +371,10 @@ Priority 1 - CRITICAL (Blocking build):
      → Fix sealed class violations
 
 Priority 2 - CRITICAL (Package mismatch):
-  2. /home/user/dtr/dtr-core/src/test/java/org/r10r/doctester/ (38 files)
+  2. /home/user/dtr/dtr-core/src/test/java/org/r10r/dtr/ (38 files)
      → Move to io/github/seanchatmangpt/dtr/
 
-  3. /home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/doctester/ (7 files)
+  3. /home/user/dtr/dtr-benchmarks/src/jmh/java/org/r10r/dtr/ (7 files)
      → Move to io/github/seanchatmangpt/dtr/
 
 Priority 3 - CRITICAL (Configuration):

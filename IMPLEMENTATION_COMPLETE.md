@@ -7,7 +7,7 @@ The DTR 2.2.0 cross-reference system has been successfully implemented, enabling
 ## Files Created (5 new files)
 
 ### 1. DocTestRef.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/DocTestRef.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/crossref/DocTestRef.java`
 
 Java 25 record representing an immutable cross-reference to another DocTest's section.
 
@@ -23,7 +23,7 @@ Java 25 record representing an immutable cross-reference to another DocTest's se
 - String.formatted() for string templating
 
 ### 2. CrossReferenceIndex.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/CrossReferenceIndex.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/crossref/CrossReferenceIndex.java`
 
 Singleton registry managing all cross-references with support for two-pass LaTeX compilation and validation.
 
@@ -43,7 +43,7 @@ Singleton registry managing all cross-references with support for two-pass LaTeX
 - Type inference with `var`
 
 ### 3. ReferenceResolver.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/ReferenceResolver.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/crossref/ReferenceResolver.java`
 
 Utility class parsing .tex files to extract section-to-label mappings.
 
@@ -62,29 +62,29 @@ Utility class parsing .tex files to extract section-to-label mappings.
 - Immutable Map.copyOf() for safe returns
 
 ### 4. InvalidDocTestRefException.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/InvalidDocTestRefException.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/crossref/InvalidDocTestRefException.java`
 
 Runtime exception thrown when a reference targets a non-existent DocTest class.
 
 ### 5. InvalidAnchorException.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/crossref/InvalidAnchorException.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/crossref/InvalidAnchorException.java`
 
 Runtime exception thrown when a reference targets a non-existent section anchor.
 
 ## Files Modified (4 existing files)
 
 ### 1. RenderMachineCommands.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineCommands.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineCommands.java`
 
 **Changes**:
 - Added method signature: `void sayRef(DocTestRef ref)`
 - Javadoc explaining the cross-reference rendering behavior
 
 ### 2. RenderMachineImpl.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/RenderMachineImpl.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineImpl.java`
 
 **Changes**:
-- Added import: `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
+- Added import: `io.github.seanchatmangpt.dtr.dtr.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)` for Markdown output
 - Renders cross-reference as: `[linkText](../ClassName.md#anchor)`
 
@@ -94,10 +94,10 @@ Runtime exception thrown when a reference targets a non-existent section anchor.
 ```
 
 ### 3. RenderMachineLatex.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/rendermachine/latex/RenderMachineLatex.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/rendermachine/latex/RenderMachineLatex.java`
 
 **Changes**:
-- Added import: `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
+- Added import: `io.github.seanchatmangpt.dtr.dtr.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)` for LaTeX output
 - Added helper method: `convertTextToLatexLabel(String text)` normalizing anchor strings
 - Renders cross-reference as: `See Section \ref{sec:anchor-name}`
@@ -108,12 +108,12 @@ See Section \ref{sec:user-creation}
 ```
 
 ### 4. DTR.java
-**Location**: `/home/user/doctester/dtr-core/src/main/java/org/r10r/doctester/DTR.java`
+**Location**: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/DTR.java`
 
 **Changes**:
 - Added imports:
-  - `io.github.seanchatmangpt.dtr.doctester.crossref.CrossReferenceIndex`
-  - `io.github.seanchatmangpt.dtr.doctester.crossref.DocTestRef`
+  - `io.github.seanchatmangpt.dtr.dtr.crossref.CrossReferenceIndex`
+  - `io.github.seanchatmangpt.dtr.dtr.crossref.DocTestRef`
 - Implemented `sayRef(DocTestRef ref)`:
   - Registers reference via `CrossReferenceIndex.getInstance().register(ref)`
   - Delegates rendering to `renderMachine.sayRef(ref)`
@@ -401,8 +401,8 @@ public class ApiDocTest extends DTR {
 ## File Locations Summary
 
 ```
-/home/user/doctester/
-├── dtr-core/src/main/java/org/r10r/doctester/
+/home/user/dtr/
+├── dtr-core/src/main/java/org/r10r/dtr/
 │   ├── crossref/
 │   │   ├── DocTestRef.java                    [NEW]
 │   │   ├── CrossReferenceIndex.java           [NEW]

@@ -16,13 +16,13 @@
 package io.github.seanchatmangpt.dtr.jotp;
 
 import org.junit.Test;
-import io.github.seanchatmangpt.dtr.DocTester;
+import io.github.seanchatmangpt.dtr.DtrTest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 
 /**
- * DocTester documentation for {@link Maths} — a class that showcases Java 25
+ * DTR documentation for {@link Maths} — a class that showcases Java 25
  * <em>records</em> as concise, immutable containers for primitive values.
  *
  * <p>Covers:
@@ -35,7 +35,7 @@ import static org.hamcrest.CoreMatchers.not;
  *   <li>Edge cases: zero, negatives, overflow boundary</li>
  * </ul>
  */
-public class MathsDocTest extends DocTester {
+public class MathsDocTest extends DtrTest {
 
     // -------------------------------------------------------------------------
     // Records — instantiation and accessors

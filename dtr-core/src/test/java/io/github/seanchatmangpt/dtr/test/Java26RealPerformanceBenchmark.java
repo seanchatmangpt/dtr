@@ -19,10 +19,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Timeout;
 
 /**
- * REAL Performance Benchmark using actual DocTester rendering code
+ * REAL Performance Benchmark using actual DTR rendering code
  *
  * IMPORTANT: This benchmark ONLY reports real, measured data from actual
- * DocTester rendering operations. NO simulation, NO fake numbers.
+ * DTR rendering operations. NO simulation, NO fake numbers.
  *
  * Every metric is measured using System.nanoTime() on ACTUAL operations:
  * - Real RenderMachine implementations
@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Timeout;
  * ├─ 10-document batch: 200-500ms
  * └─ Cache hits improve subsequent access significantly
  */
-@DisplayName("Java 26 REAL Performance Benchmark (Actual DocTester Rendering)")
+@DisplayName("Java 26 REAL Performance Benchmark (Actual DTR Rendering)")
 public class Java26RealPerformanceBenchmark {
 
     private static final int WARMUP_ITERATIONS = 10;
@@ -155,7 +155,7 @@ public class Java26RealPerformanceBenchmark {
      * Benchmark 3: Batch Processing - 10 documents
      *
      * Measures generating 10 complete documents sequentially.
-     * This is a more realistic workload for DocTester.
+     * This is a more realistic workload for DTR.
      */
     @Test
     @DisplayName("Benchmark: Real Document Batch Processing (10 docs)")
@@ -262,7 +262,7 @@ public class Java26RealPerformanceBenchmark {
     // ============================================================================
 
     /**
-     * Generate a minimal Markdown document using actual DocTester operations.
+     * Generate a minimal Markdown document using actual DTR operations.
      * This is a REAL document, not simulated.
      */
     private String generateMinimalMarkdownDocument() {

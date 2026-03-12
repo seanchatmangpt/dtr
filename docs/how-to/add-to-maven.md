@@ -4,7 +4,7 @@
 
 ```xml
 <dependency>
-    <groupId>org.doctester</groupId>
+    <groupId>org.dtr</groupId>
     <artifactId>dtr-core</artifactId>
     <version>1.1.12</version>
     <scope>test</scope>
@@ -24,7 +24,7 @@ DTR requires JUnit 4:
 
 ## Add SLF4J logging
 
-DocTester's HTTP client (Apache HttpClient) uses SLF4J. Without a binding you'll see warnings. Add these:
+DTR's HTTP client (Apache HttpClient) uses SLF4J. Without a binding you'll see warnings. Add these:
 
 ```xml
 <dependency>
@@ -149,7 +149,7 @@ DTR targets Java 25 with preview features enabled:
 
 ```bash
 mvnd test
-ls target/site/doctester/
+ls target/site/dtr/
 ```
 
 If `index.html` appears, DTR is working.

@@ -8,7 +8,7 @@ This is a major release introducing significant architectural improvements, mode
 ## Breaking Changes
 
 * **Markdown-first Output Format**: Documentation generation now defaults to Markdown instead of HTML. This is a breaking change for consumers who rely on direct HTML output. Custom renderers can still generate HTML via plugins.
-* **JUnit 5 Integration**: Primary test framework now uses JUnit 5 (Jupiter) with JUnit 4 support via vintage engine. Existing JUnit 4-based `DocTester` subclasses require migration to `@ExtendWith(DocTesterExtension.class)` or continuation with legacy base class.
+* **JUnit 5 Integration**: Primary test framework now uses JUnit 5 (Jupiter) with JUnit 4 support via vintage engine. Existing JUnit 4-based `DTR` subclasses require migration to `@ExtendWith(DTRExtension.class)` or continuation with legacy base class.
 * **HTTP Client 5.x Upgrade**: Apache HttpClient upgraded from 4.5.x to 5.6. Some internal APIs changed; custom TestBrowser implementations must be updated.
 * **Removed HTML Rendering Classes**: `RenderMachineImpl` and HTML-specific rendering logic removed. Use new `MarkdownRenderMachine` or implement custom `RenderMachine` interface.
 
@@ -27,7 +27,7 @@ This is a major release introducing significant architectural improvements, mode
 * Pretty-printed JSON/XML preserved in Markdown code blocks
 
 ### JUnit 5 Support
-* `DocTesterExtension`: New Jupiter-compatible extension replacing JUnit 4 base class pattern
+* `DTRExtension`: New Jupiter-compatible extension replacing JUnit 4 base class pattern
 * Full integration with JUnit 5 lifecycle hooks and parameterized tests
 * Support for property-based testing via jqwik integration
 * Mockito JUnit Jupiter support for advanced mocking patterns
@@ -100,12 +100,12 @@ public class ApiDocTest extends DTR {
 
 **After (JUnit 5)**:
 ```java
-@ExtendWith(DocTesterExtension.class)
+@ExtendWith(DTRExtension.class)
 public class ApiDocTest {
     private DTR docTester;
 
     @BeforeEach
-    void setUp(DocTesterContext context) {
+    void setUp(DTRContext context) {
         docTester = context.docTester();
     }
 
@@ -118,7 +118,7 @@ public class ApiDocTest {
 ### From HTML to Markdown Output
 
 Documents are now generated as `.md` files instead of `.html`. To access generated documentation:
-- Before: `target/site/doctester/ApiDocTest.html`
+- Before: `target/site/dtr/ApiDocTest.html`
 - After: `docs/test/ApiDocTest.md`
 
 Convert to HTML using Pandoc, Jekyll, or other Markdown converters as needed.
@@ -202,7 +202,7 @@ Version 1.1.5
 Version 1.1.4
 =============
 
- * 2014-06-28 Added support for DELETE queries + bugfix (dlorych) (https://github.com/doctester/doctester/pull/3)
+ * 2014-06-28 Added support for DELETE queries + bugfix (dlorych) (https://github.com/dtr/dtr/pull/3)
  * 2014-03-05 Bump to Ninja 3.1.1 (ra)
  * 2014-02-14 Reordered dependencies in integration test so that we do not need
    exclusions any more (just cosmetics) (ra).

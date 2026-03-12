@@ -16,7 +16,7 @@
 package io.github.seanchatmangpt.dtr.openapi;
 
 /**
- * Supported output formats for DocTester documentation.
+ * Supported output formats for DTR documentation.
  *
  * <p>Each format produces a different type of output artifact:
  * <ul>

@@ -16,7 +16,7 @@ This is the "documentation rot" problem, and it's endemic to software projects. 
 
 ## The DTR approach: documentation is the test
 
-DocTester's answer is radical: **make the documentation executable**.
+DTR's answer is radical: **make the documentation executable**.
 
 Instead of writing tests and documentation separately, you write them together. The same code that asserts `response.httpStatus() == 200` also generates the paragraph that says "The server responds with 200 OK." If the behavior changes, the test fails — and you must fix the test — and fixing the test updates the documentation automatically.
 
@@ -69,13 +69,13 @@ DTR generates output that sits somewhere between **reference** and **tutorial** 
 
 Good DocTest output does both. A developer scanning the panels can see the API mechanics at a glance. A developer reading the text understands the intent and context.
 
-This documentation site you're reading now is organized around Diataxis — tutorials, how-to guides, reference, and explanation. DocTester's generated output is a complementary form of documentation that focuses specifically on demonstrating API behavior through running examples.
+This documentation site you're reading now is organized around Diataxis — tutorials, how-to guides, reference, and explanation. DTR's generated output is a complementary form of documentation that focuses specifically on demonstrating API behavior through running examples.
 
 ---
 
 ## Limitations to accept
 
-DocTester's approach has trade-offs to be aware of:
+DTR's approach has trade-offs to be aware of:
 
 **Tests must be integration tests.** DTR requires a running server to make HTTP requests. You can't generate documentation from unit tests. This is the right trade-off for API documentation — readers want to see real requests against a real server — but it means DTR belongs in your integration test phase, not unit test phase.
 

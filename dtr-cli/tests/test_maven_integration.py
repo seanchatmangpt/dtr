@@ -4,7 +4,7 @@ Chicago TDD: Tests verify ACTUAL RESULTS, not just exit codes.
 - Export commands: Verify files are listed/archived/validated
 - Format commands: Verify output files actually created with content
 - Report commands: Verify report files created with meaningful data
-- Maven builds: Verify real Maven execution, real DocTester exports
+- Maven builds: Verify real Maven execution, real DTR exports
 
 Tests FAIL LOUDLY if:
 - Maven is unavailable
@@ -23,27 +23,27 @@ runner = CliRunner()
 
 
 # ============================================================================
-# Tests against REAL doctester-core exports
+# Tests against REAL dtr-core exports
 # ============================================================================
 
 
-def test_maven_core_build_generates_exports(maven_doctester_core_exports: Path) -> None:
-    """Verify Maven build actually generated DocTester exports.
+def test_maven_core_build_generates_exports(maven_dtr_core_exports: Path) -> None:
+    """Verify Maven build actually generated DTR exports.
 
     VALIDATES:
     - Maven build ran successfully
     - JUnit tests executed
-    - DocTester captured interactions
+    - DTR captured interactions
     - Export directory exists and contains files
     """
-    assert maven_doctester_core_exports.exists(), f"Exports dir missing: {maven_doctester_core_exports}"
+    assert maven_dtr_core_exports.exists(), f"Exports dir missing: {maven_dtr_core_exports}"
 
-    html_files = list(maven_doctester_core_exports.glob("*.html"))
-    assert len(html_files) > 0, f"No .html exports found in {maven_doctester_core_exports}"
+    html_files = list(maven_dtr_core_exports.glob("*.html"))
+    assert len(html_files) > 0, f"No .html exports found in {maven_dtr_core_exports}"
     print(f"✓ Found {len(html_files)} HTML export files")
 
 
-def test_cli_export_list_shows_real_files(maven_doctester_core_exports: Path) -> None:
+def test_cli_export_list_shows_real_files(maven_dtr_core_exports: Path) -> None:
     """Test 'dtr export list' shows REAL exports, not template output.
 
     VALIDATES:
@@ -51,7 +51,7 @@ def test_cli_export_list_shows_real_files(maven_doctester_core_exports: Path) ->
     - Output contains actual file information (not just headers)
     - Lists real files from the export directory
     """
-    result = runner.invoke(app, ["export", "list", str(maven_doctester_core_exports)])
+    result = runner.invoke(app, ["export", "list", str(maven_dtr_core_exports)])
 
     assert result.exit_code == 0, f"Command failed: {result.stdout}"
 
@@ -67,7 +67,7 @@ def test_cli_export_list_shows_real_files(maven_doctester_core_exports: Path) ->
     print(f"✓ Export list output ({len(output_lines)} lines):\n{result.stdout}")
 
 
-def test_cli_export_check_validates_real_exports(maven_doctester_core_exports: Path) -> None:
+def test_cli_export_check_validates_real_exports(maven_dtr_core_exports: Path) -> None:
     """Test 'dtr export check' validates REAL exports and reports results.
 
     VALIDATES:
@@ -75,7 +75,7 @@ def test_cli_export_check_validates_real_exports(maven_doctester_core_exports: P
     - Validation checks are performed
     - Results report file counts and validity
     """
-    result = runner.invoke(app, ["export", "check", str(maven_doctester_core_exports)])
+    result = runner.invoke(app, ["export", "check", str(maven_dtr_core_exports)])
 
     assert result.exit_code == 0, f"Validation failed: {result.stdout}"
 
@@ -87,7 +87,7 @@ def test_cli_export_check_validates_real_exports(maven_doctester_core_exports: P
     print(f"✓ Validation results:\n{result.stdout}")
 
 
-def test_cli_export_save_creates_actual_archive(maven_doctester_core_exports: Path, tmp_path: Path) -> None:
+def test_cli_export_save_creates_actual_archive(maven_dtr_core_exports: Path, tmp_path: Path) -> None:
     """Test 'dtr export save' ACTUALLY CREATES archive file on disk.
 
     VALIDATES:
@@ -100,7 +100,7 @@ def test_cli_export_save_creates_actual_archive(maven_doctester_core_exports: Pa
 
     result = runner.invoke(
         app,
-        ["export", "save", str(maven_doctester_core_exports), "--output", str(archive_file), "--format", "tar.gz"],
+        ["export", "save", str(maven_dtr_core_exports), "--output", str(archive_file), "--format", "tar.gz"],
     )
 
     assert result.exit_code == 0, f"Archive creation failed: {result.stdout}"
@@ -127,7 +127,7 @@ def test_cli_export_save_creates_actual_archive(maven_doctester_core_exports: Pa
         raise AssertionError(f"Archive is not valid tar.gz: {e}")
 
 
-def test_cli_fmt_md_generates_markdown_files(maven_doctester_core_exports: Path, tmp_path: Path) -> None:
+def test_cli_fmt_md_generates_markdown_files(maven_dtr_core_exports: Path, tmp_path: Path) -> None:
     """Test 'dtr fmt md' ACTUALLY GENERATES Markdown files with content.
 
     VALIDATES:
@@ -136,7 +136,7 @@ def test_cli_fmt_md_generates_markdown_files(maven_doctester_core_exports: Path,
     - Files contain Markdown syntax (headers, markers, etc.)
     - Files have meaningful content (not empty)
     """
-    html_files = list(maven_doctester_core_exports.glob("*.html"))
+    html_files = list(maven_dtr_core_exports.glob("*.html"))
     assert len(html_files) > 0, "No HTML exports to convert"
 
     html_file = html_files[0]
@@ -163,7 +163,7 @@ def test_cli_fmt_md_generates_markdown_files(maven_doctester_core_exports: Path,
         print(f"✓ {md_file.name}: {len(content)} bytes, has Markdown markers")
 
 
-def test_cli_fmt_json_generates_json_files(maven_doctester_core_exports: Path, tmp_path: Path) -> None:
+def test_cli_fmt_json_generates_json_files(maven_dtr_core_exports: Path, tmp_path: Path) -> None:
     """Test 'dtr fmt json' ACTUALLY GENERATES JSON files with valid syntax.
 
     VALIDATES:
@@ -172,7 +172,7 @@ def test_cli_fmt_json_generates_json_files(maven_doctester_core_exports: Path, t
     - Files contain valid JSON
     - Files have meaningful content
     """
-    html_files = list(maven_doctester_core_exports.glob("*.html"))
+    html_files = list(maven_dtr_core_exports.glob("*.html"))
     assert len(html_files) > 0, "No HTML exports to convert"
 
     html_file = html_files[0]
@@ -201,7 +201,7 @@ def test_cli_fmt_json_generates_json_files(maven_doctester_core_exports: Path, t
             raise AssertionError(f"Invalid JSON in {json_file}: {e}")
 
 
-def test_cli_fmt_html_generates_html_from_markdown_real(maven_doctester_core_exports: Path, tmp_path: Path) -> None:
+def test_cli_fmt_html_generates_html_from_markdown_real(maven_dtr_core_exports: Path, tmp_path: Path) -> None:
     """Test 'dtr fmt html' generates HTML output from REAL Markdown sources.
 
     VALIDATES:
@@ -210,7 +210,7 @@ def test_cli_fmt_html_generates_html_from_markdown_real(maven_doctester_core_exp
     - Output contains valid HTML structure when files are generated
     """
     # Step 1: Convert real HTML → Markdown (use existing converter)
-    html_files = list(maven_doctester_core_exports.glob("*.html"))
+    html_files = list(maven_dtr_core_exports.glob("*.html"))
     assert len(html_files) > 0, "No HTML exports to convert"
 
     html_file = html_files[0]
@@ -257,7 +257,7 @@ def test_cli_fmt_html_generates_html_from_markdown_real(maven_doctester_core_exp
         print(f"ℹ No .html files in output (converter may use different output format)")
 
 
-def test_cli_report_sum_generates_report_file(maven_doctester_core_exports: Path, tmp_path: Path) -> None:
+def test_cli_report_sum_generates_report_file(maven_dtr_core_exports: Path, tmp_path: Path) -> None:
     """Test 'dtr report sum' ACTUALLY GENERATES report file with content.
 
     VALIDATES:
@@ -270,7 +270,7 @@ def test_cli_report_sum_generates_report_file(maven_doctester_core_exports: Path
 
     result = runner.invoke(
         app,
-        ["report", "sum", str(maven_doctester_core_exports), "--output", str(output_file), "--format", "markdown"],
+        ["report", "sum", str(maven_dtr_core_exports), "--output", str(output_file), "--format", "markdown"],
     )
 
     assert result.exit_code in [0, 1], f"Report generation failed: {result.stdout}"
@@ -292,7 +292,7 @@ def test_cli_report_sum_generates_report_file(maven_doctester_core_exports: Path
 
 
 # ============================================================================
-# Tests against REAL doctester-integration-test exports
+# Tests against REAL dtr-integration-test exports
 # ============================================================================
 
 
@@ -302,7 +302,7 @@ def test_maven_integration_test_build_generates_api_exports(maven_integration_te
     VALIDATES:
     - Maven ran full integration test suite
     - Embedded server executed real HTTP calls
-    - DocTester documented API interactions
+    - DTR documented API interactions
     - Export directory contains API documentation
     """
     assert maven_integration_test_exports.exists(), \
@@ -384,7 +384,7 @@ def test_cli_report_log_changelog_from_api(maven_integration_test_exports: Path,
 # ============================================================================
 
 
-def test_export_save_zip_format(maven_doctester_core_exports: Path, tmp_path: Path) -> None:
+def test_export_save_zip_format(maven_dtr_core_exports: Path, tmp_path: Path) -> None:
     """Test that 'dtr export save' also works with ZIP format.
 
     VALIDATES:
@@ -396,7 +396,7 @@ def test_export_save_zip_format(maven_doctester_core_exports: Path, tmp_path: Pa
 
     result = runner.invoke(
         app,
-        ["export", "save", str(maven_doctester_core_exports), "--output", str(archive_file), "--format", "zip"],
+        ["export", "save", str(maven_dtr_core_exports), "--output", str(archive_file), "--format", "zip"],
     )
 
     assert result.exit_code == 0, f"ZIP creation failed: {result.stdout}"
@@ -416,7 +416,7 @@ def test_export_save_zip_format(maven_doctester_core_exports: Path, tmp_path: Pa
         raise AssertionError(f"Invalid ZIP file: {e}")
 
 
-def test_export_clean_dry_run_shows_what_would_delete(maven_doctester_core_exports: Path) -> None:
+def test_export_clean_dry_run_shows_what_would_delete(maven_dtr_core_exports: Path) -> None:
     """Test 'dtr export clean --dry-run' shows files WITHOUT deleting them.
 
     VALIDATES:
@@ -425,19 +425,19 @@ def test_export_clean_dry_run_shows_what_would_delete(maven_doctester_core_expor
     - Files still exist after command
     """
     # Count files before cleanup
-    files_before = list(maven_doctester_core_exports.glob("*.html"))
+    files_before = list(maven_dtr_core_exports.glob("*.html"))
     count_before = len(files_before)
 
     result = runner.invoke(
         app,
-        ["export", "clean", str(maven_doctester_core_exports), "--keep", "1", "--dry-run"],
+        ["export", "clean", str(maven_dtr_core_exports), "--keep", "1", "--dry-run"],
     )
 
     # Should complete (may be exit 0 or 1 depending on dry-run logic)
     assert result.exit_code in [0, 1]
 
     # VALIDATE: Files still exist (not deleted)
-    files_after = list(maven_doctester_core_exports.glob("*.html"))
+    files_after = list(maven_dtr_core_exports.glob("*.html"))
     count_after = len(files_after)
     assert count_after == count_before, f"Files were deleted during dry-run! Before: {count_before}, After: {count_after}"
     print(f"✓ Dry-run preserved {count_after} files (expected {count_before})")

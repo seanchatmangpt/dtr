@@ -13,14 +13,14 @@ Total Content: ~7,000 lines
 ================================================================================
 
 Master Entry Point:
-  /home/user/doctester/dtr-cli/docs/index.md
+  /home/user/dtr/dtr-cli/docs/index.md
 
 Complete Directory:
-  /home/user/doctester/dtr-cli/docs/
+  /home/user/dtr/dtr-cli/docs/
 
 Summary Documents:
-  /home/user/doctester/DIATAXIS_DOCUMENTATION.md
-  /home/user/doctester/DOCUMENTATION_VERIFICATION_REPORT.md
+  /home/user/dtr/DIATAXIS_DOCUMENTATION.md
+  /home/user/dtr/DOCUMENTATION_VERIFICATION_REPORT.md
 
 ================================================================================
                           DOCUMENTATION STRUCTURE
@@ -75,38 +75,38 @@ Publication Ready:  ✅ YES
 ================================================================================
 
 Master Index:
-  /home/user/doctester/dtr-cli/docs/index.md (219 lines)
+  /home/user/dtr/dtr-cli/docs/index.md (219 lines)
   Entry point with navigation for all documentation types
 
 Reference Files:
-  /home/user/doctester/dtr-cli/docs/reference/exit-codes.md (194 lines)
-  /home/user/doctester/dtr-cli/docs/reference/glossary.md (186 lines)
+  /home/user/dtr/dtr-cli/docs/reference/exit-codes.md (194 lines)
+  /home/user/dtr/dtr-cli/docs/reference/glossary.md (186 lines)
 
 Explanation Files:
-  /home/user/doctester/dtr-cli/docs/explanation/performance-guide.md (274 lines)
-  /home/user/doctester/dtr-cli/docs/explanation/best-practices.md (510 lines)
-  /home/user/doctester/dtr-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
+  /home/user/dtr/dtr-cli/docs/explanation/performance-guide.md (274 lines)
+  /home/user/dtr/dtr-cli/docs/explanation/best-practices.md (510 lines)
+  /home/user/dtr/dtr-cli/docs/explanation/troubleshooting-philosophy.md (402 lines)
 
 Summary Documents:
-  /home/user/doctester/DIATAXIS_DOCUMENTATION.md (Complete summary)
-  /home/user/doctester/DOCUMENTATION_VERIFICATION_REPORT.md (Verification report)
-  /home/user/doctester/DOCUMENTATION_SUMMARY.txt (This file)
+  /home/user/dtr/DIATAXIS_DOCUMENTATION.md (Complete summary)
+  /home/user/dtr/DOCUMENTATION_VERIFICATION_REPORT.md (Verification report)
+  /home/user/dtr/DOCUMENTATION_SUMMARY.txt (This file)
 
 ================================================================================
                           HOW USERS NAVIGATE
 ================================================================================
 
 New Users:
-  1. Start: /home/user/doctester/dtr-cli/docs/index.md
+  1. Start: /home/user/dtr/dtr-cli/docs/index.md
   2. Then: tutorials/01-getting-started.md
   3. Continue: tutorials/02-export-formats.md
 
 Problem-Focused Users:
-  1. Start: /home/user/doctester/dtr-cli/docs/index.md
+  1. Start: /home/user/dtr/dtr-cli/docs/index.md
   2. Then: how-to/<relevant-guide>.md
 
 Reference Seekers:
-  1. Start: /home/user/doctester/dtr-cli/docs/index.md
+  1. Start: /home/user/dtr/dtr-cli/docs/index.md
   2. Then: reference/cli-commands.md or reference/glossary.md
 
 Learners:
@@ -151,7 +151,7 @@ Coverage:
 Option 1: GitHub Pages (Free, Integrated)
   - Store docs in repo
   - Enable GitHub Pages in settings
-  - Docs appear at https://username.github.io/doctester
+  - Docs appear at https://username.github.io/dtr
 
 Option 2: ReadTheDocs (Free, Automatic)
   - Connect GitHub repo
@@ -178,20 +178,20 @@ Option 4: MkDocs or Sphinx
 4. PUBLISH: Deploy to documentation platform
 5. MAINTAIN: Update quarterly and when features change
 
-Start Here: /home/user/doctester/dtr-cli/docs/index.md
+Start Here: /home/user/dtr/dtr-cli/docs/index.md
 
 ================================================================================
                           SUPPORT & CONTRIBUTION
 ================================================================================
 
 Found an issue? Report it:
-  https://github.com/seanchatmangpt/doctester/issues
+  https://github.com/seanchatmangpt/dtr/issues
 
 Want to contribute? See:
-  /home/user/doctester/CONTRIBUTING.md
+  /home/user/dtr/CONTRIBUTING.md
 
 Questions or feedback:
-  https://github.com/seanchatmangpt/doctester/discussions
+  https://github.com/seanchatmangpt/dtr/discussions
 
 ================================================================================
                           DOCUMENT INFORMATION

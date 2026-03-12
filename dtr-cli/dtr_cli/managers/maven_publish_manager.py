@@ -129,7 +129,7 @@ class MavenPublishManager:
         # This would typically come from the Nexus staging plugin output
         staging_repo_id = self._extract_staging_repo_id()
         if not staging_repo_id:
-            staging_repo_id = f"iogithubseanchatmangptdoctester-{int(time.time())}"
+            staging_repo_id = f"iogithubseanchatmangptdtr-{int(time.time())}"
 
         return staging_repo_id
 

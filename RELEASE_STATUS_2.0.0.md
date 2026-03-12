@@ -11,13 +11,13 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 ### Release Artifacts Created
 
 1. ✓ **Git Tag:** `v2.0.0` created locally
-   - Tag Message: "DocTester 2.0.0 - Major Release with Markdown Output, Java 25, WebSocket/SSE Support, and Enterprise Auth"
+   - Tag Message: "DTR 2.0.0 - Major Release with Markdown Output, Java 25, WebSocket/SSE Support, and Enterprise Auth"
    - Commit: ef1fffa04ed31b1483e6f57592c525ead090c0f4
    - Tagger: Claude
    - Date: Tue Mar 10 21:28:25 2026 +0000
 
 2. ✓ **Release Notes:** Comprehensive markdown documentation created
-   - File: `/home/user/doctester/RELEASE_NOTES_2.0.0.md`
+   - File: `/home/user/dtr/RELEASE_NOTES_2.0.0.md`
    - Includes all major features, breaking changes, migration guide, and system requirements
 
 3. ✓ **Supporting Documentation**
@@ -31,7 +31,7 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 ### Major Features Documented
 - ✓ Markdown-First Documentation
 - ✓ Annotation-Based Testing API (@DocSection, @DocDescription, @DocNote, @DocWarning, @DocCode)
-- ✓ JUnit 5 Support (DocTesterExtension, Jupiter integration)
+- ✓ JUnit 5 Support (DTRExtension, Jupiter integration)
 - ✓ WebSocket & SSE Protocol Support (WebSocketTestClient, ServerSentEventsClient)
 - ✓ Advanced Authentication Providers (BearerToken, ApiKey, BasicAuth)
 - ✓ OpenAPI 3.0 Generation
@@ -41,7 +41,7 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 
 ### Breaking Changes Documented
 - ✓ Markdown-first Output Format (HTML → Markdown)
-- ✓ Output Directory Change (target/site/doctester → target/docs)
+- ✓ Output Directory Change (target/site/dtr → target/docs)
 - ✓ Java Version Requirement (1.8+ → 25 LTS only)
 - ✓ HTTP Client 5.x Upgrade (4.5 → 5.6)
 - ✓ Removed HTML Rendering Classes
@@ -72,7 +72,7 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 
 ## Repository Status
 
-- **Repository:** http://local_proxy@127.0.0.1:36807/git/seanchatmangpt/doctester (local proxy)
+- **Repository:** http://local_proxy@127.0.0.1:36807/git/seanchatmangpt/dtr (local proxy)
 - **Current Branch:** claude/plan-major-release-LmHxG
 - **Tag Created:** v2.0.0 (local)
 - **Remote Push:** Attempted but failed with HTTP 403 (permission issue on local proxy)
@@ -80,14 +80,14 @@ The v2.0.0 release has been **prepared and tagged** locally. The git tag `v2.0.0
 ## Files Created/Modified for Release
 
 ### New Files Created
-1. `/home/user/doctester/RELEASE_NOTES_2.0.0.md` - Comprehensive release notes (created)
-2. `/home/user/doctester/RELEASE_STATUS_2.0.0.md` - This status report (created)
+1. `/home/user/dtr/RELEASE_NOTES_2.0.0.md` - Comprehensive release notes (created)
+2. `/home/user/dtr/RELEASE_STATUS_2.0.0.md` - This status report (created)
 
 ### Existing Release Documentation
-1. `/home/user/doctester/CHANGELOG_2.0.0.md` - Detailed changelog (existing)
-2. `/home/user/doctester/MIGRATION-1.x-TO-2.0.0.md` - Migration guide (existing)
-3. `/home/user/doctester/CLAUDE.md` - Project architecture (existing)
-4. `/home/user/doctester/README-2.0.0.md` - New documentation (existing)
+1. `/home/user/dtr/CHANGELOG_2.0.0.md` - Detailed changelog (existing)
+2. `/home/user/dtr/MIGRATION-1.x-TO-2.0.0.md` - Migration guide (existing)
+3. `/home/user/dtr/CLAUDE.md` - Project architecture (existing)
+4. `/home/user/dtr/README-2.0.0.md` - New documentation (existing)
 
 ## Git Tag Verification
 
@@ -112,7 +112,7 @@ commit ef1fffa04ed31b1483e6f57592c525ead090c0f4
 
 If gh CLI becomes available or you push to GitHub directly, the release would be created with:
 
-1. **Release Title:** "DocTester 2.0.0"
+1. **Release Title:** "DTR 2.0.0"
 2. **Release Notes:** Content from RELEASE_NOTES_2.0.0.md
 3. **Assets:** Source code attached automatically with git tag
 4. **Mark as Latest:** Yes (not pre-release)
@@ -121,7 +121,7 @@ If gh CLI becomes available or you push to GitHub directly, the release would be
 ## URL for Release (When Published)
 
 Once pushed to GitHub, the release would be visible at:
-https://github.com/seanchatmangpt/doctester/releases/tag/v2.0.0
+https://github.com/seanchatmangpt/dtr/releases/tag/v2.0.0
 
 ## Checklist Summary
 

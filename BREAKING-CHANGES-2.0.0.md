@@ -19,7 +19,7 @@ DTR 2.0.0 contains **three major breaking changes** that fundamentally alter how
 **Version 1.x:** Generates Bootstrap 3-styled HTML pages with embedded CSS/JS
 
 ```
-target/site/doctester/
+target/site/dtr/
 ├── index.html                    # Bootstrap navbar + TOC
 ├── UserApiDocTest.html           # Styled HTML page
 ├── bootstrap/
@@ -27,7 +27,7 @@ target/site/doctester/
 │   └── js/bootstrap.min.js
 ├── jquery/
 │   └── jquery-1.9.0.min.js
-└── custom_doctester_stylesheet.css
+└── custom_dtr_stylesheet.css
 ```
 
 **Version 2.0.0:** Generates pure Markdown (portable, no assets)
@@ -56,13 +56,13 @@ docs/test/
 - ✓ Everyone (all projects generate documentation)
 
 **What breaks:**
-- ❌ CI/CD scripts looking for `target/site/doctester/`
+- ❌ CI/CD scripts looking for `target/site/dtr/`
 - ❌ Documentation server configurations expecting `.html` files
 - ❌ Bookmarks to generated HTML pages
-- ❌ Custom CSS in `custom_doctester_stylesheet.css`
+- ❌ Custom CSS in `custom_dtr_stylesheet.css`
 
 **Mitigation:**
-1. Update all references from `target/site/doctester/` to `docs/test/`
+1. Update all references from `target/site/dtr/` to `docs/test/`
 2. Update CI/CD to deploy Markdown instead of HTML
 3. Use a static site generator (MkDocs, Docusaurus, Jekyll) to render HTML if needed
 4. If you had custom CSS, configure your site generator's theme instead
@@ -75,8 +75,8 @@ docs/test/
 # Version 1.x
 - name: Deploy Docs
   run: |
-    if [ -d "target/site/doctester" ]; then
-      cp -r target/site/doctester ./gh-pages
+    if [ -d "target/site/dtr" ]; then
+      cp -r target/site/dtr ./gh-pages
     fi
 
 # Version 2.0.0
@@ -92,7 +92,7 @@ docs/test/
 ```xml
 <!-- Version 1.x -->
 <configuration>
-  <docDir>${project.basedir}/target/site/doctester</docDir>
+  <docDir>${project.basedir}/target/site/dtr</docDir>
 </configuration>
 
 <!-- Version 2.0.0 -->
@@ -207,15 +207,15 @@ openjdk version "24.0.1"   ✗ FAILS — not LTS
 
 ---
 
-## 3. Output Directory: `target/site/doctester/` → `docs/test/`
+## 3. Output Directory: `target/site/dtr/` → `docs/test/`
 
 ### What Changed
 
-**Version 1.x:** Docs written to `target/site/doctester/`
+**Version 1.x:** Docs written to `target/site/dtr/`
 
 ```
 project/
-└── target/site/doctester/
+└── target/site/dtr/
     ├── index.html
     ├── UserApiDocTest.html
     ├── bootstrap/
@@ -248,8 +248,8 @@ project/
 - ✓ Anyone with custom paths referencing the old location
 
 **What breaks:**
-- ❌ Scripts assuming `target/site/doctester/` exists
-- ❌ CI/CD copying from `target/site/doctester/`
+- ❌ Scripts assuming `target/site/dtr/` exists
+- ❌ CI/CD copying from `target/site/dtr/`
 - ❌ Paths in `pom.xml`, `build.gradle`, or Ant scripts
 - ❌ Hard-coded references in shell scripts
 - ❌ Maven site plugin integrations (if any)
@@ -265,11 +265,11 @@ project/
 
 ```bash
 # Find all references
-grep -r "target/site/doctester" .
+grep -r "target/site/dtr" .
 
 # Replace (in most files)
 find . -type f \( -name "*.sh" -o -name "*.yml" -o -name "*.yaml" -o -name "pom.xml" \) \
-  -exec sed -i 's|target/site/doctester|docs/test|g' {} \;
+  -exec sed -i 's|target/site/dtr|docs/test|g' {} \;
 ```
 
 **Maven POM files:**
@@ -278,13 +278,13 @@ find . -type f \( -name "*.sh" -o -name "*.yml" -o -name "*.yaml" -o -name "pom.
 <!-- If you have custom paths -->
 <!-- Version 1.x -->
 <property>
-  <name>doctester.output.dir</name>
-  <value>${project.basedir}/target/site/doctester</value>
+  <name>dtr.output.dir</name>
+  <value>${project.basedir}/target/site/dtr</value>
 </property>
 
 <!-- Version 2.0.0 -->
 <property>
-  <name>doctester.output.dir</name>
+  <name>dtr.output.dir</name>
   <value>${project.basedir}/../docs/test</value>
 </property>
 ```
@@ -295,8 +295,8 @@ find . -type f \( -name "*.sh" -o -name "*.yml" -o -name "*.yaml" -o -name "pom.
 #!/bin/bash
 
 # Version 1.x
-DOCS_DIR="target/site/doctester"
-INDEX_FILE="target/site/doctester/index.html"
+DOCS_DIR="target/site/dtr"
+INDEX_FILE="target/site/dtr/index.html"
 
 # Version 2.0.0
 DOCS_DIR="docs/test"
@@ -312,7 +312,7 @@ fi
 
 ```bash
 # Version 1.x
-/target/site/doctester/
+/target/site/dtr/
 
 # Version 2.0.0 — Note: docs/test is typically committed to the repository
 # Only exclude if you want to prevent test-generated docs from being versioned
@@ -380,7 +380,7 @@ Quick reference for what needs to be updated:
 - [ ] Update Maven Enforcer rules if present
 
 ### 3. Paths and Scripts
-- [ ] Update all `target/site/doctester` → `target/docs` references
+- [ ] Update all `target/site/dtr` → `target/docs` references
 - [ ] Update CI/CD deploy paths
 - [ ] Update `.gitignore` if it excludes old path
 - [ ] Update documentation build scripts
@@ -433,8 +433,8 @@ This is actually **better** because you control the look and feel, and Markdown 
 
 ### Q: What about my custom CSS?
 
-**A:** Custom DTR CSS (`custom_doctester_stylesheet.css`) is no longer used because:
-1. Markdown is not styled by DocTester
+**A:** Custom DTR CSS (`custom_dtr_stylesheet.css`) is no longer used because:
+1. Markdown is not styled by DTR
 2. Styling happens in your static site generator (theme)
 
 **Migrate by:**
@@ -507,8 +507,8 @@ Contact the team if you have a custom `RenderMachine` implementation.
 - **Migration Guide:** [MIGRATION-1.x-TO-2.0.0.md](MIGRATION-1.x-TO-2.0.0.md)
 - **Updated README:** [README-2.0.0.md](README-2.0.0.md)
 - **Full Documentation:** [docs/](docs/)
-- **GitHub Issues:** [Report problems](https://github.com/seanchatmangpt/doctester/issues)
-- **GitHub Discussions:** [Ask questions](https://github.com/seanchatmangpt/doctester/discussions)
+- **GitHub Issues:** [Report problems](https://github.com/seanchatmangpt/dtr/issues)
+- **GitHub Discussions:** [Ask questions](https://github.com/seanchatmangpt/dtr/discussions)
 
 ---
 

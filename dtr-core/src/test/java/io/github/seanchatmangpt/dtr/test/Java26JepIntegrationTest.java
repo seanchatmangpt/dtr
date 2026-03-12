@@ -35,7 +35,7 @@ import io.github.seanchatmangpt.dtr.testbrowser.Url;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Verification test for Java 26 JEP optimizations integrated into DocTester.
+ * Verification test for Java 26 JEP optimizations integrated into DTR.
  *
  * This test validates that all 5 JEPs are working correctly in production code:
  * 1. JEP 526 (Lazy Constants) - LazyValue template caching

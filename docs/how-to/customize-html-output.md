@@ -5,7 +5,7 @@
 Create a file at:
 
 ```
-src/test/resources/org/doctester/custom_doctester_stylesheet.css
+src/test/resources/org/dtr/custom_dtr_stylesheet.css
 ```
 
 DTR copies this file to the output directory and links it from every generated HTML page, after the default Bootstrap styles. Your rules override the defaults.
@@ -13,7 +13,7 @@ DTR copies this file to the output directory and links it from every generated H
 ## Change the header color
 
 ```css
-/* src/test/resources/org/doctester/custom_doctester_stylesheet.css */
+/* src/test/resources/org/dtr/custom_dtr_stylesheet.css */
 
 .navbar-inverse {
     background-color: #1a3a5c;
@@ -132,16 +132,16 @@ public class MyApiDocTest extends DTR {
 
     @Before
     public void configureOutputFile() {
-        setClassNameForDocTesterOutputFile("my-api-reference");
+        setClassNameForDTROutputFile("my-api-reference");
     }
 }
 ```
 
-This produces `target/site/doctester/my-api-reference.html`.
+This produces `target/site/dtr/my-api-reference.html`.
 
 ## Publishing the documentation
 
-The output directory `target/site/doctester/` is self-contained:
+The output directory `target/site/dtr/` is self-contained:
 
 - `index.html` — lists all DocTests
 - `*.html` — individual DocTest pages

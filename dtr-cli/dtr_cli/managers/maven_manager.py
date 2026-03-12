@@ -271,12 +271,12 @@ class MavenRunner:
         """Get expected export directory after build.
 
         For multi-module projects, returns the root exports dir.
-        Individual modules export to their own target/site/doctester/
+        Individual modules export to their own target/site/dtr/
 
         Returns:
-            Path to exports directory (target/site/doctester)
+            Path to exports directory (target/site/dtr)
         """
-        return self.project_root / "target" / "site" / "doctester"
+        return self.project_root / "target" / "site" / "dtr"
 
     def is_multi_module(self) -> bool:
         """Check if this is a multi-module Maven project.

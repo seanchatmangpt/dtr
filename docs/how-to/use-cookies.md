@@ -113,7 +113,7 @@ public void testSecuredEndpoints() {
     sayAndAssertThat("Login accepted", 200, equalTo(loginResponse.httpStatus()));
 
     say("On success, the server sets a `SESSION` cookie. "
-        + "DocTester stores it automatically for subsequent requests:");
+        + "DTR stores it automatically for subsequent requests:");
 
     Cookie session = sayAndGetCookieWithName("SESSION");
     sayAndAssertThat("SESSION cookie is set", session, notNullValue());

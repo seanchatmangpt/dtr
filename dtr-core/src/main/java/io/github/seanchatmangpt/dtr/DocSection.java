@@ -21,10 +21,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Declares the section heading for a DocTester test method.
+ * Declares the section heading for a DTR test method.
  *
- * <p>When placed on a {@code @Test} method, DocTester automatically calls
- * {@link DocTester#sayNextSection(String)} with the given title at the start
+ * <p>When placed on a {@code @Test} method, DTR automatically calls
+ * {@link DTR#sayNextSection(String)} with the given title at the start
  * of the test, before any code in the method body runs. This is equivalent
  * to writing {@code sayNextSection("My Section")} as the first line of the test.</p>
  *
@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  *
  * <p><strong>Annotation Processing Order:</strong></p>
  * <p>When multiple documentation annotations are present on a test method,
- * DocTester processes them in this fixed order:</p>
+ * DTR processes them in this fixed order:</p>
  * <ol>
  *   <li>{@link DocSection} — section heading (first)</li>
  *   <li>{@link DocDescription} — narrative paragraphs</li>
@@ -58,7 +58,7 @@ import java.lang.annotation.Target;
  * }
  * }</pre>
  *
- * @see DocTester#processDocAnnotations(java.lang.reflect.Method) for implementation details
+ * @see DTR#processDocAnnotations(java.lang.reflect.Method) for implementation details
  * @see DocDescription for narrative content
  * @see DocNote for informational callouts
  * @see DocWarning for warning callouts

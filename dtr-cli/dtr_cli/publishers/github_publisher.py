@@ -26,7 +26,7 @@ class GithubPublisher(BasePublisher):
         remote_url = f"https://{token}@github.com/{owner}/{repo}.git"
 
         # Clone or fetch repository
-        temp_dir = Path("/tmp/doctester_github")
+        temp_dir = Path("/tmp/dtr_github")
         if temp_dir.exists():
             subprocess.run(
                 ["git", "-C", str(temp_dir), "fetch", "origin"],

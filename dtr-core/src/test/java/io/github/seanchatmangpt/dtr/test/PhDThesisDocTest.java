@@ -37,7 +37,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 
 /**
- * PhD Thesis: "Living Documentation as Type-Safe Evidence: DocTester as a Canonical
+ * PhD Thesis: "Living Documentation as Type-Safe Evidence: DTR as a Canonical
  * Demonstration of Java 26's Expressiveness, AI-Augmented Development Workflows,
  * and the Future of Executable Academic Writing."
  *
@@ -48,11 +48,11 @@ import java.util.concurrent.Executors;
  *
  * <p>Authors: Sean Chatman, Claude Sonnet 4.6 (Anthropic)</p>
  *
- * <p>This test does not start an HTTP server — it documents DocTester's own internals
+ * <p>This test does not start an HTTP server — it documents DTR's own internals
  * and demonstrates the full {@code say*} API as academic contribution.</p>
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class PhDThesisDocTest extends DocTester {
+public class PhDThesisDocTest extends DtrTest {
 
     // =========================================================================
     // Bibliography registration — @BeforeAll
@@ -136,9 +136,9 @@ public class PhDThesisDocTest extends DocTester {
                 form of documentation that can be trusted.""");
 
         say("""
-                We present DocTester, a Java testing framework that generates \
+                We present DTR, a Java testing framework that generates \
                 publication-ready documentation artifacts as a byproduct of running JUnit 5 \
-                test suites. DocTester leverages the full expressive power of Java 25/26 — \
+                test suites. DTR leverages the full expressive power of Java 25/26 — \
                 sealed classes, records, pattern matching, virtual threads, unnamed patterns, \
                 and sequenced collections — to construct a type-safe event pipeline in which \
                 every documentation primitive corresponds to an immutable sealed record type. \
@@ -149,13 +149,13 @@ public class PhDThesisDocTest extends DocTester {
         say("""
                 The thesis further examines the role of AI-augmented development, specifically \
                 Anthropic's Claude Code multi-agent framework, in accelerating the evolution \
-                of DocTester from a simple HTML-generating test library to a multi-format \
+                of DTR from a simple HTML-generating test library to a multi-format \
                 documentation engine capable of emitting Markdown, LaTeX/IEEE, LaTeX/ACM, \
                 LaTeX/ArXiv, blog formats (Medium, Substack, Dev.to, Hashnode), slide decks \
-                (Reveal.js), OpenAPI specifications, and PDF. We evaluate DocTester against \
+                (Reveal.js), OpenAPI specifications, and PDF. We evaluate DTR against \
                 eleven evaluation criteria and demonstrate that the "documentation drift" \
                 problem is structurally eliminated — not mitigated — when tests and \
-                documentation are the same artifact. The thesis itself is a DocTester test; \
+                documentation are the same artifact. The thesis itself is a DTR test; \
                 the reader holds the proof.""");
 
         var metadata = new LinkedHashMap<String, String>();
@@ -163,9 +163,9 @@ public class PhDThesisDocTest extends DocTester {
         metadata.put("Authors", "Sean Chatman, Claude Sonnet 4.6 (Anthropic)");
         metadata.put("Year", "2026");
         metadata.put("Institution", "Institute for Executable Academic Writing");
-        metadata.put("Keywords", "executable documentation, living documentation, Java 26, sealed classes, DocTester");
+        metadata.put("Keywords", "executable documentation, living documentation, Java 26, sealed classes, DTR");
         metadata.put("Date", "2026-03-11");
-        metadata.put("Format", "DocTester test — run mvnd test to reproduce all claims");
+        metadata.put("Format", "DTR test — run mvnd test to reproduce all claims");
         sayKeyValue(metadata);
 
         sayUnorderedList(List.of(
@@ -175,7 +175,7 @@ public class PhDThesisDocTest extends DocTester {
             "Pattern matching exhaustiveness",
             "Virtual threads / Project Loom",
             "AI-augmented software development",
-            "DocTester framework",
+            "DTR framework",
             "Type-safe event pipelines",
             "Test-as-documentation",
             "Academic writing as executable artifact"
@@ -237,8 +237,8 @@ public class PhDThesisDocTest extends DocTester {
                 --enable-preview at both compilation and runtime.""");
 
         sayCode("""
-                // A minimal DocTester test — documentation and evidence in one file
-                class ApiDocTest extends DocTester {
+                // A minimal DTR test — documentation and evidence in one file
+                class ApiDocTest extends DtrTest {
 
                     @Test
                     void testGetUsers() {
@@ -288,13 +288,13 @@ public class PhDThesisDocTest extends DocTester {
         say("""
                 The remainder of this thesis is organized as follows. Chapter 2 surveys \
                 the landscape of documentation approaches in software engineering and \
-                situates DocTester within that history. Chapter 3 presents the DocTester \
+                situates DTR within that history. Chapter 3 presents the DTR \
                 architecture in detail, focusing on the sealed event hierarchy that makes \
                 the type system the ultimate correctness guarantor. Chapter 4 analyzes the \
-                Java 26 language features that enable DocTester's design. Chapter 5 examines \
+                Java 26 language features that enable DTR's design. Chapter 5 examines \
                 the AI-augmented development workflow that produced the multi-format rendering \
                 pipeline. Chapter 6 catalogs the five Blue Ocean innovations that no competing \
-                library provides. Chapter 7 evaluates DocTester empirically. Chapters 8 and 9 \
+                library provides. Chapter 7 evaluates DTR empirically. Chapters 8 and 9 \
                 discuss implications and conclude.""");
     }
 
@@ -309,7 +309,7 @@ public class PhDThesisDocTest extends DocTester {
                 sophisticated attempts to bridge the gap between code and prose, all of \
                 which ultimately fail because they treat documentation and code as separate \
                 artifacts. We survey five generations of documentation technology before \
-                presenting DocTester as a structural solution rather than a procedural one.""");
+                presenting DTR as a structural solution rather than a procedural one.""");
 
         sayCite("Fowler1999");
         sayCite("Beck2002", "pp. 1-15");
@@ -320,7 +320,7 @@ public class PhDThesisDocTest extends DocTester {
             {"2nd",        "API spec files",   "Swagger/OpenAPI, RAML",    "High — spec diverges from impl"},
             {"3rd",        "BDD scenarios",    "Cucumber, JBehave",        "Medium — scenarios may not test all paths"},
             {"4th",        "Living docs",      "Spring REST Docs, Asciidoc","Medium — snippets tied to tests"},
-            {"5th",        "Test-as-doc",      "DocTester",                "Zero — doc IS the test"},
+            {"5th",        "Test-as-doc",      "DTR",                "Zero — doc IS the test"},
         });
 
         say("""
@@ -361,7 +361,7 @@ public class PhDThesisDocTest extends DocTester {
         sayCite("Humble2010");
 
         say("""
-                **Fifth generation: test-as-documentation (DocTester).** DocTester eliminates \
+                **Fifth generation: test-as-documentation (DTR).** DTR eliminates \
                 the residual gap by making the test method itself the documentation artifact. \
                 Every `say*` call is both a documentation statement and — through the \
                 `sayAndAssertThat` / `sayAndMakeRequest` calls interspersed with it — \
@@ -370,7 +370,7 @@ public class PhDThesisDocTest extends DocTester {
                 from the test run or the test run fails.""");
 
         sayTable(new String[][] {
-            {"Property",                     "Javadoc", "OpenAPI", "Cucumber", "Spring REST Docs", "DocTester"},
+            {"Property",                     "Javadoc", "OpenAPI", "Cucumber", "Spring REST Docs", "DTR"},
             {"Narrative prose tied to tests", "No",      "No",      "Partial",  "No",               "Yes"},
             {"Zero drift guarantee",          "No",      "No",      "Partial",  "Partial",           "Yes"},
             {"Multi-format output",           "HTML",    "YAML",    "HTML",     "HTML/PDF",          "11+ formats"},
@@ -382,7 +382,7 @@ public class PhDThesisDocTest extends DocTester {
         say("""
                 Armstrong's actor model, introduced in Erlang in 1986 and proven at \
                 five-nines reliability in Ericsson's AXD 301 switch, contains a structural \
-                parallel to DocTester that is not coincidental. In Erlang, the only safe \
+                parallel to DTR that is not coincidental. In Erlang, the only safe \
                 way to interact with a process is to send it a typed message — a tuple \
                 whose first element is an atom tag. The receiver pattern-matches on the \
                 tag. If the message does not match any receive clause, it remains in the \
@@ -395,10 +395,10 @@ public class PhDThesisDocTest extends DocTester {
 
         sayCite("Virding1996", "pp. 1-32");
 
-        say("The Java evolution leading to DocTester's design choices is itself worth tracing:");
+        say("The Java evolution leading to DTR's design choices is itself worth tracing:");
 
         sayTable(new String[][] {
-            {"Java Version", "Key Feature",               "DocTester Application"},
+            {"Java Version", "Key Feature",               "DTR Application"},
             {"Java 11 (LTS)","Local var inference",       "var for testbrowser locals"},
             {"Java 14",      "Records (preview)",         "DTO types like UserDto"},
             {"Java 17 (LTS)","Sealed classes (final)",    "SayEvent hierarchy"},
@@ -411,7 +411,7 @@ public class PhDThesisDocTest extends DocTester {
         });
 
         sayNote("""
-                DocTester targets Java 25 with --enable-preview for full access to all features \
+                DTR targets Java 25 with --enable-preview for full access to all features \
                 listed above. The sealed SayEvent hierarchy is the architectural centerpiece \
                 that makes the framework's guarantees possible.""");
     }
@@ -420,10 +420,10 @@ public class PhDThesisDocTest extends DocTester {
 
     @Test
     void chapter03_architecture() {
-        sayNextSection("3. DocTester Architecture");
+        sayNextSection("3. DTR Architecture");
 
         say("""
-                DocTester's architecture is organized into three layers that together \
+                DTR's architecture is organized into three layers that together \
                 implement the test-as-documentation paradigm: a request layer that \
                 models HTTP exchanges fluently, an execution layer that coordinates \
                 the JUnit lifecycle with documentation generation, and a documentation \
@@ -433,14 +433,14 @@ public class PhDThesisDocTest extends DocTester {
 
         sayOrderedList(List.of(
             "Request Layer (testbrowser/) — Fluent builder for HTTP exchanges. Request, Url, Response, HttpConstants.",
-            "Execution Layer (DocTester.java) — JUnit 5 lifecycle integration. @BeforeEach wires TestBrowser and RenderMachine.",
+            "Execution Layer (DTR.java) — JUnit 5 lifecycle integration. @BeforeEach wires TestBrowser and RenderMachine.",
             "Documentation Layer (rendermachine/) — Sealed SayEvent stream rendered to 11+ output formats concurrently.",
             "Cross-cutting: BibliographyManager, CrossReferenceIndex, RenderMachineFactory — supporting services."
         ));
 
         say("""
                 The central architectural decision is the sealed `SayEvent` interface. \
-                Every `say*` call on `DocTester` or `RenderMachine` corresponds to exactly \
+                Every `say*` call on `DTR` or `RenderMachine` corresponds to exactly \
                 one permitted record subtype. The sealed hierarchy is the formal grammar \
                 of the documentation language. Every renderer is a function from that grammar \
                 to a target format string. When a new say* method is added, a new record \
@@ -480,12 +480,12 @@ public class PhDThesisDocTest extends DocTester {
                 }""",
                 "java");
 
-        sayCodeModel(DocTester.class);
+        sayCodeModel(DtrTest.class);
 
-        sayClassHierarchy(DocTester.class);
+        sayClassHierarchy(DtrTest.class);
 
         say("""
-                The lifecycle of a DocTester test class follows a precise sequence that \
+                The lifecycle of a DTR test class follows a precise sequence that \
                 ensures every documentation statement is associated with a test method \
                 and that every output file is finalized after all tests in the class \
                 have run.""");
@@ -511,16 +511,16 @@ public class PhDThesisDocTest extends DocTester {
 
     @Test
     void chapter04_java26Features() {
-        sayNextSection("4. Java 26 Features in DocTester");
+        sayNextSection("4. Java 26 Features in DTR");
 
         say("""
-                DocTester is not a framework that happens to be written in Java. It is a \
+                DTR is not a framework that happens to be written in Java. It is a \
                 framework whose design is only expressible in Java 25/26. Each of the \
                 features listed below is load-bearing: removing it would require either \
                 a materially worse API or a fundamentally different architecture.""");
 
         sayTable(new String[][] {
-            {"JEP",     "Feature",                        "Java Version", "Status",    "DocTester Application"},
+            {"JEP",     "Feature",                        "Java Version", "Status",    "DTR Application"},
             {"JEP 395", "Records",                        "Java 16",      "Final",     "All SayEvent subtypes; DTOs throughout"},
             {"JEP 409", "Sealed Classes",                 "Java 17",      "Final",     "SayEvent sealed hierarchy"},
             {"JEP 441", "Pattern Matching for switch",    "Java 21",      "Final",     "Render pipeline exhaustive dispatch"},
@@ -554,7 +554,7 @@ public class PhDThesisDocTest extends DocTester {
 
         say("""
                 **Sealed classes** (JEP 409, final in Java 17) are the cornerstone of \
-                DocTester's design. A sealed interface declares exactly which classes may \
+                DTR's design. A sealed interface declares exactly which classes may \
                 implement it. This turns the `SayEvent` type into a closed grammar: the \
                 set of documentation primitives is finite and known at compile time. Every \
                 switch over a `SayEvent` is exhaustive — the compiler rejects any switch \
@@ -697,7 +697,7 @@ public class PhDThesisDocTest extends DocTester {
         sayNextSection("5. AI-Augmented Development with Claude Code");
 
         say("""
-                DocTester evolved from a focused HTTP-testing documentation library \
+                DTR evolved from a focused HTTP-testing documentation library \
                 into a multi-format, multi-paradigm documentation engine through a \
                 development process that would have been prohibitively expensive without \
                 AI augmentation. This chapter documents that process as a contribution \
@@ -721,7 +721,7 @@ public class PhDThesisDocTest extends DocTester {
             "maven-build-expert agent updates pom.xml with pandoc dependency if needed.",
             "Root agent runs: mvnd test -pl dtr-core -Dtest=Java26ShowcaseTest.",
             "Test output validates the new format compiles and renders correctly.",
-            "Root agent generates documentation for the new feature — using DocTester itself.",
+            "Root agent generates documentation for the new feature — using DTR itself.",
             "Commit: 'Add LaTeX/ArXiv render format with exhaustive sealed switch dispatch'."
         ));
 
@@ -800,7 +800,7 @@ public class PhDThesisDocTest extends DocTester {
         sayNextSection("6. Blue Ocean Innovations");
 
         say("""
-                DocTester offers five capabilities that are, to the authors' knowledge, \
+                DTR offers five capabilities that are, to the authors' knowledge, \
                 absent from every competing testing and documentation library. These are \
                 not incremental improvements over existing features. They represent \
                 qualitatively new capabilities made possible by Java 25/26's reflection \
@@ -817,7 +817,7 @@ public class PhDThesisDocTest extends DocTester {
         say("""
                 Every documentation section knows exactly where it was generated. \
                 `sayCallSite()` uses `StackWalker.getInstance(RETAIN_CLASS_REFERENCE)` \
-                to walk the live JVM call stack, skip DocTester's own frames, and surface \
+                to walk the live JVM call stack, skip DTR's own frames, and surface \
                 the first frame from actual test code. The result is a provenance label \
                 that cannot be manually maintained incorrectly — because it is not \
                 manually maintained at all.""");
@@ -855,7 +855,7 @@ public class PhDThesisDocTest extends DocTester {
                 the rendering updates automatically on the next test run. No architecture \
                 diagram tool required.""");
 
-        sayClassHierarchy(DocTester.class);
+        sayClassHierarchy(DtrTest.class);
 
         say("**Innovation 4: sayStringProfile() — Structural Analysis of String Payloads**");
 
@@ -868,7 +868,7 @@ public class PhDThesisDocTest extends DocTester {
 
         var sampleAbstract = """
                 Executable documentation is documentation that is also a test. \
-                DocTester generates publication-ready artifacts from JUnit test suites. \
+                DTR generates publication-ready artifacts from JUnit test suites. \
                 Java 26 sealed classes, records, and pattern matching make the design \
                 type-safe and compiler-verified.""";
         sayStringProfile(sampleAbstract);
@@ -882,19 +882,19 @@ public class PhDThesisDocTest extends DocTester {
                 objects field-by-field and render a diff table. No `equals()` override \
                 needed. No custom comparison logic.""");
 
-        record DocTesterV1Config(String outputFormat, boolean prettyPrint, int maxRetries, boolean strictMode) {}
-        record DocTesterV2Config(String outputFormat, boolean prettyPrint, int maxRetries, boolean strictMode) {}
+        record DtrV1Config(String outputFormat, boolean prettyPrint, int maxRetries, boolean strictMode) {}
+        record DtrV2Config(String outputFormat, boolean prettyPrint, int maxRetries, boolean strictMode) {}
 
-        var v1 = new DocTesterV1Config("markdown", false, 0, false);
-        var v2 = new DocTesterV1Config("markdown,latex-arxiv,blog-medium", true, 3, true);
+        var v1 = new DtrV1Config("markdown", false, 0, false);
+        var v2 = new DtrV1Config("markdown,latex-arxiv,blog-medium", true, 3, true);
 
-        say("DocTester configuration migration from v1 to v2:");
+        say("DTR configuration migration from v1 to v2:");
         sayReflectiveDiff(v1, v2);
 
         sayAssertions(Map.of(
             "sayCallSite() surfaces class/method/line from live JVM stack", "✓ PASS",
             "sayAnnotationProfile() lists all @Test methods on this class", "✓ PASS",
-            "sayClassHierarchy() renders DocTester → Object chain", "✓ PASS",
+            "sayClassHierarchy() renders DTR → Object chain", "✓ PASS",
             "sayStringProfile() computes word/line/char counts without regex library", "✓ PASS",
             "sayReflectiveDiff() detects all changed fields between v1 and v2", "✓ PASS",
             "No other testing library provides any of these 5 capabilities", "✓ PASS"
@@ -914,7 +914,7 @@ public class PhDThesisDocTest extends DocTester {
         sayNextSection("7. Evaluation");
 
         say("""
-                We evaluate DocTester against eleven criteria derived from the documentation \
+                We evaluate DTR against eleven criteria derived from the documentation \
                 quality literature and from the specific claims made in Chapter 1. The \
                 evaluation is empirical where possible — using reflection to count test \
                 methods, measuring elapsed times, and verifying format outputs — and \
@@ -969,7 +969,7 @@ public class PhDThesisDocTest extends DocTester {
         say("""
                 The most important evaluation result is the one that cannot be measured \
                 empirically: the experience of reading a document that you trust. \
-                Documentation written in DocTester's style does not require the reader \
+                Documentation written in DTR's style does not require the reader \
                 to wonder "is this still accurate?". If it were not accurate, the test \
                 would fail. The document and the test are the same file. Trust is \
                 structural, not procedural.""");
@@ -993,7 +993,7 @@ public class PhDThesisDocTest extends DocTester {
                 think about the relationship between testing and documentation. Currently, \
                 testing and documentation are separate activities in most team's process: \
                 developers write tests, technical writers write documentation, and the two \
-                artifacts are reviewed separately. DocTester proposes that these activities \
+                artifacts are reviewed separately. DTR proposes that these activities \
                 are fundamentally the same activity performed with a different output format \
                 selected.""");
 
@@ -1015,7 +1015,7 @@ public class PhDThesisDocTest extends DocTester {
                 any testing framework.""");
 
         say("""
-                **Limitations and threats to validity.** First, DocTester's zero-drift \
+                **Limitations and threats to validity.** First, DTR's zero-drift \
                 guarantee applies only to claims expressed via the `say*` API. Free-form \
                 prose in `say()` calls is not verified — only the accompanying \
                 `sayAndAssertThat()` and `sayAndMakeRequest()` calls enforce correctness. \
@@ -1024,10 +1024,10 @@ public class PhDThesisDocTest extends DocTester {
                 not eliminate human error entirely.""");
 
         say("""
-                Second, the evaluation was conducted on DocTester itself, creating a \
+                Second, the evaluation was conducted on DTR itself, creating a \
                 potential for self-serving bias. A framework that documents itself using \
                 its own API will naturally appear well-suited to its own documentation needs. \
-                External validation — using DocTester to document a third-party API and \
+                External validation — using DTR to document a third-party API and \
                 measuring documentation quality from the perspective of API consumers — \
                 is needed for a complete evaluation.""");
 
@@ -1037,7 +1037,7 @@ public class PhDThesisDocTest extends DocTester {
                 Preview features (--enable-preview) required by this thesis include \
                 JEP 488 (Primitive Types in Patterns) and aspects of JEP 494 (Babylon \
                 Code Model). These features may change their API between Java versions. \
-                DocTester's use of preview features is intentional — we believe the \
+                DTR's use of preview features is intentional — we believe the \
                 features are directionally correct — but production deployments should \
                 track the stabilization of each JEP.""");
 
@@ -1052,7 +1052,7 @@ public class PhDThesisDocTest extends DocTester {
                 academic policy committees.""");
 
         sayNote("""
-                The thesis document was generated at 2026-03-11. The DocTester version \
+                The thesis document was generated at 2026-03-11. The DTR version \
                 at time of writing is 1.1.12-SNAPSHOT. All claims are reproducible by \
                 running: mvnd test -pl dtr-core -Dtest=PhDThesisDocTest --enable-preview""");
     }
@@ -1064,7 +1064,7 @@ public class PhDThesisDocTest extends DocTester {
         sayNextSection("9. Conclusion");
 
         say("""
-                This thesis has presented DocTester as a canonical demonstration that \
+                This thesis has presented DTR as a canonical demonstration that \
                 the documentation drift problem is structurally solvable. The solution \
                 is not a better documentation tool, a better synchronization process, \
                 or a more disciplined team. The solution is the elimination of the \
@@ -1157,7 +1157,7 @@ public class PhDThesisDocTest extends DocTester {
         sayRaw("""
                 ---
                 *All JEP references: https://openjdk.org/jeps/*
-                *DocTester source: see dtr-core/src/main/java/org/r10r/doctester/*
+                *DTR source: see dtr-core/src/main/java/org/r10r/dtr/*
                 *Reproduction command: `mvnd test -pl dtr-core -Dtest=PhDThesisDocTest`*
                 """);
 

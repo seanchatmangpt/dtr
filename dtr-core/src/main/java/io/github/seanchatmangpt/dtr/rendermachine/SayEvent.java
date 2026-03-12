@@ -21,7 +21,7 @@ import java.util.Map;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 
 /**
- * Sealed event hierarchy for the DocTester render pipeline.
+ * Sealed event hierarchy for the DTR render pipeline.
  *
  * <p>Every {@code say*} invocation on a {@link RenderMachine} corresponds to a
  * {@code SayEvent} subtype. The sealed hierarchy with exhaustive switch expressions
@@ -183,7 +183,7 @@ public sealed interface SayEvent
     record RawEvent(String markdown) implements SayEvent {}
 
     /**
-     * A code model introspection event — the DocTester stand-in for Project Babylon's
+     * A code model introspection event — the DTR stand-in for Project Babylon's
      * Code Reflection API (JEP 494).
      *
      * <p>Renders a class's sealed hierarchy, record components, and public method
