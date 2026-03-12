@@ -32,7 +32,7 @@ public abstract class NinjaApiDtr extends DtrTest {
 
 	public NinjaTestServer ninjaTestServer;
 
-    public NinjaApidtr() {
+    public NinjaApiDtr() {
     }
 
     @BeforeEach
