@@ -97,3 +97,161 @@ When you add a new HTTP feature:
 **Static render machine:** `RenderMachineImpl` is stored as a static field in `DocTester`. This is why it accumulates output across all test methods in a class. Don't change this without understanding the lifecycle implications.
 
 **Per-method browser:** `TestBrowserImpl` is created fresh in `@Before`. The cookie jar is per `TestBrowserImpl` instance, which is why cookies don't persist between test methods.
+
+---
+
+## Module Responsibilities
+
+### dtr-core Module
+**What it is:** The main library JAR users depend on
+
+**Responsibility:** Provide DTR testing framework
+
+**Key directories:**
+- `src/main/java/io/github/seanchatmangpt/dtr/` — All production code
+- `src/test/java/` — Unit tests (mocked, fast)
+
+**When to modify:** Adding features, fixing bugs, improving performance
+
+---
+
+### dtr-integration-test Module
+**What it is:** End-to-end integration testing
+
+**Responsibility:** Demonstrate all features with real HTTP server
+
+**Key classes:**
+- `PhDThesisDocTest` — Comprehensive example of all DTR capabilities
+- Server configuration — Ninja Framework + Jetty
+
+**When to modify:** Adding integration tests for new features, updating examples
+
+---
+
+### dtr-benchmarks Module
+**What it is:** Performance measurement suite
+
+**Responsibility:** Track performance across releases
+
+**Key files:**
+- JMH benchmark classes for RenderMachine and TestBrowser operations
+
+**When to modify:** Adding benchmarks for new features
+
+---
+
+## Common Development Tasks
+
+### Add a New `say*` Method
+
+**Steps:**
+1. Add method signature to `RenderMachineCommands.java`
+2. Add full method to `RenderMachine.java`
+3. Implement in `RenderMachineImpl.java`
+4. Add HTML template (if needed) in `RenderMachineHtml.java`
+5. Add delegating method in `DTR.java`
+6. Add unit test in `DocTesterTest.java`
+7. Add usage example in `PhDThesisDocTest.java`
+
+**Verify:**
+```bash
+mvnd test -pl dtr-core
+mvnd test -pl dtr-integration-test
+open target/site/doctester/PhDThesisDocTest.html
+```
+
+---
+
+### Fix an HTTP Bug
+
+**Steps:**
+1. Locate issue in `TestBrowserImpl.java`
+2. Write test in `DocTesterTest.java` (mocked)
+3. Fix the bug
+4. Add end-to-end test in `PhDThesisDocTest.java` if needed
+
+**Verify:**
+```bash
+mvnd test -pl dtr-core
+mvnd test -pl dtr-integration-test
+```
+
+---
+
+### Add New Request Option
+
+**Steps:**
+1. Add builder method to `Request.java`
+2. Handle it in `TestBrowserImpl.makeRequest()`
+3. Add constant to `HttpConstants.java` if needed
+4. Test in `DocTesterTest.java`
+5. Example in `PhDThesisDocTest.java`
+
+**Verify:**
+```bash
+mvnd test -pl dtr-core
+mvnd test -pl dtr-integration-test
+```
+
+---
+
+### Improve HTML Layout
+
+**Steps:**
+1. Update templates in `RenderMachineHtml.java`
+2. Update logic in `RenderMachineImpl.java`
+3. Update `PhDThesisDocTest.java` examples if needed
+
+**Verify:**
+```bash
+mvnd test -pl dtr-integration-test
+open target/site/doctester/PhDThesisDocTest.html  # Visually inspect
+```
+
+---
+
+## Testing Strategy
+
+### Unit Tests (Fast)
+- Mocked dependencies
+- Test individual components
+- Run: `mvnd test -pl dtr-core`
+
+### Integration Tests (Slow)
+- Real HTTP requests
+- Full end-to-end workflows
+- Run: `mvnd test -pl dtr-integration-test`
+
+### Manual Testing
+1. Run tests
+2. Open generated HTML
+3. Visually inspect output
+4. Test responsive design
+
+---
+
+## Build Tips
+
+**Fast iteration:**
+```bash
+mvnd clean compile -pl dtr-core       # Only compile
+mvnd test -pl dtr-core                # Unit tests only
+```
+
+**Full build:**
+```bash
+mvnd clean verify                      # All tests
+```
+
+**Check integration test output:**
+```bash
+open target/site/doctester/PhDThesisDocTest.html
+```
+
+---
+
+## Related Documentation
+
+- **Architecture:** [See Architecture Guide](../explanation/architecture.md) for detailed design
+- **Making Changes:** [See Making Changes](making-changes.md) for code standards
+- **Releasing:** [See Releasing](releasing.md) for release process

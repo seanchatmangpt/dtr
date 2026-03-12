@@ -45,6 +45,7 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 |---|---|
 | [Customize HTML Output](customize-html-output.md) | CSS branding, logos, colors |
 | [Control What Gets Documented](control-documentation.md) | `say` vs `makeRequest`, raw HTML |
+| [Advanced Rendering Formats](advanced-rendering-formats.md) | LaTeX/PDF, blog posts, OpenAPI specs, HTML slides |
 
 ### Integration
 
@@ -52,6 +53,13 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 |---|---|
 | [Add DTR to a Maven Project](add-to-maven.md) | Dependencies and compiler config |
 | [Integrate with Frameworks](integrate-with-frameworks.md) | Ninja, Arquillian, Spring Boot, Jetty |
+
+### Performance & Measurement
+
+| Guide | Task |
+|---|---|
+| [Benchmarking](benchmarking.md) | Measure real performance with JMH and System.nanoTime() |
+| [Performance Tuning](performance-tuning.md) | Reduce build time and documentation overhead |
 
 ---
 

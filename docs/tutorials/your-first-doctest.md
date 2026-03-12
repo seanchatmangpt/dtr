@@ -29,9 +29,9 @@ Open your `pom.xml` and add DTR to the test dependencies:
 
     <!-- DTR -->
     <dependency>
-        <groupId>org.doctester</groupId>
+        <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>1.1.12</version>
+        <version>2.5.0</version>
         <scope>test</scope>
     </dependency>
 
