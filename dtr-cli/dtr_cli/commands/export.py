@@ -1,4 +1,4 @@
-"""Manage DocTester export directories."""
+"""Manage DTR export directories."""
 
 from pathlib import Path
 from typing import Optional
@@ -81,7 +81,7 @@ def list(
             console.print("[yellow]No exports found.[/yellow]")
             return
 
-        table = Table(title="DocTester Exports")
+        table = Table(title="DTR Exports")
         table.add_column("Test Class", style="cyan")
         table.add_column("File Size", justify="right", style="green")
         table.add_column("Modified", style="yellow")

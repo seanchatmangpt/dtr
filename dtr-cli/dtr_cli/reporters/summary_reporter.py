@@ -81,7 +81,7 @@ class SummaryReporter(BaseReporter):
     def _generate_markdown_report(self, sections: list, stats: dict) -> str:
         """Generate Markdown format report."""
         lines = [
-            "# DocTester Summary Report\n",
+            "# DTR Summary Report\n",
             f"**Generated:** {self._timestamp()}\n",
             f"## Statistics\n",
             f"- Total Exports: {stats['export_count']}\n",
@@ -114,7 +114,7 @@ class SummaryReporter(BaseReporter):
 <html>
 <head>
     <meta charset="utf-8">
-    <title>DocTester Summary Report</title>
+    <title>DTR Summary Report</title>
     <style>
         body {{ font-family: sans-serif; margin: 20px; }}
         h1 {{ color: #333; }}
@@ -125,7 +125,7 @@ class SummaryReporter(BaseReporter):
     </style>
 </head>
 <body>
-    <h1>DocTester Summary Report</h1>
+    <h1>DTR Summary Report</h1>
     <p><strong>Generated:</strong> {self._timestamp()}</p>
 
     <h2>Statistics</h2>
@@ -150,7 +150,7 @@ class SummaryReporter(BaseReporter):
     def _generate_json_report(self, sections: list, stats: dict) -> str:
         """Generate JSON format report."""
         data = {
-            "title": "DocTester Summary Report",
+            "title": "DTR Summary Report",
             "timestamp": self._timestamp(),
             "statistics": stats,
             "exports": sections,

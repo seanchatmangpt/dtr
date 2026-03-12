@@ -1,4 +1,4 @@
-"""Publish DocTester exports to various platforms."""
+"""Publish DTR exports to various platforms."""
 
 from pathlib import Path
 from typing import Optional
@@ -6,10 +6,6 @@ import typer
 from rich.console import Console
 from rich.progress import Progress
 
-from dtr_cli.publishers.github_publisher import GithubPublisher
-from dtr_cli.publishers.s3_publisher import S3Publisher
-from dtr_cli.publishers.gcs_publisher import GcsPublisher
-from dtr_cli.publishers.local_publisher import LocalPublisher
 from dtr_cli.model import PublishConfig
 
 console = Console()
@@ -53,6 +49,8 @@ def gh(
         dtr push gh target/site/doctester \\
             --repo myorg/myrepo --branch docs --token ghp_xxx
     """
+    from dtr_cli.publishers.github_publisher import GithubPublisher
+
     publisher = GithubPublisher()
     config = PublishConfig(
         export_path=export_dir,
@@ -115,6 +113,8 @@ def s3(
         dtr push s3 target/site/doctester \\
             --bucket my-docs --prefix api-docs/ --public
     """
+    from dtr_cli.publishers.s3_publisher import S3Publisher
+
     publisher = S3Publisher()
     config = PublishConfig(
         export_path=export_dir,
@@ -134,7 +134,7 @@ def s3(
             console.print(f"[green]✓[/green] Published to {url}")
             console.print(f"  Files uploaded: {result.files_count}")
             if public:
-                console.print(f"  Access: [bold]public[/bold]")
+                console.print("  Access: [bold]public[/bold]")
         except Exception as e:
             console.print(f"[red]✗[/red] Publishing failed: {e}")
             raise typer.Exit(1)
@@ -176,6 +176,8 @@ def gcs(
         dtr push gcs target/site/doctester \\
             --bucket my-docs --project my-gcp-project --prefix api-docs/
     """
+    from dtr_cli.publishers.gcs_publisher import GcsPublisher
+
     publisher = GcsPublisher()
     config = PublishConfig(
         export_path=export_dir,
@@ -221,6 +223,8 @@ def local(
         dtr push local target/site/doctester --target ./docs
         dtr push local target/site/doctester --target /var/www/html
     """
+    from dtr_cli.publishers.local_publisher import LocalPublisher
+
     publisher = LocalPublisher()
     config = PublishConfig(
         export_path=export_dir,

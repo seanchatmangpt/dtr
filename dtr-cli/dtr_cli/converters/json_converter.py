@@ -11,6 +11,10 @@ from dtr_cli.converters.base_converter import BaseConverter
 class JsonConverter(BaseConverter):
     """Convert exports to JSON format."""
 
+    def convert(self, config: ConversionConfig) -> ConversionResult:
+        """Convert HTML files to JSON (default conversion)."""
+        return self.convert_from_html(config)
+
     def convert_from_html(self, config: ConversionConfig) -> ConversionResult:
         """Convert HTML files to JSON format."""
         files = self.get_input_files(config)

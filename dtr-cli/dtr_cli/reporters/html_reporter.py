@@ -88,7 +88,7 @@ class HtmlReporter(BaseReporter):
 <html>
 <head>
     <meta charset="utf-8">
-    <title>DocTester Report</title>
+    <title>DTR Report</title>
     <style>
         body {{ font-family: sans-serif; margin: 20px; }}
         h1 {{ color: #333; }}
@@ -98,7 +98,7 @@ class HtmlReporter(BaseReporter):
     </style>
 </head>
 <body>
-    <h1>DocTester Report</h1>
+    <h1>DTR Report</h1>
     <table>
         <tr>
             <th>Name</th>

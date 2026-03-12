@@ -1,4 +1,4 @@
-"""Generate reports from DocTester exports."""
+"""Generate reports from DTR exports."""
 
 from pathlib import Path
 from typing import Optional
@@ -82,7 +82,7 @@ def validate_report_format(format: str) -> str:
 def sum(
     export_dir: Path = typer.Argument(
         ...,
-        help="DocTester export directory (target/site/doctester)",
+        help="DTR export directory (target/site/doctester)",
         callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(
@@ -137,7 +137,7 @@ def sum(
 def cov(
     export_dir: Path = typer.Argument(
         ...,
-        help="DocTester export directory",
+        help="DTR export directory",
         callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(
@@ -183,7 +183,7 @@ def cov(
 def log(
     export_dir: Path = typer.Argument(
         ...,
-        help="DocTester export directory",
+        help="DTR export directory",
         callback=lambda x: validate_export_dir(x),
     ),
     output_file: Optional[Path] = typer.Option(

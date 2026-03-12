@@ -84,12 +84,12 @@ def test_maven_exec_plugin_invocation(
 
     # Test with property (simulates explicit config vs default)
     if pom_config == "explicit_pom":
-        property_flag = ["-Ddoctester.format=markdown"]
+        property_flag = ["-Ddtr.format=markdown"]
     else:
         property_flag = []
 
     result = subprocess.run(
-        ["mvnd", "validate", "-pl", "doctester-core"] + property_flag,
+        ["mvnd", "validate", "-pl", "dtr-core"] + property_flag,
         cwd=str(project_root),
         capture_output=True,
         text=True,
@@ -114,7 +114,7 @@ def test_maven_lifecycle_integration(project_root: Path) -> None:
     """
     # Phase 1: Clean
     result = subprocess.run(
-        ["mvnd", "clean", "-pl", "doctester-core", "-q"],
+        ["mvnd", "clean", "-pl", "dtr-core", "-q"],
         cwd=str(project_root),
         capture_output=True,
         text=True,
@@ -124,7 +124,7 @@ def test_maven_lifecycle_integration(project_root: Path) -> None:
     assert result.returncode == 0, f"Maven clean failed: {result.stderr}"
 
     # Verify target directory cleaned
-    target_dir = project_root / "doctester-core" / "target"
+    target_dir = project_root / "dtr-core" / "target"
     if target_dir.exists():
         remaining = list(target_dir.glob("*"))
         assert len(remaining) == 0 or all(
@@ -133,7 +133,7 @@ def test_maven_lifecycle_integration(project_root: Path) -> None:
 
     # Phase 2: Validate (checks Maven variables and enforcer rules)
     result = subprocess.run(
-        ["mvnd", "validate", "-pl", "doctester-core"],
+        ["mvnd", "validate", "-pl", "dtr-core"],
         cwd=str(project_root),
         capture_output=True,
         text=True,
@@ -152,7 +152,7 @@ def test_maven_lifecycle_integration(project_root: Path) -> None:
 
     # Phase 3: Subsequent build (no state pollution)
     result = subprocess.run(
-        ["mvnd", "validate", "-pl", "doctester-core", "-q"],
+        ["mvnd", "validate", "-pl", "dtr-core", "-q"],
         cwd=str(project_root),
         capture_output=True,
         text=True,
@@ -175,8 +175,8 @@ def test_multi_module_build(project_root: Path, num_modules: int) -> None:
     - Module has pom.xml and src/ directory
     """
     # Verify module structure exists
-    core_module = project_root / "doctester-core"
-    assert core_module.exists(), "doctester-core module not found"
+    core_module = project_root / "dtr-core"
+    assert core_module.exists(), "dtr-core module not found"
 
     # Verify module has pom.xml (indicating it's a Maven module)
     core_pom = core_module / "pom.xml"
@@ -193,8 +193,8 @@ def test_multi_module_build(project_root: Path, num_modules: int) -> None:
             "clean",
             "validate",
             "-pl",
-            "doctester-core",
-            "-Ddoctester.format=markdown",
+            "dtr-core",
+            "-Ddtr.format=markdown",
         ],
         cwd=str(project_root),
         capture_output=True,
@@ -209,11 +209,11 @@ def test_multi_module_build(project_root: Path, num_modules: int) -> None:
         [
             "mvnd",
             "help:evaluate",
-            "-Dexpression=doctester.format",
+            "-Dexpression=dtr.format",
             "-q",
             "-DforceStdout",
             "-pl",
-            "doctester-core",
+            "dtr-core",
         ],
         cwd=str(project_root),
         capture_output=True,
@@ -243,8 +243,8 @@ def test_maven_profile_activation(
     parent_pom = (project_root / "pom.xml").read_text()
     assert "<profiles>" in parent_pom, "pom.xml should define profiles section"
     assert "<properties>" in parent_pom, "pom.xml should define properties section"
-    assert "doctester.format" in parent_pom, (
-        "pom.xml should define doctester.format property"
+    assert "dtr.format" in parent_pom, (
+        "pom.xml should define dtr.format property"
     )
 
     # Test Maven profile acceptance (profiles may or may not exist, that's OK)
@@ -264,8 +264,8 @@ def test_maven_profile_activation(
             "mvnd",
             "validate",
             "-pl",
-            "doctester-core",
-            "-Ddoctester.format=html",
+            "dtr-core",
+            "-Ddtr.format=html",
             "-q",
         ],
         cwd=str(project_root),
@@ -281,7 +281,7 @@ def test_maven_profile_activation(
         [
             "mvnd",
             "help:evaluate",
-            "-Dexpression=doctester.format",
+            "-Dexpression=dtr.format",
             "-q",
             "-DforceStdout",
         ],
@@ -306,7 +306,7 @@ def test_output_artifact_integration(project_root: Path) -> None:
     """
     # Build core module
     result = subprocess.run(
-        ["mvnd", "clean", "compile", "-pl", "doctester-core", "-q"],
+        ["mvnd", "clean", "compile", "-pl", "dtr-core", "-q"],
         cwd=str(project_root),
         capture_output=True,
         text=True,
@@ -316,7 +316,7 @@ def test_output_artifact_integration(project_root: Path) -> None:
     assert result.returncode == 0, f"Maven build failed: {result.stderr}"
 
     # Verify target directory exists and is populated
-    target_dir = project_root / "doctester-core" / "target"
+    target_dir = project_root / "dtr-core" / "target"
     assert target_dir.exists(), "target/ directory not created"
     assert list(target_dir.glob("*")), "target/ is empty"
 
@@ -345,7 +345,7 @@ def test_maven_enforcer_java_version(project_root: Path) -> None:
     """
     # Run validate phase which executes enforcer rules
     result = subprocess.run(
-        ["mvnd", "validate", "-pl", "doctester-core"],
+        ["mvnd", "validate", "-pl", "dtr-core"],
         cwd=str(project_root),
         capture_output=True,
         text=True,
@@ -397,7 +397,7 @@ def test_dependency_resolution_completeness(project_root: Path) -> None:
     """
     # Check dependency tree (indicates all dependencies resolved)
     result = subprocess.run(
-        ["mvnd", "dependency:tree", "-pl", "doctester-core", "-q"],
+        ["mvnd", "dependency:tree", "-pl", "dtr-core", "-q"],
         cwd=str(project_root),
         capture_output=True,
         text=True,
@@ -419,7 +419,7 @@ def test_dependency_resolution_completeness(project_root: Path) -> None:
 
     # Verify enforcer rules don't report missing dependencies
     result = subprocess.run(
-        ["mvnd", "validate", "-pl", "doctester-core", "-q"],
+        ["mvnd", "validate", "-pl", "dtr-core", "-q"],
         cwd=str(project_root),
         capture_output=True,
         text=True,

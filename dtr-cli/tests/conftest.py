@@ -7,8 +7,8 @@ Fixtures are divided into two categories:
    - tmp_markdown_file: Sample Markdown file for unit testing
 
 2. REAL MAVEN FIXTURES (for integration tests):
-   - project_root: DocTester repository root (auto-detected)
-   - maven_doctester_core_exports: Real HTML exports from doctester-core build
+   - project_root: DTR repository root (auto-detected)
+   - maven_dtr_core_exports: Real HTML exports from dtr-core build
    - maven_integration_test_exports: Real API documentation from integration tests
 
 Tests fail loudly if Maven is unavailable or builds fail - no graceful skipping.
@@ -34,18 +34,26 @@ def tmp_export_dir(tmp_path: Path) -> Generator[Path, None, None]:
     export_dir.mkdir()
 
     # Create sample HTML file
-    sample_html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Test Export</title>
-    </head>
-    <body>
-        <h1>Test Documentation</h1>
-        <p>This is a test export.</p>
-    </body>
-    </html>
-    """
+    sample_html = """<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Export</title>
+</head>
+<body>
+    <h1>Test Documentation</h1>
+    <p>This is a test export.</p>
+    <h2>API Endpoints</h2>
+    <table>
+        <tr><th>Method</th><th>Path</th></tr>
+        <tr><td>GET</td><td>/api/users</td></tr>
+    </table>
+    <pre><code>System.out.println("hello");</code></pre>
+    <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+    </ul>
+</body>
+</html>"""
     (export_dir / "test_doc.html").write_text(sample_html)
 
     yield export_dir
@@ -62,6 +70,20 @@ This is a test markdown file.
 ## Section 1
 
 Some content here.
+
+## Section 2
+
+| Column A | Column B |
+|----------|----------|
+| Value 1  | Value 2  |
+
+```java
+public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Hello DTR!");
+    }
+}
+```
 """)
     yield md_file
 
@@ -72,10 +94,10 @@ Some content here.
 
 
 def _find_project_root() -> Path:
-    """Find DocTester project root by searching for pom.xml.
+    """Find DTR project root by searching for pom.xml.
 
     Raises:
-        RuntimeError: If not in a DocTester repository
+        RuntimeError: If not in a DTR repository
     """
     current = Path.cwd()
     for _ in range(5):
@@ -83,8 +105,8 @@ def _find_project_root() -> Path:
             return current
         current = current.parent
     raise RuntimeError(
-        "Cannot find DocTester project root (pom.xml). "
-        "Tests must be run from within the DocTester repository."
+        "Cannot find DTR project root (pom.xml). "
+        "Tests must be run from within the DTR repository."
     )
 
 
@@ -94,30 +116,21 @@ def _run_maven_build(project_root: Path, module: str, skip_tests: bool = False) 
     This is a REAL end-to-end test:
     1. Invokes mvnd clean verify -pl {module}
     2. Runs all JUnit tests in the module
-    3. DocTester generates HTML exports during test execution
+    3. DTR generates HTML exports during test execution
     4. Verifies exports exist and are non-empty
 
     Args:
         project_root: Path to pom.xml root
-        module: Maven module name (e.g., 'doctester-core')
+        module: Maven module name (e.g., 'dtr-core')
         skip_tests: If True, builds without running tests
 
     Returns:
         Path to generated exports directory (target/site/doctester/)
 
     Raises:
-        RuntimeError: If Java 25 not found, mvnd not in PATH, build fails, or exports not generated
+        RuntimeError: If Java not found, mvnd not in PATH, build fails, or exports not generated
     """
-    # Verify Java 25 environment
-    java_home = "/usr/lib/jvm/java-25-openjdk-amd64"
-    if not Path(java_home).exists():
-        raise RuntimeError(
-            f"Java 25 required but not found at {java_home}.\n"
-            f"Set: export JAVA_HOME={java_home}"
-        )
-
     env = os.environ.copy()
-    env["JAVA_HOME"] = java_home
 
     # Build Maven command
     skip_tests_flag = "-DskipTests" if skip_tests else "-DskipTests=false"
@@ -156,7 +169,7 @@ def _run_maven_build(project_root: Path, module: str, skip_tests: bool = False) 
     if not export_dir.exists():
         raise RuntimeError(
             f"Exports directory not found: {export_dir}\n"
-            f"Maven build succeeded but DocTester did not generate exports.\n"
+            f"Maven build succeeded but DTR did not generate exports.\n"
             f"Verify tests ran: mvnd test -pl {module}"
         )
 
@@ -174,44 +187,44 @@ def _run_maven_build(project_root: Path, module: str, skip_tests: bool = False) 
 
 @pytest.fixture(scope="session")
 def project_root() -> Path:
-    """DocTester project root directory.
+    """DTR project root directory.
 
-    Fails immediately if not in a DocTester repository.
+    Fails immediately if not in a DTR repository.
     Used by other fixtures to locate Maven modules and exports.
     """
     return _find_project_root()
 
 
 @pytest.fixture(scope="session")
-def maven_doctester_core_exports(project_root: Path) -> Path:
-    """Real Maven build of doctester-core with DocTester exports.
+def maven_dtr_core_exports(project_root: Path) -> Path:
+    """Real Maven build of dtr-core with DTR exports.
 
     REAL END-TO-END TEST:
-    - Runs: mvnd clean verify -pl doctester-core -DskipTests=false
-    - Executes all JUnit tests in doctester-core
-    - DocTester generates HTML exports in target/site/doctester/
+    - Runs: mvnd clean verify -pl dtr-core -DskipTests=false
+    - Executes all JUnit tests in dtr-core
+    - DTR generates HTML exports in target/site/doctester/
     - Returns path to actual generated documentation
 
     FAILS LOUDLY if:
-    - Java 25 not found
+    - Java not found
     - mvnd not in PATH
     - Maven build fails
     - Exports not generated
 
     Use in tests to verify CLI operations on REAL exports.
     """
-    return _run_maven_build(project_root, "doctester-core", skip_tests=False)
+    return _run_maven_build(project_root, "dtr-core", skip_tests=False)
 
 
 @pytest.fixture(scope="session")
 def maven_integration_test_exports(project_root: Path) -> Path:
-    """Real Maven build of doctester-integration-test with API documentation.
+    """Real Maven build of dtr-integration-test with API documentation.
 
     REAL END-TO-END TEST:
-    - Runs: mvnd clean verify -pl doctester-integration-test -DskipTests=false
+    - Runs: mvnd clean verify -pl dtr-integration-test -DskipTests=false
     - Executes integration tests against embedded Ninja framework server
     - Tests make real HTTP calls to API endpoints
-    - DocTester generates documentation from live HTTP interactions
+    - DTR generates documentation from live HTTP interactions
     - Returns path to actual generated API documentation
 
     This tests the FULL STACK:
@@ -219,11 +232,11 @@ def maven_integration_test_exports(project_root: Path) -> Path:
     2. Embedded server starts
     3. HTTP endpoints respond
     4. Tests execute and pass
-    5. DocTester captures and documents interactions
+    5. DTR captures and documents interactions
     6. HTML exports are generated
 
     FAILS LOUDLY if ANY step fails.
 
     Use in tests to verify CLI operations on REAL integration test exports.
     """
-    return _run_maven_build(project_root, "doctester-integration-test", skip_tests=False)
+    return _run_maven_build(project_root, "dtr-integration-test", skip_tests=False)

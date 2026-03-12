@@ -34,7 +34,7 @@ from typer.testing import CliRunner
 
 from dtr_cli.main import app
 
-runner = CliRunner(mix_stderr=False)
+runner = CliRunner()
 
 
 def get_output(result: Any) -> str:

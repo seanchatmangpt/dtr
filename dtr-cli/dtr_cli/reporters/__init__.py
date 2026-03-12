@@ -1,1 +1,1 @@
-"""Report generators for DocTester exports."""
+"""Report generators for DTR exports."""

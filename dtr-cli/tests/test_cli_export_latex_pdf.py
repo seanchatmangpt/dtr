@@ -446,7 +446,7 @@ class TestExportPdfCLICommand:
                 ["pdf", str(tex_file), "--compiler", compiler.value],
             )
             # Will fail if compiler unavailable, but arguments should parse
-            assert result.exit_code in [0, 2]  # 0=success, 2=compiler error
+            assert result.exit_code in [0, 1, 2]  # 0=success, 1=no compiler, 2=compiler error
 
     def test_export_pdf_accepts_all_valid_templates(self, tmp_path: Path) -> None:
         """Test that all valid templates are accepted as arguments."""
@@ -460,7 +460,7 @@ class TestExportPdfCLICommand:
                 app,
                 ["pdf", str(tex_file), "--template", template.value],
             )
-            assert result.exit_code in [0, 2]  # 0=success, 2=compiler error
+            assert result.exit_code in [0, 1, 2]  # 0=success, 1=no compiler, 2=compiler error
 
     def test_export_pdf_accepts_keep_tex_flag(self, tmp_path: Path) -> None:
         """Test that --keep-tex flag is accepted."""
