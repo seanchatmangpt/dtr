@@ -10,7 +10,7 @@ This project adheres to the Contributor Covenant Code of Conduct. By participati
 
 ### Prerequisites
 
-- **Java 26 or later** (Java 26.0.2+ recommended)
+- **Java 25 or later** (Java 25.0.2+ recommended)
 - **Maven 4.0.0-rc-5+** or **mvnd 2.0.0+**
 - **Git** for version control
 
@@ -91,6 +91,7 @@ Feature suggestions are welcome! When proposing a feature:
    ```bash
    git checkout -b feature/your-feature-name
    ```
+   > **Note:** Agent/automated branches follow the pattern `claude/description-XXXXX` (e.g., `claude/fix-latex-errors-rzhxB`). These branches are managed by automated tooling and should not be pushed to manually.
 
 3. **Make your changes** following the code style (see below)
 
@@ -113,7 +114,7 @@ Feature suggestions are welcome! When proposing a feature:
 - Use the formatting configured in `.mvn/maven.config`
 - Keep methods focused and concise
 - Add meaningful comments for complex logic
-- Java 26+ features (records, sealed classes, pattern matching) are encouraged
+- Java 25+ features (records, sealed classes, pattern matching) are encouraged
 
 ### Commit Guidelines
 
@@ -243,7 +244,7 @@ Releases to Maven Central follow:
 
 ## Additional Resources
 
-- [Java 26 Features Guide](./JAVA_26_DEVELOPER_GUIDE.md)
+- [Java 25 Features Guide](./JAVA_26_DEVELOPER_GUIDE.md)
 - [Architecture Overview](./docs/explanation/architecture.md)
 - [API Reference](./docs/reference/)
 - [Maven Central Release Guide](./RELEASE_PLAN_2.0.0.md)

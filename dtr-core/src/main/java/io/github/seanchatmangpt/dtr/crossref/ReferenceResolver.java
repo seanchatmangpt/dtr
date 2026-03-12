@@ -214,4 +214,15 @@ public class ReferenceResolver {
     public Map<String, String> getAllAnchors() {
         return Map.copyOf(anchorToLabel);
     }
+
+    /**
+     * Clear all internal state, removing all parsed section labels and anchor mappings.
+     *
+     * Called by CrossReferenceIndex.clear() to ensure a full reset.
+     */
+    public void clear() {
+        sectionLabels.clear();
+        anchorToLabel.clear();
+        anchorToDocTest.clear();
+    }
 }

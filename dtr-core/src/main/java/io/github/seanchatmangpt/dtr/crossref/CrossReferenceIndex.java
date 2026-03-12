@@ -158,7 +158,7 @@ public class CrossReferenceIndex {
      *
      * @return the ReferenceResolver instance
      */
-    public ReferenceResolver getResolver() {
+    public synchronized ReferenceResolver getResolver() {
         return resolver;
     }
 
@@ -167,7 +167,7 @@ public class CrossReferenceIndex {
      *
      * @return immutable map of anchor -> label
      */
-    public java.util.Map<String, String> getAllAnchors() {
+    public synchronized java.util.Map<String, String> getAllAnchors() {
         return resolver.getAllAnchors();
     }
 
@@ -176,7 +176,7 @@ public class CrossReferenceIndex {
      *
      * @return true if buildIndex has been called successfully
      */
-    public boolean isCompiled() {
+    public synchronized boolean isCompiled() {
         return compiled;
     }
 
@@ -185,8 +185,9 @@ public class CrossReferenceIndex {
      *
      * Useful for testing or when resetting between test runs.
      */
-    public void clear() {
+    public synchronized void clear() {
         registeredReferences.clear();
+        resolver.clear();
         compiled = false;
         logger.info("Cleared all registered references");
     }
