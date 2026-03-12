@@ -628,6 +628,7 @@ class TestCliTestRun:
 
     def test_invokes_correct_mvnd_command(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         _make_project(tmp_path)
+        _make_module(tmp_path, "dtr-integration-test", ["PhDThesisDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir)
@@ -652,6 +653,7 @@ class TestCliTestRun:
 
     def test_builds_correct_command_structure(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         _make_project(tmp_path)
+        _make_module(tmp_path, "my-module", ["MyDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir)
@@ -676,6 +678,7 @@ class TestCliTestRun:
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["FailingTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir, exit_code=1)
@@ -718,6 +721,7 @@ class TestCliTestRun:
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["MyDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir, exit_code=0)
@@ -740,6 +744,7 @@ class TestCliTestRun:
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["BrokenDocTest.java"])
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
         self._write_fake_mvnd(bin_dir, exit_code=1)
@@ -860,3 +865,308 @@ class TestEdgeCases:
         )
 
         assert result.exit_code != 0
+
+
+# ===================================================================
+# 11. Chicago TDD: type column, pre-run validation, timing
+# ===================================================================
+
+
+class TestTypeDetection:
+    """_detect_test_type classifies test classes correctly."""
+
+    def test_doc_test_suffix_returns_doctest(self):
+        from dtr_cli.commands.test import _detect_test_type
+        assert _detect_test_type("PhDThesisDocTest", "dtr-integration-test") == "DocTest"
+
+    def test_regular_test_suffix_returns_unit(self):
+        from dtr_cli.commands.test import _detect_test_type
+        assert _detect_test_type("UtilityTest", "dtr-core") == "Unit"
+
+    def test_bench_module_returns_bench(self):
+        from dtr_cli.commands.test import _detect_test_type
+        assert _detect_test_type("ThroughputTest", "dtr-benchmarks") == "Bench"
+
+    def test_doc_test_takes_priority_over_bench_module(self):
+        from dtr_cli.commands.test import _detect_test_type
+        # DocTest suffix beats bench module name
+        assert _detect_test_type("ApiDocTest", "benchmarks") == "DocTest"
+
+
+class TestListEmptyProjectReturnsGracefully:
+    """dtr test list with a pom.xml but no Java files returns empty table gracefully."""
+
+    def test_list_with_no_java_files_exits_zero(self, tmp_path: Path):
+        # Real temp dir with only a pom.xml — no src/test/java at all.
+        (tmp_path / "pom.xml").write_text("<project><modules/></project>")
+
+        result = runner.invoke(
+            app, ["test", "list", "--project-dir", str(tmp_path)]
+        )
+
+        assert result.exit_code == 0, (
+            "Expected exit 0 for empty project, got "
+            f"{result.exit_code}. stdout={result.stdout!r}"
+        )
+
+    def test_list_with_no_java_files_reports_not_found(self, tmp_path: Path):
+        (tmp_path / "pom.xml").write_text("<project><modules/></project>")
+
+        result = runner.invoke(
+            app, ["test", "list", "--project-dir", str(tmp_path)]
+        )
+
+        assert "No test files found" in result.stdout, (
+            f"Expected 'No test files found' message. stdout={result.stdout!r}"
+        )
+
+    def test_list_with_non_test_java_only_exits_zero(self, tmp_path: Path):
+        """Helper.java is not a test — list should report empty gracefully."""
+        module = tmp_path / "core"
+        module.mkdir()
+        (module / "pom.xml").write_text("<project/>")
+        (tmp_path / "pom.xml").write_text("<project><modules/></project>")
+        src = module / "src" / "test" / "java"
+        src.mkdir(parents=True)
+        (src / "Helper.java").write_text("public class Helper {}")
+
+        result = runner.invoke(
+            app, ["test", "list", "--project-dir", str(tmp_path)]
+        )
+
+        assert result.exit_code == 0
+        assert "No test files found" in result.stdout
+
+
+class TestListShowsTypeColumn:
+    """dtr test list shows the Type column with correct values."""
+
+    def test_doc_test_java_shows_doctest_type(self, tmp_path: Path):
+        # Real filesystem: create a DocTest.java under src/test/java.
+        # Use a short class name so Rich doesn't truncate it in the 80-col terminal.
+        module = tmp_path / "mod"
+        module.mkdir()
+        (module / "pom.xml").write_text("<project/>")
+        (tmp_path / "pom.xml").write_text("<project><modules/></project>")
+        src = module / "src" / "test" / "java"
+        src.mkdir(parents=True)
+        (src / "ApiDocTest.java").write_text("public class ApiDocTest {}")
+
+        result = runner.invoke(
+            app, ["test", "list", "--project-dir", str(tmp_path)]
+        )
+
+        assert result.exit_code == 0, f"stdout={result.stdout!r}"
+        assert "ApiDocTest" in result.stdout
+        # The Type column must show "DocTest"
+        assert "DocTest" in result.stdout, (
+            "Expected 'DocTest' type in table output. "
+            f"stdout={result.stdout!r}"
+        )
+
+    def test_regular_test_java_shows_unit_type(self, tmp_path: Path):
+        module = tmp_path / "dtr-core"
+        module.mkdir()
+        (module / "pom.xml").write_text("<project/>")
+        (tmp_path / "pom.xml").write_text("<project><modules/></project>")
+        src = module / "src" / "test" / "java"
+        src.mkdir(parents=True)
+        (src / "UtilityTest.java").write_text("public class UtilityTest {}")
+
+        result = runner.invoke(
+            app, ["test", "list", "--project-dir", str(tmp_path)]
+        )
+
+        assert result.exit_code == 0
+        assert "Unit" in result.stdout, (
+            "Expected 'Unit' type in table output. "
+            f"stdout={result.stdout!r}"
+        )
+
+    def test_bench_module_shows_bench_type(self, tmp_path: Path):
+        module = tmp_path / "dtr-benchmarks"
+        module.mkdir()
+        (module / "pom.xml").write_text("<project/>")
+        (tmp_path / "pom.xml").write_text("<project><modules/></project>")
+        src = module / "src" / "test" / "java"
+        src.mkdir(parents=True)
+        (src / "ThroughputTest.java").write_text("public class ThroughputTest {}")
+
+        result = runner.invoke(
+            app, ["test", "list", "--project-dir", str(tmp_path)]
+        )
+
+        assert result.exit_code == 0
+        assert "Bench" in result.stdout, (
+            "Expected 'Bench' type in table output. "
+            f"stdout={result.stdout!r}"
+        )
+
+
+class TestRunNonExistentClassValidation:
+    """dtr test run exits 1 with a helpful error when the class is not found."""
+
+    def test_nonexistent_class_exits_nonzero(self, tmp_path: Path):
+        # Real Maven project with no test sources.
+        _make_project(tmp_path)
+        _make_module(tmp_path, "dtr-core", [])  # no Java files
+
+        result = runner.invoke(
+            app,
+            [
+                "test", "run",
+                "--project-dir", str(tmp_path),
+                "--module", "dtr-core",
+                "--class", "NonExistentTest",
+            ],
+        )
+
+        assert result.exit_code != 0, (
+            "Expected non-zero exit when class not found. "
+            f"stdout={result.stdout!r}"
+        )
+
+    def test_nonexistent_class_error_mentions_class_name(self, tmp_path: Path):
+        _make_project(tmp_path)
+        _make_module(tmp_path, "dtr-core", [])
+
+        result = runner.invoke(
+            app,
+            [
+                "test", "run",
+                "--project-dir", str(tmp_path),
+                "--module", "dtr-core",
+                "--class", "NonExistentTest",
+            ],
+        )
+
+        combined = result.stdout + (result.stderr or "")
+        assert "NonExistentTest" in combined, (
+            "Expected class name in error output. "
+            f"output={combined!r}"
+        )
+
+    def test_nonexistent_class_hints_available_tests(self, tmp_path: Path):
+        """When other test classes exist, the error lists them as hints."""
+        _make_project(tmp_path)
+        _make_module(tmp_path, "dtr-core", ["RealDocTest.java"])
+
+        result = runner.invoke(
+            app,
+            [
+                "test", "run",
+                "--project-dir", str(tmp_path),
+                "--module", "dtr-core",
+                "--class", "GhostTest",
+            ],
+        )
+
+        assert result.exit_code != 0
+        combined = result.stdout + (result.stderr or "")
+        # The hint should include the existing class
+        assert "RealDocTest" in combined, (
+            "Expected available test class 'RealDocTest' in hint output. "
+            f"output={combined!r}"
+        )
+
+    def test_valid_class_bypasses_validation(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """When test class file exists, validation passes and Maven is invoked."""
+        _make_project(tmp_path)
+        _make_module(tmp_path, "dtr-core", ["RealDocTest.java"])
+
+        # Provide a fake mvnd that succeeds
+        bin_dir = tmp_path / "bin"
+        bin_dir.mkdir()
+        script = bin_dir / "mvnd"
+        script.write_text(
+            f'#!/bin/sh\necho "$@" > "{bin_dir}/args.txt"\nexit 0\n'
+        )
+        script.chmod(0o755)
+        monkeypatch.setenv("PATH", str(bin_dir))
+
+        result = runner.invoke(
+            app,
+            [
+                "test", "run",
+                "--project-dir", str(tmp_path),
+                "--module", "dtr-core",
+                "--class", "RealDocTest",
+            ],
+        )
+
+        # Should pass validation and invoke Maven (exit 0 from fake mvnd)
+        assert result.exit_code == 0, f"stdout={result.stdout!r}"
+
+
+class TestFindTestFile:
+    """_find_test_file locates Java source files under src/test/java."""
+
+    def test_finds_existing_test_file(self, tmp_path: Path):
+        from dtr_cli.commands.test import _find_test_file
+
+        module = tmp_path / "core"
+        src = module / "src" / "test" / "java"
+        src.mkdir(parents=True)
+        (src / "FooTest.java").write_text("public class FooTest {}")
+
+        found = _find_test_file("FooTest", tmp_path)
+
+        assert found is not None
+        assert found.name == "FooTest.java"
+
+    def test_returns_none_for_missing_class(self, tmp_path: Path):
+        from dtr_cli.commands.test import _find_test_file
+
+        (tmp_path / "pom.xml").write_text("<project/>")
+
+        found = _find_test_file("DoesNotExist", tmp_path)
+
+        assert found is None
+
+    def test_ignores_files_outside_src_test_java(self, tmp_path: Path):
+        from dtr_cli.commands.test import _find_test_file
+
+        # Place Java file in src/main/java — should NOT be found
+        main_src = tmp_path / "src" / "main" / "java"
+        main_src.mkdir(parents=True)
+        (main_src / "FooTest.java").write_text("public class FooTest {}")
+
+        found = _find_test_file("FooTest", tmp_path)
+
+        assert found is None
+
+
+class TestCollectTestFilesIncludesType:
+    """collect_test_files now includes a 'type' key in each entry."""
+
+    def test_entries_have_type_key(self, tmp_path: Path):
+        _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["ApiDocTest.java"])
+
+        entries = collect_test_files(tmp_path)
+
+        assert entries, "Expected at least one entry"
+        for entry in entries:
+            assert "type" in entry, f"Missing 'type' key in entry: {entry}"
+
+    def test_doc_test_entry_has_doctest_type(self, tmp_path: Path):
+        _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["ApiDocTest.java"])
+
+        entries = collect_test_files(tmp_path)
+
+        doc_tests = [e for e in entries if e["class_name"] == "ApiDocTest"]
+        assert doc_tests
+        assert doc_tests[0]["type"] == "DocTest"
+
+    def test_unit_test_entry_has_unit_type(self, tmp_path: Path):
+        _make_project(tmp_path)
+        _make_module(tmp_path, "core", ["UtilTest.java"])
+
+        entries = collect_test_files(tmp_path)
+
+        unit_tests = [e for e in entries if e["class_name"] == "UtilTest"]
+        assert unit_tests
+        assert unit_tests[0]["type"] == "Unit"

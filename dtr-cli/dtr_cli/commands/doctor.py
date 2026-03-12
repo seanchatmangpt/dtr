@@ -10,9 +10,11 @@ Usage:
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -236,7 +238,7 @@ def check_latex() -> tuple[str, str, str]:
 
 
 def check_dtr_yml(project_dir: Path) -> tuple[str, str, str]:
-    """Check for .dtr.yml config file (informational).
+    """Check for .dtr.yml config file (informational/optional).
 
     Returns:
         (status, label, detail)
@@ -244,7 +246,7 @@ def check_dtr_yml(project_dir: Path) -> tuple[str, str, str]:
     dtr_yml = project_dir / ".dtr.yml"
     if dtr_yml.exists():
         return ("info", ".dtr.yml", f"Found at {dtr_yml}")
-    return ("info", ".dtr.yml", f"Not found at {dtr_yml} — optional project config")
+    return ("warn", ".dtr.yml", f"Not found at {dtr_yml} — optional project config, run `dtr config --init` to create")
 
 
 def check_python_packages() -> tuple[str, str, str]:
@@ -272,6 +274,43 @@ def check_python_packages() -> tuple[str, str, str]:
         )
     parts = ", ".join(f"{k}=={v}" for k, v in packages.items())
     return ("pass", "Python packages", parts)
+
+
+def check_python() -> tuple[str, str, str]:
+    """Check Python version. Python 3.11+ required.
+
+    Returns:
+        (status, label, detail)
+    """
+    v = sys.version_info
+    version_str = f"{v.major}.{v.minor}.{v.micro}"
+    if v >= (3, 11):
+        return ("ok", "Python", f"{version_str} ✓")
+    return ("fail", "Python", f"{version_str} — requires 3.11+")
+
+
+def check_disk_space(project_dir: Path = Path(".")) -> tuple[str, str, str]:
+    """Check available disk space. 500MB free required for builds.
+
+    Returns:
+        (status, label, detail)
+    """
+    usage = shutil.disk_usage(project_dir)
+    free_gb = usage.free / (1024 ** 3)
+    if free_gb >= 0.5:
+        return ("ok", "Disk Space", f"{free_gb:.1f}GB free ✓")
+    return ("fail", "Disk Space", f"{free_gb:.1f}GB free — need 500MB+")
+
+
+def check_write_permissions(project_dir: Path = Path(".")) -> tuple[str, str, str]:
+    """Check write permission on the project directory.
+
+    Returns:
+        (status, label, detail)
+    """
+    if os.access(project_dir, os.W_OK):
+        return ("ok", "Write Access", f"{project_dir} ✓")
+    return ("fail", "Write Access", f"No write access to {project_dir}")
 
 
 # ---------------------------------------------------------------------------
@@ -302,12 +341,32 @@ def fix_maven_config(project_dir: Path) -> str:
     return f"{maven_config} already contains --enable-preview (no change)"
 
 
+def fix_dtr_yml(project_dir: Path) -> str:
+    """Create .dtr.yml with defaults if it does not exist.
+
+    Returns a human-readable message describing what was done.
+    """
+    dtr_yml = project_dir / ".dtr.yml"
+    if dtr_yml.exists():
+        return f"{dtr_yml} already exists (no change)"
+
+    # Import here to avoid circular dependency
+    from dtr_cli.config import init_config
+    try:
+        init_config(project_dir)
+        return f"Created {dtr_yml} with default configuration"
+    except FileExistsError:
+        return f"{dtr_yml} already exists (no change)"
+
+
 # ---------------------------------------------------------------------------
 # Status helpers
 # ---------------------------------------------------------------------------
 
+# Normalize "ok" -> "pass" for display purposes (check_python/disk/write use "ok")
 STATUS_SYMBOL = {
     "pass": "[bold green]✓[/bold green]",
+    "ok":   "[bold green]✓[/bold green]",
     "fail": "[bold red]✗[/bold red]",
     "warn": "[bold yellow]![/bold yellow]",
     "info": "[bold cyan]i[/bold cyan]",
@@ -315,10 +374,16 @@ STATUS_SYMBOL = {
 
 STATUS_LABEL = {
     "pass": PASS,
+    "ok":   PASS,
     "fail": FAIL,
     "warn": WARN,
     "info": INFO,
 }
+
+
+def _is_passing(status: str) -> bool:
+    """Return True if status counts as a pass for exit-code purposes."""
+    return status in ("pass", "ok", "info")
 
 
 # ---------------------------------------------------------------------------
@@ -336,13 +401,17 @@ def doctor_command(
     fix: bool = typer.Option(
         False,
         "--fix",
-        help="Attempt auto-fixes (e.g., create .mvn/maven.config with --enable-preview)",
+        help="Attempt auto-fixes (e.g., create .mvn/maven.config with --enable-preview, create .dtr.yml)",
     ),
 ) -> None:
     """Validate the development environment and report issues.
 
     Checks Java version, Maven toolchain, project structure, and optional tools.
-    Exits with code 0 if all required checks pass, 1 if any required check fails.
+
+    Exit codes:
+      0 — all required checks pass
+      1 — at least one required check fails
+      2 — all required checks pass but optional/warn checks exist
 
     Examples:
 
@@ -361,16 +430,21 @@ def doctor_command(
     console.print()
 
     # Collect results: (status, label, detail, required)
+    # required=True  → failure triggers exit code 1
+    # required=False → failure/warn triggers exit code 2 (if required all pass)
     results: list[tuple[str, str, str, bool]] = []
 
     # Required checks
     results.append((*check_java_version(), True))
     results.append((*check_maven_version(), True))
-    results.append((*check_mvnd_version(), False))          # warn only, not required
     results.append((*check_pom_xml(project_dir), True))
-    results.append((*check_maven_config(project_dir), True))
+    results.append((*check_python(), True))
+    results.append((*check_disk_space(project_dir), True))
+    results.append((*check_write_permissions(project_dir), True))
 
-    # Optional checks (warn/info only, never fail)
+    # Optional checks (warn/info only, never block required pass)
+    results.append((*check_mvnd_version(), False))
+    results.append((*check_maven_config(project_dir), False))
     results.append((*check_pandoc(), False))
     results.append((*check_latex(), False))
     results.append((*check_dtr_yml(project_dir), False))
@@ -384,22 +458,21 @@ def doctor_command(
 
     for status, label, detail, _required in results:
         symbol = STATUS_SYMBOL.get(status, "?")
-        status_label = STATUS_LABEL.get(status, status.upper())
         table.add_row(symbol, label, detail)
 
     console.print(table)
     console.print()
 
     # Summary counts
-    fail_count = sum(1 for s, _, _, req in results if s == "fail" and req)
+    required_fail_count = sum(1 for s, _, _, req in results if s == "fail" and req)
     warn_count = sum(1 for s, _, _, _ in results if s == "warn")
-    pass_count = sum(1 for s, _, _, _ in results if s == "pass")
+    pass_count = sum(1 for s, _, _, _ in results if _is_passing(s))
 
     console.print(
         f"Results: "
         f"[green]{pass_count} passed[/green]  "
         f"[yellow]{warn_count} warnings[/yellow]  "
-        f"[red]{fail_count} failures[/red]"
+        f"[red]{required_fail_count} failures[/red]"
     )
 
     # Auto-fix logic
@@ -408,11 +481,22 @@ def doctor_command(
         console.print("[bold]Running auto-fixes...[/bold]")
         fix_msg = fix_maven_config(project_dir)
         console.print(f"  [cyan]{fix_msg}[/cyan]")
+        dtr_fix_msg = fix_dtr_yml(project_dir)
+        console.print(f"  [cyan]{dtr_fix_msg}[/cyan]")
         console.print()
         console.print("[cyan]Re-run `dtr doctor` to verify fixes.[/cyan]")
 
-    if fail_count > 0:
-        console.print()
+    # Determine exit code:
+    #   0: all required checks pass (warnings allowed)
+    #   1: at least one required check fails
+    #   2: all required pass but at least one optional warning
+    if required_fail_count > 0:
         if not fix:
+            console.print()
             console.print("[dim]Tip: run `dtr doctor --fix` to attempt auto-fixes.[/dim]")
         raise typer.Exit(code=1)
+
+    if warn_count > 0:
+        raise typer.Exit(code=2)
+
+    raise typer.Exit(code=0)
