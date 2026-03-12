@@ -23,15 +23,52 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Core DocTester API tests.
+ *
+ * <p>Joe Armstrong quality principles applied:
+ * <ul>
+ *   <li><strong>Every say* output has structural invariants</strong> — not just "it ran", but
+ *       "the output contains valid Markdown structure"</li>
+ *   <li><strong>Boundary and Unicode cases are tested</strong> — adversarial inputs must not
+ *       corrupt output files</li>
+ *   <li><strong>Concurrency is always tested</strong> — the say* API must be safe under virtual
+ *       thread concurrency on isolated instances</li>
+ * </ul>
+ */
 public class DocTesterTest extends DocTester {
 
     public static String EXPECTED_FILENAME = DocTesterTest.class.getName() + ".md";
+
+    // =========================================================================
+    // Sealed scenario types — Fortune 5 domain modeling for test cases
+    // =========================================================================
+
+    /** Sealed hierarchy of test scenarios for systematic coverage. */
+    sealed interface TestScenario permits HappyPath, EdgeCase {}
+
+    /** A scenario that should succeed and produce a specific Markdown fragment. */
+    record HappyPath(String desc, String expectedFragment) implements TestScenario {}
+
+    /** A scenario with boundary/adversarial input that must not corrupt output. */
+    record EdgeCase(String desc, String input, String expectedBehavior) implements TestScenario {}
+
+    /** A named Markdown invariant: a structural property the output must satisfy. */
+    record MarkdownInvariant(String name, Predicate<String> check) {}
 
     @Test
     public void testThatIndexFileWritingWorks() throws Exception {
@@ -292,6 +329,132 @@ public class DocTesterTest extends DocTester {
         assertThatFileContainsText(expectedDoctestfile, "| Schema is valid | `✓ PASS` |");
         assertThatFileContainsText(expectedDoctestfile, "| Cache headers present | `✗ FAIL` |");
 
+    }
+
+    // =========================================================================
+    // Structural invariant tests — every say* output must satisfy Markdown contracts
+    // =========================================================================
+
+    @Test
+    public void testMarkdownStructuralInvariants() throws Exception {
+        // Define structural invariants for each say* method
+        var invariants = Arrays.asList(
+            new MarkdownInvariant("sayTable produces pipe chars",
+                content -> content.contains("| Feature |") && content.contains("| --- |")),
+            new MarkdownInvariant("sayCode produces backtick fence",
+                content -> content.contains("```java") && content.contains("```")),
+            new MarkdownInvariant("sayWarning produces GitHub alert",
+                content -> content.contains("> [!WARNING]")),
+            new MarkdownInvariant("sayNote produces GitHub note",
+                content -> content.contains("> [!NOTE]"))
+        );
+
+        // Generate all output types
+        sayNextSection("Structural Invariant Test");
+        sayTable(new String[][] {
+            {"Feature", "Status"},
+            {"Invariant test", "✓ Running"}
+        });
+        sayCode("System.out.println(\"invariant\");", "java");
+        sayWarning("Invariant warning verification");
+        sayNote("Invariant note verification");
+
+        finishDocTest();
+
+        File outputFile = new File("docs/test/" + EXPECTED_FILENAME);
+        String content = Files.toString(outputFile, Charsets.UTF_8);
+
+        // Assert every invariant holds
+        for (var inv : invariants) {
+            assertTrue(inv.check().test(content),
+                "Markdown invariant violated: '" + inv.name() + "'" +
+                " — output file does not satisfy the structural contract.");
+        }
+    }
+
+    // =========================================================================
+    // Boundary and Unicode edge case tests
+    // =========================================================================
+
+    @Test
+    public void testBoundaryAndUnicodeEdgeCases() throws Exception {
+        var edgeCases = Arrays.asList(
+            new EdgeCase("empty string", "", "file written without exception"),
+            new EdgeCase("unicode emoji", "Japanese: 日本語テスト 🚀", "UTF-8 preserved"),
+            new EdgeCase("pipe in text", "table | pipe | test", "file written without exception"),
+            new EdgeCase("backtick in text", "code `snippet` here", "file written without exception")
+        );
+
+        for (var ec : edgeCases) {
+            // Each edge case must not throw
+            assertDoesNotThrow(() -> say(ec.input()),
+                "say() must not throw for edge case: " + ec.desc());
+        }
+
+        // Unicode content must be preserved exactly in the output file
+        String unicodeContent = "日本語テスト 🚀 emoji ✓";
+        say(unicodeContent);
+
+        finishDocTest();
+
+        File outputFile = new File("docs/test/" + EXPECTED_FILENAME);
+        assertTrue(outputFile.exists(), "Output file must exist after edge case say() calls");
+
+        // Read with UTF-8 explicitly to verify round-trip encoding
+        String rawContent = new String(
+            java.nio.file.Files.readAllBytes(outputFile.toPath()),
+            StandardCharsets.UTF_8);
+        assertTrue(rawContent.contains("日本語テスト"),
+            "Japanese Unicode characters must be preserved in UTF-8 output");
+        assertTrue(rawContent.contains("🚀"),
+            "Emoji characters must be preserved in UTF-8 output");
+    }
+
+    // =========================================================================
+    // Concurrent safety — isolated DocTester instances under virtual thread pressure
+    // =========================================================================
+
+    @Test
+    public void testConcurrentSafetyWithVirtualThreads() throws Exception {
+        int threadCount  = 10;
+        int callsPerThread = 100;
+
+        AtomicInteger successes = new AtomicInteger(0);
+        AtomicInteger failures  = new AtomicInteger(0);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        // Each thread uses its own isolated RenderMachineImpl — no shared mutable state
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (int t = 0; t < threadCount; t++) {
+                final int threadId = t;
+                executor.submit(() -> {
+                    try {
+                        var rm = new io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl();
+                        rm.setFileName("ConcurrentSafety-thread-" + threadId);
+                        for (int i = 0; i < callsPerThread; i++) {
+                            rm.say("Thread " + threadId + " call " + i);
+                        }
+                        // Verify via public method the instance is alive and responsive
+                        String id = rm.convertTextToId("thread-" + threadId);
+                        if (id != null) successes.incrementAndGet();
+                        else            failures.incrementAndGet();
+                    } catch (Exception e) {
+                        failures.incrementAndGet();
+                        System.err.println("[Concurrent] Thread " + threadId + " threw: " + e);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+        }
+
+        boolean completed = latch.await(30, java.util.concurrent.TimeUnit.SECONDS);
+
+        assertTrue(completed, threadCount + " virtual threads must complete within 30 seconds");
+        assertEquals(threadCount, successes.get(),
+            "All " + threadCount + " virtual threads must complete successfully; failures=" + failures.get());
+        assertEquals(0, failures.get(),
+            "No virtual thread must fail; got " + failures.get() + " failures");
     }
 
     public void doCreateSomeTestOuputForDoctest() {

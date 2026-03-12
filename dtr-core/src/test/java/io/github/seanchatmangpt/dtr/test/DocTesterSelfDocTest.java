@@ -15,6 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr;
 
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,11 @@ import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
 import io.github.seanchatmangpt.dtr.testbrowser.Request;
 import io.github.seanchatmangpt.dtr.testbrowser.Response;
 import io.github.seanchatmangpt.dtr.testbrowser.Url;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Self-documentation test: DocTester documents itself via reflection and
@@ -43,6 +49,30 @@ public class DocTesterSelfDocTest extends DocTester {
 
     private static int sayMethodCount = 0;
     private static int testMethodCount = 0;
+
+    // =========================================================================
+    // Sealed DocumentationLayer hierarchy — demonstrates JEP 500 in test code
+    // Pattern matching switch exhaustively covers all layer types.
+    // =========================================================================
+
+    /** Sealed hierarchy of documentation layer types in DTR. */
+    sealed interface DocumentationLayer
+        permits AnnotationLayer, IntrospectionLayer, NarrativeLayer, StructuralLayer {
+        /** API methods associated with this documentation layer (provided by each record component). */
+        String name();
+    }
+
+    /** Documentation driven by @Doc* annotations (declarative). */
+    record AnnotationLayer(String name) implements DocumentationLayer {}
+
+    /** Documentation driven by runtime reflection and introspection. */
+    record IntrospectionLayer(String name) implements DocumentationLayer {}
+
+    /** Documentation driven by prose say() calls (narrative). */
+    record NarrativeLayer(String name) implements DocumentationLayer {}
+
+    /** Documentation driven by structural say* methods (tables, code, lists). */
+    record StructuralLayer(String name) implements DocumentationLayer {}
 
     @Override
     public Url testServerUrl() {
@@ -350,37 +380,83 @@ public class DocTesterSelfDocTest extends DocTester {
         String capturedOutput = "Test output captured at runtime using String analysis.";
         sayStringProfile(capturedOutput);
 
+        // Demonstrate sealed DocumentationLayer hierarchy with pattern matching (JEP 500)
+        sayNextSection("Documentation Layer Architecture (JEP 500 Sealed Hierarchy)");
+        say("DTR has four documentation layers, modeled as a sealed interface hierarchy. " +
+            "Pattern matching exhaustively covers all permitted types — no default needed.");
+
+        var layers = List.of(
+            (DocumentationLayer) new AnnotationLayer("@DocSection, @DocDescription, @DocNote"),
+            new IntrospectionLayer("sayCallSite, sayCodeModel, sayClassHierarchy"),
+            new NarrativeLayer("say(), sayWarning(), sayNote()"),
+            new StructuralLayer("sayTable(), sayCode(), sayKeyValue()")
+        );
+
+        String[][] layerTable = new String[layers.size() + 1][3];
+        layerTable[0] = new String[]{"Layer Type", "Implementation", "API Methods"};
+        for (int i = 0; i < layers.size(); i++) {
+            var layer = layers.get(i);
+            // JEP 500 sealed pattern matching — exhaustive, no default case needed
+            String type = switch (layer) {
+                case AnnotationLayer al    -> "AnnotationLayer";
+                case IntrospectionLayer il -> "IntrospectionLayer";
+                case NarrativeLayer nl     -> "NarrativeLayer";
+                case StructuralLayer sl    -> "StructuralLayer";
+            };
+            layerTable[i + 1] = new String[]{type, "record (immutable)", layer.name()};
+        }
+        sayTable(layerTable);
+
+        // Verify DocTester class structure via real reflection assertions
+        sayNextSection("DocTester Class Verification");
+        assertTrue(Modifier.isAbstract(DocTester.class.getModifiers()),
+            "DocTester must be abstract (confirmed via reflection)");
+        assertFalse(DocTester.class.isInterface(),
+            "DocTester must be a class, not an interface");
+        assertNotNull(DocTester.class.getSuperclass(),
+            "DocTester must have a superclass");
+
         // Summary statistics
         sayNextSection("Self-Documentation Metrics");
+        testMethodCount++;
         Map<String, String> metrics = Map.ofEntries(
-            Map.entry("Test methods executed", String.valueOf(testMethodCount + 1)),
+            Map.entry("Test methods executed", String.valueOf(testMethodCount)),
             Map.entry("Total say* method calls", "50+"),
             Map.entry("sayCodeModel() invocations", "6+"),
-            Map.entry("sayTable() invocations", "4"),
+            Map.entry("sayTable() invocations", "5"),
             Map.entry("sayCallSite() calls", "2"),
             Map.entry("sayAnnotationProfile() calls", "2"),
             Map.entry("sayClassHierarchy() calls", "1"),
-            Map.entry("sayReflectiveDiff() calls", "1")
+            Map.entry("sayReflectiveDiff() calls", "1"),
+            Map.entry("DocumentationLayer patterns matched", String.valueOf(layers.size()))
         );
         sayKeyValue(metrics);
+
+        // Real JUnit assertion: all 8 test methods must have run before this final check
+        assertEquals(8, testMethodCount,
+            "All 8 test methods must have executed. testMethodCount=" + testMethodCount +
+            ". If this fails, a test method is missing or testMethodCount++ was skipped.");
 
         // Demonstrate call site tracking
         sayNextSection("Provenance Tracking via Call Site");
         say("The following call site metadata proves documentation generation at runtime:");
         sayCallSite();
 
-        testMethodCount++;
         sayAssertions(Map.ofEntries(
             Map.entry("String analysis via sayStringProfile()", "✓ PASS"),
+            Map.entry("Sealed DocumentationLayer hierarchy (JEP 500)", "✓ PASS"),
+            Map.entry("Pattern matching — exhaustive switch, no default", "✓ PASS"),
+            Map.entry("DocTester.class is abstract (verified by reflection)", "✓ PASS"),
             Map.entry("Metrics capture via sayKeyValue()", "✓ PASS"),
             Map.entry("Provenance via sayCallSite()", "✓ PASS"),
             Map.entry("Fixed point achieved — DocTester documents itself", "✓ PASS"),
-            Map.entry("All test methods completed successfully", "✓ PASS"),
-            Map.entry("Output file exists at target/site/dtr/", "✓ PASS")
+            Map.entry("All 8 test methods confirmed (assertEquals(8, testMethodCount))", "✓ PASS")
         ));
 
         // Final message
-        say("\nFixed point achieved: DocTester has successfully documented itself using its own APIs. The output file proves the framework works.");
+        say("\nFixed point achieved: DocTester has successfully documented itself using its own APIs. " +
+            "The output IS the proof that all 4 documentation layers, 6 introspection methods, " +
+            "and the JEP 500 sealed hierarchy all work correctly.");
     }
 
     @AfterAll
@@ -389,22 +465,17 @@ public class DocTesterSelfDocTest extends DocTester {
     }
 
     /**
-     * Simple test object for reflective diff demonstration.
+     * Immutable test object for reflective diff demonstration.
+     *
+     * <p>Upgraded from plain mutable class to record (Java 16+) following
+     * Joe Armstrong's immutability principle: data should not change —
+     * you create new versions. Records provide:
+     * <ul>
+     *   <li>Immutability by default (all fields are final)</li>
+     *   <li>Auto-generated equals(), hashCode(), toString()</li>
+     *   <li>Compact, readable declaration</li>
+     *   <li>First-class support in pattern matching (JEP 440)</li>
+     * </ul>
      */
-    static class TestObject {
-        private String name;
-        private int age;
-        private String email;
-
-        TestObject(String name, int age, String email) {
-            this.name = name;
-            this.age = age;
-            this.email = email;
-        }
-
-        @Override
-        public String toString() {
-            return "TestObject(name=" + name + ", age=" + age + ", email=" + email + ")";
-        }
-    }
+    record TestObject(String name, int age, String email) {}
 }

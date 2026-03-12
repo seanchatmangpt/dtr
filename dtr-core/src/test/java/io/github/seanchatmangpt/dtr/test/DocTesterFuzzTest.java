@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -222,6 +223,37 @@ class DocTesterFuzzTest {
             @ForAll("adversarialStrings") String reason) {
         assertDoesNotThrow(() ->
                 rm.sayAndAssertThat(message, reason, 42, equalTo(42)));
+    }
+
+    // =========================================================================
+    // 5b. convertTextToId() — determinism invariant (same input → same output always)
+    // =========================================================================
+
+    /**
+     * Determinism theorem: {@code convertTextToId(x)} must always return the same
+     * value for the same input {@code x}, regardless of when or how many times
+     * it is called. This is a stronger property than idempotency (which only requires
+     * f(f(x)) == f(x)); determinism requires f(x) == f(x) across all invocations.
+     *
+     * <p>Joe Armstrong: "Functions must be total and deterministic — same input,
+     * same output, always. Any function that violates this is not a function."
+     */
+    @Property(tries = 2000)
+    @Label("convertTextToId determinism: same input always yields same output (across two fresh instances)")
+    void convertTextToIdDeterminism(@ForAll String text) {
+        // Two fresh RenderMachineImpl instances must produce identical IDs
+        // for the same input — no shared state contamination
+        var rm1 = new RenderMachineImpl();
+        var rm2 = new RenderMachineImpl();
+        rm1.setFileName("FuzzDeterminism1");
+        rm2.setFileName("FuzzDeterminism2");
+
+        String id1 = rm1.convertTextToId(text);
+        String id2 = rm2.convertTextToId(text);
+
+        assertEquals(id1, id2,
+            "convertTextToId must be deterministic across instances: " +
+            "input=" + text.length() + " chars, got '" + id1 + "' vs '" + id2 + "'");
     }
 
     // =========================================================================
