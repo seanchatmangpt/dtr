@@ -1,24 +1,28 @@
 # Contributing: Making Changes
 
-## Before you start
+## Before You Start
 
 - **Check existing issues** — your bug or feature may already be tracked
-- **Open an issue first** for significant changes — design discussion before code
+- **Open an issue first** for significant changes — design discussion before code saves time for everyone
 - **Small, focused PRs** — one feature or fix per PR
 
-## Branch naming
+---
 
-Work on feature branches, never directly on `main` or `master`:
+## Branch Naming
+
+Work on feature branches, never directly on `main`:
 
 ```bash
-git checkout -b feature/junit5-support
-git checkout -b fix/multipart-content-type
-git checkout -b docs/improve-url-builder-reference
+git checkout -b feature/say-ascii-chart
+git checkout -b fix/record-component-null-handling
+git checkout -b docs/improve-codebase-tour
 ```
 
-## Code style
+---
 
-DTR follows the standard Sun/Oracle Java code style (default IntelliJ/Eclipse formatting):
+## Code Style
+
+DTR follows standard Java conventions with Java 25 idioms throughout:
 
 - **4 spaces per indent** (no tabs)
 - **UTF-8** everywhere
@@ -37,203 +41,249 @@ DTR follows the standard Sun/Oracle Java code style (default IntelliJ/Eclipse fo
  */
 ```
 
-- **Javadoc** on all public API methods:
-
-```java
-/**
- * Renders a paragraph in the HTML documentation output.
- *
- * @param text plain text content; HTML characters are escaped automatically
- */
-public void say(String text) {
-```
-
+- **Javadoc** on all public API methods
 - **Keep classes small** — single responsibility
 - **Reformat only changed lines** — large reformats make code review difficult
+- **Zero new external dependencies** — 2.6.0 added 14 methods with no new runtime dependencies; maintain this standard
 
-## Java 25 idioms
+---
+
+## Java 25 Idioms
 
 DTR is a Java 25 project with `--enable-preview`. Prefer modern idioms:
 
-**Use records for DTOs:**
+**Use records for value types:**
 ```java
 // Good
-record HttpResult(int status, String body) {}
+record BenchmarkResult(String label, long avgNs, int iterations) {}
 
 // Avoid
-class HttpResult {
-    int status;
-    String body;
+class BenchmarkResult {
+    String label;
+    long avgNs;
+    int iterations;
     // getters, setters, equals, hashCode, toString...
 }
 ```
 
-**Use switch expressions:**
+**Use sealed interfaces for exhaustive sets:**
 ```java
 // Good
-String method = switch (request.method()) {
-    case "GET"    -> "retrieving";
-    case "POST"   -> "creating";
-    case "PUT"    -> "updating";
-    case "DELETE" -> "deleting";
-    default       -> "calling";
+sealed interface SayEvent
+    permits SayTextEvent, SayCodeEvent, SayTableEvent, SayMermaidEvent {}
+```
+
+**Use switch expressions with pattern matching:**
+```java
+// Good
+String rendered = switch (event) {
+    case SayTextEvent(var text)  -> "**" + text + "**";
+    case SayCodeEvent(var code)  -> "```\n" + code + "\n```";
+    case SayMermaidEvent(var src) -> "```mermaid\n" + src + "\n```";
 };
-
-// Avoid
-String method;
-if (request.method().equals("GET")) {
-    method = "retrieving";
-} else if (...
 ```
 
-**Use text blocks for HTML templates:**
+**Use text blocks for multi-line strings:**
 ```java
 // Good
-String panel = """
-    <div class="panel panel-primary">
-        <div class="panel-heading">%s %s</div>
-        <div class="panel-body">%s</div>
-    </div>
-    """.formatted(method, url, body);
-
-// Avoid
-String panel = "<div class=\"panel panel-primary\">" +
-    "<div class=\"panel-heading\">" + method + " " + url + "</div>" + ...
-```
-
-**Use pattern matching:**
-```java
-// Good
-if (payload instanceof String s && !s.isBlank()) {
-    writeString(s);
-}
-
-// Avoid
-if (payload instanceof String) {
-    String s = (String) payload;
-    if (!s.isEmpty()) {
-        writeString(s);
-    }
-}
+String fence = """
+    ```%s
+    %s
+    ```
+    """.formatted(lang, code);
 ```
 
 **Use `formatted()` instead of `String.format()`:**
 ```java
 // Good
-"<p>%s</p>".formatted(text)
+"| %s | %s |".formatted(key, value)
 
 // Avoid
-String.format("<p>%s</p>", text)
+String.format("| %s | %s |", key, value)
 ```
 
-## Testing requirements
+---
+
+## No Simulation — Real Code, Real Measurements
+
+DTR documents real execution. This standard applies to contributions:
+
+- Use `System.nanoTime()` for timing; never hard-code benchmark numbers
+- Use actual class instances, not mocked data, in `say*` implementations that introspect objects
+- Report measurements with: metric + units + Java version + iteration count
+
+---
+
+## Adding a New `say*` Method
+
+Follow these seven steps in order. The example below adds a hypothetical `sayAsciiTable(String[][])`.
+
+### Step 1: Add signature to `RenderMachineCommands`
+
+```java
+/**
+ * Renders a two-dimensional array as a plain ASCII table.
+ *
+ * @param rows the table data; first row is treated as the header
+ */
+void sayAsciiTable(String[][] rows);
+```
+
+### Step 2: Add no-op default in `RenderMachine`
+
+```java
+/** No-op default; override to produce output. */
+@Override
+public void sayAsciiTable(String[][] rows) {}
+```
+
+The no-op default in the abstract base class ensures that existing `RenderMachine` subclasses continue to compile without modification.
+
+### Step 3: Implement in `RenderMachineImpl`
+
+```java
+@Override
+public void sayAsciiTable(String[][] rows) {
+    if (rows == null || rows.length == 0) return;
+    var sb = new StringBuilder();
+    for (String[] row : rows) {
+        sb.append("| ");
+        sb.append(String.join(" | ", row));
+        sb.append(" |\n");
+    }
+    content.append(sb);
+}
+```
+
+Escape user-supplied strings with `StringEscapeUtils` where appropriate.
+
+### Step 4: Add virtual thread dispatch in `MultiRenderMachine`
+
+```java
+@Override
+public void sayAsciiTable(String[][] rows) {
+    dispatch(machine -> machine.sayAsciiTable(rows));
+}
+```
+
+Follow the same `dispatch(...)` pattern used by all other methods in `MultiRenderMachine`.
+
+### Step 5: Delegate in `DtrCommands`
+
+```java
+/**
+ * Renders a two-dimensional array as a plain ASCII table.
+ *
+ * @param rows the table data; first row is treated as the header
+ */
+void sayAsciiTable(String[][] rows);
+```
+
+### Step 6: Delegate in `DtrContext`
+
+```java
+/**
+ * Renders a two-dimensional array as a plain ASCII table.
+ *
+ * @param rows the table data; first row is treated as the header
+ */
+public void sayAsciiTable(String[][] rows) {
+    commands.sayAsciiTable(rows);
+}
+```
+
+### Step 7: Write a test in `dtr-core/src/test/java/`
+
+```java
+@ExtendWith(DtrExtension.class)
+class SayAsciiTableTest {
+    @Test
+    void rendersHeaderAndRows(DtrContext ctx) {
+        ctx.sayAsciiTable(new String[][] {
+            {"Name", "Value"},
+            {"alpha", "1"},
+            {"beta",  "2"}
+        });
+        // Assert rendered Markdown contains expected cell text
+    }
+}
+```
+
+### Verify
+
+```bash
+mvnd test -pl dtr-core
+```
+
+All 325+ existing tests must still pass.
+
+---
+
+## Testing Requirements
 
 **All changes must include tests.**
 
-For a bug fix, write the test first:
+For a bug fix, write the failing test first:
 1. Write a test that reproduces the bug (it should fail)
 2. Fix the code
 3. Verify the test passes
 
 For a new feature:
-1. Add a unit test to `dtr-core/src/test/`
-2. If the feature affects end-to-end behavior, also add to the integration test
+1. Add a unit test in `dtr-core/src/test/`
+2. If the feature affects end-to-end output, also add an example in the integration tests
 
 **Run the full test suite before submitting:**
 ```bash
 mvnd clean verify
 ```
 
-Both modules must pass.
+Both `dtr-core` and `dtr-integration-test` must pass.
 
-## Adding a new `say*` method
+---
 
-Example: adding `sayCodeBlock(String code)`:
-
-**1. Add to `RenderMachineCommands`:**
-```java
-/**
- * Renders a preformatted code block in the documentation output.
- *
- * @param code source code or command text
- */
-void sayCodeBlock(String code);
-```
-
-**2. Implement in `RenderMachineImpl`:**
-```java
-@Override
-public void sayCodeBlock(String code) {
-    content.append("<pre><code>")
-           .append(HtmlEscapers.htmlEscaper().escape(code))
-           .append("</code></pre>\n");
-}
-```
-
-**3. Delegate in `DTR`:**
-```java
-/**
- * Renders a preformatted code block in the documentation output.
- *
- * @param code source code or command text
- */
-public void sayCodeBlock(String code) {
-    renderMachine.sayCodeBlock(code);
-}
-```
-
-**4. Test in `DTRTest`:**
-```java
-@Test
-public void sayCodeBlock_rendersPreformattedCode() {
-    docTester.sayCodeBlock("curl -X GET /api/users");
-    verify(renderMachine).sayCodeBlock("curl -X GET /api/users");
-}
-```
-
-**5. Use in `ApiControllerDocTest` (integration test):**
-```java
-sayCodeBlock("curl -X GET http://localhost:8080/api/articles.json");
-```
-
-## Commit messages
+## Commit Messages
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-feat: add sayCodeBlock() for preformatted code in documentation
+feat: add sayAsciiTable() for plain-text table output
 
-fix: correctly escape HTML in sayRaw() parameter names
+fix: escape pipe characters in sayTable cell values
 
-docs: add how-to guide for file uploads
+docs: add codebase tour section for diagram/ package
 
-refactor: replace if/else chain with switch expression in TestBrowserImpl
+refactor: replace if/else chain with switch expression in RenderMachineImpl
 
-test: add integration test for XML response deserialization
+test: add integration test for sayEvolutionTimeline output
 ```
 
 Keep the subject line under 72 characters. Add a body if the change needs explanation.
 
-## Pull request checklist
+---
+
+## Pull Request Checklist
 
 Before opening a PR:
 
 - [ ] Tests added and passing (`mvnd clean verify`)
 - [ ] Javadoc added to new public methods
-- [ ] License header on new files
-- [ ] `changelog.md` updated with a brief description
+- [ ] License header on new source files
+- [ ] `CHANGELOG.md` updated with a brief description under the next version heading
 - [ ] No reformatting of unchanged code
 - [ ] PR description explains what changed and why
+- [ ] No new external runtime dependencies introduced
 
-## Changelog format
+---
 
-Add an entry at the top of `changelog.md`:
+## Changelog Format
+
+Add an entry at the top of `CHANGELOG.md` under the next version heading:
 
 ```markdown
-## 1.1.13 (in progress)
+## 2.7.0 (in progress)
 
-- feat: add `sayCodeBlock()` for preformatted code output (#47)
-- fix: correctly handle XML responses with BOM (#48)
+- feat: add `sayAsciiTable()` for plain-text table output (#123)
+- fix: escape pipe characters in `sayTable` cell values (#124)
 ```
 
-Use issue numbers when there's a corresponding GitHub issue.
+Use issue numbers when there is a corresponding GitHub issue.

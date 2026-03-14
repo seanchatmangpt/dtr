@@ -20,7 +20,7 @@ DTR 2.6.0 requires:
 - **Java 25** with `--enable-preview` (Java 24 and below are not supported)
 - **Maven 4.0.0-rc-5+** or **mvnd 2.x** (the Maven Daemon is preferred for local development)
 
-Do not use `./mvnw` — the Maven wrapper downloads Maven 3.
+Do not use `./mvnw` — the Maven wrapper downloads Maven 3, which is incompatible.
 
 ---
 
