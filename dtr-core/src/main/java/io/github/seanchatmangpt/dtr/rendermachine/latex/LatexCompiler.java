@@ -188,10 +188,21 @@ public class LatexCompiler {
      * Exception thrown when LaTeX compilation fails.
      */
     public static class LatexCompilationException extends RuntimeException {
+        /**
+         * Constructs a LaTeX compilation exception with a detail message.
+         *
+         * @param message description of the compilation failure
+         */
         public LatexCompilationException(String message) {
             super(message);
         }
 
+        /**
+         * Constructs a LaTeX compilation exception with a detail message and cause.
+         *
+         * @param message description of the compilation failure
+         * @param cause   the underlying exception that triggered the failure
+         */
         public LatexCompilationException(String message, Throwable cause) {
             super(message, cause);
         }
