@@ -2,6 +2,8 @@
 
 Use Java 25 pattern matching to deconstruct sealed types and handle all cases exhaustively. Pattern matching eliminates explicit casts and makes type-safe handling natural.
 
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
+
 ---
 
 ## Basic Pattern Matching: `instanceof`
@@ -35,28 +37,71 @@ The pattern `User(String name, int age)` destructures the record automatically.
 Sealed interfaces guarantee you handle all cases:
 
 ```java
-sealed interface HttpResponse {
-    record Success(int status, String body) implements HttpResponse {}
-    record Redirect(int status, String location) implements HttpResponse {}
-    record Error(int status, String message) implements HttpResponse {}
+sealed interface ServiceResult<T> {
+    record Success<T>(T value) implements ServiceResult<T> {}
+    record NotFound(long id) implements ServiceResult<Object> {}
+    record ValidationError(String field, String message) implements ServiceResult<Object> {}
 }
 
-HttpResponse response = new HttpResponse.Success(200, "OK");
+ServiceResult<String> result = new ServiceResult.Success<>("data");
 
 // Pattern matching switch: exhaustive (no default needed)
-String description = switch (response) {
-    case HttpResponse.Success(int status, String body) ->
-        "Success: " + status;
-    case HttpResponse.Redirect(int status, String location) ->
-        "Redirect to " + location;
-    case HttpResponse.Error(int status, String message) ->
-        "Error: " + message;
+String description = switch (result) {
+    case ServiceResult.Success<String>(String value) ->
+        "Found: " + value;
+    case ServiceResult.NotFound(long id) ->
+        "Not found: " + id;
+    case ServiceResult.ValidationError(String field, String message) ->
+        "Invalid " + field + ": " + message;
 };
-
-System.out.println(description); // "Success: 200"
 ```
 
 If you forget a case, the compiler errors. If you add a new subtype to the sealed interface, all switches require updates.
+
+---
+
+## Document Pattern Matching in DTR Tests
+
+Use `sayCode` and `sayClassDiagram` to document sealed type usage:
+
+```java
+@ExtendWith(DtrExtension.class)
+class PatternMatchingDocTest {
+
+    sealed interface ApiResult<T> {
+        record Ok<T>(T data, int statusCode) implements ApiResult<T> {}
+        record Error(int statusCode, String message) implements ApiResult<Object> {}
+        record Redirect(String location) implements ApiResult<Object> {}
+    }
+
+    @Test
+    void documentPatternMatching(DtrContext ctx) {
+        ctx.sayNextSection("Pattern Matching with Sealed ApiResult");
+
+        ctx.sayClassDiagram(
+            ApiResult.class,
+            ApiResult.Ok.class,
+            ApiResult.Error.class,
+            ApiResult.Redirect.class
+        );
+
+        ctx.sayCode("""
+            String handle(ApiResult<?> result) {
+                return switch (result) {
+                    case ApiResult.Ok<?>(Object data, int code) when code == 200 ->
+                        "Success: " + data;
+                    case ApiResult.Ok<?>(Object data, int code) ->
+                        "Unusual success " + code + ": " + data;
+                    case ApiResult.Error(int code, String msg) ->
+                        "Error " + code + ": " + msg;
+                    case ApiResult.Redirect(String location) ->
+                        "Redirect to " + location;
+                };
+            }
+            """, "java");
+    }
+}
+```
 
 ---
 
@@ -79,7 +124,7 @@ if (person instanceof Person(String name, Address(String city, String country)))
 
 ## Guarded Patterns
 
-Add conditions to pattern matching:
+Add conditions with `when`:
 
 ```java
 sealed interface Number {
@@ -123,15 +168,6 @@ if (result instanceof ApiResult(int status, String _, _)) {
 }
 ```
 
-Or in a switch:
-
-```java
-String message = switch (result) {
-    case ApiResult(200, String body, _) -> "Success: " + body;
-    case ApiResult(int status, _, _) -> "Error: " + status;
-};
-```
-
 ---
 
 ## Type Patterns in Switch
@@ -152,30 +188,32 @@ String processed = switch (payload) {
     case Payload.XmlPayload(String xml) -> "XML: " + xml;
     case Payload.BinaryPayload(byte[] bytes) -> "Binary: " + bytes.length + " bytes";
 };
-
-System.out.println(processed);
 ```
 
 ---
 
-## Combining Pattern Matching and Sealed Records in Real Code
+## Real-World Example: HTTP Response Handling
 
 ```java
-sealed interface RequestResult {
-    record Ok(int code, String body) implements RequestResult {}
-    record Failed(int code, Exception cause) implements RequestResult {}
+sealed interface HttpResponse<T> {
+    record Ok<T>(T body) implements HttpResponse<T> {}
+    record NotFound(String path) implements HttpResponse<Object> {}
+    record ServerError(Throwable cause) implements HttpResponse<Object> {}
 }
 
-void handleResult(RequestResult result) {
-    switch (result) {
-        case RequestResult.Ok(int code, String body) when code == 200 -> {
-            System.out.println("Success: " + body);
+void handle(HttpResponse<String> response) {
+    switch (response) {
+        case HttpResponse.Ok<String>(String body) when !body.isBlank() -> {
+            System.out.println("Body: " + body);
         }
-        case RequestResult.Ok(int code, String body) -> {
-            System.out.println("Unusual success code: " + code);
+        case HttpResponse.Ok<String>(_) -> {
+            System.out.println("Empty response");
         }
-        case RequestResult.Failed(int code, Exception cause) -> {
-            System.out.println("Failed with " + code + ": " + cause.getMessage());
+        case HttpResponse.NotFound(String path) -> {
+            System.out.println("Not found: " + path);
+        }
+        case HttpResponse.ServerError(Throwable cause) -> {
+            System.out.println("Error: " + cause.getMessage());
         }
     }
 }
@@ -185,38 +223,33 @@ void handleResult(RequestResult result) {
 
 ## Pattern Matching in Method Parameters (Preview)
 
-Java 25 allows pattern matching in method parameters (preview feature with `--enable-preview`):
+Java 25 allows pattern matching in method parameters (preview feature):
 
 ```java
 // Requires --enable-preview
-void process(HttpResponse(int status, String body)) {
-    System.out.println("Status: " + status);
+void process(HttpResponse.Ok<?>(Object body)) {
+    System.out.println("Body: " + body);
 }
-
-// Called like:
-process(new HttpResponse.Success(200, "OK"));
 ```
 
 ---
 
 ## Best Practices
 
-✅ **DO:**
-- Define sealed interfaces when you have multiple related types
-- Use pattern matching instead of explicit casts
-- Leverage exhaustive switches to prevent missing cases
-- Use named patterns for fields you need; `_` for ones you don't
-- Add guards (`when`) to refine patterns
+**Define sealed interfaces when you have multiple related types.** The compiler enforces exhaustiveness — adding a new case forces all switches to be updated.
 
-❌ **DON'T:**
-- Use non-sealed classes when exhaustiveness would help
-- Mix sealed and unsealed in the same hierarchy
-- Use default in exhaustive switches (forces defaults on new types)
-- Over-use unnamed patterns if the field names matter
+**Use pattern matching instead of explicit casts.** Deconstruct directly in `instanceof` or `switch` patterns.
+
+**Use guards (`when`) to refine patterns.** Guards let you split a single type into multiple cases based on field values.
+
+**Use `_` for unused fields.** Makes it explicit that certain fields are intentionally ignored.
+
+**Document sealed hierarchies with sayClassDiagram.** Readers need to see the type structure before they can understand the pattern matching code.
 
 ---
 
 ## See Also
 
-- [Tutorial: Records and Sealed Classes](../tutorials/records-sealed-classes.md)
-- [Reference: Records and Sealed Classes](../reference/records-sealed-reference.md)
+- [Switch Expressions](switch-expressions.md) — Pattern matching in switch context
+- [Generate Class Diagrams](websockets-broadcast.md) — sayClassDiagram for sealed hierarchies
+- [Document Exception Handling](test-xml-endpoints.md) — sayException with sealed result types

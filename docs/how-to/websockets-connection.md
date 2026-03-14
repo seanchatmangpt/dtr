@@ -1,201 +1,220 @@
-# How-to: Connect to WebSocket Servers
+# How-To: Generate Mermaid Diagrams
 
-Establish and manage WebSocket connections for testing real-time services.
+Embed Mermaid diagrams in your documentation using DTR 2.6.0's `sayMermaid` and `sayClassDiagram` methods.
+
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
-## Basic Connection
+## sayMermaid: Raw Mermaid DSL
+
+`sayMermaid(String diagramDsl)` embeds any Mermaid diagram as a fenced code block. Use it for sequence diagrams, flowcharts, ER diagrams, Gantt charts — any Mermaid-supported type.
+
+### Sequence Diagram
 
 ```java
-WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-Session session = container.connectToServer(
-    new MyEndpoint(),
-    URI.create("ws://localhost:8080/chat"));
+@ExtendWith(DtrExtension.class)
+class ApiFlowDocTest {
 
-// Use session...
-session.close();
+    @Test
+    void documentAuthFlow(DtrContext ctx) {
+        ctx.sayNextSection("Authentication Flow");
+        ctx.say("The following sequence diagram shows the OAuth 2.0 flow:");
+
+        ctx.sayMermaid("""
+            sequenceDiagram
+                participant C as Client
+                participant A as Auth Server
+                participant R as Resource Server
+
+                C->>A: POST /oauth/token (credentials)
+                A-->>C: access_token + refresh_token
+                C->>R: GET /api/users (Bearer token)
+                R->>A: Validate token
+                A-->>R: Token valid, userId=42
+                R-->>C: 200 OK [{id:42, name:"alice"}]
+            """);
+
+        ctx.sayNote("Access tokens expire after 15 minutes. " +
+                    "Use the refresh token to obtain a new one.");
+    }
+}
+```
+
+### Flowchart
+
+```java
+@Test
+void documentOrderProcessing(DtrContext ctx) {
+    ctx.sayNextSection("Order Processing Flow");
+
+    ctx.sayMermaid("""
+        flowchart TD
+            A[Customer submits order] --> B{Inventory check}
+            B -->|In stock| C[Reserve items]
+            B -->|Out of stock| D[Send back-order notification]
+            C --> E[Process payment]
+            E -->|Success| F[Ship order]
+            E -->|Failure| G[Release inventory]
+            F --> H[Send confirmation email]
+            D --> I[Notify when available]
+        """);
+}
+```
+
+### State Diagram
+
+```java
+@Test
+void documentOrderStates(DtrContext ctx) {
+    ctx.sayNextSection("Order State Machine");
+
+    ctx.sayMermaid("""
+        stateDiagram-v2
+            [*] --> Pending
+            Pending --> Confirmed : payment_success
+            Pending --> Cancelled : payment_failed
+            Confirmed --> Shipped : warehouse_dispatch
+            Shipped --> Delivered : courier_delivered
+            Shipped --> Returned : customer_return
+            Delivered --> [*]
+            Returned --> [*]
+            Cancelled --> [*]
+        """);
+}
 ```
 
 ---
 
-## Connection with Retry Logic
+## sayClassDiagram: Auto-Generated Class Diagrams
+
+`sayClassDiagram(Class<?>... classes)` uses reflection to generate a Mermaid `classDiagram` automatically. It discovers fields, methods, and relationships between the provided classes.
+
+### Simple Class Diagram
 
 ```java
-Session connect(URI uri, int maxRetries) throws Exception {
-    for (int i = 1; i <= maxRetries; i++) {
-        try {
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            return container.connectToServer(new MyEndpoint(), uri);
-        } catch (Exception e) {
-            if (i == maxRetries) throw e;
-            long delayMs = (long) Math.pow(2, i - 1) * 100; // Exponential backoff
-            Thread.sleep(delayMs);
+record Address(String street, String city, String country) {}
+record User(long id, String name, String email, Address address) {}
+record Order(long id, User customer, java.util.List<String> items, double total) {}
+
+@Test
+void documentDomainModel(DtrContext ctx) {
+    ctx.sayNextSection("Domain Model");
+    ctx.say("The core domain records and their relationships:");
+
+    ctx.sayClassDiagram(User.class, Address.class, Order.class);
+}
+```
+
+### Interface and Implementation Hierarchy
+
+```java
+interface Repository<T, ID> {
+    T findById(ID id);
+    java.util.List<T> findAll();
+    T save(T entity);
+    void delete(ID id);
+}
+
+@Test
+void documentRepositoryHierarchy(DtrContext ctx) {
+    ctx.sayNextSection("Repository Layer Class Diagram");
+    ctx.sayClassDiagram(Repository.class, UserRepository.class, OrderRepository.class);
+}
+```
+
+### Sealed Type Hierarchy
+
+```java
+sealed interface PaymentMethod {
+    record CreditCard(String last4, String brand) implements PaymentMethod {}
+    record BankTransfer(String iban) implements PaymentMethod {}
+    record Wallet(String walletId) implements PaymentMethod {}
+}
+
+@Test
+void documentPaymentTypes(DtrContext ctx) {
+    ctx.sayNextSection("Payment Method Types");
+    ctx.say("All payment methods are sealed — exhaustive pattern matching is required:");
+
+    ctx.sayClassDiagram(
+        PaymentMethod.class,
+        PaymentMethod.CreditCard.class,
+        PaymentMethod.BankTransfer.class,
+        PaymentMethod.Wallet.class
+    );
+
+    ctx.sayCode("""
+        String describe(PaymentMethod pm) {
+            return switch (pm) {
+                case PaymentMethod.CreditCard(String last4, String brand) ->
+                    brand + " ending in " + last4;
+                case PaymentMethod.BankTransfer(String iban) ->
+                    "Bank transfer: " + iban;
+                case PaymentMethod.Wallet(String id) ->
+                    "Wallet: " + id;
+            };
         }
-    }
-    throw new IllegalStateException("Failed to connect");
-}
-
-// Usage
-Session session = connect(URI.create("ws://localhost:8080/chat"), 3);
-```
-
----
-
-## Create Endpoint Class
-
-```java
-@ClientEndpoint
-public class ChatEndpoint {
-    private CountDownLatch openLatch = new CountDownLatch(1);
-    private List<String> messages = Collections.synchronizedList(new ArrayList<>());
-
-    @OnOpen
-    public void onOpen(Session session) {
-        System.out.println("Connected");
-        openLatch.countDown();
-    }
-
-    @OnMessage
-    public void onMessage(String message) {
-        messages.add(message);
-    }
-
-    @OnClose
-    public void onClose(CloseReason reason) {
-        System.out.println("Closed: " + reason);
-    }
-
-    @OnError
-    public void onError(Session session, Throwable error) {
-        System.err.println("Error: " + error.getMessage());
-    }
-
-    public void waitForConnection(long timeout, TimeUnit unit) throws InterruptedException {
-        openLatch.await(timeout, unit);
-    }
-
-    public List<String> getMessages() {
-        return new ArrayList<>(messages);
-    }
+        """, "java");
 }
 ```
 
 ---
 
-## Check Connection Status
+## Combine Mermaid with Record Components
+
+Document both the structure and the schema:
 
 ```java
-// Check if open
-if (session.isOpen()) {
-    System.out.println("Connected");
+record Product(long id, String name, double price, int stock) {}
+
+@Test
+void documentProductModel(DtrContext ctx) {
+    ctx.sayNextSection("Product Model");
+
+    ctx.sayRecordComponents(Product.class);
+
+    ctx.say("Entity relationship diagram:");
+    ctx.sayMermaid("""
+        erDiagram
+            PRODUCT {
+                long id PK
+                string name
+                double price
+                int stock
+            }
+            CATEGORY {
+                long id PK
+                string name
+            }
+            ORDER_ITEM {
+                long orderId FK
+                long productId FK
+                int quantity
+                double unitPrice
+            }
+            PRODUCT ||--o{ ORDER_ITEM : "included in"
+            CATEGORY ||--o{ PRODUCT : "contains"
+        """);
 }
-
-// Get max frame size
-long maxFrameSize = session.getMaxBinaryMessageBufferSize();
-
-// Get connected peer
-String peerId = session.getId();
-```
-
----
-
-## Send Text Message
-
-```java
-session.getBasicRemote().sendText("Hello, server!");
-
-// Or async
-session.getAsyncRemote().sendText("Hello, async!", result -> {
-    if (result.isOK()) {
-        System.out.println("Sent");
-    } else {
-        System.err.println("Error: " + result.getException());
-    }
-});
-```
-
----
-
-## Send Binary Message
-
-```java
-ByteBuffer data = ByteBuffer.wrap(new byte[]{1, 2, 3, 4});
-session.getBasicRemote().sendBinary(data);
-
-// Or async
-session.getAsyncRemote().sendBinary(data, result -> {
-    if (result.isOK()) {
-        System.out.println("Binary sent");
-    }
-});
-```
-
----
-
-## Set Connection Timeout
-
-```java
-WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-container.setDefaultMaxSessionIdleTimeout(30000); // 30 seconds
-
-Session session = container.connectToServer(new MyEndpoint(), uri);
-```
-
----
-
-## Handle Multiple Endpoints
-
-```java
-// Connect to multiple servers
-List<Session> sessions = new ArrayList<>();
-
-sessions.add(container.connectToServer(
-    new Endpoint1(),
-    URI.create("ws://server1:8080/chat")));
-
-sessions.add(container.connectToServer(
-    new Endpoint2(),
-    URI.create("ws://server2:8080/events")));
-
-// Clean up all
-for (Session s : sessions) {
-    s.close();
-}
-```
-
----
-
-## Graceful Shutdown
-
-```java
-try (WebSocketContainer container = ...) {
-    Session session = container.connectToServer(...);
-
-    // Use session...
-
-    session.close();
-} // Container auto-closed
 ```
 
 ---
 
 ## Best Practices
 
-✅ **DO:**
-- Always close sessions
-- Use try-with-resources where possible
-- Handle all lifecycle callbacks
-- Wait for @OnOpen before sending
+**Use sayMermaid for complex flows.** When the diagram involves time ordering, state transitions, or non-class relationships, write the DSL directly.
 
-❌ **DON'T:**
-- Send immediately after connect (wait for @OnOpen)
-- Ignore connection errors
-- Leave connections open
+**Use sayClassDiagram for type structure.** When you want to document record fields, interface hierarchies, or domain models, let reflection generate the diagram automatically.
+
+**Keep diagrams focused.** A diagram with more than 10 nodes becomes hard to read. Split into multiple diagrams if needed.
+
+**Pair with sayNote for context.** Diagrams alone are not self-explanatory. Always add a `ctx.sayNote()` or `ctx.say()` to explain what the reader should focus on.
 
 ---
 
 ## See Also
 
-- [How-to: Handle WebSocket Errors](websockets-error-handling.md)
-- [How-to: Broadcast Messages](websockets-broadcast.md)
-- [Tutorial: WebSockets](../tutorials/websockets-realtime.md)
+- [Generate Class Diagrams (deep-dive)](websockets-broadcast.md) — sayClassDiagram with reflection details
+- [Control Flow and Call Graphs](websockets-error-handling.md) — sayControlFlowGraph, sayCallGraph
+- [Document Record Schemas](upload-files.md) — sayRecordComponents

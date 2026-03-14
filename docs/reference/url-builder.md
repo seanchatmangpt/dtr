@@ -1,134 +1,139 @@
-# Reference: Url Builder
+# Reference: Benchmarking API Reference
 
-**Package:** `io.github.seanchatmangpt.dtr.dtr.testbrowser`
-**File:** `dtr-core/src/main/java/org/r10r/dtr/testbrowser/Url.java`
+**Package:** `io.github.seanchatmangpt.dtr.core`
+**Version:** 2.6.0 (new in this release)
 
-`Url` is a fluent URL builder. It is used to compose the target URL for `Request` objects, typically starting from `testServerUrl()`.
-
----
-
-## Factory method
-
-#### `Url.host(String host)` → `Url`
-
-Creates a new `Url` from a host string. The host must include the scheme and may include a port.
-
-```java
-Url.host("http://localhost:8080")
-Url.host("https://api.example.com")
-Url.host("https://staging.example.com:8443")
-```
+DTR 2.6.0 introduces built-in micro-benchmarking via two `sayBenchmark` overloads on `DtrContext`. These methods run your workload, measure elapsed time with `System.nanoTime()`, and render a benchmark result table directly in the documentation.
 
 ---
 
-## Path
-
-#### `path(String path)` → `Url`
-
-Appends a path segment to the URL. The path should start with `/`.
+## sayBenchmark — default settings
 
 ```java
-testServerUrl().path("/api/users")
-// → http://localhost:8080/api/users
-
-testServerUrl().path("/api/articles/" + articleId)
-// → http://localhost:8080/api/articles/42
+ctx.sayBenchmark(String label, Runnable task)
 ```
 
-Multiple `path()` calls are supported but uncommon:
+Runs `task` with 100 warmup iterations followed by 1 000 measured iterations.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `label` | `String` | Display name shown in the result table |
+| `task` | `Runnable` | The workload to measure |
+
+**Output:** A table with columns: Label, Warmup iterations, Measured iterations, Min (ns), Max (ns), Avg (ns), Total (ms).
+
+**Example:**
 
 ```java
-testServerUrl().path("/api").path("/users")
-// → http://localhost:8080/api/users
-```
+@Test
+void benchmarkStringConcat(DtrContext ctx) {
+    ctx.sayNextSection("String Concatenation Benchmark");
 
----
+    ctx.sayBenchmark("String + operator", () -> {
+        String s = "";
+        for (int i = 0; i < 100; i++) s = s + "x";
+    });
 
-## Query parameters
-
-#### `addQueryParameter(String key, String value)` → `Url`
-
-Appends a query parameter. Can be called multiple times. Values are URL-encoded automatically.
-
-```java
-testServerUrl()
-    .path("/api/articles")
-    .addQueryParameter("page", "1")
-    .addQueryParameter("pageSize", "20")
-    .addQueryParameter("q", "hello world")
-// → http://localhost:8080/api/articles?page=1&pageSize=20&q=hello+world
+    ctx.sayBenchmark("StringBuilder", () -> {
+        var sb = new StringBuilder();
+        for (int i = 0; i < 100; i++) sb.append("x");
+        sb.toString();
+    });
+}
 ```
 
 ---
 
-## Conversion
-
-#### `uri()` → `java.net.URI`
-
-Converts the `Url` to a `java.net.URI`. Called internally when passing to a `Request`.
+## sayBenchmark — explicit warmup and iterations
 
 ```java
-URI uri = testServerUrl().path("/api/users").uri();
+ctx.sayBenchmark(String label, Runnable task, int warmup, int iterations)
 ```
 
-#### `toString()` → `String`
+Full control over warmup and measurement counts.
 
-Returns the full URL as a string.
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `label` | `String` | Display name shown in the result table |
+| `task` | `Runnable` | The workload to measure |
+| `warmup` | `int` | Number of warmup iterations (not measured; allow JIT to stabilize) |
+| `iterations` | `int` | Number of measured iterations |
+
+**Example:**
 
 ```java
-String url = testServerUrl().path("/api/users").toString();
-// → "http://localhost:8080/api/users"
-```
+@Test
+void benchmarkVirtualThreadSpawn(DtrContext ctx) {
+    ctx.sayNextSection("Virtual Thread Spawn Cost");
 
----
-
-## Usage patterns
-
-**Basic path:**
-```java
-Request.GET().url(testServerUrl().path("/api/health"))
-```
-
-**Path with ID:**
-```java
-Request.GET().url(testServerUrl().path("/api/users/" + userId))
-```
-
-**Path with query parameters:**
-```java
-Request.GET().url(
-    testServerUrl()
-        .path("/api/search")
-        .addQueryParameter("q", "Alice")
-        .addQueryParameter("limit", "10"))
-```
-
-**Reuse a base URL:**
-```java
-Url articlesUrl = testServerUrl().path("/api/articles");
-
-Response list = sayAndMakeRequest(Request.GET().url(articlesUrl));
-Response create = sayAndMakeRequest(
-    Request.POST()
-        .url(articlesUrl)
-        .contentTypeApplicationJson()
-        .payload(newArticle));
-```
-
-**Dynamic path with encoding:**
-```java
-String searchTerm = "café & bakery";  // special characters
-Request.GET().url(
-    testServerUrl()
-        .path("/api/places")
-        .addQueryParameter("name", searchTerm))
-// → /api/places?name=caf%C3%A9+%26+bakery
+    ctx.sayBenchmark(
+        "Thread.ofVirtual().start().join()",
+        () -> {
+            try {
+                Thread.ofVirtual().start(() -> {}).join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        },
+        500,      // warmup
+        10_000    // measured iterations
+    );
+}
 ```
 
 ---
 
-## Notes
+## Output format
 
-- `Url` is immutable — each method returns a new instance
-- Path segments are concatenated as strings; no normalization of double slashes
-- `addQueryParameter` encodes values but not keys; use simple keys without special characters
+Each `sayBenchmark` call appends a result table to the documentation:
+
+```
+| Benchmark                          | Warmup | Iterations | Min (ns) | Max (ns) | Avg (ns) | Total (ms) |
+|------------------------------------|--------|------------|----------|----------|----------|------------|
+| Thread.ofVirtual().start().join()  |    500 |     10 000 |      412 |    8 203 |      631 |       6.31 |
+```
+
+The table is preceded by environment metadata from `sayEnvProfile()` if called in the same test.
+
+---
+
+## Measurement methodology
+
+- Time measured with `System.nanoTime()` surrounding each individual `task.run()` call.
+- Warmup iterations are run but not timed. Warmup allows the JIT compiler to compile and optimize the task before measurement begins.
+- Each iteration is timed independently. Min, max, and average are computed from all measured iterations.
+- No forking: measurements run in the same JVM as the test. For production benchmarking, use JMH.
+
+---
+
+## Reporting guidelines (from CLAUDE.md)
+
+Always report: metric + units + Java version + iteration counts + environment.
+
+**Correct:** `"ArrayList add 1K: 42 341 ns avg (100 warmup, 1 000 iter, Java 25.0.2, Linux x86_64)"`
+
+**Incorrect:** `"ArrayList is 6 667x faster"` (no measurement basis)
+
+Use `ctx.sayEnvProfile()` before benchmark tables to capture the execution environment automatically.
+
+```java
+@Test
+void fullBenchmark(DtrContext ctx) {
+    ctx.sayNextSection("Benchmark Results");
+    ctx.sayEnvProfile();   // captures Java version, OS, CPU, memory
+    ctx.sayBenchmark("Task A", () -> taskA());
+    ctx.sayBenchmark("Task B", () -> taskB(), 200, 5_000);
+}
+```
+
+---
+
+## See also
+
+- [say* Core API Reference](request-api.md) — all 37 methods
+- [Virtual Threads Reference](virtual-threads-reference.md) — MultiRenderMachine dispatch model
+- [Utility API Reference](sse-reference.md) — `sayEnvProfile`, `sayAsciiChart`

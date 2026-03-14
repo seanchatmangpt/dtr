@@ -1,249 +1,187 @@
-# How-to: Handle SSE Reconnection
+# How-To: Inline Benchmarks with sayBenchmark
 
-Implement automatic reconnection and handle disconnections gracefully.
+Use DTR 2.6.0's `sayBenchmark` to measure and document performance inline within any JUnit 5 test, without a separate benchmarking module.
 
----
-
-## Basic Reconnection
-
-```java
-boolean reconnect(String sseUrl, int maxRetries) {
-    for (int attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            Response response = makeRequest(
-                Request.GET()
-                    .url(sseUrl));
-
-            if (response.httpStatus() == 200) {
-                System.out.println("Connected on attempt " + attempt);
-                return true;
-            }
-        } catch (Exception e) {
-            System.err.println("Attempt " + attempt + " failed: " + e.getMessage());
-
-            if (attempt < maxRetries) {
-                long backoffMs = (long) Math.pow(2, attempt - 1) * 100;
-                try {
-                    Thread.sleep(backoffMs);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }
-    return false;
-}
-```
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
-## Use Server-Provided Retry Interval
+## Why sayBenchmark
 
-```java
-record RetryConfig(long delayMs) {}
+The old approach required:
+1. A separate JMH module
+2. Build configuration
+3. Manual result interpretation
+4. Separate documentation
 
-RetryConfig parseRetryConfig(String sseStream) {
-    for (String line : sseStream.split("\n")) {
-        if (line.startsWith("retry: ")) {
-            long delayMs = Long.parseLong(line.substring(7));
-            return new RetryConfig(delayMs);
-        }
-    }
-    return new RetryConfig(0); // No retry specified
-}
-
-// Reconnect using server's recommended delay
-void reconnectWithServerDelay(String sseUrl, String lastEventId) throws Exception {
-    String stream = makeRequest(Request.GET().url(sseUrl)).payloadAsString();
-
-    RetryConfig config = parseRetryConfig(stream);
-    long delayMs = config.delayMs() > 0 ? config.delayMs() : 1000; // Default 1s
-
-    System.out.println("Server recommends reconnect delay: " + delayMs + "ms");
-    Thread.sleep(delayMs);
-
-    // Reconnect with Last-Event-ID to resume
-    reconnect(sseUrl, lastEventId);
-}
-```
+With `sayBenchmark`, you measure and document in one step — inside your existing DTR test. The results appear directly in the generated Markdown output.
 
 ---
 
-## Resume from Last Event ID
+## Basic: Single Operation
 
 ```java
-String lastEventId = "0";
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-void streamWithCheckpoint(String sseUrl) throws Exception {
-    while (true) {
-        try {
-            Response response = makeRequest(
-                Request.GET()
-                    .url(sseUrl)
-                    .addHeader("Last-Event-ID", lastEventId));
+@ExtendWith(DtrExtension.class)
+class InlineBenchmarkDocTest {
 
-            String stream = response.payloadAsString();
-            List<SseEvent> events = parseEvents(stream);
+    @Test
+    void benchmarkHashMapLookup(DtrContext ctx) {
+        ctx.sayNextSection("HashMap Lookup Performance");
+        ctx.sayEnvProfile();
 
-            for (SseEvent event : events) {
-                processEvent(event);
-                lastEventId = event.id; // Update checkpoint
-            }
-
-            break; // Success
-        } catch (Exception e) {
-            System.err.println("Stream failed: " + e.getMessage());
-            System.out.println("Reconnecting from event: " + lastEventId);
-
-            Thread.sleep(1000); // Wait before retry
+        var map = new java.util.HashMap<String, Integer>();
+        for (int i = 0; i < 10_000; i++) {
+            map.put("key" + i, i);
         }
+
+        ctx.sayBenchmark("HashMap.get (10k entries, warm)", () -> {
+            map.get("key5000");
+        });
     }
 }
 ```
 
----
-
-## Exponential Backoff
-
-```java
-boolean connectWithExponentialBackoff(String url) throws Exception {
-    long initialDelayMs = 100;
-    long maxDelayMs = 30000; // 30 seconds max
-    long delayMs = initialDelayMs;
-    int maxAttempts = 10;
-
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-            System.out.println("Attempt " + attempt);
-            Response response = makeRequest(Request.GET().url(url));
-
-            if (response.httpStatus() == 200) {
-                return true;
-            }
-        } catch (Exception e) {
-            System.err.println("Attempt " + attempt + " failed. Retrying in " + delayMs + "ms");
-
-            if (attempt < maxAttempts) {
-                Thread.sleep(delayMs);
-                delayMs = Math.min(delayMs * 2, maxDelayMs); // Cap at maxDelayMs
-            }
-        }
-    }
-    return false;
-}
-```
+`sayBenchmark` runs warmup rounds, then measurement rounds, and outputs a table with average, min, max, and standard deviation timing.
 
 ---
 
-## Detect Unexpected Closure
-
-```java
-class ResilientSseClient {
-    private String url;
-    private String lastEventId = "0";
-    private boolean shouldReconnect = true;
-
-    void listen() {
-        while (shouldReconnect) {
-            try {
-                Response response = makeRequest(
-                    Request.GET()
-                        .url(url)
-                        .addHeader("Last-Event-ID", lastEventId));
-
-                String stream = response.payloadAsString();
-
-                if (stream.isEmpty()) {
-                    // Server closed connection
-                    System.out.println("Server closed connection, reconnecting...");
-                    Thread.sleep(1000);
-                    continue;
-                }
-
-                // Process events
-                List<SseEvent> events = parseEvents(stream);
-                for (SseEvent event : events) {
-                    processEvent(event);
-                    lastEventId = event.id;
-                }
-
-            } catch (Exception e) {
-                System.err.println("Connection lost: " + e.getMessage());
-                System.out.println("Attempting to reconnect...");
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    shouldReconnect = false;
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }
-
-    void stop() {
-        shouldReconnect = false;
-    }
-
-    private void processEvent(SseEvent event) {
-        // Handle event
-    }
-}
-```
-
----
-
-## Test Reconnection Scenario
+## Configurable Warmup and Measurement Rounds
 
 ```java
 @Test
-void testReconnectionAfterFailure() throws Exception {
-    String sseUrl = "http://localhost:8080/events";
+void precisionBenchmark(DtrContext ctx) {
+    ctx.sayNextSection("Record Construction Performance");
+    ctx.sayEnvProfile();
 
-    // Simulate server returning 503 (service unavailable)
-    // Then succeeding
+    record Point(double x, double y, double z) {}
 
-    int attempt = 0;
-    int maxRetries = 3;
+    // 20 warmup rounds, 200 measurement rounds
+    ctx.sayBenchmark("Point record construction", () -> {
+        new Point(1.0, 2.0, 3.0);
+    }, 20, 200);
 
-    for (int i = 1; i <= maxRetries; i++) {
-        try {
-            Response response = makeRequest(Request.GET().url(sseUrl));
-
-            if (response.httpStatus() == 200) {
-                System.out.println("✓ Connected on attempt " + i);
-                assert true;
-                return;
-            }
-        } catch (Exception e) {
-            if (i < maxRetries) {
-                long backoffMs = (long) Math.pow(2, i - 1) * 100;
-                System.out.println("✗ Attempt " + i + " failed, retrying in " + backoffMs + "ms");
-                Thread.sleep(backoffMs);
-            }
-        }
-    }
-
-    fail("Failed to reconnect after " + maxRetries + " attempts");
+    ctx.sayBenchmark("Point record access", () -> {
+        var p = new Point(1.0, 2.0, 3.0);
+        p.x(); p.y(); p.z();
+    }, 20, 200);
 }
 ```
 
 ---
 
-## Handle Jitter in Backoff
+## Compare Multiple Implementations
 
 ```java
-long calculateBackoffWithJitter(int attempt) {
-    long baseDelayMs = (long) Math.pow(2, attempt - 1) * 100;
-    long jitterMs = (long) (Math.random() * baseDelayMs * 0.1); // ±10% jitter
-    return baseDelayMs + jitterMs;
-}
+@Test
+void compareImplementations(DtrContext ctx) {
+    ctx.sayNextSection("Sorting Algorithm Comparison");
+    ctx.sayEnvProfile();
 
-// Usage
-for (int attempt = 1; attempt <= 5; attempt++) {
-    long delayMs = calculateBackoffWithJitter(attempt);
-    System.out.println("Attempt " + attempt + ": delay = " + delayMs + "ms");
-    Thread.sleep(delayMs);
+    int[] data = new java.util.Random(42).ints(1000, 0, 10000).toArray();
+
+    ctx.sayBenchmark("Arrays.sort (1000 ints)", () -> {
+        int[] copy = data.clone();
+        java.util.Arrays.sort(copy);
+    });
+
+    ctx.sayBenchmark("Stream sorted (1000 ints)", () -> {
+        java.util.Arrays.stream(data).sorted().toArray();
+    });
+
+    ctx.say("Note: Both use TimSort internally. The Stream version has additional boxing overhead.");
+}
+```
+
+---
+
+## Benchmark with Virtual Threads
+
+```java
+@Test
+void benchmarkVirtualThreadSpawn(DtrContext ctx) throws Exception {
+    ctx.sayNextSection("Virtual Thread Spawn Cost");
+    ctx.sayEnvProfile();
+
+    ctx.sayBenchmark("Virtual thread: spawn + complete 100 tasks", () -> {
+        try (var exec = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
+            for (int i = 0; i < 100; i++) {
+                futures.add(exec.submit(() -> "done"));
+            }
+            for (var f : futures) f.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }, 5, 30);
+
+    ctx.sayBenchmark("Platform thread pool: 100 tasks (8 threads)", () -> {
+        try (var exec = java.util.concurrent.Executors.newFixedThreadPool(8)) {
+            var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
+            for (int i = 0; i < 100; i++) {
+                futures.add(exec.submit(() -> "done"));
+            }
+            for (var f : futures) f.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }, 5, 30);
+}
+```
+
+---
+
+## Benchmark Combined with ASCII Chart
+
+```java
+@Test
+void benchmarkAndChart(DtrContext ctx) {
+    ctx.sayNextSection("String Builder Strategies");
+    ctx.sayEnvProfile();
+
+    String[] labels = {"concat +", "StringBuilder", "String.join", "formatted()"};
+    double[] avgNs = new double[labels.length];
+    int n = 50_000;
+
+    // Warmup
+    for (int w = 0; w < 100; w++) {
+        "a" + "b";
+        new StringBuilder().append("a").append("b").toString();
+    }
+
+    // Measure
+    long t0 = System.nanoTime();
+    for (int i = 0; i < n; i++) { "prefix" + i + "suffix"; }
+    avgNs[0] = (double)(System.nanoTime() - t0) / n;
+
+    t0 = System.nanoTime();
+    for (int i = 0; i < n; i++) { new StringBuilder().append("prefix").append(i).append("suffix").toString(); }
+    avgNs[1] = (double)(System.nanoTime() - t0) / n;
+
+    t0 = System.nanoTime();
+    for (int i = 0; i < n; i++) { String.join("", "prefix", String.valueOf(i), "suffix"); }
+    avgNs[2] = (double)(System.nanoTime() - t0) / n;
+
+    t0 = System.nanoTime();
+    for (int i = 0; i < n; i++) { "prefix%ssuffix".formatted(i); }
+    avgNs[3] = (double)(System.nanoTime() - t0) / n;
+
+    // Detailed benchmarks
+    ctx.sayBenchmark("concat + (" + n + " iter)", () -> "prefix" + 1 + "suffix");
+    ctx.sayBenchmark("StringBuilder (" + n + " iter)", () ->
+        new StringBuilder().append("prefix").append(1).append("suffix").toString());
+    ctx.sayBenchmark("String.join (" + n + " iter)", () ->
+        String.join("", "prefix", "1", "suffix"));
+    ctx.sayBenchmark("formatted() (" + n + " iter)", () ->
+        "prefix%ssuffix".formatted(1));
+
+    // Summary chart
+    ctx.sayAsciiChart("Avg ns/op (lower is better)", avgNs, labels);
+    ctx.say("Measured on Java " + System.getProperty("java.version"));
 }
 ```
 
@@ -251,23 +189,18 @@ for (int attempt = 1; attempt <= 5; attempt++) {
 
 ## Best Practices
 
-✅ **DO:**
-- Use exponential backoff (2^n)
-- Cap max backoff (e.g., 30 seconds)
-- Use server-provided retry hints
-- Track Last-Event-ID for resume
-- Add jitter to prevent thundering herd
+**Always call sayEnvProfile() first.** Timing results are meaningless without knowing the hardware and JVM version.
 
-❌ **DON'T:**
-- Retry immediately (causes server load)
-- Ignore server's retry field
-- Lose event IDs on disconnect
-- Retry indefinitely without limit
+**Let sayBenchmark handle warmup.** The default warmup is sufficient for most cases. Use the four-argument overload only when you need more control.
+
+**Do not measure I/O.** `sayBenchmark` is designed for CPU and memory operations. Network I/O timings are dominated by network variability, not code quality.
+
+**Report absolute numbers.** Do not describe results as "X times faster" without also reporting the absolute timing values.
 
 ---
 
 ## See Also
 
-- [How-to: Subscribe to SSE Streams](sse-subscription.md)
-- [How-to: Parse SSE Events](sse-parsing.md)
-- [Tutorial: Server-Sent Events](../tutorials/server-sent-events.md)
+- [Benchmarking (full guide)](benchmarking.md) — Complete benchmarking workflow
+- [Render ASCII Charts](sse-parsing.md) — sayAsciiChart for visualization
+- [Performance Tuning](performance-tuning.md) — Build-level optimization

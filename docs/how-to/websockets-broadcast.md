@@ -1,203 +1,168 @@
-# How-to: Broadcast Messages to Multiple Clients
+# How-To: Generate Class Diagrams with sayClassDiagram
 
-Test WebSocket servers that broadcast messages to all connected clients.
+Automatically generate Mermaid class diagrams from your Java types using DTR 2.6.0's `sayClassDiagram` method.
 
----
-
-## Basic Broadcast Pattern
-
-```java
-// Connect multiple clients
-WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-
-ClientEndpoint client1 = new BroadcastEndpoint("client1");
-ClientEndpoint client2 = new BroadcastEndpoint("client2");
-ClientEndpoint client3 = new BroadcastEndpoint("client3");
-
-Session s1 = container.connectToServer(client1, URI.create("ws://localhost:8080/chat"));
-Session s2 = container.connectToServer(client2, URI.create("ws://localhost:8080/chat"));
-Session s3 = container.connectToServer(client3, URI.create("ws://localhost:8080/chat"));
-
-// One client sends
-s1.getBasicRemote().sendText("Hello from client1");
-
-// All should receive
-Thread.sleep(500);
-
-boolean allReceived = client1.receivedMessages.size() > 0 &&
-                      client2.receivedMessages.size() > 0 &&
-                      client3.receivedMessages.size() > 0;
-
-assert allReceived : "Broadcast message not received by all clients";
-```
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
-## Collect Broadcast Messages
+## What sayClassDiagram Does
+
+`sayClassDiagram(Class<?>... classes)` uses reflection to analyze the provided classes and generates a Mermaid `classDiagram` block. It discovers:
+
+- Record components (fields)
+- Public methods with signatures
+- Implemented interfaces
+- Inheritance relationships between the provided classes
+
+The diagram is embedded as a fenced `mermaid` code block in the documentation output.
+
+---
+
+## Document a Domain Model
 
 ```java
-@ClientEndpoint
-public class BroadcastEndpoint {
-    private String name;
-    List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-    public BroadcastEndpoint(String name) {
-        this.name = name;
-    }
+@ExtendWith(DtrExtension.class)
+class DomainModelDocTest {
 
-    @OnMessage
-    public void onMessage(String message) {
-        receivedMessages.add(message);
-        System.out.println(name + " received: " + message);
-    }
+    record Address(String street, String city, String postalCode, String country) {}
+    record User(long id, String name, String email, Address address, boolean active) {}
+    record Product(long id, String name, double price, int stock) {}
+    record OrderItem(long productId, int quantity, double unitPrice) {}
+    record Order(long id, long userId, java.util.List<OrderItem> items, double total) {}
 
-    public int getMessageCount() {
-        return receivedMessages.size();
-    }
+    @Test
+    void documentDomainModel(DtrContext ctx) {
+        ctx.sayNextSection("Domain Model Class Diagram");
+        ctx.say("The core domain records in the e-commerce system:");
 
-    public List<String> getAllMessages() {
-        return new ArrayList<>(receivedMessages);
+        ctx.sayClassDiagram(
+            User.class,
+            Address.class,
+            Order.class,
+            OrderItem.class,
+            Product.class
+        );
+
+        ctx.sayNote("Records are immutable. All fields are set via the canonical constructor.");
     }
 }
 ```
 
 ---
 
-## Verify Broadcast to Specific Group
+## Document an Interface Hierarchy
 
 ```java
-// Connect users in different rooms
-Session room1User1 = container.connectToServer(
-    new BroadcastEndpoint("room1:user1"),
-    URI.create("ws://localhost:8080/chat?room=room1"));
-
-Session room1User2 = container.connectToServer(
-    new BroadcastEndpoint("room1:user2"),
-    URI.create("ws://localhost:8080/chat?room=room1"));
-
-Session room2User1 = container.connectToServer(
-    new BroadcastEndpoint("room2:user1"),
-    URI.create("ws://localhost:8080/chat?room=room2"));
-
-// User in room1 sends message
-room1User1.getBasicRemote().sendText("Message for room 1");
-
-Thread.sleep(500);
-
-// Only room1 users should receive (not room2)
-assert room1User1.receivedMessages.contains("Message for room 1");
-assert room1User2.receivedMessages.contains("Message for room 1");
-assert !room2User1.receivedMessages.contains("Message for room 1");
-```
-
----
-
-## Test Echo + Broadcast
-
-```java
-// Some servers echo messages back to sender AND broadcast to others
-Session sender = container.connectToServer(
-    new EchoEndpoint(),
-    URI.create("ws://localhost:8080/chat"));
-
-Session receiver = container.connectToServer(
-    new EchoEndpoint(),
-    URI.create("ws://localhost:8080/chat"));
-
-// Send message
-sender.getBasicRemote().sendText("broadcast test");
-
-Thread.sleep(500);
-
-// Sender should receive their own message (echo)
-assert sender.getReceivedMessages().contains("broadcast test");
-
-// Receiver should receive broadcasted message
-assert receiver.getReceivedMessages().contains("broadcast test");
-```
-
----
-
-## Broadcast with JSON Events
-
-```java
-@ClientEndpoint
-public class JsonBroadcastEndpoint {
-    List<EventMessage> receivedEvents = Collections.synchronizedList(new ArrayList<>());
-
-    @OnMessage
-    public void onMessage(String jsonMessage) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            EventMessage event = mapper.readValue(jsonMessage, EventMessage.class);
-            receivedEvents.add(event);
-        } catch (Exception e) {
-            System.err.println("Failed to parse event: " + e.getMessage());
-        }
-    }
-
-    public List<EventMessage> getEvents() {
-        return new ArrayList<>(receivedEvents);
-    }
-
-    public record EventMessage(String type, String content, String sender) {}
+interface Shape {
+    double area();
+    double perimeter();
+    String name();
 }
 
-// Test
-String eventJson = """
-    {
-        "type": "userMessage",
-        "content": "Hello everyone!",
-        "sender": "alice"
-    }
-    """;
+interface Resizable {
+    void scale(double factor);
+}
 
-session.getBasicRemote().sendText(eventJson);
+static class Circle implements Shape {
+    private final double radius;
+    Circle(double radius) { this.radius = radius; }
+    public double area() { return Math.PI * radius * radius; }
+    public double perimeter() { return 2 * Math.PI * radius; }
+    public String name() { return "Circle(r=" + radius + ")"; }
+}
 
-// Verify broadcast
-List<EventMessage> events = endpoint.getEvents();
-assert events.stream()
-    .anyMatch(e -> "userMessage".equals(e.type) && e.sender.equals("alice"));
+static class Rectangle implements Shape, Resizable {
+    private double width, height;
+    Rectangle(double w, double h) { this.width = w; this.height = h; }
+    public double area() { return width * height; }
+    public double perimeter() { return 2 * (width + height); }
+    public String name() { return "Rectangle(" + width + "x" + height + ")"; }
+    public void scale(double factor) { width *= factor; height *= factor; }
+}
+
+@Test
+void documentShapeHierarchy(DtrContext ctx) {
+    ctx.sayNextSection("Shape Type Hierarchy");
+    ctx.say("The geometry module defines Shape and Resizable interfaces " +
+            "with several implementations:");
+
+    ctx.sayClassDiagram(Shape.class, Resizable.class, Circle.class, Rectangle.class);
+}
 ```
 
 ---
 
-## Concurrency: Test Many Broadcasters
+## Document a Sealed Hierarchy
+
+Sealed types are ideal for class diagrams — the compiler enforces the complete set of subtypes:
 
 ```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    List<Session> sessions = Collections.synchronizedList(new ArrayList<>());
+sealed interface Notification {
+    record EmailNotification(String to, String subject, String body) implements Notification {}
+    record SmsNotification(String phone, String message) implements Notification {}
+    record PushNotification(String deviceToken, String title, String body) implements Notification {}
+}
 
-    // Connect 50 clients
-    for (int i = 0; i < 50; i++) {
-        final int clientId = i;
-        executor.submit(() -> {
-            try {
-                Session session = container.connectToServer(
-                    new BroadcastEndpoint("client" + clientId),
-                    URI.create("ws://localhost:8080/chat"));
-                sessions.add(session);
-            } catch (Exception e) {
-                // Handle error
+@Test
+void documentNotificationTypes(DtrContext ctx) {
+    ctx.sayNextSection("Notification System Class Diagram");
+    ctx.say("All notification types are sealed. " +
+            "Pattern matching handles dispatch exhaustively:");
+
+    ctx.sayClassDiagram(
+        Notification.class,
+        Notification.EmailNotification.class,
+        Notification.SmsNotification.class,
+        Notification.PushNotification.class
+    );
+
+    ctx.sayCode("""
+        void send(Notification n) {
+            switch (n) {
+                case Notification.EmailNotification(String to, String sub, String body) ->
+                    emailSender.send(to, sub, body);
+                case Notification.SmsNotification(String phone, String msg) ->
+                    smsSender.send(phone, msg);
+                case Notification.PushNotification(String token, String title, String body) ->
+                    pushSender.send(token, title, body);
             }
-        });
-    }
+        }
+        """, "java");
+}
+```
 
-    Thread.sleep(1000); // Let all connect
+---
 
-    // First client broadcasts
-    if (!sessions.isEmpty()) {
-        sessions.get(0).getBasicRemote().sendText("Message from client 0");
-    }
+## Combine with Record Components for Full Schema
 
-    Thread.sleep(500);
+```java
+record ApiError(
+    int statusCode,
+    String errorCode,
+    String message,
+    java.time.Instant timestamp
+) {}
 
-    // Verify all (or most) received the message
-    long receiversCount = sessions.stream()
-        .filter(s -> s.isOpen())
-        .count();
+@Test
+void documentApiError(DtrContext ctx) {
+    ctx.sayNextSection("API Error Schema");
 
-    System.out.println("Message received by " + receiversCount + " active clients");
+    ctx.sayRecordComponents(ApiError.class);
+    ctx.sayClassDiagram(ApiError.class);
+
+    ctx.say("Example error response:");
+    ctx.sayJson(new ApiError(
+        404,
+        "USER_NOT_FOUND",
+        "User with id 42 does not exist",
+        java.time.Instant.now()
+    ));
 }
 ```
 
@@ -205,21 +170,18 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 ## Best Practices
 
-✅ **DO:**
-- Connect multiple clients to same endpoint
-- Use `Collections.synchronizedList()` to collect messages
-- Wait for network latency (use Thread.sleep or CountDownLatch)
-- Test group broadcasts separately
+**Provide related classes together.** `sayClassDiagram` can only show relationships between classes you pass to it. Include all classes that reference each other.
 
-❌ **DON'T:**
-- Assume immediate delivery (use delays)
-- Mix broadcast and direct messaging without clarity
-- Forget to close all sessions
+**Keep diagrams to 7-10 classes.** Larger diagrams become unreadable. Split your domain into bounded contexts and document each separately.
+
+**Combine with sayMermaid for custom diagrams.** If the auto-generated diagram doesn't capture a subtle relationship (like an association multiplicity), supplement it with a hand-written `sayMermaid` diagram.
+
+**Document sealed types as complete sets.** Always include all `permits` subtypes when documenting sealed hierarchies — the diagram is only complete when all cases are visible.
 
 ---
 
 ## See Also
 
-- [How-to: Connect to WebSocket Servers](websockets-connection.md)
-- [How-to: Handle WebSocket Errors](websockets-error-handling.md)
-- [Tutorial: WebSockets](../tutorials/websockets-realtime.md)
+- [Generate Mermaid Diagrams](websockets-connection.md) — sayMermaid for custom diagrams
+- [Control Flow and Call Graphs](websockets-error-handling.md) — sayControlFlowGraph, sayCallGraph
+- [Document Record Schemas](upload-files.md) — sayRecordComponents for field-level detail

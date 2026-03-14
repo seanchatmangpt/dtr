@@ -1,137 +1,126 @@
-# How-to: Integrate with Frameworks
+# How-to: Integrate DTR with Frameworks
 
-DTR works with any test framework that can start a server before your tests run. The pattern is the same in all cases: create a base class that overrides `testServerUrl()` to return the actual server address.
+DTR 2.6.0 uses JUnit 5's `@ExtendWith(DtrExtension.class)` and works with any framework that can start a server or provide test infrastructure via JUnit 5 extensions.
+
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
+
+---
+
+## The Pattern
+
+1. Start your server or test infrastructure (using the framework's JUnit 5 integration)
+2. Obtain the server URL or connection details
+3. Write a `@Test` method that accepts `DtrContext ctx`
+4. Use `ctx.say*()` for documentation, `java.net.http.HttpClient` for HTTP calls, `assertThat(...)` for assertions
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyFrameworkDocTest {
+
+    @Test
+    void testEndpoint(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("My Endpoint");
+
+        var client = java.net.http.HttpClient.newHttpClient();
+        var request = java.net.http.HttpRequest.newBuilder()
+            .uri(java.net.URI.create(serverUrl()))
+            .GET()
+            .build();
+        var response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        ctx.sayJson(response.body());
+    }
+
+    private String serverUrl() {
+        return "http://localhost:8080";
+    }
+}
+```
+
+---
+
+## Spring Boot (with @SpringBootTest)
+
+Use `@SpringBootTest` with `RANDOM_PORT` and inject the port:
+
+```java
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(DtrExtension.class)
+class SpringUserApiDocTest {
+
+    @LocalServerPort
+    private int port;
+
+    @Test
+    void documentListUsers(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("List Users");
+        ctx.sayEnvProfile();
+        ctx.say("GET /api/users returns all active users.");
+
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/users"))
+            .GET()
+            .build();
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        ctx.sayJson(response.body());
+    }
+}
+```
 
 ---
 
 ## Arquillian / JBoss
 
-Use `@RunAsClient` to run DocTests as client-side tests. Inject the server URL with `@ArquillianResource`:
+Use `@RunAsClient` and `@ArquillianResource` with JUnit 5 (via `arquillian-junit5-container`):
 
 ```java
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.runner.RunWith;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
-
-import java.net.URISyntaxException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import java.net.URI;
 import java.net.URL;
 
-@RunWith(Arquillian.class)
+@ExtendWith({ArquillianExtension.class, DtrExtension.class})
 @RunAsClient
-public abstract class ArquillianDTR extends DTR {
+class ArquillianDocTest {
 
     @ArquillianResource
     private URL baseUrl;
 
-    @Override
-    public Url testServerUrl() {
-        try {
-            return Url.host(baseUrl.toURI().toString());
-        } catch (URISyntaxException ex) {
-            throw new IllegalStateException(
-                "Invalid URI from Arquillian: " + baseUrl, ex);
-        }
-    }
-}
-```
-
-Your DocTest classes then extend `ArquillianDTR`:
-
-```java
-@RunWith(Arquillian.class)
-public class UserApiDocTest extends ArquillianDTR {
-
-    @Deployment
-    public static WebArchive createDeployment() {
-        return ShrinkWrap.create(WebArchive.class, "test.war")
-            .addClasses(UserResource.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-    }
-
     @Test
-    public void testListUsers() {
-        // ...
-    }
-}
-```
+    void documentDeployedApi(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("Deployed API Test");
+        ctx.say("Testing deployed application at: " + baseUrl);
 
----
+        var client = java.net.http.HttpClient.newHttpClient();
+        var request = java.net.http.HttpRequest.newBuilder()
+            .uri(baseUrl.toURI().resolve("/api/users"))
+            .GET()
+            .build();
+        var response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
 
-## Ninja Framework
-
-Start Ninja with a test rule and pass the port to the URL:
-
-```java
-import ninja.NinjaTest;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
-
-public abstract class NinjaDTR extends DTR {
-
-    // Ninja assigns a random port; get it after server start
-    protected int ninjaPort;
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:" + ninjaPort);
-    }
-}
-```
-
-Or use a `@Rule` with a `TestServer`:
-
-```java
-public abstract class NinjaApiDTR extends DTR {
-
-    @Rule
-    public NinjaTestServer ninjaTestServer = new NinjaTestServer();
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host(ninjaTestServer.getBaseUrl());
-    }
-}
-```
-
----
-
-## Spring Boot (with `@SpringBootTest`)
-
-```java
-import org.junit.runner.RunWith;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.junit4.SpringRunner;
-
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public abstract class SpringDTR extends DTR {
-
-    @LocalServerPort
-    private int port;
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:" + port);
-    }
-}
-```
-
-DocTest classes extend `SpringDTR`:
-
-```java
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserApiDocTest extends SpringDTR {
-
-    @Test
-    public void testCreateUser() {
-        // Uses the random port from @SpringBootTest
+        assertThat(response.statusCode()).isEqualTo(200);
+        ctx.sayJson(response.body());
     }
 }
 ```
@@ -140,80 +129,134 @@ public class UserApiDocTest extends SpringDTR {
 
 ## Embedded Jetty
 
-Start Jetty in `@BeforeClass` and stop it in `@AfterClass`:
+Start Jetty in `@BeforeAll` and stop it in `@AfterAll`:
 
 ```java
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class JettyDTR extends DTR {
+@ExtendWith(DtrExtension.class)
+class JettyDocTest {
 
     private static Server server;
     private static int port;
 
-    @BeforeClass
-    public static void startJetty() throws Exception {
-        server = new Server(0);  // 0 = random port
-        ServletContextHandler context = new ServletContextHandler();
-        // ... configure servlets ...
+    @BeforeAll
+    static void startJetty() throws Exception {
+        server = new Server(0);
+        var context = new ServletContextHandler();
+        context.addServlet(MyApiServlet.class, "/api/*");
         server.setHandler(context);
         server.start();
         port = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
     }
 
-    @AfterClass
-    public static void stopJetty() throws Exception {
-        if (server != null) {
-            server.stop();
-        }
+    @AfterAll
+    static void stopJetty() throws Exception {
+        if (server != null) server.stop();
     }
 
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:" + port);
-    }
-}
-```
+    @Test
+    void documentApi(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("Embedded Jetty API");
+        ctx.say("Server running on port " + port);
 
----
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/status"))
+            .GET()
+            .build();
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-## Generic pattern
-
-The pattern is always the same:
-
-1. Start the server somewhere (rule, `@BeforeClass`, JUnit extension)
-2. Capture the server URL/port
-3. Create an abstract base class that overrides `testServerUrl()`
-4. All DocTest classes extend this base class
-
-```java
-public abstract class MyFrameworkDTR extends DTR {
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host(MyFramework.getTestServerUrl());
+        assertThat(response.statusCode()).isEqualTo(200);
+        ctx.sayJson(response.body());
     }
 }
 ```
 
 ---
 
-## Pointing at an existing server
+## Ninja Framework
 
-For smoke tests against a running environment, hard-code or configure the URL:
+Start a Ninja test server and inject the port:
 
 ```java
-public abstract class StagingDTR extends DTR {
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import ninja.NinjaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 
-    @Override
-    public Url testServerUrl() {
-        String url = System.getenv()
-            .getOrDefault("STAGING_URL", "https://staging.example.com");
-        return Url.host(url);
+@ExtendWith(DtrExtension.class)
+class NinjaDocTest extends NinjaTest {
+
+    @Test
+    void documentNinjaApi(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("Ninja Framework API");
+        ctx.say("Testing Ninja application at port " + ninjaTestServer.getPort());
+
+        var client = java.net.http.HttpClient.newHttpClient();
+        var request = java.net.http.HttpRequest.newBuilder()
+            .uri(java.net.URI.create(ninjaTestServer.getBaseUrl() + "/api/users"))
+            .GET()
+            .build();
+        var response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        ctx.sayJson(response.body());
     }
 }
 ```
+
+---
+
+## Point at an Existing Server
+
+For smoke tests against staging or production:
+
+```java
+@ExtendWith(DtrExtension.class)
+class StagingDocTest {
+
+    private String stagingUrl() {
+        return System.getenv().getOrDefault("STAGING_URL", "https://staging.example.com");
+    }
+
+    @Test
+    void smokTestStagingApi(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("Staging API Smoke Test");
+        ctx.sayEnvProfile();
+        ctx.say("Target: " + stagingUrl());
+
+        var client = java.net.http.HttpClient.newHttpClient();
+        var request = java.net.http.HttpRequest.newBuilder()
+            .uri(java.net.URI.create(stagingUrl() + "/api/health"))
+            .GET()
+            .build();
+        var response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        ctx.sayJson(response.body());
+    }
+}
+```
+
+---
+
+## See Also
+
+- [Add DTR to Maven](add-to-maven.md) — Dependency and compiler configuration
+- [Control What Gets Documented](control-documentation.md) — Conditional documentation patterns
+- [Document JSON Payloads](test-json-endpoints.md) — HTTP + sayJson patterns

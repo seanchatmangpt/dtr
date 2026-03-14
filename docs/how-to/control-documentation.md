@@ -1,137 +1,190 @@
 # How-to: Control What Gets Documented
 
-## The core choice: `say*` vs plain methods
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
-Every DTR method has two forms:
+## The core choice: say* vs plain code
 
-| Documented (`say*`) | Silent (plain) |
-|---|---|
-| `sayAndMakeRequest(req)` | `makeRequest(req)` |
-| `sayAndGetCookies()` | `getCookies()` |
-| `sayAndGetCookieWithName(name)` | `getCookieWithName(name)` |
-| `sayAndAssertThat(...)` | Use regular `assertThat(...)` |
+DTR documents everything you tell it to via `say*` methods. Everything else — setup, silent assertions, helper calls — stays invisible in the output.
 
-Use the `say*` form for everything you want to appear in the generated HTML. Use the plain form for internal test mechanics (login, setup, teardown).
+Use `say*` methods for content you want readers to see. Use plain Java for internal test mechanics.
 
-## Document only interesting requests
+## Document only interesting parts
 
 ```java
-@Test
-public void testCreateArticle() {
+@ExtendWith(DtrExtension.class)
+class ArticleDocTest {
 
-    // Login silently — users don't need to see this
-    makeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/login"))
-            .addFormParameter("username", "admin")
-            .addFormParameter("password", "secret"));
+    @Test
+    void createArticle(DtrContext ctx) throws Exception {
+        // Setup is done silently — no documentation output
+        var client = java.net.http.HttpClient.newHttpClient();
+        var loginRequest = java.net.http.HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:8080/api/login"))
+            .POST(java.net.http.HttpRequest.BodyPublishers.ofString(
+                "{\"username\":\"admin\",\"password\":\"secret\"}"))
+            .header("Content-Type", "application/json")
+            .build();
+        client.send(loginRequest, java.net.http.HttpResponse.BodyHandlers.discarding());
 
-    sayNextSection("Create Article");
-    say("Create a new article with POST /api/articles:");
+        // This is what we're documenting
+        ctx.sayNextSection("Create Article");
+        ctx.say("Create a new article with POST /api/articles:");
 
-    // This is what we're documenting
-    Response response = sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/articles"))
-            .contentTypeApplicationJson()
-            .payload(new ArticleRequest("My Title", "Body text", "Alice")));
+        ctx.sayCode("""
+            POST /api/articles
+            Content-Type: application/json
 
-    sayAndAssertThat("Article created", 201, equalTo(response.httpStatus()));
+            {"title": "My Article", "body": "Content here."}
+            """, "http");
+
+        ctx.say("Successful creation returns 201 with the new article's ID.");
+    }
 }
 ```
 
-## Suppress assertion output
+## Suppress assertions from output
 
-Use standard Hamcrest `assertThat` when the assertion is internal bookkeeping:
+Use plain `assertThat` (AssertJ) or `assert` when the check is internal bookkeeping:
 
 ```java
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 // Not documented — just validates test state
-assertThat("Login must succeed before testing", 200, equalTo(loginStatus));
+assertThat(loginResponse.statusCode()).isEqualTo(200);
 
-// Documented — visible to API consumers
-sayAndAssertThat("New article has an ID", created.id(), notNullValue());
+// Documented — visible to readers
+ctx.say("The creation response includes the assigned ID.");
+ctx.sayJson(Map.of("id", 42, "title", "My Article"));
 ```
 
-## Add explanatory text between requests
+## Add explanatory text anywhere
 
-`say()` and `sayNextSection()` can appear anywhere — before, between, or after requests:
+`say()` and `sayNextSection()` can appear before, between, or after any logic:
 
 ```java
-sayNextSection("Order Workflow");
+ctx.sayNextSection("Order Workflow");
+ctx.say("Placing an order requires three steps.");
 
-say("Placing an order is a multi-step process. First, add items to the cart:");
+ctx.sayOrderedList(List.of(
+    "Add items to the cart",
+    "Proceed to checkout",
+    "Confirm payment"
+));
 
-Response cartResponse = sayAndMakeRequest(
-    Request.POST().url(testServerUrl().path("/api/cart/items"))
-        .contentTypeApplicationJson()
-        .payload(new CartItem("sku-123", 2)));
+ctx.say("The cart endpoint returns the current total after each addition:");
+ctx.sayCode("""
+    POST /api/cart/items
+    {"sku": "sku-123", "qty": 2}
+    """, "http");
 
-say("Then proceed to checkout. The total is calculated server-side:");
-
-Response checkoutResponse = sayAndMakeRequest(
-    Request.POST().url(testServerUrl().path("/api/checkout"))
-        .contentTypeApplicationJson()
-        .payload(new CheckoutRequest(shippingAddress)));
-
-say("Finally, confirm payment. The server returns an order ID and confirmation number:");
-
-Response confirmResponse = sayAndMakeRequest(
-    Request.POST().url(testServerUrl().path("/api/orders/" + orderId + "/confirm"))
-        .contentTypeApplicationJson()
-        .payload(new PaymentDetails("card", "tok_test_123")));
+ctx.say("Checkout calculates the final price including tax:");
+ctx.sayCode("""
+    POST /api/checkout
+    {"shippingAddress": "123 Main St"}
+    """, "http");
 ```
 
-## Insert raw HTML
+## Inject raw Mermaid diagrams
 
-`sayRaw(String)` injects HTML directly into the output:
+Use `sayMermaid(String)` to embed Mermaid DSL diagrams:
 
 ```java
-sayRaw("""
-    <div class="alert alert-warning">
-        <strong>Deprecation notice:</strong> This endpoint will be removed in v3.0.
-        Use <code>/api/v2/users</code> instead.
-    </div>
+ctx.sayMermaid("""
+    sequenceDiagram
+        Client->>API: POST /api/orders
+        API->>DB: Insert order
+        DB-->>API: Order ID
+        API-->>Client: 201 Created {id: 42}
     """);
+```
+
+## Conditional documentation
+
+Only generate detailed docs in CI or release builds:
+
+```java
+boolean isCI = "true".equals(System.getenv("CI"));
+
+ctx.sayNextSection("User API");
+
+if (isCI) {
+    ctx.say("Detailed explanation for release documentation...");
+    ctx.sayDocCoverage(UserService.class);
+    ctx.sayEnvProfile();
+}
+
+// Core test logic always runs
+var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+assertThat(response.statusCode()).isEqualTo(200);
 ```
 
 ## Organize with multiple sections
 
-Each `sayNextSection()` call adds an entry to the sidebar navigation:
+Each `sayNextSection()` call creates an H1 heading in the output:
 
 ```java
-sayNextSection("Authentication");
-// ... auth tests ...
+ctx.sayNextSection("Authentication");
+// ... auth documentation ...
 
-sayNextSection("Reading Data");
-// ... GET tests ...
+ctx.sayNextSection("Reading Data");
+// ... GET endpoint documentation ...
 
-sayNextSection("Writing Data");
-// ... POST/PUT/DELETE tests ...
+ctx.sayNextSection("Writing Data");
+// ... POST/PUT/DELETE documentation ...
 
-sayNextSection("Error Handling");
-// ... error scenario tests ...
+ctx.sayNextSection("Error Handling");
+// ... error scenario documentation ...
 ```
 
 ## Organize with multiple test methods
 
-Each `@Test` method starts a new block in the output. Use `@FixMethodOrder(MethodSorters.NAME_ASCENDING)` to control order:
+Each `@Test` method in a class contributes to the same output file. Use JUnit 5's `@TestMethodOrder` to control order:
 
 ```java
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UserApiDocTest extends DTR {
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
+
+@ExtendWith(DtrExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class UserApiDocTest {
 
     @Test
-    public void test01_listUsers() { /* ... */ }
+    @Order(1)
+    void listUsers(DtrContext ctx) { /* ... */ }
 
     @Test
-    public void test02_createUser() { /* ... */ }
+    @Order(2)
+    void createUser(DtrContext ctx) { /* ... */ }
 
     @Test
-    public void test03_updateUser() { /* ... */ }
+    @Order(3)
+    void updateUser(DtrContext ctx) { /* ... */ }
 
     @Test
-    public void test04_deleteUser() { /* ... */ }
+    @Order(4)
+    void deleteUser(DtrContext ctx) { /* ... */ }
+}
+```
+
+## Use sayNote and sayWarning for callouts
+
+```java
+ctx.sayNote("This endpoint supports pagination via `?page=N&size=20` query parameters.");
+ctx.sayWarning("Deleting a resource is permanent and cannot be undone.");
+```
+
+## Document exceptions explicitly
+
+Use `sayException` to document error conditions in a structured way:
+
+```java
+try {
+    if (userId <= 0) {
+        throw new IllegalArgumentException("userId must be positive, got: " + userId);
+    }
+} catch (IllegalArgumentException e) {
+    ctx.sayException(e);
+    ctx.say("Callers should validate the userId before calling this endpoint.");
 }
 ```

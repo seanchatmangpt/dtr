@@ -1,160 +1,159 @@
-# How-to: Handle WebSocket Errors
+# How-To: Generate Control Flow and Call Graphs
 
-Manage connection failures, message errors, and graceful shutdown.
+Visualize the internal structure of your Java methods and classes using DTR 2.6.0's `sayControlFlowGraph` and `sayCallGraph` methods.
 
----
-
-## Catch Connection Errors
-
-```java
-try {
-    WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-    Session session = container.connectToServer(
-        new MyEndpoint(),
-        URI.create("ws://localhost:8080/chat"));
-} catch (DeploymentException e) {
-    System.err.println("Deployment error: " + e.getMessage());
-} catch (IOException e) {
-    System.err.println("Connection error: " + e.getMessage());
-}
-```
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
-## Handle Message Errors in Endpoint
+## sayControlFlowGraph: Method-Level Flow
+
+`sayControlFlowGraph(Method)` uses Java 25 Code Reflection IR (preview) to produce a Mermaid `flowchart` showing the control flow branches inside a single method: conditionals, loops, switches, and exception handlers.
+
+### Basic Usage
 
 ```java
-@ClientEndpoint
-public class ErrorHandlingEndpoint {
-    @OnError
-    public void onError(Session session, Throwable error) {
-        if (error instanceof IOException) {
-            System.err.println("IO error: " + error.getMessage());
-        } else if (error instanceof ProtocolException) {
-            System.err.println("Protocol error: " + error.getMessage());
-        } else {
-            System.err.println("Unexpected error: " + error.getMessage());
-        }
-    }
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import java.lang.reflect.Method;
 
-    @OnMessage
-    public void onMessage(String message) {
-        try {
-            // Process message
-        } catch (Exception e) {
-            System.err.println("Failed to process message: " + e.getMessage());
-        }
-    }
-}
-```
+@ExtendWith(DtrExtension.class)
+class ControlFlowDocTest {
 
----
-
-## Timeout Error Handling
-
-```java
-try {
-    WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-    container.setDefaultMaxSessionIdleTimeout(5000); // 5 seconds
-
-    Session session = container.connectToServer(
-        new TimeoutEndpoint(),
-        URI.create("ws://localhost:8080/chat"));
-
-    // Send message
-    session.getBasicRemote().sendText("test");
-
-} catch (java.util.concurrent.TimeoutException e) {
-    System.err.println("Timeout waiting for response");
-} catch (Exception e) {
-    System.err.println("Error: " + e.getMessage());
-}
-```
-
----
-
-## Send Message with Error Callback
-
-```java
-session.getAsyncRemote().sendText("message", result -> {
-    if (result.isOK()) {
-        System.out.println("Message sent successfully");
-    } else {
-        Throwable error = result.getException();
-        System.err.println("Failed to send: " + error.getMessage());
-    }
-});
-```
-
----
-
-## Handle Connection Closure
-
-```java
-@ClientEndpoint
-public class GracefulShutdownEndpoint {
-    @OnClose
-    public void onClose(Session session, CloseReason reason) {
-        System.out.println("Connection closed");
-        System.out.println("Close code: " + reason.getCloseCode());
-        System.out.println("Reason: " + reason.getReasonPhrase());
-
-        // Attempt reconnection if not normal closure
-        if (reason.getCloseCode() != CloseReason.CloseCodes.NORMAL_CLOSURE) {
-            System.out.println("Unexpected closure, attempting reconnect...");
-            // Implement reconnection logic
-        }
-    }
-}
-```
-
----
-
-## Network Error Recovery
-
-```java
-Session connectWithRetryAndTimeout(URI uri, int maxRetries, long timeoutMs)
-        throws Exception {
-    for (int attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            container.setDefaultMaxSessionIdleTimeout(timeoutMs);
-
-            return container.connectToServer(
-                new MyEndpoint(),
-                uri);
-
-        } catch (Exception e) {
-            if (attempt == maxRetries) {
-                throw e;
+    static class OrderValidator {
+        public String validate(String orderId, int quantity, double price) {
+            if (orderId == null || orderId.isBlank()) {
+                return "INVALID_ORDER_ID";
             }
-            long backoffMs = (long) Math.pow(2, attempt - 1) * 100;
-            System.out.println("Attempt " + attempt + " failed. Retrying in " + backoffMs + "ms...");
-            Thread.sleep(backoffMs);
+            if (quantity <= 0) {
+                return "INVALID_QUANTITY";
+            }
+            if (price < 0) {
+                return "INVALID_PRICE";
+            }
+            if (quantity > 1000) {
+                return "QUANTITY_EXCEEDS_LIMIT";
+            }
+            return "VALID";
         }
     }
-    throw new IllegalStateException("Should not reach here");
+
+    @Test
+    void documentValidatorControlFlow(DtrContext ctx) throws NoSuchMethodException {
+        ctx.sayNextSection("OrderValidator.validate() Control Flow");
+        ctx.say("The following flowchart shows all validation branches in the validate() method:");
+
+        Method validateMethod = OrderValidator.class.getDeclaredMethod(
+            "validate", String.class, int.class, double.class);
+        ctx.sayControlFlowGraph(validateMethod);
+
+        ctx.sayNote("Each diamond node is a conditional check. " +
+                    "The left edge is the false branch, the right edge is the true branch.");
+    }
 }
 ```
 
 ---
 
-## Close Session Safely
+## sayCallGraph: Class-Level Call Structure
+
+`sayCallGraph(Class<?>)` analyzes an entire class and shows which methods call which other methods within the class. This is useful for understanding the structure of pipeline classes, service implementations, and complex business logic.
+
+### Document a Service Class
 
 ```java
-// Graceful close
-session.close();
+@Test
+void documentServiceCallGraph(DtrContext ctx) {
+    ctx.sayNextSection("PaymentService Internal Call Graph");
+    ctx.say("This diagram shows how PaymentService.processPayment() " +
+            "delegates to internal helper methods:");
 
-// Close with code and reason
-session.close(new CloseReason(
-    CloseReason.CloseCodes.NORMAL_CLOSURE,
-    "Client shutting down"));
+    ctx.sayCallGraph(PaymentService.class);
+}
+```
 
-// Force close if stuck
-if (!session.isOpen()) {
-    // Already closed
-} else {
-    session.close();
+---
+
+## Combine Both for Full Analysis
+
+```java
+@Test
+void fullMethodAnalysis(DtrContext ctx) throws NoSuchMethodException {
+    ctx.sayNextSection("OrderProcessor: Full Analysis");
+
+    ctx.say("**Class-level call graph** — which methods delegate to which:");
+    ctx.sayCallGraph(OrderProcessor.class);
+
+    ctx.say("**Method-level control flow** — branching inside processOrder():");
+    Method processOrder = OrderProcessor.class.getDeclaredMethod("processOrder", long.class);
+    ctx.sayControlFlowGraph(processOrder);
+
+    ctx.say("**Operation profile** — instruction counts per operation:");
+    ctx.sayOpProfile(processOrder);
+}
+```
+
+---
+
+## Document a Switch Expression
+
+Pattern matching switches produce interesting control flow graphs. Document the branching behavior:
+
+```java
+static class NotificationRouter {
+    sealed interface Channel {
+        record Email(String address) implements Channel {}
+        record Sms(String phone) implements Channel {}
+        record Push(String token) implements Channel {}
+    }
+
+    public String route(Channel channel, String message) {
+        return switch (channel) {
+            case Channel.Email(String addr) when addr.contains("@") ->
+                "email:" + addr + ":" + message;
+            case Channel.Email(String addr) ->
+                "invalid_email";
+            case Channel.Sms(String phone) ->
+                "sms:" + phone + ":" + message;
+            case Channel.Push(String token) ->
+                "push:" + token + ":" + message;
+        };
+    }
+}
+
+@Test
+void documentSwitchControlFlow(DtrContext ctx) throws NoSuchMethodException {
+    ctx.sayNextSection("NotificationRouter.route() Control Flow");
+    ctx.say("The route() method uses an exhaustive switch over the Channel sealed type:");
+
+    Method routeMethod = NotificationRouter.class.getDeclaredMethod(
+        "route", NotificationRouter.Channel.class, String.class);
+    ctx.sayControlFlowGraph(routeMethod);
+}
+```
+
+---
+
+## sayOpProfile: Operation Count Table
+
+`sayOpProfile(Method)` produces a table of operation counts (comparisons, memory accesses, allocations, etc.) for a method. Use it alongside `sayBenchmark` to explain why one implementation is faster:
+
+```java
+@Test
+void profileAndBenchmark(DtrContext ctx) throws NoSuchMethodException {
+    ctx.sayNextSection("String Parsing: Profile and Benchmark");
+
+    Method parseMethod = StringParser.class.getDeclaredMethod("parse", String.class);
+
+    ctx.say("Operation profile:");
+    ctx.sayOpProfile(parseMethod);
+
+    ctx.say("Actual timing:");
+    ctx.sayBenchmark("StringParser.parse (10k calls)", () -> {
+        StringParser.parse("hello world 42");
+    }, 5, 100);
 }
 ```
 
@@ -162,23 +161,18 @@ if (!session.isOpen()) {
 
 ## Best Practices
 
-✅ **DO:**
-- Handle all error callbacks (@OnError)
-- Implement timeout protection
-- Use async send with callbacks
-- Log all errors
-- Gracefully close on shutdown
+**Use `sayControlFlowGraph` before code review.** Generate the CFG for complex methods, then include the diagram in the PR description to help reviewers understand branching.
 
-❌ **DON'T:**
-- Ignore @OnError callback
-- Assume connection never fails
-- Leave sessions open on error
-- Retry indefinitely without backoff
+**Use `sayCallGraph` before refactoring.** Capture the current call structure, refactor, then capture it again. The two diagrams tell the before/after story.
+
+**Combine with `sayOpProfile` and `sayBenchmark`.** The full picture of a method is: what it does (CFG), how it relates to other methods (call graph), how many operations it performs (op profile), and how fast it runs (benchmark).
+
+**Requires `--enable-preview`.** Both `sayControlFlowGraph` and `sayOpProfile` depend on Java 25 Code Reflection IR, which is a preview feature. Ensure `--enable-preview` is in your `.mvn/maven.config`.
 
 ---
 
 ## See Also
 
-- [How-to: Connect to WebSocket Servers](websockets-connection.md)
-- [How-to: Broadcast Messages](websockets-broadcast.md)
-- [Tutorial: WebSockets](../tutorials/websockets-realtime.md)
+- [Generate Mermaid Diagrams](websockets-connection.md) — sayMermaid for custom diagrams
+- [Generate Class Diagrams](websockets-broadcast.md) — sayClassDiagram via reflection
+- [Benchmarking](benchmarking.md) — sayBenchmark for timing

@@ -1,541 +1,251 @@
-# Tutorial: gRPC Streaming for Efficient Real-Time RPC
+# Tutorial: Code Evolution with sayEvolutionTimeline and sayClassDiagram
 
-Learn how to test gRPC services with DTR. gRPC is a high-performance RPC framework built on HTTP/2 that supports streaming, multiplexing, and binary protocols — ideal for microservices and real-time applications.
+Learn how DTR 2.6.0 turns git history and reflection into living documentation. This tutorial shows how `sayEvolutionTimeline` generates a timeline from `git log`, how `sayClassDiagram` auto-generates Mermaid class diagrams, and how `sayOpProfile` documents the operation profile of a class.
 
-**Time:** ~45 minutes
-**Prerequisites:** Java 25, protobuf basics, understanding of RPC
-**What you'll learn:** How to test unary RPC, server streaming, client streaming, and bidirectional streaming
-
----
-
-## What is gRPC?
-
-gRPC (Google Remote Procedure Call) uses protobuf for efficient serialization and HTTP/2 for transport:
-
-```
-Client                          Server
-  |                               |
-  |---- Call + protobuf data ---->|
-  |<----- Response + data --------|
-  |                               |
-  | (Streaming)                   |
-  |---- Stream of messages ------>|
-  |<----- Stream of responses -----|
-  |                               |
-```
-
-**Key advantages:**
-- ✅ Binary protocol (smaller messages, faster parsing)
-- ✅ HTTP/2 multiplexing (multiple calls on one connection)
-- ✅ Four RPC modes: unary, server-streaming, client-streaming, bidirectional
-- ✅ Generated code (strongly typed)
-- ✅ Language-agnostic (Java, Go, Python, etc.)
+**Time:** ~30 minutes
+**Prerequisites:** Java 25, DTR 2.6.0, a git repository (the project's own repo is fine)
+**What you'll learn:** How to embed git history timelines, auto-generated class diagrams, and operation-count tables in your living documentation
 
 ---
 
-## Setup: gRPC Dependencies
+## What Is sayEvolutionTimeline?
 
-Add to `pom.xml`:
+`sayEvolutionTimeline(Class<?> clazz, int maxEntries)` runs `git log` against the source file corresponding to the given class, parses the output, and emits a Mermaid `timeline` block showing commit dates, hashes, and messages — limited to the most recent `maxEntries` commits.
 
-```xml
-<dependency>
-    <groupId>io.grpc</groupId>
-    <artifactId>grpc-netty-shaded</artifactId>
-    <version>1.63.0</version>
-</dependency>
-<dependency>
-    <groupId>io.grpc</groupId>
-    <artifactId>grpc-protobuf</artifactId>
-    <version>1.63.0</version>
-</dependency>
-<dependency>
-    <groupId>io.grpc</groupId>
-    <artifactId>grpc-stub</artifactId>
-    <version>1.63.0</version>
-</dependency>
-```
+This is valuable for documenting *why* a class is the way it is. Reviewers can see the evolution at a glance without leaving the documentation page.
 
 ---
 
-## Step 1 — Unary RPC (Simple Request/Response)
+## Step 1 — Set Up the Test Class
 
-Test a simple gRPC call:
+Create `src/test/java/com/example/EvolutionDocTest.java`:
 
 ```java
 package com.example;
 
-import org.junit.Test;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import com.example.UserServiceGrpc;
-import com.example.UserProto;
+import java.util.List;
+import java.util.Map;
 
-public class GrpcUnaryDocTest extends DTR {
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(DtrExtension.class)
+class EvolutionDocTest {
 
     @Test
-    public void unaryRpcCall() throws Exception {
+    void documentClassEvolution(DtrContext ctx) {
 
-        sayNextSection("Unary RPC: Request/Response");
+        ctx.sayNextSection("Evolution of the Order Domain Model");
 
-        say("A unary RPC is the simplest gRPC pattern: client sends one request, "
-            + "server responds with one reply.");
+        ctx.say("The `Order` class has evolved over the life of this project. "
+            + "`sayEvolutionTimeline` reads `git log` and documents the history "
+            + "directly in the output Markdown:");
 
-        // Create channel (connection to gRPC server)
-        ManagedChannel channel = ManagedChannelBuilder
-            .forAddress("localhost", 50051)
-            .usePlaintext()
-            .build();
+        ctx.sayEvolutionTimeline(Order.class, 10);
 
-        say("Connected to gRPC server at localhost:50051");
-
-        // Create stub (client for UserService)
-        UserServiceGrpc.UserServiceBlockingStub stub =
-            UserServiceGrpc.newBlockingStub(channel);
-
-        // Create request
-        UserProto.GetUserRequest request = UserProto.GetUserRequest.newBuilder()
-            .setUserId(42)
-            .build();
-
-        say("Sending request: GetUser(id=42)");
-
-        // Call RPC
-        UserProto.UserResponse response = stub.getUser(request);
-
-        say("Received response: " + response.getName() + " (" + response.getEmail() + ")");
-
-        sayAndAssertThat(
-            "User retrieved successfully",
-            42,
-            org.hamcrest.CoreMatchers.equalTo(response.getUserId()));
-
-        channel.shutdown();
+        ctx.say("Each entry in the timeline above corresponds to a real git commit "
+            + "that touched the source file for `Order`. "
+            + "The timeline is generated at test-run time — it is always current.");
     }
 
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
+    // A sample domain class to document
+    record Order(long id, String customer, List<String> items, double total) {
+        Order {
+            if (total < 0) throw new IllegalArgumentException("total must be non-negative");
+        }
+        boolean isEmpty() { return items.isEmpty(); }
+        double averageItemCost() { return items.isEmpty() ? 0.0 : total / items.size(); }
     }
 }
 ```
 
-**Protobuf definition (.proto):**
-```protobuf
-syntax = "proto3";
+Run the test:
 
-package com.example;
+```bash
+mvnd test -Dtest=EvolutionDocTest
+cat target/docs/test-results/EvolutionDocTest.md
+```
 
-service UserService {
-  rpc GetUser(GetUserRequest) returns (UserResponse);
-}
+The output will contain a Mermaid `timeline` block with up to 10 entries from `git log`.
 
-message GetUserRequest {
-  int32 user_id = 1;
-}
+---
 
-message UserResponse {
-  int32 user_id = 1;
-  string name = 2;
-  string email = 3;
-}
+## Step 2 — Auto-Generate a Class Diagram with sayClassDiagram
+
+`sayClassDiagram(Class<?>...)` inspects the given classes via reflection and emits a Mermaid `classDiagram` block. Use it to document the structure of your domain model alongside its history:
+
+```java
+    record Customer(String name, String email, String tier) {}
+    record Product(long sku, String name, double price) {}
+    record LineItem(Product product, int quantity) {
+        double subtotal() { return product.price() * quantity; }
+    }
+
+    @Test
+    void documentDomainClassDiagram(DtrContext ctx) {
+
+        ctx.sayNextSection("Domain Class Diagram");
+
+        ctx.say("The following class diagram is generated automatically from the "
+            + "record components and method signatures of the domain classes. "
+            + "No manual DSL is required:");
+
+        ctx.sayClassDiagram(Customer.class, Product.class, LineItem.class, Order.class);
+
+        ctx.say("DTR uses reflection to discover fields (record components), "
+            + "declared methods, implemented interfaces, and inheritance. "
+            + "The diagram updates automatically when the classes change.");
+    }
 ```
 
 ---
 
-## Step 2 — Server-Streaming RPC
+## Step 3 — Document Operation Profiles with sayOpProfile
 
-Server sends a stream of responses:
+`sayOpProfile(Method)` counts the types of bytecode operations in a method and emits a table. This is useful for documenting computational complexity or spotting unexpected allocations:
 
 ```java
-@Test
-public void serverStreamingRpc() throws Exception {
+    @Test
+    void documentOpProfile(DtrContext ctx) throws Exception {
 
-    sayNextSection("Server Streaming: One Request, Multiple Responses");
+        ctx.sayNextSection("Operation Profile: Order.averageItemCost");
 
-    say("Server streaming allows the server to send multiple messages "
-        + "in response to a single client request.");
+        ctx.say("An operation profile counts the kinds of operations in a method's "
+            + "code model. This helps document algorithmic characteristics:");
 
-    ManagedChannel channel = ManagedChannelBuilder
-        .forAddress("localhost", 50051)
-        .usePlaintext()
-        .build();
+        var method = Order.class.getDeclaredMethod("averageItemCost");
+        ctx.sayOpProfile(method);
 
-    UserServiceGrpc.UserServiceBlockingStub stub =
-        UserServiceGrpc.newBlockingStub(channel);
-
-    say("Requesting list of all users...");
-
-    // Request all users (returns an Iterator of responses)
-    UserProto.Empty request = UserProto.Empty.newBuilder().build();
-
-    Iterator<UserProto.UserResponse> responses = stub.listUsers(request);
-
-    List<UserProto.UserResponse> users = new ArrayList<>();
-    while (responses.hasNext()) {
-        UserProto.UserResponse user = responses.next();
-        users.add(user);
-        say("Streamed user: " + user.getName());
+        ctx.say("The table above shows operation categories (field accesses, "
+            + "invocations, arithmetic, returns) and their counts. "
+            + "A high invocation count may indicate a method that delegates heavily; "
+            + "many field accesses may indicate a data-intensive method.");
     }
-
-    sayAndAssertThat(
-        "Multiple users received in stream",
-        true,
-        org.hamcrest.CoreMatchers.is(users.size() > 0));
-
-    say("Total users streamed: " + users.size());
-
-    channel.shutdown();
-}
-```
-
-**Protobuf:**
-```protobuf
-service UserService {
-  rpc ListUsers(Empty) returns (stream UserResponse);
-}
-
-message Empty {}
 ```
 
 ---
 
-## Step 3 — Client-Streaming RPC
+## Step 4 — Combine Timeline and Diagram for a Full Audit
 
-Client sends a stream of requests:
+Combine all three methods to produce a complete audit page for a class:
 
 ```java
-@Test
-public void clientStreamingRpc() throws Exception {
-
-    sayNextSection("Client Streaming: Multiple Requests, One Response");
-
-    say("Client streaming allows the client to send multiple messages, "
-        + "and the server responds once when done.");
-
-    ManagedChannel channel = ManagedChannelBuilder
-        .forAddress("localhost", 50051)
-        .usePlaintext()
-        .build();
-
-    UserServiceGrpc.UserServiceStub asyncStub =
-        UserServiceGrpc.newStub(channel);
-
-    say("Streaming user data to server...");
-
-    // For client streaming, use StreamObserver
-    StreamObserver<UserProto.UserResponse> responseObserver =
-        new StreamObserver<UserProto.UserResponse>() {
-            @Override
-            public void onNext(UserProto.UserResponse response) {
-                say("Server response: " + response.getMessage());
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                say("Error: " + t.getMessage());
-            }
-
-            @Override
-            public void onCompleted() {
-                say("Server finished processing stream");
-            }
-        };
-
-    StreamObserver<UserProto.UserRequest> requestObserver =
-        asyncStub.createUsers(responseObserver);
-
-    // Send multiple requests
-    for (int i = 1; i <= 3; i++) {
-        UserProto.UserRequest req = UserProto.UserRequest.newBuilder()
-            .setName("User" + i)
-            .setEmail("user" + i + "@example.com")
-            .build();
-
-        requestObserver.onNext(req);
-        say("Streamed user: User" + i);
+    sealed interface PaymentResult permits PaymentResult.Approved, PaymentResult.Declined {
+        record Approved(String authCode, double amount) implements PaymentResult {}
+        record Declined(String reason)                 implements PaymentResult {}
     }
 
-    // Close stream (signals end to server)
-    requestObserver.onCompleted();
-
-    say("All users streamed, waiting for server response...");
-
-    // Wait a bit for async response
-    Thread.sleep(1000);
-
-    channel.shutdown();
-}
-```
-
-**Protobuf:**
-```protobuf
-service UserService {
-  rpc CreateUsers(stream UserRequest) returns (CreateResponse);
-}
-
-message UserRequest {
-  string name = 1;
-  string email = 2;
-}
-
-message CreateResponse {
-  string message = 1;
-  int32 created_count = 2;
-}
-```
-
----
-
-## Step 4 — Bidirectional Streaming RPC
-
-Both client and server send streams simultaneously:
-
-```java
-@Test
-public void bidirectionalStreamingRpc() throws Exception {
-
-    sayNextSection("Bidirectional Streaming");
-
-    say("Both client and server can send messages concurrently. "
-        + "This is ideal for chat, collaborative editing, or real-time synchronization.");
-
-    ManagedChannel channel = ManagedChannelBuilder
-        .forAddress("localhost", 50051)
-        .usePlaintext()
-        .build();
-
-    UserServiceGrpc.UserServiceStub asyncStub =
-        UserServiceGrpc.newStub(channel);
-
-    // Responses from server
-    List<String> serverMessages = Collections.synchronizedList(new ArrayList<>());
-    CountDownLatch completeLatch = new CountDownLatch(1);
-
-    StreamObserver<UserProto.UserMessage> responseObserver =
-        new StreamObserver<UserProto.UserMessage>() {
-            @Override
-            public void onNext(UserProto.UserMessage message) {
-                String msg = message.getContent();
-                serverMessages.add(msg);
-                say("Received from server: " + msg);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                say("Error: " + t.getMessage());
-                completeLatch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                say("Server stream closed");
-                completeLatch.countDown();
-            }
-        };
-
-    // Request stream (bidirectional chat)
-    StreamObserver<UserProto.UserMessage> requestObserver =
-        asyncStub.chat(responseObserver);
-
-    // Send messages while receiving
-    String[] clientMessages = {
-        "alice: Hello!",
-        "alice: Anyone there?",
-        "alice: See you!"
-    };
-
-    for (String clientMsg : clientMessages) {
-        UserProto.UserMessage msg = UserProto.UserMessage.newBuilder()
-            .setContent(clientMsg)
-            .build();
-
-        requestObserver.onNext(msg);
-        say("Sent: " + clientMsg);
-        Thread.sleep(200); // Simulate typing
-    }
-
-    requestObserver.onCompleted();
-    say("Stream closed from client side");
-
-    // Wait for server to finish
-    boolean finished = completeLatch.await(5, java.util.concurrent.TimeUnit.SECONDS);
-
-    sayAndAssertThat(
-        "Server responded to bidirectional stream",
-        true,
-        org.hamcrest.CoreMatchers.is(serverMessages.size() > 0));
-
-    say("Total messages from server: " + serverMessages.size());
-
-    channel.shutdown();
-}
-```
-
-**Protobuf:**
-```protobuf
-service UserService {
-  rpc Chat(stream UserMessage) returns (stream UserMessage);
-}
-
-message UserMessage {
-  string content = 1;
-}
-```
-
----
-
-## Step 5 — Error Handling and Retries
-
-Handle gRPC errors:
-
-```java
-@Test
-public void errorHandlingInGrpc() throws Exception {
-
-    sayNextSection("Error Handling");
-
-    say("gRPC operations can fail. Handle `StatusRuntimeException` for standard errors.");
-
-    ManagedChannel channel = ManagedChannelBuilder
-        .forAddress("localhost", 50051)
-        .usePlaintext()
-        .build();
-
-    UserServiceGrpc.UserServiceBlockingStub stub =
-        UserServiceGrpc.newBlockingStub(channel);
-
-    try {
-        // Request non-existent user
-        UserProto.GetUserRequest request = UserProto.GetUserRequest.newBuilder()
-            .setUserId(99999) // Doesn't exist
-            .build();
-
-        say("Requesting non-existent user...");
-        UserProto.UserResponse response = stub.getUser(request);
-
-    } catch (io.grpc.StatusRuntimeException e) {
-        say("✓ Caught expected error: " + e.getStatus().getCode());
-        say("  Message: " + e.getStatus().getDescription());
-
-        sayAndAssertThat(
-            "Error is NOT_FOUND",
-            io.grpc.Status.Code.NOT_FOUND,
-            org.hamcrest.CoreMatchers.equalTo(e.getStatus().getCode()));
-    }
-
-    channel.shutdown();
-}
-```
-
----
-
-## Step 6 — Performance: Virtual Threads + gRPC
-
-Use Java 25 virtual threads for concurrent gRPC calls:
-
-```java
-@Test
-public void grpcWithVirtualThreads() throws Exception {
-
-    sayNextSection("gRPC with Virtual Threads");
-
-    say("Combine Java 25 virtual threads with gRPC for lightweight concurrent testing. "
-        + "Handle thousands of RPC calls without thread resource exhaustion.");
-
-    ManagedChannel channel = ManagedChannelBuilder
-        .forAddress("localhost", 50051)
-        .usePlaintext()
-        .build();
-
-    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-
-        List<Future<UserProto.UserResponse>> futures = new ArrayList<>();
-
-        say("Submitting 1000 concurrent RPC calls...");
-
-        for (int userId = 1; userId <= 1000; userId++) {
-            final int id = userId;
-            futures.add(executor.submit(() -> {
-                UserServiceGrpc.UserServiceBlockingStub stub =
-                    UserServiceGrpc.newBlockingStub(channel);
-
-                UserProto.GetUserRequest request =
-                    UserProto.GetUserRequest.newBuilder()
-                        .setUserId(id)
-                        .build();
-
-                return stub.getUser(request);
-            }));
+    static class PaymentService {
+        PaymentResult charge(Customer customer, double amount) {
+            if (amount <= 0) return new PaymentResult.Declined("amount must be positive");
+            if (customer.tier().equals("blocked")) return new PaymentResult.Declined("account blocked");
+            return new PaymentResult.Approved("AUTH-" + System.nanoTime(), amount);
         }
 
-        // Collect results
-        long successCount = 0;
-        for (Future<UserProto.UserResponse> future : futures) {
-            try {
-                UserProto.UserResponse response = future.get();
-                if (response != null) {
-                    successCount++;
-                }
-            } catch (Exception e) {
-                // Handle errors
-            }
+        String describeResult(PaymentResult result) {
+            return switch (result) {
+                case PaymentResult.Approved(var code, var amt) -> "Approved %s for $%.2f".formatted(code, amt);
+                case PaymentResult.Declined(var reason)        -> "Declined: " + reason;
+            };
         }
-
-        say("Successfully retrieved " + successCount + " users");
-
-        sayAndAssertThat(
-            "All RPC calls completed",
-            1000L,
-            org.hamcrest.CoreMatchers.equalTo(successCount));
     }
 
-    channel.shutdown();
-}
+    @Test
+    void fullClassAudit(DtrContext ctx) throws Exception {
+
+        ctx.sayNextSection("Full Audit: PaymentService");
+
+        ctx.say("A complete class audit includes the git evolution history, "
+            + "the class diagram, and the operation profile of its key methods.");
+
+        // 1. Evolution timeline
+        ctx.sayNextSection("Git History");
+        ctx.sayEvolutionTimeline(PaymentService.class, 5);
+
+        // 2. Class diagram
+        ctx.sayNextSection("Class Structure");
+        ctx.sayClassDiagram(PaymentService.class, PaymentResult.class,
+            PaymentResult.Approved.class, PaymentResult.Declined.class);
+
+        // 3. Op profile of the main method
+        ctx.sayNextSection("Operation Profile: charge()");
+        var chargeMethod = PaymentService.class.getDeclaredMethod("charge", Customer.class, double.class);
+        ctx.sayOpProfile(chargeMethod);
+
+        // 4. Demonstrate the logic works
+        ctx.sayNextSection("Behavioral Assertions");
+
+        var svc      = new PaymentService();
+        var regular  = new Customer("alice", "alice@example.com", "regular");
+        var blocked  = new Customer("bob",   "bob@example.com",   "blocked");
+
+        var approved = svc.charge(regular, 49.99);
+        var declined = svc.charge(blocked, 49.99);
+
+        assertThat(approved).isInstanceOf(PaymentResult.Approved.class);
+        assertThat(declined).isInstanceOf(PaymentResult.Declined.class);
+
+        ctx.sayAssertions(Map.of(
+            "regular customer charge result", svc.describeResult(approved),
+            "blocked customer charge result", svc.describeResult(declined)
+        ));
+
+        ctx.sayEnvProfile();
+    }
 ```
 
 ---
 
-## Key Takeaways
+## Step 5 — Control Timeline Depth
 
-| Concept | Explanation |
-|---------|-------------|
-| **Channel** | Connection to gRPC server |
-| **Stub** | Client for calling RPC methods |
-| **Unary** | Single request, single response |
-| **Server Streaming** | Single request, stream of responses |
-| **Client Streaming** | Stream of requests, single response |
-| **Bidirectional** | Stream of requests and responses |
-| **StatusRuntimeException** | Standard error type in gRPC |
-| **StreamObserver** | Asynchronous callback for streaming |
+Pass a small `maxEntries` value to keep the documentation concise. A value of 5 shows the most recent five commits; a value of 0 is treated as unlimited:
+
+```java
+    @Test
+    void timelineDepthExamples(DtrContext ctx) {
+
+        ctx.sayNextSection("Timeline Depth Options");
+
+        ctx.say("Limit the timeline to the five most recent commits for a quick summary:");
+        ctx.sayEvolutionTimeline(Order.class, 5);
+
+        ctx.say("Or extend it to twenty entries for a complete audit trail:");
+        ctx.sayEvolutionTimeline(Order.class, 20);
+
+        ctx.sayNote("If the class has fewer commits than `maxEntries`, "
+            + "all available commits are shown. "
+            + "DTR does not pad the timeline with empty entries.");
+    }
+```
 
 ---
 
-## Best Practices
+## Key Methods in This Tutorial
 
-✅ **DO:**
-- Use `BlockingStub` for synchronous tests
-- Use `StreamObserver` for async/streaming tests
-- Always shutdown channels
-- Handle `StatusRuntimeException` for errors
-- Use virtual threads for concurrent RPC loads
-- Validate response fields
+| Method | What it does |
+|--------|-------------|
+| `sayEvolutionTimeline(Class<?>, int)` | Runs `git log` on the class's source file and emits a Mermaid timeline |
+| `sayClassDiagram(Class<?>...)` | Reflects on classes and emits a Mermaid `classDiagram` block |
+| `sayOpProfile(Method)` | Counts operation types in a method's code model and emits a table |
+| `sayEnvProfile()` | Captures Java version, OS, heap, DTR version — no arguments needed |
 
-❌ **DON'T:**
-- Leave channels open (resource leaks)
-- Ignore streaming completion (may hang)
-- Mix sync and async APIs in confusing ways
-- Assume message ordering in bidirectional streams (not guaranteed)
+---
+
+## What You Learned
+
+- `sayEvolutionTimeline(Class<?>, int)` reads real git history and renders it as a Mermaid timeline — always current at test-run time
+- `sayClassDiagram(Class<?>...)` auto-generates class diagrams via reflection — no manual DSL
+- `sayOpProfile(Method)` documents the computational characteristics of a method
+- Combining timeline + diagram + op profile + behavioral assertions produces a complete class audit
 
 ---
 
 ## Next Steps
 
-- [How-to: Make Unary RPC Calls](../how-to/grpc-unary.md)
-- [How-to: Handle gRPC Streaming](../how-to/grpc-streaming.md)
-- [How-to: Test gRPC Error Codes](../how-to/grpc-error-handling.md)
-- [Tutorial: Server-Sent Events](server-sent-events.md)
-- [Tutorial: WebSockets](websockets-realtime.md)
-- [Reference: gRPC Testing API](../reference/grpc-reference.md)
+- [Tutorial: Visualizing Code with sayMermaid](websockets-realtime.md) — write custom Mermaid diagrams by hand
+- [Tutorial: Contract Verification](server-sent-events.md) — document interface coverage across implementations
+- [Tutorial: Benchmarking with Virtual Threads](virtual-threads-lightweight-concurrency.md) — measure the methods you are documenting

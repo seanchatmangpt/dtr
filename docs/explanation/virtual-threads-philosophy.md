@@ -1,6 +1,6 @@
 # Explanation: Why Virtual Threads Matter
 
-Virtual threads represent a fundamental shift in how Java approaches concurrency. This document explains the design philosophy, trade-offs, and why they matter for modern applications.
+Virtual threads represent a fundamental shift in how Java approaches concurrency. This document explains the design philosophy behind them and how DTR uses them — not just as a performance optimization, but as a structural enabler of two distinct capabilities.
 
 ---
 
@@ -9,19 +9,12 @@ Virtual threads represent a fundamental shift in how Java approaches concurrency
 For decades, Java's concurrency model has been platform threads — one-to-one mappings to OS threads:
 
 ```
-Java Thread ↔ OS Thread (2MB RAM, OS scheduler manages it)
+Java Thread ↔ OS Thread (~2MB RAM, OS scheduler manages it)
 ```
 
-This worked fine for programs with dozens of concurrent tasks. But modern services handle thousands of simultaneous connections. Consider:
+This worked for programs with dozens of concurrent tasks. Modern software demands more. A documentation generator writing to four output formats simultaneously has four concurrent I/O operations. If each blocks a platform thread, four threads sit idle during disk writes.
 
-- A web server handling 1000 concurrent users
-- Each user = one platform thread
-- Each thread = 2MB of RAM
-- Total: 2GB of memory **just for threads**
-
-The OS scheduler becomes a bottleneck: context switching between 1000 threads is expensive, and many of those threads spend most of their time **blocked on I/O** (waiting for network, database, file system).
-
-**The fundamental waste:** Threads waiting for I/O still consume memory and scheduler CPU time, even though they're doing no work.
+The cost is not measured in throughput — the bottleneck is disk, not CPU. The cost is measured in design constraints: without virtual threads, parallel output requires careful thread pool management, explicit synchronization, or an async programming model that makes the code harder to read.
 
 ---
 
@@ -30,258 +23,119 @@ The OS scheduler becomes a bottleneck: context switching between 1000 threads is
 Virtual threads flip the model:
 
 ```
-Java Virtual Thread (1KB RAM)
-    ↓ (JVM schedules many onto)
-Carrier Thread (OS platform thread)
-    ↓ (OS scheduler manages)
-OS CPU Core
+Java Virtual Thread (~1KB RAM, JVM-managed)
+    │
+    └── mounted onto Carrier Thread (OS platform thread)
 ```
 
-**Key insight:** Thousands of virtual threads can share a small pool of OS threads because:
-1. When a virtual thread blocks on I/O, the JVM **unmounts** it from the carrier thread
-2. Another waiting virtual thread **mounts** on that carrier thread
-3. The OS scheduler never notices — it still sees only a few platform threads
+When a virtual thread blocks on I/O, the JVM unmounts it from its carrier thread. Another virtual thread mounts on that carrier. The OS sees only a few platform threads; the JVM runs thousands of virtual threads on top of them.
 
-Result: **1 million virtual threads using 12 platform threads** (one per CPU core).
+The crucial property: code written for virtual threads is sequential and blocking. There are no callbacks, no `CompletableFuture` chains, no reactive operators. The code reads as if each operation were synchronous. The JVM provides the concurrency transparently.
 
 ---
 
-## Comparison: Callbacks vs. Virtual Threads
+## How DTR Uses Virtual Threads: Two Distinct Purposes
 
-Before virtual threads, the only scalable approach was **async/callback hell:**
+Virtual threads appear in DTR in two places, for two different reasons. Understanding both clarifies why the feature is not optional for DTR's design.
+
+### Purpose 1: MultiRenderMachine Parallel Output
+
+`MultiRenderMachine` holds a list of `RenderMachine` implementations. When `finishAndWriteOut()` is called after all test methods complete, it must produce output in every format — Markdown, LaTeX, HTML, JSON — simultaneously.
+
+Without virtual threads, parallel output requires a managed thread pool, careful lifecycle handling, and explicit synchronization. The output code becomes complex enough to be a bug surface.
+
+With virtual threads, the implementation is direct:
 
 ```java
-// Callback-based (traditional async)
-request.onResponse(response -> {
-    processData(response, result -> {
-        saveToDb(result, error -> {
-            if (error != null) {
-                handleError(error);
-            } else {
-                respondToClient();
-            }
-        });
-    });
-});
-```
-
-This scales well (few threads, many requests) but is **cognitively difficult:**
-- Code doesn't read sequentially
-- Stack traces are useless (all in the callback pool)
-- Error handling is scattered
-- Testing is awkward
-
-**Virtual threads offer the best of both worlds:**
-```java
-// Sequential code, unlimited concurrency
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    executor.submit(() -> {
-        Response response = request.get();
-        Result result = processData(response);
-        saveToDb(result);  // Natural blocking; JVM unmounts if needed
-        respondToClient();
-    });
+// Conceptual structure of MultiRenderMachine.finishAndWriteOut()
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    for (RenderMachine target : targets) {
+        executor.submit(() -> target.finishAndWriteOut());
+    }
 }
+// All render machines complete before this line
 ```
 
-The code reads naturally, but the JVM handles scalability automatically.
+Each render machine runs on its own virtual thread. Disk I/O in the Markdown writer does not delay the LaTeX writer. The total rendering time approaches the cost of the slowest format, not the sum of all formats. And the code looks like sequential iteration — because, from the caller's perspective, it is.
+
+The try-with-resources pattern is structured concurrency: the block does not exit until all submitted tasks complete. There are no thread leaks, no forgotten shutdowns, no race between cleanup and ongoing work.
+
+Because `SayEvent` records are immutable, sharing them across virtual threads requires no synchronization. The Markdown render machine and the JSON render machine can read the same `SayEvent.Benchmark` record simultaneously without a lock.
+
+### Purpose 2: `sayBenchmark` Warmup Batches
+
+Benchmarking JVM code has a persistent problem: the JIT compiler optimizes code progressively as it runs. Early iterations execute interpreted code; later iterations execute heavily optimized native code. A benchmark that measures only the first few iterations measures something that does not represent steady-state performance.
+
+`sayBenchmark(Runnable, int iterations)` addresses this using virtual thread batches:
+
+1. A warmup phase runs the lambda in batches on virtual threads, allowing the JIT to observe and optimize the code path
+2. A measurement phase runs the lambda again, with the JIT-compiled path active
+3. Mean, min, max, and standard deviation are computed from the measurement phase
+4. The statistics are documented as a `SayEvent.Benchmark`
+
+The batching structure uses virtual threads because it allows the warmup batches to overlap with JIT compilation decisions made by the JVM. The JIT compiler works on carrier threads; virtual threads run the lambda; when a virtual thread yields or blocks, the carrier thread is available for JIT work. This is an emergent benefit of the virtual thread model, not an explicit design of the JIT.
+
+The result: `sayBenchmark` produces measurements that reflect actual optimized performance, not cold-start behavior. The benchmark results embedded in documentation are the numbers that matter — the numbers your users will observe after the JVM has warmed up.
 
 ---
 
-## Resource Consumption: Numbers
+## Why Blocking Is Natural for Documentation Generation
 
-**Platform Thread Per Request:**
-- 1000 concurrent users
-- ~2MB per thread
-- **2GB memory** for threads alone
-- OS context-switch overhead
+Documentation generation is I/O-bound. The CPU work — pattern matching on events, string formatting, JSON serialization — is fast. The bottleneck is writing files, and file writes block.
 
-**Virtual Thread Per Request:**
-- 1000 concurrent users
-- ~1KB per virtual thread
-- **1MB memory** for virtual threads
-- JVM scheduler handles unmounting (no OS overhead)
+Platform thread models require you to design around blocking: use non-blocking I/O, callbacks, or async APIs. Virtual thread models let you ignore blocking: write synchronous code, let the JVM unmount the thread when it waits.
 
-For a service with millions of lightweight requests, virtual threads change what's feasible.
+For DTR, this means each render machine can be written as a straightforward accumulate-then-flush implementation:
+
+1. Accumulate formatted strings as events are dispatched
+2. Call `Files.writeString(path, accumulated)` at the end
+
+`Files.writeString` blocks. With virtual threads, this is fine — the carrier thread is released to other work while the disk write proceeds. The render machine code is simple because it does not need to manage the blocking behavior.
 
 ---
 
-## When to Use Virtual Threads
+## Structured Concurrency in DTR
 
-✅ **Perfect for:**
-- Web servers (handle many short-lived requests)
-- API gateways (forward requests to backends)
-- Database connection pooling (many clients)
-- WebSocket servers (persistent lightweight connections)
-- Any I/O-bound workload at scale
+DTR uses try-with-resources for its virtual thread executor in every location where parallel work is needed. This is structured concurrency — a discipline that ensures:
 
-❌ **Not ideal for:**
-- CPU-intensive tasks (Java doesn't reduce CPU usage; use `ForkJoinPool` instead)
-- Real-time systems (JVM GC pauses matter more than thread cost)
-- Embedded systems with severe memory constraints (still better, but may not matter)
+- All submitted tasks complete before the calling code continues
+- If any task throws, the exception is propagated to the caller
+- No threads run in the background after the try block exits
+
+Structured concurrency is why `MultiRenderMachine.finishAndWriteOut()` can be called synchronously from the JUnit `afterAll` hook. The hook returns only after all render machines have written their output. There is no race between the JUnit lifecycle and the output files being written.
 
 ---
 
-## Design Principles Behind Virtual Threads
+## Immutability and Concurrency
 
-### 1. **Structured Concurrency**
+`SayEvent` records being immutable is not coincidentally compatible with virtual thread dispatch — it is required by it.
 
-Virtual threads encourage using try-with-resources:
+`MultiRenderMachine` dispatches the same `SayEvent` instance to multiple render machines running concurrently. If events were mutable, concurrent access would require synchronization. Synchronization in virtual thread code can cause "pinning" — a virtual thread holding a monitor while blocked cannot be unmounted from its carrier thread, defeating the scalability benefit.
 
-```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    // Tasks submitted here
-}
-// Guaranteed cleanup: all tasks complete or are cancelled
-```
-
-This is **scoped concurrency** — you can't accidentally leave threads running in the background. The JVM enforces cleanup.
-
-### 2. **Blocking is Natural**
-
-Virtual threads are designed for **blocking I/O:**
-
-```java
-// This looks synchronous but scales like async
-Response response = httpClient.get(url); // Blocks
-Data data = parseJson(response);         // Blocks
-List<User> users = db.query(sql);       // Blocks
-sendResponse(users);                     // Blocks
-```
-
-Each `.get()` or `.query()` blocks the virtual thread, but the JVM unmounts it from the carrier thread. The OS never knows the thread is blocked.
-
-### 3. **Simplicity Over Performance**
-
-Virtual threads **don't make individual requests faster.** A single request takes the same time. But they make handling millions of requests **practical** without callback complexity.
-
-This is a strategic tradeoff: accept that one request might run on many different carrier threads (overhead), but gain the ability to handle a million requests.
+Records eliminate this problem entirely. An immutable object has no mutation to synchronize. Every render machine reads the same event simultaneously with no coordination required. This is why all 13 `SayEvent` types are records: immutability is not a stylistic preference, it is the property that makes concurrent dispatch correct without synchronization.
 
 ---
 
-## Memory Overhead Explained
+## The Broader Concurrency Philosophy
 
-Why does a virtual thread use ~1KB vs. ~2MB for a platform thread?
+Virtual threads reflect a design decision about where complexity should live: in the JVM, not in application code.
 
-**Platform Thread Stack:**
-- Fixed 1-2MB stack allocation (even if only using 10KB)
-- Thread-local storage
-- OS kernel structure
+Before virtual threads, Java developers who wanted both scalable I/O and readable code had to choose: write blocking code (simple, but limited by thread count) or write async code (scalable, but complex). Libraries like Netty, RxJava, and Project Reactor were built to bridge this gap — adding substantial complexity to achieve async scalability with readable-enough code.
 
-**Virtual Thread:**
-- On-demand stack growth (kilobytes initially)
-- Shared kernel thread
-- Lightweight JVM structure
+Virtual threads eliminate the choice. Blocking code is scalable code. The JVM manages the threading model; application code reads sequentially and behaves concurrently.
 
-Virtual threads use **on-demand allocation:** the stack grows as needed, starting tiny.
+For DTR, this means the render pipeline — one of the architecturally most complex parts of the library — is implemented with simple, sequential code in each render machine, parallel dispatch in `MultiRenderMachine`, and structured cleanup via try-with-resources. The concurrent behavior emerges from the virtual thread model, not from custom synchronization logic.
 
 ---
 
-## The Unmounting Mechanism
+## Limitations in the DTR Context
 
-When a virtual thread blocks on I/O, the JVM detects it:
+Virtual threads have known limitations that are worth understanding:
 
-```
-Virtual Thread A: waiting for HTTP response (unmounted)
-Virtual Thread B: waiting for database query (unmounted)
-Virtual Thread C: running
-Virtual Thread D: running
+**Pinning.** A virtual thread holding a `synchronized` block while blocking on I/O cannot be unmounted. DTR avoids `synchronized` in all code that runs on virtual threads, using `ConcurrentHashMap` for the reflection cache and relying on record immutability elsewhere.
 
-Carrier Thread: executing Virtual Thread C
-Carrier Thread 2: executing Virtual Thread D
+**CPU-bound work.** Virtual threads do not help with CPU-bound computation. `sayBenchmark` warmup batches run lambda code that may be CPU-bound. The benefit in that case is not concurrency — it is the JIT interaction described earlier, not reduced resource consumption.
 
-[HTTP response arrives]
-→ Virtual Thread A re-mounts on Carrier Thread 2 (when C yields)
-→ Resumes from where it blocked
-```
+**Debugger support.** Virtual thread stack traces in some debuggers and profilers may be less clear than platform thread traces. This affects development experience, not correctness.
 
-This is **transparent to your code** — it looks like blocking, but the JVM handles scheduling.
-
----
-
-## Limitations
-
-Virtual threads are not magic. Important limitations:
-
-### 1. **Pinning**
-If a virtual thread holds a monitor (synchronized block) while blocking, it "pins" to the carrier thread — can't unmount:
-
-```java
-// ❌ AVOID: synchronized + I/O
-synchronized (lock) {
-    Response response = httpClient.get(url); // Blocks while pinned!
-}
-
-// ✅ PREFER: use ReentrantLock or avoid lock during I/O
-lock.lock();
-try {
-    // Do quick work
-} finally {
-    lock.unlock();
-}
-Response response = httpClient.get(url); // Unmounts normally
-```
-
-### 2. **Thread-Local Storage**
-Virtual threads can't access thread-local variables of the carrier thread. Instead, use:
-- `InheritableThreadLocal`
-- Scoped value holders (Java 20+)
-
-### 3. **Profiling and Debugging**
-Debuggers and profilers don't yet have full virtual thread support. Stack traces may be confusing.
-
----
-
-## Design Trade-offs
-
-| Trade-off | Benefit | Cost |
-|-----------|---------|------|
-| **Many virtual threads** | Scalability | Scheduling overhead per context switch |
-| **Blocking I/O** | Natural code | Less control than async |
-| **JVM scheduling** | Transparent unmounting | Can't customize scheduler |
-| **Lightweight stacks** | Low memory | Stack overflow possible at extreme nesting |
-
----
-
-## The Bigger Picture: Toward High-Level Concurrency
-
-Virtual threads are part of a broader Java vision:
-
-1. **Structured Concurrency** (Java 21+) — scoped execution guarantees cleanup
-2. **Virtual Threads** (Java 19+) — lightweight concurrency that scales
-3. **Scoped Values** (Java 20+) — safer thread-local storage
-4. **Records + Sealed Classes** (Java 14-17) — type-safe immutable data
-
-Together, these make it practical to write **simple, scalable concurrent code** without the complexity of callbacks, reactive frameworks, or deep expertise in threading.
-
----
-
-## Real-World Impact
-
-**Before virtual threads:**
-```
-Service supporting 1000 concurrent users
-→ Need careful thread pool sizing
-→ Need circuit breakers, rate limiting
-→ Need async frameworks (Netty, Reactor, etc.)
-→ Code is complex and non-intuitive
-```
-
-**With virtual threads:**
-```
-Service supporting 10,000 concurrent users
-→ Use newVirtualThreadPerTaskExecutor()
-→ Write natural blocking code
-→ No framework overhead
-→ Code is simple and obvious
-```
-
-This isn't just a performance improvement — it changes what you can build and how you think about concurrency.
-
----
-
-## See Also
-
-- [Tutorial: Virtual Threads for Concurrency](../tutorials/virtual-threads-lightweight-concurrency.md)
-- [How-to: Use Virtual Threads](../how-to/use-virtual-threads.md)
-- [Reference: Virtual Threads API](../reference/virtual-threads-reference.md)
+None of these limitations affect DTR's correctness. They are design-time considerations that shaped how the virtual thread usage was structured.

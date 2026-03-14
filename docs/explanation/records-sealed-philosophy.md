@@ -1,395 +1,197 @@
 # Explanation: Why Records and Sealed Classes
 
-Records and sealed classes address fundamental problems in Java's type system and data modeling. This document explains the design philosophy and how they enable safer, more concise code.
+Records and sealed classes address distinct but related problems in Java's type system. Understanding the design philosophy behind each — and how DTR uses both — clarifies the distinction between "closed for exhaustiveness" and "open for extension."
 
 ---
 
-## The Problem: Boilerplate and Mutability
+## Records: Transparent Immutable Data
 
-### Before Records
+### The Problem Before Records
 
-Modeling a simple data carrier required **tons of boilerplate**:
+Modeling a simple data carrier in Java required substantial ceremony:
 
 ```java
-public class User {
-    private final String name;
-    private final String email;
-    private final int age;
+public final class SayCodeEvent {
+    private final String source;
+    private final String language;
 
-    public User(String name, String email, int age) {
-        this.name = name;
-        this.email = email;
-        this.age = age;
+    public SayCodeEvent(String source, String language) {
+        this.source = source;
+        this.language = language;
     }
 
-    public String getName() { return name; }
-    public String getEmail() { return email; }
-    public int getAge() { return age; }
+    public String source() { return source; }
+    public String language() { return language; }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
-        User user = (User) o;
-        return age == user.age &&
-               Objects.equals(name, user.name) &&
-               Objects.equals(email, user.email);
-    }
-
+    public boolean equals(Object o) { ... }
     @Override
-    public int hashCode() {
-        return Objects.hash(name, email, age);
-    }
-
+    public int hashCode() { ... }
     @Override
-    public String toString() {
-        return "User{" +
-               "name='" + name + '\'' +
-               ", email='" + email + '\'' +
-               ", age=" + age +
-               '}';
+    public String toString() { ... }
+}
+```
+
+Fifty lines to represent two fields. The intent — "this type carries a string and a language tag" — is buried in boilerplate. The boilerplate must be maintained: if you add a field, you must update the constructor, the accessors, `equals`, `hashCode`, and `toString`. Forgetting any of these is a bug waiting to be found.
+
+### Records: Intent Made Explicit
+
+```java
+record SayCodeEvent(String source, String language) {}
+```
+
+One line. All the ceremony is generated from the record header. More importantly, a record makes a semantic commitment: this type is a transparent, immutable data carrier. Its value is entirely defined by its components. There is no hidden state, no mutable setters, no behavior beyond what the components imply.
+
+This semantic commitment is what makes `getRecordComponents()` reliable. The JVM tracks record components as distinct from ordinary fields precisely because records make this declaration. When DTR calls `sayRecordComponents(MyRecord.class)`, it queries the JVM for information the class itself has declared as its authoritative structure.
+
+### Why DTR's Events Are Records
+
+All 13 permitted subtypes of `SayEvent` are records:
+
+```
+SayEvent.Text, SayEvent.Section, SayEvent.Code, SayEvent.Table,
+SayEvent.Json, SayEvent.Warning, SayEvent.Note, SayEvent.Diagram,
+SayEvent.Benchmark, SayEvent.RecordSchema, SayEvent.CallSite,
+SayEvent.AnnotationProfile, SayEvent.Coverage
+```
+
+Events are the pure output of `say*` calls — they carry data from the test context to the render machines. They have no behavior, no mutable state, and no identity beyond their content. Records capture all of this precisely.
+
+Immutability matters here because events are shared across virtual threads. When `MultiRenderMachine` dispatches a `SayEvent.Code` to four render machines running concurrently, no synchronization is needed. An immutable record cannot be corrupted by concurrent reads.
+
+---
+
+## Sealed Classes: Bounded Polymorphism
+
+### The Problem Before Sealed
+
+Java has always had interfaces. But open interfaces let anyone add implementations. This is powerful for extension but makes exhaustive reasoning impossible:
+
+```java
+interface SayEvent {
+    // Anyone can implement this
+}
+
+// Later, in a render machine:
+void dispatch(SayEvent event) {
+    if (event instanceof SayEvent.Text t) {
+        renderText(t.text());
+    } else if (event instanceof SayEvent.Code c) {
+        renderCode(c.source(), c.language());
+    }
+    // What about the 11 other types? Silently ignored.
+}
+```
+
+If a new `SayEvent` type is added, every dispatch method like this one must be updated. But with an open interface, the compiler cannot enforce this. The update is optional, and the consequence of forgetting — documentation that produces no output for some event types — is silent.
+
+### Sealed: Compiler-Enforced Exhaustiveness
+
+`SayEvent` is sealed:
+
+```java
+sealed interface SayEvent permits
+    SayEvent.Text, SayEvent.Section, SayEvent.Code, ...
+```
+
+Now the compiler knows the complete set of permitted types. Pattern matching on a sealed type in a switch expression can be exhaustive — and the compiler enforces it:
+
+```java
+void dispatch(SayEvent event) {
+    switch (event) {
+        case SayEvent.Text(String text)         -> renderText(text);
+        case SayEvent.Section(String title)     -> renderSection(title);
+        case SayEvent.Code(String src, String l) -> renderCode(src, l);
+        // ... must cover all 13 types or compilation fails
     }
 }
 ```
 
-**200+ lines for a simple data carrier.** The **intent** (hold 3 immutable fields) is buried in boilerplate.
+If a new permitted subtype is added to `SayEvent`, every switch like this one fails to compile until the new case is handled. The update is no longer optional — the compiler enforces it.
 
-### After Records
-
-```java
-record User(String name, String email, int age) {}
-```
-
-**One line.** All the boilerplate is generated. The **intent** is clear.
+This is the canonical use for sealed: a closed, exhaustive set where pattern matching must be complete. The cost is that you cannot add new subtypes without modifying the sealed declaration and updating all pattern matches. The benefit is that render completeness is a compile-time guarantee, not a convention.
 
 ---
 
-## The Solution: Records
+## The Abstract/Sealed Distinction in DTR
 
-Records encode an assumption: **This is a data carrier — immutable, with transparent components, focused on value semantics.**
+DTR uses sealed for `SayEvent` and abstract for `RenderMachine`. This is a deliberate architectural choice that reflects the open/closed principle at the type level.
 
-When you write `record User(...)`, you're saying:
-- ✅ These fields define my data
-- ✅ Constructor takes all fields in order
-- ✅ Accessors are field-named (no `get` prefix)
-- ✅ Equality is based on all fields
-- ✅ Data is immutable
-- ✅ I'm not adding complex behavior
+### `SayEvent` Is Sealed: The Event Set Is Closed
 
-This removes the boilerplate that hides the actual intent.
+Every event type that DTR can generate is known at library design time. Events flow from test code through the event queue to render machines. If an event type is missing from a render machine's pattern match, the result is silent: that event produces no output in that format.
+
+Sealed forces every render machine to handle every event. Adding a new `SayEvent` type is a library-level decision that requires updating all render machines — which is appropriate, because the library ships those render machines and controls the update.
+
+### `RenderMachine` Is Abstract: The Render Target Set Is Open
+
+The set of places you might want to send documentation is not known at library design time. DTR provides Markdown, LaTeX, HTML, and JSON. But reasonable implementations could target Confluence, OpenAPI, a documentation database, a custom Markdown flavor, or blog post formats.
+
+If `RenderMachine` were sealed, none of these extensions would be possible. Abstract makes the class extensible: override the template methods for each `SayEvent` type, register your implementation with `MultiRenderMachine`, and your output format participates in the same parallel rendering pipeline as the built-in formats.
+
+The rule: **seal what must be exhaustive; make abstract what should be extensible.**
+
+### Why Not Both?
+
+Sealing `RenderMachine` would simplify the internal dispatch logic — the compiler could verify that every `RenderMachine` subclass handles every `SayEvent` type. But it would do so at the cost of eliminating user extensibility.
+
+Making `SayEvent` open (interface, not sealed) would allow user-defined event types. But render machines would no longer have compile-time guarantees of completeness — a user-defined event type submitted to the queue would be silently ignored by all built-in render machines.
+
+The current design gives each type exactly the constraint it needs: `SayEvent` sealed for event completeness; `RenderMachine` abstract for output extensibility.
 
 ---
 
-## Problem: Type Safety and Exhaustiveness
+## Pattern Matching on Sealed Hierarchies
 
-### Before Sealed Classes
+Pattern matching in Java 25 destructures values inline. Combined with sealed types, this becomes exhaustive — a powerful combination for dispatch.
 
-Without sealed hierarchies, you lose type safety in pattern matching:
+When a `RenderMachine` implementation dispatches a `SayEvent`, it pattern-matches on the sealed hierarchy:
 
 ```java
-sealed interface ApiResult {
-    record Success(String data) implements ApiResult {}
-    record Failure(String error) implements ApiResult {}
-}
-
-// ❌ BAD: If you add a new case, this silently ignores it
-String describe(ApiResult result) {
-    if (result instanceof ApiResult.Success s) {
-        return "Success: " + s.data();
-    }
-    return "Unknown";  // Oops: forgot Failure!
-}
-
-// ❌ UNSAFE: switch with default hides missing cases
-String describe2(ApiResult result) {
-    return switch (result) {
-        case ApiResult.Success s -> "Success: " + s.data();
-        default -> "Unknown";  // Failure is silently handled here
+// Conceptual pattern
+String handle(SayEvent event) {
+    return switch (event) {
+        case SayEvent.Text(String text) ->
+            "<p>" + text + "</p>";
+        case SayEvent.Section(String title) ->
+            "<h1>" + title + "</h1>";
+        case SayEvent.Code(String src, String lang) ->
+            "<pre><code class=\"" + lang + "\">" + src + "</code></pre>";
+        case SayEvent.Benchmark(String label, double mean, double min, double max, double stddev) ->
+            renderBenchmarkTable(label, mean, min, max, stddev);
+        // ... all 13 cases required
     };
 }
 ```
 
-If you add a third case (`Timeout`), the code still compiles but silently handles it wrong.
+Each case destructures the record components inline. There is no casting, no `instanceof` check, and no intermediate variable. The compiler guarantees that all 13 `SayEvent` types are handled because `SayEvent` is sealed and the switch has no default.
 
-### With Sealed Classes
-
-```java
-sealed interface ApiResult {
-    record Success(String data) implements ApiResult {}
-    record Failure(String error) implements ApiResult {}
-    record Timeout() implements ApiResult {}
-}
-
-// ✅ GOOD: Compiler forces you to handle all cases
-String describe(ApiResult result) {
-    return switch (result) {
-        case ApiResult.Success s -> "Success: " + s.data();
-        case ApiResult.Failure f -> "Failure: " + f.error();
-        case ApiResult.Timeout t -> "Timeout";
-        // No default. Add a new case? Compiler error until you handle it.
-    };
-}
-```
-
-If you add `Timeout`, every switch that uses `ApiResult` **must be updated**. The compiler enforces it.
+This is why the architecture is the way it is. Records provide transparent, destructurable data. Sealed provides exhaustiveness. Pattern matching provides the dispatch mechanism. The three features compose into a render pipeline that is type-safe, complete, and readable.
 
 ---
 
-## Design Principles
+## `sayRecordComponents` and the Self-Documenting Quality of Records
 
-### 1. **Immutability as Default**
-
-Records are immutable by design:
+Because records declare their components explicitly to the JVM, DTR can document them accurately:
 
 ```java
-record User(String name, int age) {}
-
-User user = new User("alice", 30);
-user.name = "bob";  // ❌ Compile error: fields are final
+ctx.sayRecordComponents(ApiResponse.class);
 ```
 
-**Why?** Immutable data is:
-- **Thread-safe** — no synchronization needed
-- **Cacheable** — same value = same object (hashCode consistency)
-- **Easier to reason about** — no hidden modifications
+This produces documentation showing every component of `ApiResponse`, its type, and its name. If `ApiResponse` changes — gains a component, loses one, renames one — the documentation changes on the next test run.
 
-Mutations are explicitly `new User(...)`, not side effects.
+This is only possible because records made a semantic commitment that ordinary classes did not. An ordinary class with `final` fields and hand-written accessors does not expose its "components" to the JVM in any queryable way. Records do.
 
-### 2. **Exhaustiveness Checking**
-
-Sealed classes let the compiler verify you've handled all cases:
-
-```java
-sealed interface Status permits Active, Inactive, Suspended {
-    // ...
-}
-
-// If you add Suspended later, all existing switches error
-String getLabel(Status status) {
-    return switch (status) {
-        case Active -> "Active";
-        case Inactive -> "Inactive";
-        // ❌ Error: case Suspended not handled!
-    };
-}
-```
-
-This catches refactoring bugs **at compile time**, not runtime.
-
-### 3. **Transparency**
-
-Records expose their structure — no hidden fields or methods:
-
-```java
-record Point(int x, int y) {}
-
-// Direct field access (via accessor method)
-Point p = new Point(3, 4);
-int x = p.x();  // Not p.getX()
-```
-
-This is a **semantic signal**: "This object is entirely defined by these fields."
+The deeper point: the design of records — transparent, immutable, with explicitly declared components — was not primarily about documentation. But it happens to make documentation accurate in a way that is impossible for other class types. Good design for one purpose often enables other purposes.
 
 ---
 
-## Sealed Hierarchies: Bounded Polymorphism
+## Implications for Library Design
 
-Before sealed classes, inheritance was **open-ended:**
+If you are implementing a custom `RenderMachine`, the sealed/abstract distinction has practical implications:
 
-```java
-class Animal { }
-class Dog extends Animal { }
-class Cat extends Animal { }
-// Anyone can add: class Bird extends Animal { }
-```
+**You must handle all 13 `SayEvent` types.** The compiler will tell you which cases are missing. This is not optional and is not a judgment call — it is a compile-time requirement.
 
-This flexibility has a cost: you can't assume you know all subtypes.
+**You can implement `RenderMachine` however you like.** The template methods define the interface; how you implement them is your concern. You can write to a database, post to a webhook, accumulate a custom format — the render machine contract only specifies that you receive events and do something with them.
 
-**Sealed classes bound the hierarchy:**
-
-```java
-sealed class Animal permits Dog, Cat {
-    // Only Dog and Cat can extend this
-}
-
-final class Dog extends Animal { }
-final class Cat extends Animal { }
-```
-
-Now the compiler knows: "Animal has exactly 2 subtypes." Pattern matching can be exhaustive.
-
----
-
-## Comparison: OOP vs. Data-Oriented
-
-### OOP Mindset (Classes)
-
-Focus: **What can this object do?**
-
-```java
-public class User {
-    private String name;
-
-    public void setName(String name) { this.name = name; }
-    public String getName() { return name; }
-    public boolean isValid() { return name != null && !name.isEmpty(); }
-}
-```
-
-Encapsulation, mutability, behavior.
-
-### Data-Oriented Mindset (Records)
-
-Focus: **What data does this object carry?**
-
-```java
-record User(String name) {
-    public User {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Invalid name");
-        }
-    }
-}
-```
-
-Transparency, immutability, structure.
-
-**Both are valid** — use the right tool for the job:
-- **Records** for data carriers, DTOs, request/response bodies, configuration
-- **Classes** for complex objects with mutable state and rich behavior
-
----
-
-## Pattern Matching: Beyond Equality
-
-Records + sealed classes enable **exhaustive pattern matching**, which is more powerful than traditional if/else:
-
-```java
-sealed interface HttpResponse {
-    record Ok(String body) implements HttpResponse {}
-    record Redirect(String location) implements HttpResponse {}
-    record NotFound(String path) implements HttpResponse {}
-    record ServerError(String message) implements HttpResponse {}
-}
-
-// Traditional if/else: Forget a case? Silently wrong.
-HttpResponse response = ...;
-if (response instanceof HttpResponse.Ok ok) {
-    System.out.println(ok.body());
-} else if (response instanceof HttpResponse.NotFound nf) {
-    System.out.println("Not found: " + nf.path());
-}
-// Forgot Redirect and ServerError!
-
-// Sealed pattern matching: Compiler enforces all cases
-String result = switch (response) {
-    case HttpResponse.Ok ok -> "Success: " + ok.body();
-    case HttpResponse.Redirect r -> "Redirect to " + r.location();
-    case HttpResponse.NotFound nf -> "Not found: " + nf.path();
-    case HttpResponse.ServerError se -> "Error: " + se.message();
-    // Compiler error if any case is missing
-};
-```
-
-This is a form of **compile-time verification** that your code handles all scenarios.
-
----
-
-## Real-World Benefits
-
-### Before (Verbose, Error-Prone)
-
-```java
-public class OrderResponse {
-    private int status;
-    private String message;
-    private Order order;
-    private String errorCode;
-
-    // Many constructors to support different cases
-    public OrderResponse(int status, String message) { ... }
-    public OrderResponse(Order order) { ... }
-    public OrderResponse(int status, String errorCode) { ... }
-
-    // Handling is unsafe
-    public void handle(OrderResponse response) {
-        if (response.getOrder() != null) {
-            System.out.println("Order: " + response.getOrder());
-        } else if (response.getErrorCode() != null) {
-            System.out.println("Error: " + response.getErrorCode());
-        } else {
-            System.out.println("Unknown: " + response.getMessage());
-        }
-        // What if both order and errorCode are set? Undefined behavior.
-    }
-}
-```
-
-### After (Concise, Type-Safe)
-
-```java
-sealed interface OrderResponse {
-    record Success(Order order) implements OrderResponse {}
-    record Failure(String errorCode, String message) implements OrderResponse {}
-}
-
-public String handle(OrderResponse response) {
-    return switch (response) {
-        case OrderResponse.Success(Order order) ->
-            "Order: " + order;
-        case OrderResponse.Failure(String code, String msg) ->
-            "Error " + code + ": " + msg;
-        // Compiler guarantees all cases handled
-    };
-}
-```
-
-**Benefits:**
-- ✅ One sealed interface, not multiple ad-hoc fields
-- ✅ Compiler ensures exhaustiveness
-- ✅ Clear intent: these are the only two outcomes
-- ✅ No null-checking games
-- ✅ Type-safe destructuring in pattern match
-
----
-
-## Integration with Jackson and JSON
-
-Records work seamlessly with JSON serialization:
-
-```java
-record User(String name, String email) {}
-
-ObjectMapper mapper = new ObjectMapper();
-
-// Serialize
-User user = new User("alice", "alice@example.com");
-String json = mapper.writeValueAsString(user);
-
-// Deserialize
-User restored = mapper.readValue(json, User.class);
-```
-
-No custom serialization code needed. This is **critical for APIs** where DTOs and domain models are defined with records.
-
----
-
-## The Bigger Picture
-
-Records and sealed classes are part of Java's shift toward:
-
-1. **Immutability** — less mutable state = fewer bugs
-2. **Type safety** — let the compiler catch errors
-3. **Clarity** — code expresses intent, not boilerplate
-4. **Composition** — build type systems from sealed hierarchies
-
-Together with **pattern matching**, they enable a more **functional programming style** while keeping Java's familiar syntax.
-
----
-
-## See Also
-
-- [Tutorial: Records and Sealed Classes](../tutorials/records-sealed-classes.md)
-- [How-to: Pattern Matching](../how-to/pattern-matching.md)
-- [How-to: Switch Expressions](../how-to/switch-expressions.md)
-- [Reference: Records and Sealed Classes](../reference/records-sealed-reference.md)
+**New `SayEvent` types in future DTR versions will break your implementation at compile time.** This is the cost of the sealed guarantee. When DTR adds a new event type, all `RenderMachine` implementations must add a handler for it before they can compile. This is preferable to silent omissions in the rendered output.

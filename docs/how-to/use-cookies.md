@@ -1,131 +1,168 @@
-# How-to: Use Cookies
+# How-To: Capture Environment Profiles with sayEnvProfile
 
-DTR maintains a cookie jar across requests within a single test method. Cookies set by the server are automatically sent with subsequent requests — no manual cookie management needed.
+Document the runtime environment of your tests using DTR 2.6.0's `sayEnvProfile` method.
 
-## Authenticate and carry the session cookie
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
+
+---
+
+## What sayEnvProfile Does
+
+`sayEnvProfile()` captures a snapshot of the current runtime environment and renders it as a key-value table. It includes:
+
+- Java version (`java.version`, `java.vendor`)
+- JVM implementation (HotSpot, GraalVM, etc.)
+- Operating system name and version
+- Available processors (CPU cores)
+- Heap configuration (max heap, current usage)
+- DTR version
+- Build timestamp
+
+Use it at the start of any test that produces timing-sensitive results.
+
+---
+
+## Basic Usage
 
 ```java
-@Test
-public void testAuthenticatedRequest() {
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-    // Login — session cookie is set automatically
-    makeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/login"))
-            .addFormParameter("username", "admin")
-            .addFormParameter("password", "secret"));
+@ExtendWith(DtrExtension.class)
+class EnvironmentProfileDocTest {
 
-    // All subsequent requests carry the session cookie
-    Response response = sayAndMakeRequest(
-        Request.GET()
-            .url(testServerUrl().path("/api/admin/users")));
+    @Test
+    void captureEnvironment(DtrContext ctx) {
+        ctx.sayNextSection("Test Environment");
+        ctx.say("This documentation was generated in the following environment:");
 
-    sayAndAssertThat("Admin endpoint accessible", 200, equalTo(response.httpStatus()));
+        ctx.sayEnvProfile();
+
+        ctx.sayNote("Benchmark results in this document are only valid for the environment shown above.");
+    }
 }
 ```
 
-> `makeRequest` (without `say`) runs the login silently so it doesn't clutter the documentation.
+---
 
-## Assert that a cookie was set
+## Required Before Benchmarks
 
-```java
-import org.apache.http.cookie.Cookie;
-
-Response loginResponse = sayAndMakeRequest(
-    Request.POST()
-        .url(testServerUrl().path("/api/login"))
-        .addFormParameter("username", "alice")
-        .addFormParameter("password", "pass123"));
-
-Cookie sessionCookie = getCookieWithName("SESSION");
-sayAndAssertThat("Session cookie present", sessionCookie, notNullValue());
-```
-
-## Document the cookies
-
-Use `sayAndGetCookies()` to list all current cookies in the documentation:
-
-```java
-sayAndGetCookies();
-```
-
-Use `sayAndGetCookieWithName(String)` to show a specific cookie:
-
-```java
-Cookie session = sayAndGetCookieWithName("SESSION");
-sayAndAssertThat("Cookie is not expired", session.isExpired(new Date()), equalTo(false));
-```
-
-## Get cookies programmatically (without documenting)
-
-```java
-List<Cookie> allCookies = getCookies();
-Cookie session = getCookieWithName("SESSION");
-```
-
-## Clear cookies between scenarios
-
-Use `clearCookies()` to reset the cookie jar — useful when testing with different users in the same test class:
+Always call `sayEnvProfile()` before reporting any timing measurements:
 
 ```java
 @Test
-public void testAsAdmin() {
-    makeRequest(Request.POST()
-        .url(testServerUrl().path("/api/login"))
-        .addFormParameter("username", "admin")
-        .addFormParameter("password", "adminpass"));
+void benchmarkWithEnvironmentContext(DtrContext ctx) {
+    ctx.sayNextSection("String Concatenation Benchmark");
 
-    // ... admin tests ...
-}
+    // Required: document the environment first
+    ctx.sayEnvProfile();
 
-@Test
-public void testAsRegularUser() {
-    clearCookies();  // remove admin session
+    ctx.sayBenchmark("StringBuilder (1000 appends)", () -> {
+        var sb = new StringBuilder();
+        for (int i = 0; i < 1000; i++) sb.append(i);
+    });
 
-    makeRequest(Request.POST()
-        .url(testServerUrl().path("/api/login"))
-        .addFormParameter("username", "user")
-        .addFormParameter("password", "userpass"));
-
-    // ... user tests ...
+    ctx.sayBenchmark("String.join (1000 elements)", () -> {
+        java.util.Collections.nCopies(1000, "x").stream().collect(
+            java.util.stream.Collectors.joining());
+    });
 }
 ```
 
-> Note: DTR creates a fresh `TestBrowser` (and thus a fresh cookie jar) for each test method by default. `clearCookies()` is mainly useful within a single test method.
+---
 
-## Complete authentication flow example
+## Document CI vs Local Environments
+
+Use `sayEnvProfile` to make CI/local environment differences explicit in documentation:
 
 ```java
 @Test
-public void testSecuredEndpoints() {
+void documentEnvironmentDifferences(DtrContext ctx) {
+    ctx.sayNextSection("Build Environment");
 
-    sayNextSection("Authentication and Sessions");
+    boolean isCI = System.getenv("CI") != null;
+    ctx.say("Build type: " + (isCI ? "CI (automated)" : "Local (developer machine)"));
 
-    say("Write operations require an authenticated session. "
-        + "Authenticate by POSTing credentials to /api/login.");
+    ctx.sayEnvProfile();
 
-    Response loginResponse = sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/login"))
-            .addFormParameter("username", "alice")
-            .addFormParameter("password", "pass123"));
-
-    sayAndAssertThat("Login accepted", 200, equalTo(loginResponse.httpStatus()));
-
-    say("On success, the server sets a `SESSION` cookie. "
-        + "DTR stores it automatically for subsequent requests:");
-
-    Cookie session = sayAndGetCookieWithName("SESSION");
-    sayAndAssertThat("SESSION cookie is set", session, notNullValue());
-
-    sayNextSection("Accessing Protected Resources");
-
-    say("With the session cookie in place, access authenticated endpoints normally:");
-
-    Response profileResponse = sayAndMakeRequest(
-        Request.GET()
-            .url(testServerUrl().path("/api/profile")));
-
-    sayAndAssertThat("Profile accessible", 200, equalTo(profileResponse.httpStatus()));
+    if (isCI) {
+        ctx.sayNote("CI builds use a fixed cloud instance. " +
+                    "Timing results are reproducible across runs.");
+    } else {
+        ctx.sayWarning("Local builds vary by developer machine. " +
+                       "Do not compare timing results between local and CI builds.");
+    }
 }
 ```
+
+---
+
+## Combine with sayDocCoverage for a Full Audit Report
+
+```java
+@Test
+void generateAuditReport(DtrContext ctx) {
+    ctx.sayNextSection("Documentation Audit Report");
+    ctx.say("Generated on: " + java.time.LocalDate.now());
+
+    ctx.sayEnvProfile();
+
+    ctx.say("**Documentation coverage across service layer:**");
+    ctx.sayDocCoverage(
+        UserService.class,
+        OrderService.class,
+        ProductService.class
+    );
+
+    ctx.sayNote("This report is generated automatically by the DTR audit test suite. " +
+                "Run `mvnd test -Dtest=AuditDocTest` to refresh.");
+}
+```
+
+---
+
+## Capture Heap Information for Memory-Sensitive Tests
+
+```java
+@Test
+void documentMemoryUsage(DtrContext ctx) {
+    ctx.sayNextSection("Memory Profile");
+    ctx.sayEnvProfile();
+
+    var runtime = Runtime.getRuntime();
+    long maxMb = runtime.maxMemory() / (1024 * 1024);
+    long usedMb = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
+
+    ctx.sayKeyValue(java.util.Map.of(
+        "Max Heap (MB)", String.valueOf(maxMb),
+        "Used Heap (MB)", String.valueOf(usedMb),
+        "Processors", String.valueOf(runtime.availableProcessors())
+    ));
+
+    ctx.sayBenchmark("Large array allocation (10MB)", () -> {
+        new byte[10 * 1024 * 1024];
+    }, 5, 20);
+}
+```
+
+---
+
+## Best Practices
+
+**Call sayEnvProfile() at the top of every benchmark test.** Timing results without environment context are not reproducible or comparable.
+
+**Prefer sayEnvProfile() over manual System.getProperty() calls.** It captures more properties consistently without boilerplate.
+
+**Include in CI reports.** When running documentation generation in CI, `sayEnvProfile()` creates a permanent record of what environment produced the documentation — valuable for debugging performance regressions.
+
+**Combine with sayNote for caveat text.** After `sayEnvProfile()`, add a note explaining any environmental limitations: "Results are specific to this hardware. Your results may differ."
+
+---
+
+## See Also
+
+- [Benchmarking](benchmarking.md) — Full benchmarking workflow with sayBenchmark
+- [Generate Documentation Coverage](use-custom-headers.md) — sayDocCoverage
+- [Performance Tuning](performance-tuning.md) — Build-level optimization strategies
