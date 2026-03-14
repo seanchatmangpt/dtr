@@ -42,3 +42,25 @@ Tests: mvnd verify not run this session (no surefire reports)
 ### Build
 Tests: mvnd verify not run this session (no surefire reports)
 
+
+---
+
+## Session: 2026-03-14T19:54:31Z
+**Session ID:** unknown
+**Branch:** claude/enforce-java-26-M7q00
+
+### Last 3 Commits
+```
+bcd31f3 Update session log and finalize Java 26 developer guide
+170f2fe Enforce Java 26 as the only supported version
+5c9361f Merge pull request #54 from seanchatmangpt/claude/qlever-rust-embedding-uPz0K
+```
+
+### Working Tree Status
+```
+ M JAVA_26_DEVELOPER_GUIDE.md
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
