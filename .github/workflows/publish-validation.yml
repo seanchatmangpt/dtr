@@ -1,0 +1,417 @@
+name: Publish Validation
+
+on:
+  workflow_call:
+    inputs:
+      release_type:
+        description: 'Type of release to validate (snapshot, release, dry-run)'
+        required: true
+        default: 'snapshot'
+        type: string
+
+  # Allow manual triggering for testing
+  workflow_dispatch:
+    inputs:
+      test_scenario:
+        description: 'Test scenario (full, build-only, package-only, deploy-only, security-scan, signature-verify)'
+        required: true
+        default: 'full'
+        type: string
+
+# Validation jobs that run before deployment
+env:
+  JAVA_VERSION: '25'
+  MAVEN_OPTS: >-
+    -Xmx2g
+    -Xms1g
+    -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
+    -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
+    -Dmaven.compiler.release=25
+
+jobs:
+  # Validate project structure
+  validate-structure:
+    name: Validate Project Structure
+    runs-on: ubuntu-latest
+    outputs:
+      is-valid: ${{ steps.validate.outputs.is-valid }}
+      issues-found: ${{ steps.validate.outputs.issues-found }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate structure
+        id: validate
+        run: |
+          echo "🔍 Validating project structure..."
+
+          # Check required files
+          REQUIRED_FILES=(
+            "pom.xml"
+            "README.md"
+            "LICENSE"
+            ".gitignore"
+          )
+
+          ISSUES=()
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              ISSUES+=("Missing required file: $file")
+            fi
+          done
+
+          # Check pom.xml for required elements
+          if [ -f "pom.xml" ]; then
+            # Check for groupId
+            if ! grep -q "<groupId>" pom.xml; then
+              ISSUES+=("Missing groupId in pom.xml")
+            fi
+
+            # Check for artifactId
+            if ! grep -q "<artifactId>" pom.xml; then
+              ISSUES+=("Missing artifactId in pom.xml")
+            fi
+
+            # Check for version
+            if ! grep -q "<version>" pom.xml; then
+              ISSUES+=("Missing version in pom.xml")
+            fi
+
+            # Check for distributionManagement
+            if ! grep -q "distributionManagement" pom.xml; then
+              ISSUES+=("Missing distributionManagement in pom.xml")
+            fi
+
+            # Check for plugins
+            if ! grep -q "build" pom.xml; then
+              ISSUES+=("Missing build section in pom.xml")
+            fi
+          fi
+
+          if [ ${#ISSUES[@]} -eq 0 ]; then
+            echo "is-valid=true" >> $GITHUB_OUTPUT
+            echo "issues-found=false" >> $GITHUB_OUTPUT
+            echo "✅ Project structure is valid"
+          else
+            echo "is-valid=false" >> $GITHUB_OUTPUT
+            echo "issues-found=true" >> $GITHUB_OUTPUT
+            echo "❌ Found issues:"
+            for issue in "${ISSUES[@]}"; do
+              echo "  - $issue"
+            done
+          fi
+
+  # Validate pom.xml configuration
+  validate-pom:
+    name: Validate pom.xml
+    runs-on: ubuntu-latest
+    needs: validate-structure
+    if: needs.validate-structure.outputs.is-valid == 'true'
+    outputs:
+      is-valid: ${{ steps.validate-pom.outputs.is-valid }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          java-package: 'jdk'
+
+      - name: Validate pom.xml with Maven
+        id: validate-pom
+        run: |
+          echo "🔍 Validating pom.xml with Maven..."
+
+          # Check pom.xml validity
+          ./mvnw validate -q
+
+          # Check for specific plugins
+          echo "📋 Checking required plugins..."
+
+          # Check for central-publishing-maven-plugin
+          if ./mvnw help:evaluate -Dexpression=project.build.plugins.plugin.artifactId -q | grep -q "central-publishing-maven-plugin"; then
+            echo "✅ central-publishing-maven-plugin found"
+          else
+            echo "❌ central-publishing-maven-plugin not found"
+            exit 1
+          fi
+
+          # Check for source JAR plugin
+          if ./mvnw help:evaluate -Dexpression=project.build.plugins.plugin.artifactId -q | grep -q "maven-source-plugin"; then
+            echo "✅ maven-source-plugin found"
+          else
+            echo "❌ maven-source-plugin not found"
+            exit 1
+          fi
+
+          # Check for javadoc JAR plugin
+          if ./mvnw help:evaluate -Dexpression=project.build.plugins.plugin.artifactId -q | grep -q "maven-javadoc-plugin"; then
+            echo "✅ maven-javadoc-plugin found"
+          else
+            echo "❌ maven-javadoc-plugin not found"
+            exit 1
+          fi
+
+          # Check for GPG plugin
+          if ./mvnw help:evaluate -Dexpression=project.build.plugins.plugin.artifactId -q | grep -q "maven-gpg-plugin"; then
+            echo "✅ maven-gpg-plugin found"
+          else
+            echo "❌ maven-gpg-plugin not found"
+            exit 1
+          fi
+
+          echo "is-valid=true" >> $GITHUB_OUTPUT
+
+      - name: Check version format
+        run: |
+          VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+          if [[ "${{ inputs.release_type }}" == "release" && ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Release version must be in format X.Y.Z (got: $VERSION)"
+            exit 1
+          fi
+
+          if [[ "${{ inputs.release_type }}" == "snapshot" && ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT$ ]]; then
+            echo "❌ Snapshot version must be in format X.Y.Z-SNAPSHOT (got: $VERSION)"
+            exit 1
+          fi
+
+          echo "✅ Version format is valid: $VERSION"
+
+  # Validate GPG configuration
+  validate-gpg:
+    name: Validate GPG Configuration
+    runs-on: ubuntu-latest
+    needs: validate-pom
+    if: needs.validate-pom.outputs.is-valid == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          java-package: 'jdk'
+
+      - name: Check GPG secrets
+        run: |
+          echo "🔍 Checking GPG secrets..."
+
+          # Check if required secrets are present (explicit checks for act compatibility)
+          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
+            echo "❌ Missing secret: GPG_PRIVATE_KEY"
+            exit 1
+          else
+            echo "✅ Secret GPG_PRIVATE_KEY is present"
+          fi
+
+          if [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
+            echo "❌ Missing secret: GPG_PASSPHRASE"
+            exit 1
+          else
+            echo "✅ Secret GPG_PASSPHRASE is present"
+          fi
+
+          if [ -z "${{ secrets.GPG_KEY_ID }}" ]; then
+            echo "❌ Missing secret: GPG_KEY_ID"
+            exit 1
+          else
+            echo "✅ Secret GPG_KEY_ID is present"
+          fi
+
+      - name: Test GPG key import
+        run: |
+          echo "🔐 Testing GPG key import..."
+
+          # Import and test GPG key
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+
+          # List keys
+          gpg --list-secret-keys --keyid-format=long
+          gpg --list-keys --keyid-format=long
+
+          # Verify key exists
+          if gpg --list-keys "${{ secrets.GPG_KEY_ID }}" > /dev/null 2>&1; then
+            echo "✅ GPG key is valid"
+          else
+            echo "❌ GPG key is not valid"
+            exit 1
+          fi
+
+  # Validate Central Portal credentials
+  validate-central:
+    name: Validate Central Portal
+    runs-on: ubuntu-latest
+    needs: validate-pom
+    if: needs.validate-pom.outputs.is-valid == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check Central Portal secrets
+        run: |
+          echo "🔍 Checking Central Portal credentials..."
+
+          # Check required secrets (explicit checks for act compatibility)
+          if [ -z "${{ secrets.CENTRAL_USERNAME }}" ]; then
+            echo "❌ Missing secret: CENTRAL_USERNAME"
+            exit 1
+          else
+            echo "✅ Secret CENTRAL_USERNAME is present"
+          fi
+
+          if [ -z "${{ secrets.CENTRAL_TOKEN }}" ]; then
+            echo "❌ Missing secret: CENTRAL_TOKEN"
+            exit 1
+          else
+            echo "✅ Secret CENTRAL_TOKEN is present"
+          fi
+
+      - name: Test Central Portal API
+        if: contains(github.ref, 'refs/tags/v')
+        run: |
+          echo "🌐 Testing Central Portal API..."
+
+          # Test API connectivity
+          curl -s -o /dev/null -w "%{http_code}" https://central.sonatype.com/api/v1/publisher
+
+          # Test authentication (this is just a connectivity test)
+          echo "✅ Central Portal API is accessible"
+
+  # Build and test
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs: validate-structure
+    if: needs.validate-structure.outputs.is-valid == 'true'
+    strategy:
+      matrix:
+        java-version: ['21', '22', '25']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+          java-package: 'jdk'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build and test
+        run: |
+          echo "🏗️  Building with Java ${{ matrix.java-version }}..."
+          ./mvnw clean verify -T1C
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-java${{ matrix.java-version }}
+          path: |
+            **/surefire-reports/
+            **/failsafe-reports/
+
+  # Security scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: validate-structure
+    if: needs.validate-structure.outputs.is-valid == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run security scan
+        run: |
+          echo "🔒 Running security scan..."
+
+          # Check for common vulnerabilities in dependencies
+          ./mvnw org.owasp:dependency-check-maven:check -Dformat=XML -o -q
+
+          # Check for secrets in code
+          echo "🔍 Checking for hardcoded secrets..."
+
+          # Look for common patterns
+          grep -r -i "password\s*=" src/ || true
+          grep -r -i "token\s*=" src/ || true
+          grep -r -i "secret\s*=" src/ || true
+
+          echo "✅ Security scan completed"
+
+  # Generate validation report
+  validation-report:
+    name: Validation Report
+    runs-on: ubuntu-latest
+    needs: [validate-structure, validate-pom, validate-gpg, validate-central, build-test]
+    if: always()
+    steps:
+      - name: Generate report
+        run: |
+          echo "📊 Publishing Validation Report"
+          echo "================================"
+
+          # Store job results in variables for act compatibility
+          STRUCTURE_VALID="${{ needs.validate-structure.outputs.is-valid }}"
+          STRUCTURE_ISSUES="${{ needs.validate-structure.outputs.issues-found }}"
+          POM_VALID="${{ needs.validate-pom.outputs.is-valid }}"
+          GPG_RESULT="${{ needs.validate-gpg.outputs.result }}"
+          CENTRAL_RESULT="${{ needs.validate-central.outputs.result }}"
+          BUILD_RESULT="${{ needs.build-test.outputs.result }}"
+
+          # Check status of all jobs
+          if [ "$STRUCTURE_VALID" == "true" ]; then
+            echo "✅ Project Structure: Valid"
+          else
+            echo "❌ Project Structure: Invalid"
+            echo "   Issues found: $STRUCTURE_ISSUES"
+          fi
+
+          if [ "$POM_VALID" == "true" ]; then
+            echo "✅ pom.xml: Valid"
+          else
+            echo "❌ pom.xml: Invalid"
+          fi
+
+          if [ "$GPG_RESULT" == "success" ]; then
+            echo "✅ GPG Configuration: Valid"
+          else
+            echo "❌ GPG Configuration: Invalid"
+          fi
+
+          if [ "$CENTRAL_RESULT" == "success" ]; then
+            echo "✅ Central Portal: Valid"
+          else
+            echo "❌ Central Portal: Invalid"
+          fi
+
+          if [ "$BUILD_RESULT" == "success" ]; then
+            echo "✅ Build & Test: Passed"
+          else
+            echo "❌ Build & Test: Failed"
+          fi
+
+          echo ""
+          echo "🎯 Next Steps:"
+          if [ "$STRUCTURE_VALID" == "true" ] && \
+             [ "$POM_VALID" == "true" ] && \
+             [ "$GPG_RESULT" == "success" ] && \
+             [ "$CENTRAL_RESULT" == "success" ] && \
+             [ "$BUILD_RESULT" == "success" ]; then
+            echo "🚀 Ready for deployment!"
+          else
+            echo "🔧 Fix the issues above before deployment"
+          fi

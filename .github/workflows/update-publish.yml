@@ -1,0 +1,234 @@
+name: Update Publishing Configuration
+
+on:
+  workflow_call:
+    inputs:
+      update_type:
+        description: 'Type of update (security, dependencies, plugins, version)'
+        required: true
+        default: 'security'
+        type: string
+      version_bump:
+        description: 'Version bump type (major, minor, patch, prerelease)'
+        required: false
+        default: 'patch'
+        type: string
+
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of update (security, dependencies, plugins, version)'
+        required: true
+        default: 'security'
+        type: string
+      version_bump:
+        description: 'Version bump type (major, minor, patch, prerelease)'
+        required: false
+        default: 'patch'
+        type: string
+
+jobs:
+  # Update security dependencies
+  update-security:
+    name: Update Security Dependencies
+    runs-on: ubuntu-latest
+    if: inputs.update_type == 'security'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          java-package: 'jdk'
+
+      - name: Update security dependencies
+        run: |
+          echo "🔒 Updating security dependencies..."
+
+          # Update dependencies with security patches
+          ./mvnw versions:use-latest-releases -DallowSnapshots=false -Dincludes=org.slf4j
+
+          # Check for security updates
+          ./mvnw versions:display-dependency-updates -DallowSnapshots=false
+
+          echo "✅ Security dependencies updated"
+
+  # Update all dependencies
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    if: inputs.update_type == 'dependencies'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          java-package: 'jdk'
+
+      - name: Update dependencies
+        run: |
+          echo "📦 Updating dependencies..."
+
+          # Update all dependencies to latest stable versions
+          ./mvnw versions:use-latest-releases -DallowSnapshots=false
+
+          # Check for updates
+          ./mvnw versions:display-dependency-updates -DallowSnapshots=false
+
+          echo "✅ Dependencies updated"
+
+  # Update plugins
+  update-plugins:
+    name: Update Plugins
+    runs-on: ubuntu-latest
+    if: inputs.update_type == 'plugins'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          java-package: 'jdk'
+
+      - name: Update plugins
+        run: |
+          echo "🔌 Updating plugins..."
+
+          # Update build plugins
+          ./mvnw versions:use-latest-releases -DallowSnapshots=false -Dincludes=org.apache.maven.plugins
+
+          # Update plugins with newer versions
+          ./mvnw versions:use-latest-releases -DallowSnapshots=false -Dincludes=org.owasp
+
+          echo "✅ Plugins updated"
+
+  # Update version
+  update-version:
+    name: Update Version
+    runs-on: ubuntu-latest
+    if: inputs.update_type == 'version'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          java-package: 'jdk'
+
+      - name: Bump version
+        id: bump
+        run: |
+          echo "🎯 Bumping version..."
+
+          # Get current version
+          CURRENT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+          # Determine new version
+          case "${{ inputs.version_bump }}" in
+            major)
+              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1 + 1 ".0.0"}')
+              ;;
+            minor)
+              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1 "." $2 + 1 ".0"}')
+              ;;
+            patch)
+              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1 "." $2 "." $3 + 1}')
+              ;;
+            prerelease)
+              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1 "." $2 "." $3 "-SNAPSHOT"}')
+              ;;
+          esac
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "New version: $NEW_VERSION"
+
+          # Update version
+          ./mvnw versions:set -DnewVersion=$NEW_VERSION
+
+          # Commit the change
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pom.xml
+          git commit -m "Bump version to $NEW_VERSION"
+
+          # Push to current branch
+          git push origin HEAD:$GITHUB_REF_NAME
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+  # Run validation after updates
+  validate-updates:
+    name: Validate Updates
+    runs-on: ubuntu-latest
+    needs: [update-security, update-dependencies, update-plugins, update-version]
+    if: always()
+    steps:
+      - name: Checkout updated code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          java-package: 'jdk'
+
+      - name: Validate updates
+        run: |
+          echo "🔍 Validating updates..."
+
+          # Run build to ensure no breaking changes
+          ./mvnw clean compile -q
+
+          # Run tests
+          ./mvnw test -q
+
+          # Check dependency tree
+          ./mvnw dependency:tree -Dverbose
+
+          echo "✅ Updates validated"
+
+      - name: Generate update report
+        run: |
+          echo "📊 Update Report"
+          echo "==============="
+
+          SECURITY_RESULT="${{ needs.update-security.result }}"
+          DEP_RESULT="${{ needs.update-dependencies.result }}"
+          PLUGIN_RESULT="${{ needs.update-plugins.result }}"
+          VERSION_RESULT="${{ needs.update-version.result }}"
+          VALIDATION_RESULT="${{ needs.validate-updates.result }}"
+
+          echo "Security updates: $SECURITY_RESULT"
+          echo "Dependency updates: $DEP_RESULT"
+          echo "Plugin updates: $PLUGIN_RESULT"
+          echo "Version update: $VERSION_RESULT"
+          echo "Validation: $VALIDATION_RESULT"
+
+          if [ "$VERSION_RESULT" == "success" ]; then
+            echo "New version: ${{ needs.update-version.outputs.new_version }}"
+          fi
+
+          echo ""
+          echo "🎯 Next steps:"
+          if [ "$VALIDATION_RESULT" == "success" ]; then
+            echo "✅ All updates validated successfully"
+            echo "🚀 Ready for deployment"
+          else
+            echo "❌ Some updates failed validation"
+            echo "🔧 Fix issues before proceeding"
+          fi

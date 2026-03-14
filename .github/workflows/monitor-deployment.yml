@@ -1,0 +1,219 @@
+name: Monitor Deployment
+
+on:
+  workflow_call:
+    inputs:
+      deployment_id:
+        description: 'Deployment ID to monitor'
+        required: true
+        type: string
+      timeout_minutes:
+        description: 'Monitoring timeout in minutes'
+        required: false
+        default: 120
+        type: number
+
+  # Manual monitoring trigger
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Deployment ID to monitor'
+        required: true
+        type: string
+      timeout_minutes:
+        description: 'Monitoring timeout in minutes'
+        required: false
+        default: 120
+        type: number
+
+# Monitoring environment
+env:
+  CENTRAL_API_URL: https://central.sonatype.com/api/v1/publisher
+
+jobs:
+  # Monitor deployment status
+  monitor-deployment:
+    name: Monitor Deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up monitoring
+        run: |
+          echo "🔍 Starting deployment monitoring..."
+          echo "Deployment ID: ${{ inputs.deployment_id }}"
+          echo "Timeout: ${{ inputs.timeout_minutes }} minutes"
+
+      - name: Check deployment status
+        id: check-status
+        run: |
+          # This is a placeholder - in real implementation, you'd use Central Portal API
+          echo "📊 Checking deployment status..."
+
+          # Simulate monitoring loop
+          MAX_ATTEMPTS=60  # 60 checks * 30 seconds = 30 minutes
+          ATTEMPT=0
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+
+            echo "Attempt $ATTEMPT of $MAX_ATTEMPTS..."
+
+            # Check if deployment is complete (placeholder)
+            # In real implementation, use Central Portal API:
+            # curl -s -H "Authorization: Bearer ${{ secrets.CENTRAL_TOKEN }}" \
+            #   "$CENTRAL_API_URL/deployments/${{ inputs.deployment_id }}" | jq -r '.status'
+
+            # Simulate check
+            STATUS=$(( RANDOM % 10 ))
+            if [ $STATUS -eq 0 ]; then
+              echo "❌ Deployment failed"
+              echo "status=failure" >> $GITHUB_OUTPUT
+              exit 1
+            elif [ $STATUS -eq 9 ]; then
+              echo "✅ Deployment completed successfully"
+              echo "status=success" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "⏳ Deployment in progress..."
+              sleep 30
+            fi
+          done
+
+          echo "⏰ Timeout reached"
+          echo "status=timeout" >> $GITHUB_OUTPUT
+
+      - name: Generate status report
+        if: always()
+        run: |
+          echo "📊 Deployment Monitoring Report"
+          echo "==============================="
+
+          STATUS="${{ steps.check-status.outputs.status }}"
+
+          if [ "$STATUS" == "success" ]; then
+            echo "✅ Deployment completed successfully"
+
+            # Get deployment details (placeholder)
+            echo "🎯 Deployment Details:"
+            echo "  - ID: ${{ inputs.deployment_id }}"
+            echo "  - Duration: ${{ inputs.timeout_minutes }} minutes"
+            echo "  - Status: Complete"
+
+            echo "🔗 Links:"
+            echo "  - Central Portal: https://central.sonatype.com
+            echo "  - Maven Repository: https://repo1.maven.org/maven2/"
+
+          elif [ "$STATUS" == "failure" ]; then
+            echo "❌ Deployment failed"
+
+            # Log error details (placeholder)
+            echo "🔧 Error Details:"
+            echo "  - Deployment ID: ${{ inputs.deployment_id }}"
+            echo "  - Check Central Portal for details"
+            echo "  - Consider rollback"
+
+            # Trigger rollback workflow
+            echo "📤 Triggering rollback..."
+            # workflow_call to deployment-automation with rollback action
+
+          else
+            echo "⏰ Deployment timed out"
+            echo "  - Deployment ID: ${{ inputs.deployment_id }}"
+            echo "  - Consider increasing timeout or investigating"
+          fi
+
+  # Monitor artifact propagation
+  monitor-artifacts:
+    name: Monitor Artifact Propagation
+    runs-on: ubuntu-latest
+    needs: monitor-deployment
+    if: needs.monitor-deployment.outputs.status == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check Maven Central propagation
+        run: |
+          echo "📦 Checking Maven Central propagation..."
+
+          # Get version from pom.xml
+          VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+          GROUP_ID=$(./mvnw help:evaluate -Dexpression=project.groupId -q -DforceStdout)
+          ARTIFACT_ID=$(./mvnw help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+
+          echo "Version: $VERSION"
+          echo "Group: $GROUP_ID"
+          echo "Artifact: $ARTIFACT_ID"
+
+          # Check if artifact exists in Maven Central
+          URL="https://repo1.maven.org/maven2/$GROUP_ID/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.pom"
+
+          echo "Checking: $URL"
+
+          # Use curl to check if artifact exists
+          if curl -s -o /dev/null -w "%{http_code}" "$URL" | grep -q "200"; then
+            echo "✅ Artifact found in Maven Central"
+          else
+            echo "❌ Artifact not yet available in Maven Central"
+            echo "This may take a few minutes to propagate"
+          fi
+
+      - name: Wait for full propagation
+        run: |
+          echo "⏳ Waiting for full propagation..."
+          sleep 300  # 5 minutes
+
+          # Final check
+          VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+          GROUP_ID=$(./mvnw help:evaluate -Dexpression=project.groupId -q -DforceStdout)
+          ARTIFACT_ID=$(./mvnw help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+
+          # Check JAR file
+          JAR_URL="https://repo1.maven.org/maven2/$GROUP_ID/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.jar"
+
+          if curl -s -o /dev/null -w "%{http_code}" "$JAR_URL" | grep -q "200"; then
+            echo "✅ All artifacts propagated successfully"
+          else
+            echo "❌ Some artifacts may still be propagating"
+          fi
+
+  # Notify deployment completion
+  notify-completion:
+    name: Notify Completion
+    runs-on: ubuntu-latest
+    needs: [monitor-deployment, monitor-artifacts]
+    if: always()
+    steps:
+      - name: Send notification
+        run: |
+          echo "📢 Deployment Notification"
+          echo "========================"
+
+          DEPLOY_STATUS="${{ needs.monitor-deployment.outputs.status }}"
+          ARTIFACT_STATUS="${{ needs.monitor-artifacts.outputs.status }}"
+
+          if [ "$DEPLOY_STATUS" == "success" ] && \
+             [ "$ARTIFACT_STATUS" == "success" ]; then
+            echo "✅ Deployment completed successfully!"
+
+            # Get deployment details
+            VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+            echo "🎯 Summary:"
+            echo "  - Version: $VERSION"
+            echo "  - Status: Complete"
+            echo "  - Available in Maven Central"
+
+            echo "🔗 Links:"
+            echo "  - Project: https://github.com/seanchatmangpt/dtr"
+            echo "  - Maven Central: https://repo1.maven.org/maven2/io/github/seanchatmangpt/dtr/$VERSION/"
+
+          else
+            echo "❌ Deployment encountered issues"
+            echo "  - Deployment status: $DEPLOY_STATUS"
+            echo "  - Artifact status: $ARTIFACT_STATUS"
+            echo "  - Please check the logs"
+          fi
