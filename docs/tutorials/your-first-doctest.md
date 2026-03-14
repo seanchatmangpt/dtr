@@ -9,7 +9,7 @@ By the end you will have:
 - A Markdown file in `target/docs/test-results/` you can read directly
 
 **Time:** ~20 minutes
-**Prerequisites:** Java 25, Maven 4 (`mvnd`)
+**Prerequisites:** Java 26, Maven 4 (`mvnd`)
 
 ---
 
@@ -45,7 +45,7 @@ Open your `pom.xml` and add DTR to the test dependencies:
 </dependencies>
 ```
 
-Configure the compiler plugin for Java 25 with preview features enabled:
+Configure the compiler plugin for Java 26 with preview features enabled:
 
 ```xml
 <build>

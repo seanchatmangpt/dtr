@@ -180,14 +180,14 @@ public interface RenderMachineCommands {
      * to introspect the method's bytecode operations — control flow, method calls, field
      * accesses, etc. Renders a detailed breakdown of operation types and their counts.</p>
      *
-     * <p>On Java 25 and earlier, gracefully falls back to rendering the method signature
+     * <p>On Java 26 and earlier, gracefully falls back to rendering the method signature
      * (parameters with types, return type) extracted via reflection.</p>
      *
      * <p>Example:</p>
      * <pre>{@code
      * sayCodeModel(SayEvent.class.getMethod("toString"));
      * // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.)
-     * // Java 25-: Renders String toString() signature only
+     * // Java 26-: Renders String toString() signature only
      * }</pre>
      *
      * @param method the method to introspect and document (must not be null)
@@ -296,7 +296,7 @@ public interface RenderMachineCommands {
      * (50 rounds) and measurement (500 rounds) and renders a performance table with
      * avg/min/max/p99 nanoseconds and throughput ops/sec.
      *
-     * <p>Uses Java 25 virtual threads for parallel warmup batches to reduce cold-start
+     * <p>Uses Java 26 virtual threads for parallel warmup batches to reduce cold-start
      * bias. All measurements are real — no simulation, no hard-coded numbers.</p>
      *
      * @param label a human-readable label for the benchmark

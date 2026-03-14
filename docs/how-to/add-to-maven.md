@@ -26,7 +26,7 @@ DTR 2.6.0 requires JUnit 5:
 
 ## Configure the compiler plugin
 
-DTR targets Java 25 with preview features enabled:
+DTR targets Java 26 with preview features enabled:
 
 ```xml
 <build>

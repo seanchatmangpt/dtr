@@ -10,7 +10,7 @@
 
 ## Overview
 
-DTR 2.0.0 is a **major release** with significant architectural improvements, modernization for Java 25 + Maven 4, and new enterprise-grade testing capabilities. This release introduces breaking changes to modernize the framework for contemporary Java development.
+DTR 2.0.0 is a **major release** with significant architectural improvements, modernization for Java 26 + Maven 4, and new enterprise-grade testing capabilities. This release introduces breaking changes to modernize the framework for contemporary Java development.
 
 **Maven Coordinates:**
 ```xml
@@ -98,9 +98,9 @@ Request.GET()
 
 **Output:** Machine-readable OpenAPI specs for Swagger UI, code generation, and API contract testing.
 
-### 7. Java 25 Modernization
+### 7. Java 26 Modernization
 
-DTR is built on **Java 25 (LTS)** with `--enable-preview` enabled, leveraging modern language features:
+DTR is built on **Java 26 (LTS)** with `--enable-preview` enabled, leveraging modern language features:
 
 - **Records** for request/response DTOs and value objects
 - **Sealed class hierarchies** for request methods and authentication types
@@ -138,7 +138,7 @@ String describe(HttpResult r) {
 - **Maven Daemon (mvnd 2.x)** support for faster builds
 - Improved dependency resolution and conflict handling
 - `--enable-preview` flags built into `.mvn/maven.config`
-- Enhanced enforcer rules validating Java 25 + Maven 4
+- Enhanced enforcer rules validating Java 26 + Maven 4
 - Build performance improvements through parallel compilation
 
 ---
@@ -175,14 +175,14 @@ target/docs/
 
 **Version 1.x:** Supports Java 1.8 through 21
 
-**Version 2.0.0:** **Requires Java 25 (LTS)** only
+**Version 2.0.0:** **Requires Java 26 (LTS)** only
 
 **Migration:**
 ```bash
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 ```
 
-**Why:** Java 25 enables record-based DTOs, sealed hierarchies, pattern matching, and virtual threads for better concurrency.
+**Why:** Java 26 enables record-based DTOs, sealed hierarchies, pattern matching, and virtual threads for better concurrency.
 
 ### 3. HTTP Client 5.x Upgrade (BREAKING)
 
@@ -211,14 +211,14 @@ See the detailed migration guide: **[MIGRATION-1.x-TO-2.0.0.md](https://github.c
 
 #### Step 1: Update Java to 25 LTS
 ```bash
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 java -version  # Verify: openjdk 25.x.x
 ```
 
 #### Step 2: Update Maven Compiler in pom.xml
 ```xml
 <properties>
-  <maven.compiler.release>25</maven.compiler.release>
+  <maven.compiler.release>26</maven.compiler.release>
 </properties>
 
 <plugin>
@@ -341,7 +341,7 @@ public class UserApiDocTest extends DTR {
 
 ## System Requirements
 
-- **Java:** 25 (LTS) — Required. Must use `JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64`
+- **Java:** 25 (LTS) — Required. Must use `JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64`
 - **Maven:** 4.0.0-rc-5+ (Maven 4 or later). Do not use Maven 3.
 - **Maven Daemon:** mvnd 2.x (optional, but recommended for speed)
 - **Build Flags:** `--enable-preview` enabled in `.mvn/maven.config`
@@ -352,8 +352,8 @@ public class UserApiDocTest extends DTR {
 ## Build and Test Commands
 
 ```bash
-# Set up Java 25
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+# Set up Java 26
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 
 # Fast build with Maven Daemon (preferred)
 mvnd clean install -DskipTests
@@ -373,7 +373,7 @@ mvnd clean install -pl dtr-integration-test -am
 # Parallel build
 mvnd clean verify -T 1C
 
-# Check enforcer rules (Java 25, Maven 4)
+# Check enforcer rules (Java 26, Maven 4)
 mvnd validate
 ```
 
@@ -383,7 +383,7 @@ mvnd validate
 
 - **[CHANGELOG_2.0.0.md](https://github.com/seanchatmangpt/dtr/blob/main/CHANGELOG_2.0.0.md)** — Detailed changelog
 - **[MIGRATION-1.x-TO-2.0.0.md](https://github.com/seanchatmangpt/dtr/blob/main/MIGRATION-1.x-TO-2.0.0.md)** — Complete migration guide
-- **[CLAUDE.md](https://github.com/seanchatmangpt/dtr/blob/main/CLAUDE.md)** — Project architecture and Java 25 features
+- **[CLAUDE.md](https://github.com/seanchatmangpt/dtr/blob/main/CLAUDE.md)** — Project architecture and Java 26 features
 - **[README-2.0.0.md](https://github.com/seanchatmangpt/dtr/blob/main/README-2.0.0.md)** — New documentation for 2.0.0
 
 ---
@@ -399,7 +399,7 @@ mvnd validate
 - Fixed out-of-memory issue with large HTML generation by streaming writes
 - Corrected servlet-api scope to prevent test classpath conflicts
 - Resolved dependency conflicts with old Ninja framework bundles
-- Fixed JAXB module issues on Java 25+
+- Fixed JAXB module issues on Java 26+
 
 ---
 
@@ -408,7 +408,7 @@ mvnd validate
 - Fixed out-of-memory issue with large HTML generation by streaming writes
 - Corrected servlet-api scope to prevent test classpath conflicts
 - Resolved dependency conflicts with old Ninja framework bundles
-- Fixed JAXB module issues on Java 25+
+- Fixed JAXB module issues on Java 26+
 - Improved error handling in WebSocket connection failures
 - Enhanced SSE stream termination and cleanup
 
@@ -450,8 +450,8 @@ Apache License 2.0
 git clone https://github.com/seanchatmangpt/dtr.git
 cd dtr
 
-# Set up Java 25
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+# Set up Java 26
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 
 # Build and test
 mvnd clean verify

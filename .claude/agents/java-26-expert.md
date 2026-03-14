@@ -1,5 +1,5 @@
 ---
-name: java-25-expert
+name: java-26-expert
 description: Expert in Java 26 language features, idioms, and migration. Use this agent when working on Java source files, modernizing code to Java 26 idioms, using preview features, leveraging virtual threads, records, sealed classes, pattern matching, and other Java 26 capabilities. Examples: "modernize this class to Java 26", "use records here", "refactor with pattern matching", "add virtual threads".
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---

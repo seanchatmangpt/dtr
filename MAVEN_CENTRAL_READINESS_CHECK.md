@@ -45,7 +45,7 @@ The project has **multiple blocking issues** preventing Maven Central deployment
 
 ---
 
-### Issue #2: Sealed Class Compilation Errors (Java 25 Preview)
+### Issue #2: Sealed Class Compilation Errors (Java 26 Preview)
 
 **Status:** CRITICAL - Build fails immediately
 **Severity:** BLOCKING
@@ -60,7 +60,7 @@ The project has **multiple blocking issues** preventing Maven Central deployment
 **Problem:**
 - 3 compilation errors in `RenderMachine.java`
 - Code attempts to extend sealed classes across package boundaries
-- Java 25 sealed class restrictions not properly applied
+- Java 26 sealed class restrictions not properly applied
 
 **Files Affected:**
 - `/home/user/dtr/dtr-core/src/main/java/io/github/seanchatmangpt/dtr/rendermachine/RenderMachine.java`
@@ -76,7 +76,7 @@ The project has **multiple blocking issues** preventing Maven Central deployment
 
 ### Issue #3: Missing `enable-preview` in .mvn/maven.config
 
-**Status:** CRITICAL - Java 25 features not enabled globally
+**Status:** CRITICAL - Java 26 features not enabled globally
 **Severity:** BLOCKING
 
 **Current Content:**
@@ -111,7 +111,7 @@ The project has **multiple blocking issues** preventing Maven Central deployment
 **Severity:** High
 
 **Details:**
-- Root `pom.xml`: `<maven.compiler.release>25</maven.compiler.release>` ✅
+- Root `pom.xml`: `<maven.compiler.release>26</maven.compiler.release>` ✅
 - `dtr-benchmarks/pom.xml`: `<release>25</release>` ✅
 - CLAUDE.md Context: References Java 26 & JEP 516
 - Plugin Configs: All hardcoded to release 25
@@ -119,11 +119,11 @@ The project has **multiple blocking issues** preventing Maven Central deployment
 **Problem:** Mixed messaging - should be clear which Java version this release targets.
 
 **Recommendation:**
-- Choose: Java 25 (stable) OR Java 26 (preview features)
-- If targeting Java 25: Remove Java 26 references from docs
+- Choose: Java 26 (stable) OR Java 26 (preview features)
+- If targeting Java 26: Remove Java 26 references from docs
 - If targeting Java 26: Update all poms to `<release>26</release>`
 
-**Maven Central Impact:** Minor - documentation/clarity issue. Will accept Java 25.
+**Maven Central Impact:** Minor - documentation/clarity issue. Will accept Java 26.
 
 ---
 
@@ -231,7 +231,7 @@ The project has **multiple blocking issues** preventing Maven Central deployment
 - maven-gpg-plugin v3.2.7 ✅
 - maven-release-plugin v3.1.1 ✅
 
-All plugins are compatible with Maven 4.0.0-rc-5 and Java 25.
+All plugins are compatible with Maven 4.0.0-rc-5 and Java 26.
 
 **No Action Required.**
 
@@ -371,7 +371,7 @@ Spot check on major dependencies:
    - Estimated: 5 minutes
 
 6. **Clarify Java Version Target** (Issue #4)
-   - [ ] Decide: Java 25 (stable) or Java 26 (preview)
+   - [ ] Decide: Java 26 (stable) or Java 26 (preview)
    - Update all references for consistency
    - Estimated: 5 minutes
 
@@ -395,7 +395,7 @@ Spot check on major dependencies:
 - [x] GroupId: `io.github.seanchatmangpt.dtr` (NOT org.r10r)
 - [x] All modules use `dtr-*` artifactIds
 - [x] Version `2.5.0-SNAPSHOT` consistent across all poms
-- [x] Java 25 configured with --enable-preview
+- [x] Java 26 configured with --enable-preview
 - [x] Maven 4.0.0-rc-5 enforced
 - [ ] .mvn/maven.config has `--enable-preview`
 - [ ] Test packages match main packages
@@ -413,7 +413,7 @@ Spot check on major dependencies:
 
 ### Plugin Checks
 
-- [x] maven-compiler-plugin v3.13.0 with Java 25
+- [x] maven-compiler-plugin v3.13.0 with Java 26
 - [x] maven-surefire-plugin v3.5.3 with --enable-preview
 - [x] maven-shade-plugin v3.5.0 (compatible)
 - [x] maven-assembly-plugin v3.7.1 (compatible)
@@ -549,5 +549,5 @@ dtr-benchmarks/src/jmh/java/org/r10r/dtr/
 ---
 
 **Report Generated:** 2026-03-12 05:57 UTC
-**Checked by:** Maven 4.0.0-rc-5, Java 25.0.2, mvnd
+**Checked by:** Maven 4.0.0-rc-5, Java 26.0.2, mvnd
 **Reviewed:** Sonatype Central Publishing Portal Requirements

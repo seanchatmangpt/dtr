@@ -3,7 +3,7 @@
 **Package:** `io.github.seanchatmangpt.dtr.core`
 **Version:** 2.4.0+ (stable in 2.6.0)
 
-DTR provides five JVM introspection methods that expose runtime metadata about classes, call sites, annotations, and object state. These methods use standard Java reflection and are available on all Java 25 JVMs without additional flags.
+DTR provides five JVM introspection methods that expose runtime metadata about classes, call sites, annotations, and object state. These methods use standard Java reflection and are available on all Java 26 JVMs without additional flags.
 
 ---
 

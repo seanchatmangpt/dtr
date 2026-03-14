@@ -130,7 +130,7 @@ Renders a code block with optional syntax highlighting language hint.
 
 ### `sayCodeModel`
 
-Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations — control flow, method calls, field accesses, etc. Renders a detailed breakdown of operation types and their counts.</p> <p>On Java 25 and earlier, gracefully falls back to rendering the method signature (parameters with types, return type) extracted via reflection.</p> <p>Example:</p> <pre>{@code sayCodeModel(SayEvent.class.getMethod("toString")); // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.) // Java 25-: Renders String toString() signature only }</pre>
+Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations — control flow, method calls, field accesses, etc. Renders a detailed breakdown of operation types and their counts.</p> <p>On Java 26 and earlier, gracefully falls back to rendering the method signature (parameters with types, return type) extracted via reflection.</p> <p>Example:</p> <pre>{@code sayCodeModel(SayEvent.class.getMethod("toString")); // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.) // Java 26-: Renders String toString() signature only }</pre>
 
 | Parameter | Description |
 | --- | --- |

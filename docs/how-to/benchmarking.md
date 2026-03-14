@@ -11,7 +11,7 @@ Measure real performance using DTR 2.6.0's built-in `sayBenchmark` method and `S
 - No simulation, no fakes, no hard-coded numbers
 - Measure with `sayBenchmark` or `System.nanoTime()` on real execution
 - Report: metric + units + Java version + iterations + environment
-- Example: `"String concat: 78ns avg (10M iterations, Java 25.0.2, 8 cores)"`
+- Example: `"String concat: 78ns avg (10M iterations, Java 26.0.2, 8 cores)"`
 
 ---
 

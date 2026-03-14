@@ -1,6 +1,6 @@
 # How-to: Pattern Matching with Sealed Records
 
-Use Java 25 pattern matching to deconstruct sealed types and handle all cases exhaustively. Pattern matching eliminates explicit casts and makes type-safe handling natural.
+Use Java 26 pattern matching to deconstruct sealed types and handle all cases exhaustively. Pattern matching eliminates explicit casts and makes type-safe handling natural.
 
 **DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
@@ -223,7 +223,7 @@ void handle(HttpResponse<String> response) {
 
 ## Pattern Matching in Method Parameters (Preview)
 
-Java 25 allows pattern matching in method parameters (preview feature):
+Java 26 allows pattern matching in method parameters (preview feature):
 
 ```java
 // Requires --enable-preview

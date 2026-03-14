@@ -1,6 +1,6 @@
 # How-to: Use Virtual Threads with Executors
 
-Spawn thousands of lightweight concurrent tasks using Java 25 virtual threads. Benchmark the results with `sayBenchmark` and document dispatch performance with `MultiRenderMachine`.
+Spawn thousands of lightweight concurrent tasks using Java 26 virtual threads. Benchmark the results with `sayBenchmark` and document dispatch performance with `MultiRenderMachine`.
 
 **DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 

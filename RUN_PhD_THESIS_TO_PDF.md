@@ -7,7 +7,7 @@ This guide demonstrates how to use **DTR** to automatically generate a complete 
 ## Prerequisites
 
 ```bash
-# Java 25+ with --enable-preview enabled
+# Java 26+ with --enable-preview enabled
 java -version        # openjdk version "25.0.2"
 
 # Maven 4.0.0+ or mvnd
@@ -247,7 +247,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Java 25
+      - name: Set up Java 26
         uses: actions/setup-java@v3
         with:
           java-version: '25'

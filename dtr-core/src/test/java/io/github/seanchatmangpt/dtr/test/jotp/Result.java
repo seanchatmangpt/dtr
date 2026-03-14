@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * <p>Sourced from <a href="https://github.com/cchacin/java-maven-template">
  * cchacin/java-maven-template</a> and adapted for DTR's JOTP doctests.
  *
- * <p>Demonstrates Java 25 features:
+ * <p>Demonstrates Java 26 features:
  * <ul>
  *   <li>Sealed interfaces with {@code permits}</li>
  *   <li>Records as sealed subtypes</li>

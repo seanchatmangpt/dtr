@@ -126,7 +126,7 @@ public class DtrCoreTest extends DtrTest {
             {"Feature", "Status", "Version"},
             {"Extended say* API", "✓ Available", "v2.0.0"},
             {"Markdown output", "✓ Available", "v2.0.0"},
-            {"Java 25 support", "✓ Available", "v2.0.0"}
+            {"Java 26 support", "✓ Available", "v2.0.0"}
         });
 
         finishDocTest();
@@ -217,7 +217,7 @@ public class DtrCoreTest extends DtrTest {
 
         sayNextSection("Requirements");
         sayUnorderedList(Arrays.asList(
-            "Java 25 or higher",
+            "Java 26 or higher",
             "Maven 4.0.0+",
             "JUnit 4.12+"
         ));
@@ -227,7 +227,7 @@ public class DtrCoreTest extends DtrTest {
         File expectedDoctestfile = new File("docs/test/" + DtrCoreTest.EXPECTED_FILENAME);
 
         // Verify bullet list structure
-        assertThatFileContainsText(expectedDoctestfile, "- Java 25 or higher");
+        assertThatFileContainsText(expectedDoctestfile, "- Java 26 or higher");
         assertThatFileContainsText(expectedDoctestfile, "- Maven 4.0.0+");
         assertThatFileContainsText(expectedDoctestfile, "- JUnit 4.12+");
 

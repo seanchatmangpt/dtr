@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Timeout;
  * 2. Check output: grep "Real measurement" target/surefire-reports/...
  * 3. Verify environment: java -version, mvnd --version
  *
- * Expected Results (Java 25 with --enable-preview):
+ * Expected Results (Java 26 with --enable-preview):
  * ├─ Single Markdown render: 10-50ms
  * ├─ Single LaTeX render: 30-100ms
  * ├─ 10-document batch: 200-500ms

@@ -1,9 +1,9 @@
 # Tutorial: Records and Sealed Classes for Type-Safe Data Models
 
-Learn how Java 25 records and sealed classes eliminate boilerplate and enable exhaustive pattern matching. This tutorial shows how to model data types safely and concisely, and how to use DTR 2.6.0 to auto-document your type hierarchy.
+Learn how Java 26 records and sealed classes eliminate boilerplate and enable exhaustive pattern matching. This tutorial shows how to model data types safely and concisely, and how to use DTR 2.6.0 to auto-document your type hierarchy.
 
 **Time:** ~30 minutes
-**Prerequisites:** Java 25, DTR 2.6.0, familiarity with classes and interfaces
+**Prerequisites:** Java 26, DTR 2.6.0, familiarity with classes and interfaces
 **What you'll learn:** How records replace getters/setters/equals, how sealed hierarchies enforce completeness, and how `sayRecordComponents` and `sayCodeModel` document your types automatically
 
 ---
@@ -37,7 +37,7 @@ public class User {
 
 Dozens of lines for a simple data carrier.
 
-### The Java 25 Way: Records
+### The Java 26 Way: Records
 
 ```java
 // After records: one line
@@ -205,7 +205,7 @@ Define a sealed hierarchy when multiple record types must be handled exhaustivel
 
 ## Step 4 — Document Code Models with sayCodeModel
 
-DTR 2.6.0 can emit a structured view of a class's code model using Java 25 Code Reflection:
+DTR 2.6.0 can emit a structured view of a class's code model using Java 26 Code Reflection:
 
 ```java
     @Test

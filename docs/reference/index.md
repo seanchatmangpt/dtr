@@ -47,11 +47,11 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 
 ---
 
-## Java 25 Language Features
+## Java 26 Language Features
 
 | Topic | Description |
 |-------|-------------|
-| [Java 25 Features Reference](java25-features-reference.md) | Records, sealed classes, pattern matching, text blocks, virtual threads, JEP 516, v2.6.0 examples |
+| [Java 26 Features Reference](java25-features-reference.md) | Records, sealed classes, pattern matching, text blocks, virtual threads, JEP 516, v2.6.0 examples |
 | [Records and Sealed Classes](records-sealed-reference.md) | Records, sealed types, pattern matching syntax; RenderMachine is abstract (not sealed) since v2.5.0 |
 | [Virtual Threads API](virtual-threads-reference.md) | ExecutorService, Future, Thread.ofVirtual(); MultiRenderMachine dispatch; sayBenchmark warmup |
 

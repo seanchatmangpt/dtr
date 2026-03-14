@@ -159,7 +159,7 @@ If those six things are true, the release succeeds. That is the scope.
 - Use actual DTR code (RenderMachine + say* methods)
 - Measure with `System.nanoTime()` on real execution
 - Report: metric + units + Java version + iterations + environment
-- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26.0.0)" NOT "6667x faster"
+- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
 - JUnit 5 tests with `DtrContext`
@@ -323,7 +323,7 @@ Both are configured in `.mvn/maven.config` and `maven-surefire-plugin`.
 Ask this first: **"Does this pass `mvnd verify` in CI?"**
 
 Then:
-1. `java -version` → 26.0.0+
+1. `java -version` → 26+
 2. `mvnd --version` → 2.0.0+
 3. `.mvn/maven.config` contains `--enable-preview` and `-Dmaven.compiler.enablePreview=true`
 4. Output goes to `target/docs/` — not anywhere else

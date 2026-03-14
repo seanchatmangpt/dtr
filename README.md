@@ -36,7 +36,7 @@
 
 ## What Is DTR?
 
-DTR (Documentation Testing Runtime) is a Java 25 library that turns JUnit 5 tests into
+DTR (Documentation Testing Runtime) is a Java 26 library that turns JUnit 5 tests into
 living documentation generators. Instead of writing docs separately from code — and
 watching them drift as code changes — you write `say*` method calls inside your tests
 that simultaneously:
@@ -437,7 +437,7 @@ void documentResearchFindings(DtrContext ctx) {
     });
 
     ctx.sayCite("openjdk-jep516", "pp. 3-7");  // BibTeX citation with page ref
-    ctx.sayFootnote("Measurements taken on Java 25.0.2, Intel i9-13900K, 64GB RAM.");
+    ctx.sayFootnote("Measurements taken on Java 26.0.2, Intel i9-13900K, 64GB RAM.");
 
     ctx.sayWarning("These results apply to repeated calls only. First-call latency is unchanged.");
 }
@@ -583,7 +583,7 @@ Use `sayStringProfile` to validate that text meets venue-specific limits at test
 @Test
 void validateNatureAbstract(DtrContext ctx) {
     String abstract_ = """
-        DTR is a documentation testing runtime for Java 25 that generates living documentation
+        DTR is a documentation testing runtime for Java 26 that generates living documentation
         from test execution. This paper presents the Blue Ocean innovation methodology applied
         to developer tooling, demonstrating 13 new capabilities with zero new dependencies.
         """;
@@ -610,7 +610,7 @@ void documentRenderMachineImpl(DtrContext ctx) throws Exception {
 
     var sayMethod = RenderMachineImpl.class.getDeclaredMethod("say", String.class);
 
-    // Operation count table from Code Reflection IR (Java 26+) or signature fallback (Java 25)
+    // Operation count table from Code Reflection IR (Java 26+) or signature fallback (Java 26)
     ctx.sayOpProfile(sayMethod);
 
     // Mermaid flowchart of basic blocks and branches (Code Reflection IR)
@@ -887,9 +887,9 @@ Test passes → Documentation is accurate
 Code changes → Tests break or output changes → Docs regenerate
 ```
 
-### Why Java 25?
+### Why Java 26?
 
-| Java 25 Feature | How DTR Uses It |
+| Java 26 Feature | How DTR Uses It |
 |----------------|-----------------|
 | **Records** | Immutable value objects: `CallSiteRecord`, `DocTestRef`, `CitationKey`, `StringMetrics` |
 | **Sealed classes** | Type-safe event routing: `sealed interface SayEvent` with exhaustive switch |
@@ -1246,7 +1246,7 @@ breaking changes, migration guides, dependency tables, and architecture notes.
 | 2.3.0 *(pre-CalVer)* | 2026-03-11 | Multi-format pipeline (LaTeX, blog, slides), 9 new say* methods |
 | 2.2.0 *(pre-CalVer)* | 2026-03-10 | Publication-grade pipeline, bibliography, cross-references |
 | 2.1.0 *(pre-CalVer)* | 2026-03-10 | Stable JUnit 5 baseline: DtrExtension, DtrContext, DtrCommands |
-| 2.0.0 *(pre-CalVer)* | 2026-03-10 | MAJOR: Markdown-first, Java 25, JUnit 5, package rename |
+| 2.0.0 *(pre-CalVer)* | 2026-03-10 | MAJOR: Markdown-first, Java 26, JUnit 5, package rename |
 
 ---
 
@@ -1263,7 +1263,7 @@ DTR is a modern reimplementation and major evolution of the original
 organization (2013–2018). The original project pioneered the concept of test-driven
 documentation generation on the JVM. DTR modernizes this concept for:
 
-- **Java 25+** — records, sealed classes, pattern matching, virtual threads, text blocks
+- **Java 26+** — records, sealed classes, pattern matching, virtual threads, text blocks
 - **Maven Central distribution** — `io.github.seanchatmangpt.dtr:dtr-core`
 - **Multi-format output** — Markdown, LaTeX, blog posts, Reveal.js slides
 - **JVM introspection** — 5 bytecode-derived documentation methods

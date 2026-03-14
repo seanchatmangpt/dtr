@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
  * <p>Sourced from
  * <a href="https://github.com/cchacin/java-maven-template">cchacin/java-maven-template</a>.
  *
- * <p>Covers every Java 25 pattern used in {@code Result}:
+ * <p>Covers every Java 26 pattern used in {@code Result}:
  * <ul>
  *   <li>Sealed interfaces with {@code permits}</li>
  *   <li>Records as permitted subtypes</li>
@@ -399,7 +399,7 @@ public class ResultDocTest extends DtrTest {
     }
 
     // -------------------------------------------------------------------------
-    // Sealed interface + record deconstruction patterns (Java 25)
+    // Sealed interface + record deconstruction patterns (Java 26)
     // -------------------------------------------------------------------------
 
     @Test
@@ -431,7 +431,7 @@ public class ResultDocTest extends DtrTest {
 
     @Test
     public void testInstanceofDeconstructionPattern() {
-        sayNextSection("instanceof with Deconstruction — Java 25 Pattern Matching");
+        sayNextSection("instanceof with Deconstruction — Java 26 Pattern Matching");
         say("<code>instanceof</code> can be combined with record deconstruction to "
                 + "simultaneously test the type and bind the inner component in one step, "
                 + "without an explicit cast. This is the pattern used by "

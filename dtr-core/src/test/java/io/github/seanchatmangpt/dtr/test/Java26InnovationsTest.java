@@ -29,7 +29,7 @@ import java.util.Map;
  * implemented using only Java reflection APIs and string APIs.
  *
  * <p>These are not incremental improvements. They are capabilities that are impossible
- * to implement without Java 25/26's reflection enhancements and that no testing library
+ * to implement without Java 26's reflection enhancements and that no testing library
  * currently offers:</p>
  *
  * <ol>

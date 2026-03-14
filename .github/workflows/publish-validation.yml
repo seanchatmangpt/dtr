@@ -291,7 +291,7 @@ jobs:
     if: needs.validate-structure.outputs.is-valid == 'true'
     strategy:
       matrix:
-        java-version: ['26']
+        java-version: ['21', '22', '26']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

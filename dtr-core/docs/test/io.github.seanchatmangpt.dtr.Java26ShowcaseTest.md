@@ -159,12 +159,12 @@ String toString()
 
 | Check | Result |
 | --- | --- |
-| equals() / hashCode() / toString() are auto-generated | `✓ PASS — from record components only` |
-| No setters exist on any SayEvent subtype | `✓ PASS — records have no setters` |
-| TextEvent has exactly 1 component (text: String) | `✓ PASS — compiler-verified` |
-| Compact constructor runs on every instantiation | `✓ PASS — cannot be bypassed` |
-| CodeModelEvent has exactly 1 component (clazz: Class<?>) | `✓ PASS — compiler-verified` |
 | Record components are effectively final | `✓ PASS — no field mutation possible` |
+| CodeModelEvent has exactly 1 component (clazz: Class<?>) | `✓ PASS — compiler-verified` |
+| Compact constructor runs on every instantiation | `✓ PASS — cannot be bypassed` |
+| TextEvent has exactly 1 component (text: String) | `✓ PASS — compiler-verified` |
+| No setters exist on any SayEvent subtype | `✓ PASS — records have no setters` |
+| equals() / hashCode() / toString() are auto-generated | `✓ PASS — from record components only` |
 
 ## Pattern Matching — Structural Dispatch Without the Visitor Tax
 
@@ -198,11 +198,11 @@ String rendered = switch (event) {
 
 | Check | Result |
 | --- | --- |
-| No ClassCastException possible | `✓ PASS — sealed type system` |
-| SectionEvent decoded its heading (ADR-001) | `✓ PASS` |
-| Pipeline processed all 4 events | `✓ PASS` |
-| Visitor pattern eliminated | `✓ PASS — 50+ lines of boilerplate removed` |
 | No instanceof casts used in switch arms | `✓ PASS — compiler-verified` |
+| Visitor pattern eliminated | `✓ PASS — 50+ lines of boilerplate removed` |
+| Pipeline processed all 4 events | `✓ PASS` |
+| SectionEvent decoded its heading (ADR-001) | `✓ PASS` |
+| No ClassCastException possible | `✓ PASS — sealed type system` |
 | CodeEvent decoded language tag (java) | `✓ PASS` |
 
 > [!WARNING]
@@ -245,25 +245,25 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 %     [receive {Pid, done} -> ok end || Pid <- Pids].
 ```
 
-- LaTeX/IEEE
 - Markdown
-- LaTeX/ACM
 - LaTeX/ArXiv
+- LaTeX/Nature
 - Blog/Medium
 - Blog/Substack
 - Blog/DevTo
-- LaTeX/Nature
 - Slides/RevealJS
 - PDF
 - OpenAPI
+- LaTeX/ACM
+- LaTeX/IEEE
 
 | Key | Value |
 | --- | --- |
-| `Wall-clock time` | `8 ms (8374459 ns)` |
-| `Formats rendered concurrently` | `11` |
-| `Erlang equivalence` | `Semantically identical to spawn/receive dispatch` |
-| `Thread pool sizing` | `Not required — virtual threads are created per task` |
 | `Memory per virtual thread` | `~1KB initial stack (vs ~1MB for OS thread)` |
+| `Thread pool sizing` | `Not required — virtual threads are created per task` |
+| `Erlang equivalence` | `Semantically identical to spawn/receive dispatch` |
+| `Formats rendered concurrently` | `11` |
+| `Wall-clock time` | `4 ms (4558758 ns)` |
 | `Concurrency model` | `Virtual threads (JEP 444 — Project Loom)` |
 
 > [!NOTE]
@@ -271,10 +271,10 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 
 | Check | Result |
 | --- | --- |
-| Wall-clock time measured (real, not estimated) | `✓ PASS — 8 ms` |
-| All 11 formats completed successfully | `✓ PASS` |
-| Structured concurrency: all threads joined | `✓ PASS — try-with-resources closes executor` |
 | No thread pool sizing required | `✓ PASS — Executors.newVirtualThreadPerTaskExecutor()` |
+| Structured concurrency: all threads joined | `✓ PASS — try-with-resources closes executor` |
+| All 11 formats completed successfully | `✓ PASS` |
+| Wall-clock time measured (real, not estimated) | `✓ PASS — 4 ms` |
 
 ## Code Model — Documentation Derived from Bytecode, Not From Memory
 
@@ -403,11 +403,11 @@ String label = switch (event) {
 
 | Check | Result |
 | --- | --- |
-| CodeEvent: code body discarded, only language tag consumed | `✓ PASS` |
-| CitationEvent: pageRef discarded, only citation key consumed | `✓ PASS` |
-| Compiler prevents accidental use of any _ binding after declaration | `✓ PASS` |
-| Code review visibility: _ makes non-use an explicit decision | `✓ PASS` |
 | SectionEvent: heading discarded with _ (routing only needs event type) | `✓ PASS` |
+| Code review visibility: _ makes non-use an explicit decision | `✓ PASS` |
+| Compiler prevents accidental use of any _ binding after declaration | `✓ PASS` |
+| CitationEvent: pageRef discarded, only citation key consumed | `✓ PASS` |
+| CodeEvent: code body discarded, only language tag consumed | `✓ PASS` |
 
 ## Sequenced Collections — Ordered Pipelines as a First-Class Type
 
@@ -440,11 +440,11 @@ SequencedCollection<String> rev = pipeline.reversed();
 
 | Key | Value |
 | --- | --- |
-| `Reversed last (reversed().getLast())` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
-| `Last event (getLast)` | `AssertionsEvent: Validation Evidence` |
-| `First event (getFirst)` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
-| `Total events` | `6` |
 | `Reversed first (reversed().getFirst())` | `AssertionsEvent: Validation Evidence` |
+| `Total events` | `6` |
+| `First event (getFirst)` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
+| `Last event (getLast)` | `AssertionsEvent: Validation Evidence` |
+| `Reversed last (reversed().getLast())` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
 | `reversed() is a live view` | `yes — O(1) wrap, no copy allocated` |
 
 > [!NOTE]
@@ -452,12 +452,12 @@ SequencedCollection<String> rev = pipeline.reversed();
 
 | Check | Result |
 | --- | --- |
-| Event ordering is a type guarantee, not a convention | `✓ PASS` |
-| reversed() is a view (O(1), not a copy) | `✓ PASS` |
-| addFirst() / addLast() are symmetrical API concepts | `✓ PASS` |
-| getLast() returns the last-added AssertionsEvent | `✓ PASS` |
-| getFirst() returns the prepended TitleEvent | `✓ PASS` |
 | reversed().getFirst() == getLast() | `✓ PASS` |
+| getFirst() returns the prepended TitleEvent | `✓ PASS` |
+| getLast() returns the last-added AssertionsEvent | `✓ PASS` |
+| addFirst() / addLast() are symmetrical API concepts | `✓ PASS` |
+| reversed() is a view (O(1), not a copy) | `✓ PASS` |
+| Event ordering is a type guarantee, not a convention | `✓ PASS` |
 
 ---
 *Generated by [DTR](http://www.dtr.org)*

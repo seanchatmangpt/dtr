@@ -1,6 +1,6 @@
-# Explanation: Java 25 Design Philosophy
+# Explanation: Java 26 Design Philosophy
 
-Java 25 brings together virtual threads, records, sealed classes, pattern matching, and preview APIs into a coherent design philosophy. This document explains how they work together and why DTR depends on them — not for syntax convenience, but for capabilities that older Java versions cannot provide.
+Java 26 brings together virtual threads, records, sealed classes, pattern matching, and preview APIs into a coherent design philosophy. This document explains how they work together and why DTR depends on them — not for syntax convenience, but for capabilities that older Java versions cannot provide.
 
 ---
 
@@ -17,11 +17,11 @@ DTR 2.6.0 uses all of these features — not because they are fashionable, but b
 
 ## Why `--enable-preview` Is Not Optional
 
-Most documentation about Java 25 features focuses on stable APIs: virtual threads (stable since 21), records (stable since 16), sealed classes (stable since 17), pattern matching (stable since 21). DTR uses all of these but also requires `--enable-preview` for a specific reason.
+Most documentation about Java 26 features focuses on stable APIs: virtual threads (stable since 21), records (stable since 16), sealed classes (stable since 17), pattern matching (stable since 21). DTR uses all of these but also requires `--enable-preview` for a specific reason.
 
 ### The Code Reflection API (JEP 516, Project Babylon)
 
-`sayCallSite()` uses the Code Reflection API, a preview feature in Java 25. This API allows DTR to capture the exact source location where a documentation call was made — file name, line number, method name — at near-zero runtime cost.
+`sayCallSite()` uses the Code Reflection API, a preview feature in Java 26. This API allows DTR to capture the exact source location where a documentation call was made — file name, line number, method name — at near-zero runtime cost.
 
 The alternative would be `Thread.currentThread().getStackTrace()`, which works but allocates a stack trace array and costs microseconds per call. The Code Reflection API provides the same information at a fraction of the cost because it is wired into the JVM's internal representation of compiled code, not a runtime introspection mechanism.
 
@@ -91,7 +91,7 @@ The rule is: seal what must be exhaustive; make abstract what should be extensib
 
 ### Beyond Type Checks
 
-Pattern matching in Java 25 lets you destructure a value and bind its components in a single expression. With sealed types, this becomes exhaustive — the compiler verifies every case is handled.
+Pattern matching in Java 26 lets you destructure a value and bind its components in a single expression. With sealed types, this becomes exhaustive — the compiler verifies every case is handled.
 
 In DTR, every `RenderMachine` implementation contains a switch over `SayEvent`:
 

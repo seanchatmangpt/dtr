@@ -39,14 +39,14 @@ class ResearchDocTest {
     void documentAsAcmPaper(DtrContext ctx) {
         ctx.sayNextSection("Abstract");
         ctx.say("This paper presents DTR 2.6.0, a documentation testing runtime " +
-                "for Java 25 that generates publication-ready output from JUnit 5 tests.");
+                "for Java 26 that generates publication-ready output from JUnit 5 tests.");
 
         ctx.sayNextSection("Introduction");
         ctx.say("Background: API documentation drifts from implementation over time. " +
                 "DTR solves this by generating documentation directly from executed tests.");
 
         ctx.sayNextSection("Methodology");
-        ctx.say("We evaluated performance using sayBenchmark on Java 25.0.2:");
+        ctx.say("We evaluated performance using sayBenchmark on Java 26.0.2:");
 
         ctx.sayBenchmark("Record serialization (10k iterations)", () -> {
             record Point(double x, double y) {}
@@ -64,7 +64,7 @@ class ResearchDocTest {
 <!-- In pom.xml properties -->
 <properties>
     <dtr.latex.template>arxiv</dtr.latex.template>
-    <dtr.latex.title>DTR: Documentation Testing Runtime for Java 25</dtr.latex.title>
+    <dtr.latex.title>DTR: Documentation Testing Runtime for Java 26</dtr.latex.title>
     <dtr.latex.authors>Alice Smith, Bob Jones</dtr.latex.authors>
     <dtr.latex.abstract>This paper presents...</dtr.latex.abstract>
 </properties>
@@ -92,7 +92,7 @@ pdflatex target/docs/test-results/ResearchDocTest.tex
 ```java
 @Test
 void generateBlogPost(DtrContext ctx) {
-    ctx.sayNextSection("Building Resilient APIs with Java 25");
+    ctx.sayNextSection("Building Resilient APIs with Java 26");
 
     ctx.say("In this article, we'll document a REST API using DTR 2.6.0 — " +
             "a testing framework that generates documentation directly from executed tests.");
@@ -222,7 +222,7 @@ void presentApiDocumentation(DtrContext ctx) {
         """, "java");
 
     ctx.sayNextSection("Thank You");
-    ctx.say("DTR 2.6.0 — March 2026 | Java 25 | Maven Central");
+    ctx.say("DTR 2.6.0 — March 2026 | Java 26 | Maven Central");
 }
 ```
 

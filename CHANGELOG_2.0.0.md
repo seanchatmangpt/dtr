@@ -3,7 +3,7 @@ Version 2.0.0
 
 Release Date: 2026-03-10
 
-This is a major release introducing significant architectural improvements, modernization for Java 25 + Maven 4, and new enterprise-grade testing capabilities.
+This is a major release introducing significant architectural improvements, modernization for Java 26 + Maven 4, and new enterprise-grade testing capabilities.
 
 ## Breaking Changes
 
@@ -51,7 +51,7 @@ This is a major release introducing significant architectural improvements, mode
 * Generates production-ready OpenAPI specifications from living documentation
 * Integration with Swagger UI and other OpenAPI tools
 
-### Java 25 Modernization
+### Java 26 Modernization
 * Records for request/response DTOs and value objects
 * Sealed class hierarchies for request methods and authentication types
 * Text blocks for HTML/Markdown templates
@@ -70,7 +70,7 @@ This is a major release introducing significant architectural improvements, mode
 * Maven Daemon (mvnd 2.x) support for faster builds
 * Improved dependency resolution and conflict handling
 * `--enable-preview` flags built into `.mvn/maven.config`
-* Enhanced enforcer rules validating Java 25 + Maven 4
+* Enhanced enforcer rules validating Java 26 + Maven 4
 
 ### Dependency Updates
 * Apache HttpClient 5.6 (from 4.5)
@@ -161,7 +161,7 @@ Comprehensive documentation is now generated as Markdown and available at:
 * Fixed out-of-memory issue with large HTML generation by streaming writes
 * Corrected servlet-api scope to prevent test classpath conflicts
 * Resolved dependency conflicts with old Ninja framework bundles
-* Fixed JAXB module issues on Java 25+
+* Fixed JAXB module issues on Java 26+
 
 ## Contributors
 

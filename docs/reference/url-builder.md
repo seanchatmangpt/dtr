@@ -114,7 +114,7 @@ The table is preceded by environment metadata from `sayEnvProfile()` if called i
 
 Always report: metric + units + Java version + iteration counts + environment.
 
-**Correct:** `"ArrayList add 1K: 42 341 ns avg (100 warmup, 1 000 iter, Java 25.0.2, Linux x86_64)"`
+**Correct:** `"ArrayList add 1K: 42 341 ns avg (100 warmup, 1 000 iter, Java 26.0.2, Linux x86_64)"`
 
 **Incorrect:** `"ArrayList is 6 667x faster"` (no measurement basis)
 

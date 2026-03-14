@@ -1,7 +1,7 @@
 # DTR Java 26 Migration Summary
 
 ## Overview
-Successfully migrated the DTR (Documentation Testing Runtime) project from Java 25 to Java 26.
+Successfully migrated the DTR (Documentation Testing Runtime) project from Java 26 to Java 26.
 
 ## Changes Required
 

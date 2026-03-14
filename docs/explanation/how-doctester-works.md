@@ -107,9 +107,9 @@ The result: disk I/O in the Markdown writer does not delay the LaTeX writer. All
 
 ## Why `--enable-preview` Is Required
 
-DTR requires Java 25 with `--enable-preview`. This is not optional, and it is not a cosmetic requirement about syntax.
+DTR requires Java 26 with `--enable-preview`. This is not optional, and it is not a cosmetic requirement about syntax.
 
-DTR uses the Code Reflection API (JEP 516, Project Babylon), a preview feature in Java 25, for `sayCallSite()`. This API allows DTR to capture the exact source location of a documentation call — the file, line number, and method name — at compile time, without a runtime stack walk.
+DTR uses the Code Reflection API (JEP 516, Project Babylon), a preview feature in Java 26, for `sayCallSite()`. This API allows DTR to capture the exact source location of a documentation call — the file, line number, and method name — at compile time, without a runtime stack walk.
 
 A stack walk (`Thread.currentThread().getStackTrace()`) would work but costs microseconds and allocates. The Code Reflection API is designed specifically for this kind of source-location capture and has lower runtime cost. It is in preview because Project Babylon is evolving. DTR will update to the stable API when it graduates from preview.
 

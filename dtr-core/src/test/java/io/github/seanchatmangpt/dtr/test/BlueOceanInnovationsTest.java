@@ -54,7 +54,7 @@ public class BlueOceanInnovationsTest extends DtrTest {
     /**
      * Example method that would be annotated with @CodeReflection when running
      * on Java 26+ with the Code Reflection API available.
-     * On Java 25, the CodeModelAnalyzer falls back gracefully to signature rendering.
+     * On Java 26, the CodeModelAnalyzer falls back gracefully to signature rendering.
      *
      * <p>To enable full Code Reflection on Java 26+, annotate with:
      * {@code @java.lang.reflect.code.CodeReflection}</p>
@@ -94,7 +94,7 @@ public class BlueOceanInnovationsTest extends DtrTest {
                 .getDeclaredMethod("exampleSum", int.class, int.class);
         sayCodeModel(m);
 
-        sayNote("When `@CodeReflection` is present and Java 25+ preview is enabled, " +
+        sayNote("When `@CodeReflection` is present and Java 26+ preview is enabled, " +
                 "the table shows real op types from the JVM's code model. " +
                 "Without the annotation, the method falls back to signature rendering.");
     }
@@ -153,7 +153,7 @@ public class BlueOceanInnovationsTest extends DtrTest {
 
         say("Atomically measures and documents real performance in one call. " +
                 "Uses `System.nanoTime()` in a tight loop with configurable warmup " +
-                "rounds. Uses Java 25 virtual threads (`StructuredTaskScope`) for " +
+                "rounds. Uses Java 26 virtual threads (`StructuredTaskScope`) for " +
                 "parallel warmup batches to reduce JIT cold-start bias. " +
                 "Reports avg/min/max/p99 ns and throughput ops/sec.");
 

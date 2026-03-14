@@ -239,4 +239,4 @@ The following classes were removed. Do not use them.
 
 ---
 
-**DTR 2.6.0** — `io.github.seanchatmangpt.dtr:dtr-core:2.6.0` — Java 25+ — `--enable-preview`
+**DTR 2.6.0** — `io.github.seanchatmangpt.dtr:dtr-core:2.6.0` — Java 26+ — `--enable-preview`

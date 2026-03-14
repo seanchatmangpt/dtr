@@ -1,6 +1,6 @@
 # Reference: Virtual Threads API
 
-Complete API reference for Java 25 virtual threads. Includes v2.6.0 `MultiRenderMachine` virtual dispatch and `sayBenchmark` warmup patterns.
+Complete API reference for Java 26 virtual threads. Includes v2.6.0 `MultiRenderMachine` virtual dispatch and `sayBenchmark` warmup patterns.
 
 ---
 
@@ -296,4 +296,4 @@ try {
 
 - [Benchmarking API Reference](url-builder.md) — `sayBenchmark` overloads
 - [RenderMachine API](rendermachine-api.md) — `MultiRenderMachine` virtual thread dispatch
-- [Java 25 Features Reference](java25-features-reference.md) — virtual threads in broader context
+- [Java 26 Features Reference](java25-features-reference.md) — virtual threads in broader context

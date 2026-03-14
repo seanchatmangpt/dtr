@@ -74,7 +74,7 @@ Every call to `sayCallSite()` captures:
 
 This information is embedded in the generated documentation, creating a traceable link from any documented fact back to the specific test location that produced it. If you read a documentation claim and want to understand where it came from, the provenance is in the document.
 
-`sayCallSite()` uses the Code Reflection API (JEP 516, Project Babylon), a preview feature in Java 25. This API captures source location at near-zero runtime cost — no stack walk, no array allocation, no traversal of the call stack. The location is available to the JVM internally as a property of the compiled method.
+`sayCallSite()` uses the Code Reflection API (JEP 516, Project Babylon), a preview feature in Java 26. This API captures source location at near-zero runtime cost — no stack walk, no array allocation, no traversal of the call stack. The location is available to the JVM internally as a property of the compiled method.
 
 This is why DTR requires `--enable-preview`. The provenance capability would be possible with `Thread.currentThread().getStackTrace()`, but the Code Reflection API makes it fast enough to call on every documentation statement without measurable overhead.
 

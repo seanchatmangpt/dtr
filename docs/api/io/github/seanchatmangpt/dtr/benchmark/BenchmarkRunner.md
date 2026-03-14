@@ -2,7 +2,7 @@
 
 > **Package:** `io.github.seanchatmangpt.dtr.benchmark`  
 
-Runs a microbenchmark using {@code System.nanoTime()} with configurable warmup and measurement rounds. Uses Java 25 virtual threads for parallel warmup batches to reduce JIT cold-start bias. <p>All measurements are per-invocation nanoseconds. Throughput is computed as {@code 1_000_000_000L / avgNs} (ops/sec).</p>
+Runs a microbenchmark using {@code System.nanoTime()} with configurable warmup and measurement rounds. Uses Java 26 virtual threads for parallel warmup batches to reduce JIT cold-start bias. <p>All measurements are per-invocation nanoseconds. Throughput is computed as {@code 1_000_000_000L / avgNs} (ops/sec).</p>
 
 ```java
 public final class BenchmarkRunner {

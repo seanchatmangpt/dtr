@@ -1,6 +1,6 @@
 # DTR Documentation
 
-DTR (Documentation Testing Runtime) is a Java 25 library that generates rich Markdown, LaTeX, HTML, and OpenAPI documentation directly from JUnit 5 tests via a declarative `say*` API.
+DTR (Documentation Testing Runtime) is a Java 26 library that generates rich Markdown, LaTeX, HTML, and OpenAPI documentation directly from JUnit 5 tests via a declarative `say*` API.
 
 **Version:** 2.6.0 | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core:2.6.0` | **Java:** 25 + `--enable-preview`
 
@@ -39,7 +39,7 @@ DTR 2.6.0 is a significant release focused on pure documentation generation.
 - **No template engine** — write Java, get Markdown, LaTeX, HTML, and OpenAPI
 - **Virtual-thread native** — `MultiRenderMachine` dispatches to output engines concurrently
 - **Zero new dependencies** — 2.6.0 added 14 methods with no new runtime dependencies
-- **Java 25 idiomatic** — records, sealed classes, pattern matching throughout
+- **Java 26 idiomatic** — records, sealed classes, pattern matching throughout
 
 ---
 

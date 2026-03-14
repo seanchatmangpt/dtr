@@ -21,7 +21,7 @@ This guide covers two migrations:
 |--------|-------|-------|-----------|
 | RenderMachine | Sealed class | Abstract base class | No* |
 | Maven Central | Not available | Published via Sonatype | No (additive) |
-| Java Version | Java 25 | Java 25+ | No (same) |
+| Java Version | Java 26 | Java 26+ | No (same) |
 | Preview Flags | Required | Enforced | No (same) |
 | Introspection Methods | All supported | All supported + cached | No (improvement) |
 
@@ -60,7 +60,7 @@ boolean isValidRenderer = renderer instanceof RenderMachineImpl
 <version>2.5.0</version>
 ```
 
-**Step 2:** Verify Java 25:
+**Step 2:** Verify Java 26:
 ```bash
 java -version  # Must show openjdk 25 or higher
 ```

@@ -80,7 +80,7 @@ class MyFeatureDocTest {
 
         ctx.sayTable(new String[][] {
             {"Metric", "Value", "Environment"},
-            {"Execution time", ns + "ns", "Java 26.0.2"},
+            {"Execution time", ns + "ns", "Java 26"},
         });
 
         ctx.sayNote("This runs under --enable-preview.");
@@ -120,7 +120,7 @@ for (int i = 0; i < ITERATIONS; i++) {
     result = actualOperation();
 }
 long avgNs = (System.nanoTime() - start) / ITERATIONS;
-ctx.say("Average: " + avgNs + "ns (" + ITERATIONS + " iterations, Java 26.0.2)");
+ctx.say("Average: " + avgNs + "ns (" + ITERATIONS + " iterations, Java 26)");
 
 // ❌ WRONG — never do this
 ctx.say("This is approximately 6000x faster.");  // No measurement = not allowed

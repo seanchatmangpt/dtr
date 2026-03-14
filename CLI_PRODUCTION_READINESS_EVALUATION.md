@@ -380,14 +380,14 @@ Current coverage: ~92% (based on test count)
 
 ⚠️ **Tested environments:**
 - Linux only (assumed)
-- Java 25 availability assumed
+- Java 26 availability assumed
 - Maven/mvnd in PATH
 
 ### Environment Detection
 
 Current behavior:
 - Assumes `mvnd` or `mvn` in PATH
-- Assumes Java 25 available
+- Assumes Java 26 available
 - Assumes `pom.xml` in current directory
 
 **Risk:** If Maven not found, error message is helpful but requires manual setup.

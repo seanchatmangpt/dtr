@@ -116,7 +116,7 @@ openjdk version "17.0.1"   ✓ Works
 openjdk version "21.0.1"   ✓ Works
 ```
 
-**Version 2.0.0:** Requires **exactly Java 25 (or later 25 LTS releases)**
+**Version 2.0.0:** Requires **exactly Java 26 (or later 25 LTS releases)**
 
 ```bash
 $ java -version
@@ -127,26 +127,26 @@ openjdk version "24.0.1"   ✗ FAILS — not LTS
 
 ### Why?
 
-- **Stable Preview Features:** Java 25 stabilizes pattern matching, records, and sealed classes
+- **Stable Preview Features:** Java 26 stabilizes pattern matching, records, and sealed classes
 - **Virtual Threads:** Enables efficient concurrent testing
 - **Modern Idioms:** Leverages Java platform improvements
-- **LTS Guarantee:** Java 25 will receive 8+ years of support
+- **LTS Guarantee:** Java 26 will receive 8+ years of support
 
 ### Impact Assessment
 
 **Who is affected:**
-- ✓ Everyone (all builds require Java 25)
+- ✓ Everyone (all builds require Java 26)
 
 **What breaks:**
 - ❌ CI runners using Java 21 or earlier
-- ❌ Developer machines without Java 25 installed
-- ❌ IDEs not configured for Java 25
+- ❌ Developer machines without Java 26 installed
+- ❌ IDEs not configured for Java 26
 - ❌ Maven enforcer rules checking for Java < 25
 
 **Mitigation:**
-1. Install Java 25 (or wait for Java 33 LTS in 2026 if Java 25 is no longer current)
-2. Set `JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64`
-3. Update CI/CD to use Java 25 runners
+1. Install Java 26 (or wait for Java 33 LTS in 2026 if Java 26 is no longer current)
+2. Set `JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64`
+3. Update CI/CD to use Java 26 runners
 4. Update IDE project settings
 
 ### Code Changes Required
@@ -162,14 +162,14 @@ openjdk version "24.0.1"   ✗ FAILS — not LTS
 
 <!-- Version 2.0.0 -->
 <properties>
-  <maven.compiler.release>25</maven.compiler.release>
+  <maven.compiler.release>26</maven.compiler.release>
 </properties>
 
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-compiler-plugin</artifactId>
   <configuration>
-    <release>25</release>
+    <release>26</release>
     <compilerArgs>
       <arg>--enable-preview</arg>
     </compilerArgs>
@@ -367,13 +367,13 @@ Both produce identical documentation. Mix and match in the same test class if de
 Quick reference for what needs to be updated:
 
 ### 1. Development Environment
-- [ ] Java 25 installed
-- [ ] `JAVA_HOME` set to Java 25
-- [ ] IDE configured for Java 25
+- [ ] Java 26 installed
+- [ ] `JAVA_HOME` set to Java 26
+- [ ] IDE configured for Java 26
 - [ ] IDE recognizes `--enable-preview` flag
 
 ### 2. Project Configuration (pom.xml)
-- [ ] Update compiler plugin with `<release>25</release>`
+- [ ] Update compiler plugin with `<release>26</release>`
 - [ ] Add `--enable-preview` to compiler args
 - [ ] Add `--enable-preview` to surefire argLine
 - [ ] Update DTR dependency to 2.0.0
@@ -387,9 +387,9 @@ Quick reference for what needs to be updated:
 - [ ] Update Ant/Gradle build files if applicable
 
 ### 4. CI/CD Configuration
-- [ ] GitHub Actions: Use Java 25 runner
-- [ ] GitLab CI: Update `image` to Java 25
-- [ ] Jenkins: Update JDK tool to Java 25
+- [ ] GitHub Actions: Use Java 26 runner
+- [ ] GitLab CI: Update `image` to Java 26
+- [ ] Jenkins: Update JDK tool to Java 26
 - [ ] Update any documentation publish steps
 - [ ] Update any email/Slack notifications with new path
 
@@ -444,7 +444,7 @@ This is actually **better** because you control the look and feel, and Markdown 
 
 ### Q: Will DTR support Java 21 or 17?
 
-**A:** No. Version 2.0.0 requires Java 25 LTS.
+**A:** No. Version 2.0.0 requires Java 26 LTS.
 
 When Java 33 is released in 2026, DTR will support Java 33 LTS. Version 2.0.0 will still require 25 until end-of-life (2032).
 
@@ -519,8 +519,8 @@ Contact the team if you have a custom `RenderMachine` implementation.
 | 2026-03-10 | DTR 2.0.0 released |
 | 2026-03-31 | Last critical bug fixes for 1.x |
 | 2026-06-30 | End of life for 1.x (no further support) |
-| 2026-09-14 | Java 21 end-of-life (Java 25 becomes baseline) |
-| 2032-09-01 | Java 25 end-of-life (new LTS required) |
+| 2026-09-14 | Java 21 end-of-life (Java 26 becomes baseline) |
+| 2032-09-01 | Java 26 end-of-life (new LTS required) |
 
 **Action Items:**
 - Plan upgrade in Q2 2026
@@ -533,7 +533,7 @@ Contact the team if you have a custom `RenderMachine` implementation.
 
 These breaking changes represent a significant modernization of DTR:
 - **Markdown** is portable and version-control friendly
-- **Java 25** unlocks modern language features
+- **Java 26** unlocks modern language features
 - **New output path** aligns with Maven standards
 
 The upgrade is a one-time effort that positions you for years of maintainable, living API documentation.
