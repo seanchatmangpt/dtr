@@ -217,7 +217,7 @@ the specific language governing permissions and limitations under the License. -
                 <version>${bouncycastle.version}</version>
             </dependency>
 
-            <!-- Javassist bytecode engineering (upgraded from 3.18.1-GA for Java 25 compatibility) -->
+            <!-- Javassist bytecode engineering (upgraded from 3.18.1-GA for Java 26 compatibility) -->
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
@@ -228,7 +228,7 @@ the specific language governing permissions and limitations under the License. -
 
     <build>
         <plugins>
-            <!-- Enforce Java 25+ and Maven 4+ on every build — inherited by all modules -->
+            <!-- Enforce Java 26+ and Maven 4+ on every build — inherited by all modules -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -309,7 +309,7 @@ the specific language governing permissions and limitations under the License. -
                                 <rules>
                                     <requireJavaVersion>
                                         <version>[25,)</version>
-                                        <message>Java 25 or higher is required.</message>
+                                        <message>Java 26 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
