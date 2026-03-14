@@ -58,10 +58,10 @@ sealed interface SayEvent permits
 
 | Check | Result |
 | --- | --- |
-| Sealed hierarchy enforces completeness | `✓ PASS` |
 | Records ensure immutability | `✓ PASS` |
 | No instanceof in render dispatch | `✓ PASS` |
 | All 4 pipeline events processed | `✓ PASS` |
+| Sealed hierarchy enforces completeness | `✓ PASS` |
 
 > [!NOTE]
 > Add SayEvent.NewFormatEvent to the sealed interface: every switch in every renderer fails to compile until it handles the new case. Silent no-ops are structurally impossible.
@@ -223,10 +223,10 @@ The implementation exhibits high mutation resistance (98.7% mutation kill rate):
   "killRate" : "98.7%",
   "mutationsGenerated" : 1027,
   "mutationsCovered" : {
-    "boundaryMutations" : "100%",
     "conditionalMutations" : "99.8%",
     "arithmeticMutations" : "98.1%",
-    "returnValueMutations" : "97.2%"
+    "returnValueMutations" : "97.2%",
+    "boundaryMutations" : "100%"
   }
 }
 ```
