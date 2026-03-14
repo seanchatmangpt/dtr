@@ -18,6 +18,8 @@ package io.github.seanchatmangpt.dtr;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
@@ -568,5 +570,37 @@ public abstract class DtrTest implements RenderMachineCommands {
     /** Documents git commit history for the source file of the given class. */
     public final void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
         renderMachine.sayEvolutionTimeline(clazz, maxEntries);
+    }
+
+    /** Renders Javadoc for a method from the dtr-javadoc index. */
+    public final void sayJavadoc(Method method) {
+        renderMachine.sayJavadoc(method);
+    }
+
+    /**
+     * Runs a Hamcrest assertion and documents the result as a table row.
+     * Passes a {@code ✓ PASS} label on success; rethrows on failure.
+     */
+    public final <T> void sayAndAssertThat(String label, T actual, Matcher<? super T> matcher) {
+        MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
+    }
+
+    /** Overload for {@code long} primitives — avoids ambiguous autoboxing. */
+    public final void sayAndAssertThat(String label, long actual, Matcher<Long> matcher) {
+        MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
+    }
+
+    /** Overload for {@code int} primitives. */
+    public final void sayAndAssertThat(String label, int actual, Matcher<Integer> matcher) {
+        MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
+    }
+
+    /** Overload for {@code boolean} primitives. */
+    public final void sayAndAssertThat(String label, boolean actual, Matcher<Boolean> matcher) {
+        MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
     }
 }
