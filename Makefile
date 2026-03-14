@@ -15,7 +15,7 @@
 # release-major does not exist. The year is the major version.
 # The calendar owns that decision.
 
-MVND           := /opt/mvnd/bin/mvnd
+MVND           := $(shell command -v mvnd 2>/dev/null || echo /opt/mvnd/bin/mvnd)
 CURRENT_VERSION := $(shell scripts/current-version.sh)
 
 .DEFAULT_GOAL := help
