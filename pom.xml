@@ -24,16 +24,12 @@ the specific language governing permissions and limitations under the License. -
         <module>dtr-benchmarks</module>
     </modules>
 
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <url>https://central.sonatype.com/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>central</id>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <!--
+        No root distributionManagement: the release profile uses central-publishing-maven-plugin
+        which uploads via the Sonatype Portal REST API (not distributionManagement URLs).
+        The release-rc profile defines its own distributionManagement for GitHub Packages.
+        Snapshot deploys use `make snapshot` which routes through the release-rc profile.
+    -->
 
     <scm>
         <url>https://github.com/seanchatmangpt/dtr</url>
@@ -85,7 +81,7 @@ the specific language governing permissions and limitations under the License. -
 
         <!-- Dependency versions -->
         <jackson.version>2.21.1</jackson.version>
-        <junit5.version>6.0.3</junit5.version>
+        <junit.version>6.0.3</junit.version>
         <mockito.version>5.22.0</mockito.version>
         <jqwik.version>1.9.0</jqwik.version>
         <guava.version>33.5.0-jre</guava.version>
@@ -162,23 +158,23 @@ the specific language governing permissions and limitations under the License. -
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
-                <version>${junit5.version}</version>
+                <version>${junit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
-                <version>${junit5.version}</version>
+                <version>${junit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit5.version}</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-launcher</artifactId>
-                <version>${junit5.version}</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
 
