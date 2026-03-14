@@ -242,7 +242,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.0</version>
                     <configuration>
-                        <release>25</release>
+                        <release>26</release>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                         </compilerArgs>
@@ -290,7 +290,7 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.11.2</version>
                     <configuration>
                         <additionalOptions>--enable-preview</additionalOptions>
-                        <release>25</release>
+                        <release>26</release>
                     </configuration>
                 </plugin>
 
@@ -308,7 +308,7 @@ the specific language governing permissions and limitations under the License. -
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[25,)</version>
+                                        <version>[26,)</version>
                                         <message>Java 26 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>

@@ -159,7 +159,7 @@ If those six things are true, the release succeeds. That is the scope.
 - Use actual DTR code (RenderMachine + say* methods)
 - Measure with `System.nanoTime()` on real execution
 - Report: metric + units + Java version + iterations + environment
-- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)" NOT "6667x faster"
+- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
 - JUnit 5 tests with `DtrContext`
@@ -167,7 +167,7 @@ If those six things are true, the release succeeds. That is the scope.
 - Never bypass with standalone generators
 
 ### 3. Toolchain (Non-Negotiable)
-- Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
+- Java 26: `/usr/lib/jvm/java-26-openjdk-amd64`
 - mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred locally for speed)
 - CI uses `./mvnw` — downloads Maven 4.0.0-rc-5 via wrapper; do NOT use Maven 3
 - Flag: `--enable-preview` in `.mvn/maven.config` (also `-Dmaven.compiler.enablePreview=true`)

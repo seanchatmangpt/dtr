@@ -22,7 +22,7 @@ These are not suggestions. They are load-bearing constraints. If any of these fa
 
 | # | Invariant | Machine Check | Pass Criterion |
 | --- | --- | --- | --- |
-| 0.1 | Java version is 25 | `java -version` | Output contains `25` |
+| 0.1 | Java version is 26 | `java -version` | Output contains `26` |
 | 0.2 | mvnd version is 2.0.0+ | `mvnd --version` | Output contains `2.0` |
 | 0.3 | --enable-preview is set | `cat .mvn/maven.config` | Contains `--enable-preview` |
 | 0.4 | No uncommitted changes | `git status --porcelain` | Output is empty |
@@ -32,7 +32,7 @@ These are not suggestions. They are load-bearing constraints. If any of these fa
 | 0.8 | mvnd verify passes | `mvnd verify` | Exit code 0 |
 
 > [!WARNING]
-> Phase 0 is not optional. These invariants encode real CI failures that have already happened. The GPG loopback entry exists because a release failed without it. The `--enable-preview` flag exists because Java 25 preview syntax silently rejects without it. Do not remove these checks because they 'seem obvious'. The obvious ones are the ones that bite you at 2am.
+> Phase 0 is not optional. These invariants encode real CI failures that have already happened. The GPG loopback entry exists because a release failed without it. The `--enable-preview` flag exists because Java 26 preview syntax silently rejects without it. Do not remove these checks because they 'seem obvious'. The obvious ones are the ones that bite you at 2am.
 
 ## Phase 1: The Human Decision (The Only Human Decision)
 
@@ -60,7 +60,7 @@ After `make release-*` is typed, the human is done. The following items are veri
 5. docs/CHANGELOG.md updated and committed
 6. Git tag vVERSION created and pushed — this is the release trigger
 7. GitHub Actions fires on tag push — classify → build → deploy → release
-8. mvnd verify runs in CI (Java 25, --enable-preview, fresh runner)
+8. mvnd verify runs in CI (Java 26, --enable-preview, fresh runner)
 9. GPG signing via --pinentry-mode loopback (non-interactive, no TTY)
 10. Central Publishing Maven Plugin pushes to Maven Central staging
 11. Maven Central validates POM, signatures, sources, javadoc JARs
@@ -72,7 +72,7 @@ These six conditions are the finite, enumerable answer to the question: 'What ne
 
 | Key | Value |
 | --- | --- |
-| `1. mvnd verify passes on all modules` | `CI gate runs on Java 25 with --enable-preview. All unit, integration, and DTR tests pass.` |
+| `1. mvnd verify passes on all modules` | `CI gate runs on Java 26 with --enable-preview. All unit, integration, and DTR tests pass.` |
 | `2. All DTR test output lands in target/docs/` | `RenderMachine routes output to target/docs/test-results/. No other path is valid.` |
 | `3. GPG key is loaded and loopback-capable` | `gpg-agent.conf contains allow-loopback-pinentry. --pinentry-mode loopback works without TTY.` |
 | `4. CENTRAL_USERNAME and CENTRAL_TOKEN secrets are set` | `GitHub secrets present in the repository. Not in ~/.m2/settings.xml. Never in code.` |
