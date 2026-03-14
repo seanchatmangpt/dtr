@@ -63,7 +63,7 @@ jobs:
       - name: Cache Maven
         uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
+          path: ${{ github.workspace }}/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
@@ -99,7 +99,7 @@ jobs:
       - name: Cache Maven
         uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
+          path: ${{ github.workspace }}/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
@@ -169,9 +169,16 @@ jobs:
       - name: Cache Maven
         uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
+          path: ${{ github.workspace }}/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          mkdir -p ~/.gnupg
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
 
       - name: Configure Maven settings for GitHub Packages
         run: |
@@ -185,18 +192,32 @@ jobs:
                 <password>${env.GITHUB_TOKEN}</password>
               </server>
             </servers>
+            <profiles>
+              <profile>
+                <id>gpg</id>
+                <activation><activeByDefault>true</activeByDefault></activation>
+                <properties>
+                  <gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
+                  <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                </properties>
+              </profile>
+            </profiles>
           </settings>
           EOF
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Deploy RC to GitHub Packages
         run: |
-          ./mvnw deploy \
+          ./mvnw deploy -Prelease-rc \
             -DaltDeploymentRepository=github::https://maven.pkg.github.com/${{ github.repository }} \
             -DskipTests --no-transfer-progress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
   # ── Create GitHub Release (final only) ───────────────────────────────────
   release:

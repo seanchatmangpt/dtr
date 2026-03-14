@@ -22,9 +22,9 @@ def update_root(text, old, new):
         r'\g<1>' + new + r'\3',
         text, count=1, flags=re.MULTILINE
     )
-    # SCM <tag> — set to HEAD during development; set-version.sh writes actual tag at release
+    # SCM <tag>: replace versioned tag (e.g. v2026.1.0) or the sentinel HEAD value
     text = re.sub(
-        r'<tag>v?' + re.escape(old) + r'(?:-rc\.\d+)?</tag>',
+        r'<tag>(?:v?' + re.escape(old) + r'(?:-rc\.\d+)?|HEAD)</tag>',
         f'<tag>v{new}</tag>',
         text
     )

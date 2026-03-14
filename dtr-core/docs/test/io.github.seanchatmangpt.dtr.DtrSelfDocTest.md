@@ -135,9 +135,9 @@ void setupForTestCaseMethod(TestInfo arg0)
 
 | Check | Result |
 | --- | --- |
+| DTR is abstract | `✓ PASS` |
 | DTR extends Object | `✓ PASS` |
 | DTR implements RenderMachineCommands | `✓ PASS` |
-| DTR is abstract | `✓ PASS` |
 
 ## RenderMachineCommands Interface
 
@@ -211,9 +211,9 @@ class MyRenderer extends RenderMachine {
 
 | Check | Result |
 | --- | --- |
+| Multiple output formats supported | `✓ PASS` |
 | Interface enables extensibility | `✓ PASS` |
 | RenderMachineCommands defines say* contract | `✓ PASS` |
-| Multiple output formats supported | `✓ PASS` |
 
 ## Core say* Methods for Documentation
 
@@ -508,6 +508,7 @@ DTR has four documentation layers, modeled as a sealed interface hierarchy. Patt
 
 | Key | Value |
 | --- | --- |
+| `Total say* method calls` | `50+` |
 | `DocumentationLayer patterns matched` | `4` |
 | `sayCallSite() calls` | `2` |
 | `sayAnnotationProfile() calls` | `2` |
@@ -516,7 +517,6 @@ DTR has four documentation layers, modeled as a sealed interface hierarchy. Patt
 | `Test methods executed` | `8` |
 | `sayClassHierarchy() calls` | `1` |
 | `sayTable() invocations` | `5` |
-| `Total say* method calls` | `50+` |
 
 ## Provenance Tracking via Call Site
 
