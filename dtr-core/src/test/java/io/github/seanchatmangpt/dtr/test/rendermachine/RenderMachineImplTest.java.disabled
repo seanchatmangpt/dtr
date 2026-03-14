@@ -13,8 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.github.seanchatmangpt.dtr.rendermachine;
+package io.github.seanchatmangpt.dtr.test.rendermachine;
 
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
+import io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine;
 import com.google.common.collect.ImmutableMap;
 import io.github.seanchatmangpt.dtr.testbrowser.Request;
 import io.github.seanchatmangpt.dtr.testbrowser.Response;
@@ -41,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class RenderMachineImplTest {
+class RenderMachineImplTest {
 
     @Mock
     TestBrowser testBrowser;
