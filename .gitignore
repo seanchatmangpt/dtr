@@ -16,7 +16,7 @@ nb-configuration.xml
 
 # Generated test output from DocTester runs (not versioned artifacts)
 docs/test/
-doctester-core/docs/
+doctester-core/docs/test/
 
 # Temp file written by scripts/bump.sh, consumed by scripts/release.sh
 .release-version

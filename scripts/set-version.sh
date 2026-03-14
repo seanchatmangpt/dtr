@@ -22,7 +22,7 @@ def update_root(text, old, new):
         r'\g<1>' + new + r'\3',
         text, count=1, flags=re.MULTILINE
     )
-    # SCM <tag>
+    # SCM <tag> — set to HEAD during development; set-version.sh writes actual tag at release
     text = re.sub(
         r'<tag>v?' + re.escape(old) + r'(?:-rc\.\d+)?</tag>',
         f'<tag>v{new}</tag>',

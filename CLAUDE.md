@@ -1,6 +1,6 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 25 | **Version:** 2.6.0
+**Project:** Markdown documentation generator for Java 25 | **Version:** 2026.1.0
 
 ---
 
@@ -75,12 +75,12 @@ The only release path is:
 ```bash
 make release-patch   # bug fix, no API change
 make release-minor   # new say* methods, backward compatible
-make release-major   # breaking API change
+make release-year    # explicit year boundary (January trigger)
 ```
 
 The human decides the **type of change**. That is the only decision
 a human is qualified to make that a script cannot.
-The version number is a mechanical consequence — `scripts/bump-version.sh`
+The version number is a mechanical consequence — `scripts/bump.sh`
 owns the arithmetic, `scripts/release.sh` owns the tag and push,
 GitHub Actions owns the signing and Maven Central publish.
 
@@ -134,11 +134,8 @@ An agent that doesn't know this generates tests that produce output nowhere.
 
 ### Reasoning About Dates as Triggers, Not Deadlines
 
-March 23 is not "when JOTP is ready."
-March 23 is when `make release VERSION=1.0` fires.
-
 The right question is always:
-> **What needs to be true for `make release-minor` (or patch/major) to
+> **What needs to be true for `make release-minor` (or patch/year) to
 > succeed in a GitHub Actions runner and produce a complete receipted release?**
 
 That question has a finite, enumerable answer:
@@ -158,39 +155,62 @@ If those six things are true, the release succeeds. That is the scope.
 ## ⚡ CRITICAL RULES
 
 ### 1. REAL CODE, REAL MEASUREMENTS ONLY
-- ❌ NO simulation, NO fakes, NO hard-coded numbers
-- ✅ Use actual DTR code (RenderMachine + say* methods)
-- ✅ Measure with System.nanoTime() on real execution
-- ✅ Report: metric + units + Java version + iterations + environment
+- NO simulation, NO fakes, NO hard-coded numbers
+- Use actual DTR code (RenderMachine + say* methods)
+- Measure with `System.nanoTime()` on real execution
+- Report: metric + units + Java version + iterations + environment
 - **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
-- ✅ JUnit 5 tests with DtrContext
-- ✅ Output through RenderMachine rendering pipeline
-- ❌ Never bypass with standalone generators
+- JUnit 5 tests with `DtrContext`
+- Output through RenderMachine rendering pipeline
+- Never bypass with standalone generators
 
 ### 3. Toolchain (Non-Negotiable)
 - Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
-- Maven 4.0.0-rc-5: `/opt/apache-maven-4.0.0-rc-5/bin/mvn`
-- mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred)
-- Flag: `--enable-preview` in `.mvn/maven.config`
+- mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred locally for speed)
+- CI uses `./mvnw` — downloads Maven 4.0.0-rc-5 via wrapper; do NOT use Maven 3
+- Flag: `--enable-preview` in `.mvn/maven.config` (also `-Dmaven.compiler.enablePreview=true`)
 
 ---
 
-## 🔧 QUICK BUILD
+## VERSION SCHEME: CalVer YYYY.MINOR.PATCH
+
+`2026.3.1` = third feature release of 2026, first patch fix within it.
+
+- **YYYY** — the year. Reads as a timestamp. `2026` dependency is two years old in 2028.
+- **MINOR** — feature iterations within the year. Starts at 1. Resets to 1 on year boundary.
+- **PATCH** — fixes within a MINOR. Resets to 0 on every MINOR bump.
+
+Year boundary is automatic: `scripts/bump.sh minor` reads `date +%Y`. If the year changed, MINOR resets to 1. No human decides when 2027 starts.
+
+`release-major` does not exist. Breaking changes use deprecation cycle + year boundary.
+
+## RELEASE COMMANDS
+
+The human decides the type of change. The version number is derived.
 
 ```bash
-make test              # run unit tests (mvnd verify)
-make verify            # compile + test + checks
-make tag VERSION=2.7.0 # bump version, commit, tag (then push to release)
+make release-minor      # new say* methods, additive features  → YYYY.(N+1).0
+make release-patch      # bug fix, no API change               → YYYY.MINOR.(N+1)
+make release-year       # explicit year boundary (January)     → YYYY.1.0
 
-# Run a specific DTR test
-mvnd test -pl dtr-integration-test -Dtest=PhDThesisDocTest
+make release-rc-minor   # RC for minor                         → YYYY.(N+1).0-rc.N
+make release-rc-patch   # RC for patch                         → YYYY.MINOR.(N+1)-rc.N
 
-# Check output
-ls target/docs/test-results/
-cat target/docs/test-results/PhDThesisDocTest.md
+make snapshot           # deploy SNAPSHOT (no tag, no release)
+make version            # print current version
 ```
+
+**Never type a version number. Never run `mvn deploy` directly.**
+The scripts own the arithmetic. You own the semantics.
+
+Release sequence (all automated after `make release-*`):
+1. `scripts/bump.sh` — computes NEXT (CalVer + year-aware), updates all pom.xml, writes to `.release-version`
+2. `scripts/release.sh` — generates `docs/CHANGELOG.md`, commits, tags `v<VERSION>`, pushes
+3. GitHub Actions fires on tag → `mvnd verify` → `mvnd deploy -Prelease` → `gh release create`
+
+RC sequence: same flow but `scripts/release-rc.sh` → publish.yml deploy-rc → GitHub Packages only.
 
 ---
 
@@ -211,32 +231,35 @@ with token credentials from GitHub secrets.
 
 ---
 
-## 📝 HOW TO ADD A TEST
+## HOW TO ADD A TEST
 
 ```java
 @ExtendWith(DtrExtension.class)
-class PhDThesisDocTest {
+class MyDocTest {
     @Test
-    void testThesis(DtrContext ctx) {
-        ctx.sayNextSection("Chapter Title");
-        ctx.say("Content here.");
-        ctx.sayCode("System.out.println(\"code\");", "java");
+    void myFeature(DtrContext ctx) {
+        ctx.sayNextSection("Feature Name");
+        ctx.say("Description.");
+        ctx.sayCode("System.out.println(\"example\");", "java");
         ctx.sayTable(new String[][] {{"Col1", "Col2"}, {"V1", "V2"}});
-        ctx.sayJson(someObject);
-        ctx.sayWarning("Important!");
-        ctx.sayNote("FYI...");
+        ctx.sayWarning("Critical constraint.");
+        ctx.sayNote("Context.");
     }
 }
 ```
 
-**Output:** `target/docs/test-results/PhDThesisDocTest.md` (+ .tex, .html, .json)
+**Output:** `target/docs/test-results/MyDocTest.md` (+ .tex, .html, .json)
+
+**Before writing the test, ask:** Will this pass `mvnd verify --enable-preview`
+in a headless GitHub Actions runner with no local credentials? If not, fix
+that first.
 
 The test must pass `mvnd verify` in CI before it is correct.
 Output anywhere other than `target/docs/` is wrong.
 
 ---
 
-## 📊 say* API (Documentation Methods)
+## say* API
 
 | Method | Output | Use For |
 |--------|--------|---------|
@@ -253,25 +276,23 @@ Output anywhere other than `target/docs/` is wrong.
 
 ---
 
-## 🎯 DTR ARCHITECTURE (80/20)
+## DTR ARCHITECTURE
 
 **Input:** JUnit 5 test calls `say*` methods
 **Process:** RenderMachine captures calls → formats → routes to output engines
-**Output:** Markdown + LaTeX + HTML + OpenAPI + Blog (auto-generated)
+**Output:** Markdown + LaTeX + HTML + OpenAPI + Blog (all written to `target/docs/`)
 
-**Example:**
 ```java
-ctx.sayAndMakeRequest(Request.GET().url(api));  // Executes HTTP + documents
-ctx.sayAndAssertThat("Status", actual, is(200)); // Assert + document result
-// Output: Complete API doc with request/response examples
+ctx.sayAndMakeRequest(Request.GET().url(api));       // HTTP + documents
+ctx.sayAndAssertThat("Status", actual, is(200));     // Assert + documents
 ```
 
 ---
 
-## 🚀 JAVA 25 FEATURES (Use These)
+## JAVA 25 FEATURES (Use These)
 
 ```java
-// Records (immutable data)
+// Records
 record Response(int status, String body) {}
 
 // Sealed classes + pattern matching
@@ -281,66 +302,74 @@ String msg = switch(result) {
     case Error(var m) -> "FAIL: " + m;
 };
 
-// Virtual threads (millions of concurrent tasks)
+// Virtual threads
 try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
     executor.submit(() -> generateDoc());
 }
 
-// Text blocks (multi-line strings)
+// Text blocks
 String html = """
     <div>Content</div>
     """;
 ```
 
+All preview syntax requires `--enable-preview` at compile and runtime.
+Both are configured in `.mvn/maven.config` and `maven-surefire-plugin`.
+
 ---
 
-## ✅ BEFORE CODING
+## BEFORE CODING
 
 Ask this first: **"Does this pass `mvnd verify` in CI?"**
 
 Then:
 1. `java -version` → 25.0.2+
-2. `mvnd --version` → Maven 4.0.0-rc-5+
-3. `.mvn/maven.config` contains `--enable-preview`
+2. `mvnd --version` → 2.0.0+
+3. `.mvn/maven.config` contains `--enable-preview` and `-Dmaven.compiler.enablePreview=true`
 4. Output goes to `target/docs/` — not anywhere else
 5. No manual deploy steps — the tag triggers everything
 6. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
 
 ---
 
-## 🔍 TROUBLESHOOTING
+## TROUBLESHOOTING
 
 ```bash
-mvnd --stop                    # Stop daemon on auth issues
-mvnd -X clean install          # Verbose output
+mvnd verify                    # The gate — run this before anything else
+mvnd --stop                    # Stop daemon if stale
+mvnd -X clean verify           # Verbose — find the real failure
 cat target/surefire-reports/*  # Test details
-echo $JAVA_HOME                # Verify Java path
-ps aux | grep maven-proxy      # Check proxy running (local dev)
+echo $JAVA_HOME                # Verify Java 25
 make check                     # Verify entire toolchain
+
+# If Maven Central auth fails locally (not in CI):
+python3 maven-proxy-auth.py &
 ```
 
 ---
 
-## 📚 FILES YOU NEED
+## KEY FILES
 
-- `Makefile` — **start here**: `make help` shows all targets
-- `scripts/current-version.sh` — reads version from pom.xml (Python, no network)
-- `scripts/bump.sh` — CalVer arithmetic, year-reset rules, writes `.release-version`
-- `scripts/set-version.sh` — direct version set, used by bump.sh and hotfix
-- `scripts/release.sh` — calls changelog.sh, commits, tags, pushes; fires pipeline
-- `scripts/release-rc.sh` — RC variant: commits, tags rc.N, pushes to Packages
-- `scripts/changelog.sh` — git log → `docs/releases/VERSION.md` + `docs/CHANGELOG.md`
-- `.github/workflows/publish.yml` — tag-triggered release to Maven Central
-- `.github/workflows/ci.yml` — `mvnd verify` gate for every push/PR
-- `maven-proxy-auth.py` — local dev proxy (not used in CI)
-- `dtr-core/` — Core library
-- `dtr-integration-test/` — Integration tests
-- `.mvn/maven.config` — Build flags (--enable-preview)
-- `pom.xml` — `<release>25</release>`, release profile, GPG config
+| File | Purpose |
+|------|---------|
+| `Makefile` | Release control surface — `make help` shows all targets |
+| `.github/workflows/publish.yml` | Tag-triggered pipeline: classify → build → deploy/deploy-rc → release |
+| `pom.xml` | Root config, release profile, GPG config |
+| `dtr-core/` | Core library (deployed to Maven Central) |
+| `dtr-integration-test/` | Integration tests (not deployed) |
+| `.mvn/maven.config` | `--enable-preview`, `-Dmaven.compiler.enablePreview=true` |
+| `scripts/current-version.sh` | Reads version from pom.xml (Python, no network) |
+| `scripts/bump.sh` | CalVer arithmetic, year-reset rules, writes `.release-version` |
+| `scripts/set-version.sh` | Direct version set, used by bump.sh and hotfix |
+| `scripts/release.sh` | Calls changelog.sh, commits, tags, pushes; fires pipeline |
+| `scripts/release-rc.sh` | RC variant: commits, tags rc.N, pushes to Packages |
+| `scripts/changelog.sh` | git log → `docs/releases/VERSION.md` + `docs/CHANGELOG.md` |
+| `maven-proxy-auth.py` | Local dev proxy (not used in CI) |
 
 ---
 
 **Last Updated:** March 14, 2026
 **Branch:** claude/setup-makefile-github-actions-M0Kiz
+**Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
 **Version scheme:** `YYYY.MINOR.PATCH` — year is major, calendar owns it, no `release-major`.
 **Invariant:** The human decides the change type. The script derives the number. The tag is the trigger. The pipeline is the specification. `mvnd verify` is the gate.

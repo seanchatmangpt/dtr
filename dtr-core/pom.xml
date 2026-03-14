@@ -39,6 +39,38 @@
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>extract-javadoc</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+                              Run extract-javadoc via the Makefile.
+                              The Makefile target builds the Rust binary (if cargo is
+                              available) then runs it against dtr-core/src/main/java,
+                              producing docs/meta/javadoc.json.
+
+                              Skip the entire execution by passing
+                              -Ddtr.javadoc.skip=true on the mvn command line.
+                            -->
+                            <skip>${dtr.javadoc.skip}</skip>
+                            <executable>make</executable>
+                            <arguments>
+                                <argument>extract-javadoc</argument>
+                            </arguments>
+                            <workingDirectory>${project.basedir}/..</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
 
         <resources>

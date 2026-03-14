@@ -39,7 +39,7 @@ the specific language governing permissions and limitations under the License. -
         <url>https://github.com/seanchatmangpt/dtr</url>
         <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
         <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
-        <tag>v2026.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
@@ -73,6 +73,9 @@ the specific language governing permissions and limitations under the License. -
         <!-- DTR documentation output configuration -->
         <dtr.output.dir>docs/test</dtr.output.dir>
         <dtr.format>markdown</dtr.format>
+
+        <!-- Set to true to skip the Rust dtr-javadoc extraction step -->
+        <dtr.javadoc.skip>false</dtr.javadoc.skip>
 
         <!-- NetBeans editor settings -->
         <org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>4</org-netbeans-modules-editor-indent.CodeStyle.project.spaces-per-tab>
@@ -226,13 +229,10 @@ the specific language governing permissions and limitations under the License. -
     <build>
         <plugins>
             <!-- Enforce Java 25+ and Maven 4+ on every build — inherited by all modules -->
-            <!-- TEMPORARILY DISABLED: Maven Central auth rate limiting (environment issue, not code issue) -->
-            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
-            -->
         </plugins>
 
         <pluginManagement>
@@ -444,6 +444,70 @@ the specific language governing permissions and limitations under the License. -
                             <goals>deploy</goals>
                             <tagNameFormat>v@{project.version}</tagNameFormat>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+            Release Candidate — publishes to GitHub Packages only.
+            Triggered by scripts/release-rc.sh via `make release-rc-minor` / `make release-rc-patch`.
+            Final promotion uses `make release-minor` / `make release-patch`.
+        -->
+        <profile>
+            <id>release-rc</id>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/seanchatmangpt/dtr</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals><goal>jar-no-fork</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.11.2</version>
+                        <configuration>
+                            <doclint>none</doclint>
+                            <additionalOptions>--enable-preview</additionalOptions>
+                            <release>25</release>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals><goal>jar</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals><goal>sign</goal></goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

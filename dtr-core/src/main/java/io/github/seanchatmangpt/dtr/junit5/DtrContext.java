@@ -278,6 +278,11 @@ public class DtrContext implements RenderMachineCommands {
         renderMachine.sayEvolutionTimeline(clazz, maxEntries);
     }
 
+    @Override
+    public void sayJavadoc(java.lang.reflect.Method method) {
+        renderMachine.sayJavadoc(method);
+    }
+
     // ========================================================================
     // Accessors for internal components
     // ========================================================================

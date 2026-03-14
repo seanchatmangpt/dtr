@@ -2,65 +2,59 @@
 # CalVer bump: YYYY.MINOR.PATCH
 # Usage: bump.sh <minor|patch|year> [rc]
 #
-# Rules:
-#   minor — increment MINOR, reset PATCH to 0.
-#           If calendar year has advanced since current version, reset to YYYY.1.0.
-#           If current version is an RC (-rc.N), promote to final (strip suffix).
-#   patch — increment PATCH within current MINOR.
-#           If current version is an RC (-rc.N), promote to final (strip suffix).
-#   year  — explicit year boundary: force YYYY.1.0 for current calendar year.
-#           Used when January 1 has passed but no minor bump has been done yet.
-#   [rc]  — optional second argument. Tags as -rc.N where N is computed by
-#           counting existing rc tags for the target version.
+# CalVer scheme: YYYY.MINOR.PATCH
+#   minor — new features, additive changes; resets PATCH to 0; resets MINOR on year boundary
+#   patch — bug fixes within a MINOR; increments PATCH
+#   year  — explicit year boundary (January trigger); sets YYYY.1.0
 #
-# Writes the new version to .release-version for release.sh to consume.
+# RC flag: appends -rc.N where N = count of existing rc tags for this base version + 1
+# Promote RC to final: call bump.sh without rc flag; strips -rc suffix, no arithmetic.
 set -euo pipefail
 
 BUMP="${1:?usage: bump.sh <minor|patch|year> [rc]}"
-RC_FLAG="${2:-}"
+RC="${2:-}"
+THIS_YEAR=$(date +%Y)
 
 CURRENT=$(scripts/current-version.sh)
-# Strip any existing -rc.N suffix to get arithmetic base
-BASE=$(echo "$CURRENT" | sed 's/-rc\.[0-9]*//')
-YEAR=$(echo "$BASE"  | cut -d. -f1)
-MINOR=$(echo "$BASE" | cut -d. -f2)
-PATCH=$(echo "$BASE" | cut -d. -f3)
-NOW_YEAR=$(date +%Y)
 
-case "$BUMP" in
-  minor)
-    if echo "$CURRENT" | grep -q '\-rc\.'; then
-      # Promoting an RC to final — strip the suffix, do not bump
-      NEXT="$BASE"
-    elif [ "$NOW_YEAR" != "$YEAR" ]; then
-      # Year boundary: calendar year has advanced, reset to YYYY.1.0
-      NEXT="${NOW_YEAR}.1.0"
-    else
-      NEXT="${YEAR}.$((MINOR + 1)).0"
-    fi
-    ;;
-  patch)
-    if echo "$CURRENT" | grep -q '\-rc\.'; then
-      # Promoting an RC to final — strip the suffix, do not bump
-      NEXT="$BASE"
-    else
+# Extract base version (strip any -rc.N suffix)
+if [[ "$CURRENT" == *"-rc."* ]]; then
+  BASE=$(echo "$CURRENT" | sed 's/-rc\.[0-9]*//')
+else
+  BASE="$CURRENT"
+fi
+
+IFS='.' read -r YEAR MINOR PATCH <<< "$BASE"
+
+# If currently on an RC and no rc flag → promote to final (no arithmetic)
+if [[ "$CURRENT" == *"-rc."* && -z "$RC" ]]; then
+  NEXT="$BASE"
+else
+  case "$BUMP" in
+    minor)
+      if [ "$YEAR" != "$THIS_YEAR" ]; then
+        NEXT="${THIS_YEAR}.1.0"    # year boundary: reset MINOR to 1
+      else
+        NEXT="${YEAR}.$((MINOR + 1)).0"
+      fi
+      ;;
+    patch)
       NEXT="${YEAR}.${MINOR}.$((PATCH + 1))"
-    fi
-    ;;
-  year)
-    NEXT="${NOW_YEAR}.1.0"
-    ;;
-  *)
-    echo "error: bump must be minor, patch, or year (got: $BUMP)" >&2
-    exit 1
-    ;;
-esac
+      ;;
+    year)
+      NEXT="${THIS_YEAR}.1.0"
+      ;;
+    *)
+      echo "error: bump must be minor, patch, or year (got: $BUMP)" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 # Append RC qualifier if requested
-if [ -n "$RC_FLAG" ]; then
-  RC_N=$(git tag --list "v${NEXT}-rc.*" 2>/dev/null | wc -l | tr -d ' ')
-  NEXT_RC_N=$((RC_N + 1))
-  NEXT="${NEXT}-rc.${NEXT_RC_N}"
+if [ -n "$RC" ]; then
+  RC_COUNT=$(git tag --list "v${NEXT}-rc.*" 2>/dev/null | wc -l | tr -d ' ')
+  NEXT="${NEXT}-rc.$((RC_COUNT + 1))"
 fi
 
 echo "==> ${CURRENT} → ${NEXT}" >&2
