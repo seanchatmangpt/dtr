@@ -39,10 +39,7 @@
       "Bash(git reset --hard*)",
       "Bash(git clean -f*)"
     ],
-    "ask": [
-      "Bash(git push*)",
-      "Bash(git tag*)"
-    ],
+    "ask": [],
     "allow": [
       "Bash(mvnd:*)",
       "Bash(mvn:*)",
@@ -57,7 +54,9 @@
       "Bash(git branch*)",
       "Bash(git checkout*)",
       "Bash(git show*)",
-      "Bash(git stash*)"
+      "Bash(git stash*)",
+      "Bash(git push*)",
+      "Bash(git tag*)"
     ]
   }
 }
