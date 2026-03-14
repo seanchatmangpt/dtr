@@ -4,13 +4,13 @@
 > Every test run regenerates docs in multiple formats (Markdown, LaTeX, Blog posts, PDF,
 > Reveal.js slides) from live behavior — keeping docs forever in sync with reality.
 
-**Latest:** `2.6.0` | **License:** Apache 2.0 | **Java:** 25+ (`--enable-preview`) | **Build:** Maven 4 / mvnd 2.x
+**Latest:** `2026.1.0` | **License:** Apache 2.0 | **Java:** 25+ (`--enable-preview`) | **Build:** Maven 4 / mvnd 2.x | **Versioning:** [CalVer](https://calver.org) YYYY.MINOR.PATCH
 
 ```xml
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2.6.0</version>
+    <version>2026.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -21,15 +21,16 @@
 
 1. [What Is DTR?](#what-is-dtr)
 2. [5-Minute Quick Start](#5-minute-quick-start)
-3. [Tutorials — Learn by Doing](#tutorials--learn-by-doing)
-4. [How-To Guides — Solve Real Problems](#how-to-guides--solve-real-problems)
-5. [Reference — Complete API](#reference--complete-api)
-6. [Explanation — Why DTR?](#explanation--why-dtr)
-7. [Architecture](#architecture)
-8. [Module Structure](#module-structure)
-9. [Troubleshooting](#troubleshooting)
-10. [Changelog](#changelog)
-11. [Contributors & History](#contributors--history)
+3. [Versioning & Releasing](#versioning--releasing)
+4. [Tutorials — Learn by Doing](#tutorials--learn-by-doing)
+5. [How-To Guides — Solve Real Problems](#how-to-guides--solve-real-problems)
+6. [Reference — Complete API](#reference--complete-api)
+7. [Explanation — Why DTR?](#explanation--why-dtr)
+8. [Architecture](#architecture)
+9. [Module Structure](#module-structure)
+10. [Troubleshooting](#troubleshooting)
+11. [Changelog](#changelog)
+12. [Contributors & History](#contributors--history)
 
 ---
 
@@ -47,7 +48,7 @@ that simultaneously:
 **The core guarantee:** If a test passes, its documentation is accurate. Documentation can
 only exist for behavior the test actually exercises.
 
-### What's New in 2.6.0
+### What's New in 2026.1.0
 
 - **14 new `say*` method signatures** across 13 capabilities: inline benchmarking,
   Mermaid diagrams, documentation coverage, ASCII charts, contract verification, git timelines,
@@ -55,6 +56,8 @@ only exist for behavior the test actually exercises.
 - **HTTP/WebSocket stack removed** — DTR is now a pure documentation-generation library.
   Bring your own HTTP client (`java.net.http.HttpClient`, RestAssured, etc.).
 - Zero new external dependencies.
+- **CalVer versioning adopted** — versions now follow `YYYY.MINOR.PATCH`. This release
+  (`2026.1.0`) is the first under the new scheme.
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the complete version history.
 
@@ -73,7 +76,7 @@ See [`CHANGELOG.md`](CHANGELOG.md) for the complete version history.
     <dependency>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>2.6.0</version>
+        <version>2026.1.0</version>
         <scope>test</scope>
     </dependency>
     <dependency>
@@ -185,6 +188,53 @@ cat target/docs/test-results/GettingStartedDocTest.md
 
 The output is pure, portable Markdown — committed to your repository, diffable, and
 rendered natively by GitHub, GitLab, and every Markdown-aware editor.
+
+---
+
+## Versioning & Releasing
+
+### CalVer: YYYY.MINOR.PATCH
+
+DTR uses [Calendar Versioning](https://calver.org) starting from `2026.1.0`.
+
+| Component | Meaning | Behaviour |
+|-----------|---------|-----------|
+| `YYYY` | Release year | Reads as a timestamp — `2026` tells you the dependency is ~2 years old in 2028 |
+| `MINOR` | Feature iteration within the year | Starts at 1; resets to 1 on year boundary |
+| `PATCH` | Fix within a MINOR | Starts at 0; resets to 0 on every MINOR bump |
+
+Year boundaries are automatic: `scripts/bump.sh minor` reads `date +%Y`. If the year changed,
+MINOR resets to 1. No human decides when 2027 starts.
+
+**Never type a version number** — the release scripts own the arithmetic:
+
+```bash
+make release-minor      # new say* methods, additive features  → YYYY.(N+1).0
+make release-patch      # bug fix, no API change               → YYYY.MINOR.(N+1)
+make release-year       # explicit year boundary (January)     → YYYY.1.0
+
+make release-rc-minor   # RC for minor                         → YYYY.(N+1).0-rc.N
+make release-rc-patch   # RC for patch                         → YYYY.MINOR.(N+1)-rc.N
+
+make snapshot           # deploy SNAPSHOT (no tag, no release)
+make version            # print current version
+```
+
+### One-Command Release Invariant
+
+```
+make release-minor
+       │
+       ▼
+scripts/bump.sh   → computes NEXT (CalVer + year-aware), updates pom.xml
+scripts/release.sh → generates CHANGELOG.md, commits, tags v<VERSION>, pushes
+       │
+       ▼ (GitHub Actions fires on tag)
+mvnd verify → mvnd deploy -Prelease → gh release create → artifact on Maven Central
+```
+
+There are **no manual steps between `make release-minor` and a published artifact**.
+If `mvnd verify` fails, nothing publishes.
 
 ---
 
@@ -435,7 +485,7 @@ void enforceApiDocumentation(DtrContext ctx) {
 
 ### How-To: Test an API Endpoint and Document It
 
-DTR 2.6.0 is documentation-only; you bring your own HTTP client. Combine standard
+DTR is documentation-only; you bring your own HTTP client. Combine standard
 `java.net.http.HttpClient` (or RestAssured, OkHttp, etc.) with DTR's `say*` methods:
 
 ```java
@@ -606,7 +656,7 @@ class MultiFormatDocTest {
 
 ### All `say*` Methods
 
-DTR 2.6.0 provides 37 method signatures across the `RenderMachineCommands` interface.
+DTR 2026.1.0 provides 37 method signatures across the `RenderMachineCommands` interface.
 
 #### Core Documentation Primitives
 
@@ -629,7 +679,7 @@ DTR 2.6.0 provides 37 method signatures across the `RenderMachineCommands` inter
 | `sayCite(String citationKey, String pageRef)` | BibTeX citation + page | Precise citations |
 | `sayFootnote(String text)` | Inline footnote | Supplementary details |
 
-#### JVM Introspection Methods (added in v2.4.0)
+#### JVM Introspection Methods
 
 | Method | Output | Use For |
 |--------|--------|---------|
@@ -639,7 +689,7 @@ DTR 2.6.0 provides 37 method signatures across the `RenderMachineCommands` inter
 | `sayStringProfile(String)` | Text metrics table | Constraint validation |
 | `sayReflectiveDiff(Object, Object)` | Field diff table | State transition docs |
 
-#### Code Reflection Methods (added in v2.3.0 / v2.6.0)
+#### Code Reflection Methods
 
 | Method | Output | Use For |
 |--------|--------|---------|
@@ -649,21 +699,21 @@ DTR 2.6.0 provides 37 method signatures across the `RenderMachineCommands` inter
 | `sayCallGraph(Class<?>)` | Mermaid graph LR | Call relationship visualization |
 | `sayOpProfile(Method)` | Operation count table | Quick performance characterization |
 
-#### Inline Benchmarking (added in v2.6.0)
+#### Inline Benchmarking
 
 | Method | Output | Use For |
 |--------|--------|---------|
 | `sayBenchmark(String label, Runnable task)` | Performance table | Quick throughput/latency docs |
 | `sayBenchmark(String, Runnable, int warmup, int measure)` | Performance table | Precise benchmark control |
 
-#### Mermaid Diagram Generation (added in v2.6.0)
+#### Mermaid Diagram Generation
 
 | Method | Output | Use For |
 |--------|--------|---------|
 | `sayMermaid(String diagramDsl)` | Fenced `mermaid` block | Custom diagrams |
 | `sayClassDiagram(Class<?>... classes)` | Mermaid classDiagram | Architecture docs |
 
-#### Documentation Coverage & Quality (added in v2.6.0)
+#### Documentation Coverage & Quality
 
 | Method | Output | Use For |
 |--------|--------|---------|
@@ -671,7 +721,7 @@ DTR 2.6.0 provides 37 method signatures across the `RenderMachineCommands` inter
 | `sayContractVerification(Class<?>, Class<?>...)` | Contract matrix | Implementation compliance |
 | `sayEvolutionTimeline(Class<?>, int maxEntries)` | Git timeline table | Change history docs |
 
-#### Utility & Profiling (added in v2.6.0)
+#### Utility & Profiling
 
 | Method | Output | Use For |
 |--------|--------|---------|
@@ -861,9 +911,9 @@ Different audiences consume documentation differently:
 
 A single DTR test run produces all of them. The test is the single source of truth.
 
-### Why No HTTP Client in v2.6.0?
+### Why No HTTP Client?
 
-DTR 2.6.0 removes the built-in HTTP client (`TestBrowserImpl`, `sayAndMakeRequest`, etc.)
+DTR removed the built-in HTTP client (`TestBrowserImpl`, `sayAndMakeRequest`, etc.)
 because:
 
 1. **Separation of concerns:** HTTP testing and documentation generation are distinct
@@ -944,7 +994,7 @@ to record the request, response, and assertions explicitly.
 
 ```
 dtr/
-├── pom.xml                                        # Parent POM, version 2.6.0
+├── pom.xml                                        # Parent POM, version 2026.1.0
 │
 ├── dtr-core/                                      # Published to Maven Central
 │   ├── pom.xml
@@ -1064,7 +1114,7 @@ dtr/
 └── dtr-integration-test/                          # Full integration examples
     └── src/test/java/
         ├── PhDThesisDocTest.java                  # Academic paper example
-        ├── BlueOceanInnovationsTest.java          # v2.6.0 new methods showcase
+        ├── BlueOceanInnovationsTest.java          # 2026.1.0 new methods showcase
         ├── Java26InnovationsTest.java             # JVM introspection showcase
         ├── ExtendedSayApiDocTest.java             # Full say* API documentation
         ├── StressTest.java                        # Concurrent stress tests
@@ -1100,10 +1150,10 @@ Also verify the surefire version is 3.5.3+:
 ### "cannot find symbol: class DtrTest" / Import errors
 
 Use `io.github.seanchatmangpt.dtr.*` — the original `org.r10r.doctester` package was
-renamed in v2.0.0:
+renamed in the 2.0.0 release (now `2026.1.0` under CalVer):
 
 ```java
-// Correct v2.6.0 imports
+// Correct 2026.1.0 imports
 import io.github.seanchatmangpt.dtr.DtrTest;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
 import io.github.seanchatmangpt.dtr.junit5.DtrContext;
@@ -1111,17 +1161,17 @@ import io.github.seanchatmangpt.dtr.junit5.DtrContext;
 
 ### "sayAndMakeRequest cannot be found" / "sayAndAssertThat cannot be found"
 
-These methods were removed in v2.6.0. DTR no longer includes an HTTP client.
+These methods were removed when the HTTP stack was dropped. DTR no longer includes an HTTP client.
 Use `java.net.http.HttpClient` (JDK 11+) or RestAssured directly, and document
 the results manually using `say*` methods. See [How-To: Test an API Endpoint](#how-to-test-an-api-endpoint-and-document-it).
 
 ### "RenderMachine sealed class violation"
 
-DTR 2.5.0+ uses an abstract base class, not a sealed class. If you see this error,
-you are still importing an older version of `dtr-core`. Update to 2.6.0:
+DTR uses an abstract base class, not a sealed class. If you see this error, you are
+still importing an older version of `dtr-core`. Update to the current version:
 
 ```xml
-<version>2.6.0</version>
+<version>2026.1.0</version>
 ```
 
 ### Compilation error: "preview feature requires --enable-preview"
@@ -1179,26 +1229,30 @@ cat target/surefire-reports/*.txt
 
 ## Changelog
 
-See [`CHANGELOG.md`](CHANGELOG.md) for the complete version history from v2.0.0 through v2.6.0,
-including all breaking changes, migration guides, dependency tables, and architecture notes.
+See [`CHANGELOG.md`](CHANGELOG.md) for the complete version history, including all
+breaking changes, migration guides, dependency tables, and architecture notes.
+
+> Starting with `2026.1.0`, DTR uses **CalVer** (`YYYY.MINOR.PATCH`). Earlier versions
+> used semver and are listed below for historical context.
 
 **Version summary:**
 
 | Version | Date | Theme |
 |---------|------|-------|
-| **2.6.0** | 2026-03-13 | Blue Ocean: 14 new say* signatures, HTTP stack removed |
-| **2.5.0** | 2026-03-12 | Maven Central ready, RenderMachine unsealed, caching |
-| **2.4.0** | 2026-03-11 | JVM introspection: sayCallSite, sayAnnotationProfile, sayClassHierarchy, sayStringProfile, sayReflectiveDiff |
-| **2.3.0** | 2026-03-11 | Multi-format pipeline (LaTeX, blog, slides), 9 new say* methods |
-| **2.2.0** | 2026-03-10 | Publication-grade pipeline, bibliography, cross-references |
-| **2.1.0** | 2026-03-10 | Stable JUnit 5 baseline: DtrExtension, DtrContext, DtrCommands |
-| **2.0.0** | 2026-03-10 | MAJOR: Markdown-first, Java 25, JUnit 5, package rename |
+| **2026.1.0** | 2026-03-14 | CalVer launch: first release under YYYY.MINOR.PATCH scheme |
+| 2.6.0 *(pre-CalVer)* | 2026-03-13 | Blue Ocean: 14 new say* signatures, HTTP stack removed |
+| 2.5.0 *(pre-CalVer)* | 2026-03-12 | Maven Central ready, RenderMachine unsealed, caching |
+| 2.4.0 *(pre-CalVer)* | 2026-03-11 | JVM introspection: sayCallSite, sayAnnotationProfile, sayClassHierarchy |
+| 2.3.0 *(pre-CalVer)* | 2026-03-11 | Multi-format pipeline (LaTeX, blog, slides), 9 new say* methods |
+| 2.2.0 *(pre-CalVer)* | 2026-03-10 | Publication-grade pipeline, bibliography, cross-references |
+| 2.1.0 *(pre-CalVer)* | 2026-03-10 | Stable JUnit 5 baseline: DtrExtension, DtrContext, DtrCommands |
+| 2.0.0 *(pre-CalVer)* | 2026-03-10 | MAJOR: Markdown-first, Java 25, JUnit 5, package rename |
 
 ---
 
 ## Contributors & History
 
-**DTR 2.6.0** is maintained by:
+**DTR 2026.1.0** is maintained by:
 
 - **[Sean Chatman](https://github.com/seanchatmangpt)** (@seanchatmangpt) — architect and lead maintainer
 
@@ -1225,7 +1279,6 @@ DTR is built on:
 - **JUnit 5 / Jupiter 6.0.3** — testing framework
 - **Jackson 2.21.1** — JSON/XML serialization
 - **jqwik 1.9.0** — property-based testing
-- **WireMock 3.12.1** — fault injection testing
 - **BouncyCastle 1.77** — cryptography for LaTeX receipt embedding
 - **Guava 33.5.0-jre** — JVM utilities
 - **SLF4J 2.0.17** — logging facade
