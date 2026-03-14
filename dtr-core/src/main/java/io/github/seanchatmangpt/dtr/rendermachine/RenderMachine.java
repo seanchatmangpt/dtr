@@ -195,6 +195,12 @@ public abstract class RenderMachine implements RenderMachineCommands {
     /** ASCII chart — no-op in base class. */
     public void sayAsciiChart(String label, double[] values, String[] xLabels) {}
 
+    /** Contract verification — no-op in base class. */
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {}
+
+    /** Git evolution timeline — no-op in base class. */
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {}
+
     /**
      * Finishes documentation generation and writes output to disk.
      */

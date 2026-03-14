@@ -284,6 +284,76 @@ public final class MultiRenderMachine extends RenderMachine {
     }
 
     @Override
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {
+        dispatchToAll(m -> m.sayControlFlowGraph(method));
+    }
+
+    @Override
+    public void sayCallGraph(Class<?> clazz) {
+        dispatchToAll(m -> m.sayCallGraph(clazz));
+    }
+
+    @Override
+    public void sayOpProfile(java.lang.reflect.Method method) {
+        dispatchToAll(m -> m.sayOpProfile(method));
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task) {
+        dispatchToAll(m -> m.sayBenchmark(label, task));
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        dispatchToAll(m -> m.sayBenchmark(label, task, warmupRounds, measureRounds));
+    }
+
+    @Override
+    public void sayMermaid(String diagramDsl) {
+        dispatchToAll(m -> m.sayMermaid(diagramDsl));
+    }
+
+    @Override
+    public void sayClassDiagram(Class<?>... classes) {
+        dispatchToAll(m -> m.sayClassDiagram(classes));
+    }
+
+    @Override
+    public void sayDocCoverage(Class<?>... classes) {
+        dispatchToAll(m -> m.sayDocCoverage(classes));
+    }
+
+    @Override
+    public void sayEnvProfile() {
+        dispatchToAll(RenderMachine::sayEnvProfile);
+    }
+
+    @Override
+    public void sayRecordComponents(Class<? extends Record> recordClass) {
+        dispatchToAll(m -> m.sayRecordComponents(recordClass));
+    }
+
+    @Override
+    public void sayException(Throwable t) {
+        dispatchToAll(m -> m.sayException(t));
+    }
+
+    @Override
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        dispatchToAll(m -> m.sayAsciiChart(label, values, xLabels));
+    }
+
+    @Override
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        dispatchToAll(m -> m.sayContractVerification(contract, implementations));
+    }
+
+    @Override
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        dispatchToAll(m -> m.sayEvolutionTimeline(clazz, maxEntries));
+    }
+
+    @Override
     public void saySlideOnly(String text) {
         dispatchToAll(m -> m.saySlideOnly(text));
     }

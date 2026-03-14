@@ -659,4 +659,14 @@ public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
     public final void sayDocCoverage(Class<?>... classes) {
         renderMachine.sayDocCoverage(classes);
     }
+
+    /** Documents interface contract coverage across implementation classes. */
+    public final void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        renderMachine.sayContractVerification(contract, implementations);
+    }
+
+    /** Documents git commit history for the source file of the given class. */
+    public final void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        renderMachine.sayEvolutionTimeline(clazz, maxEntries);
+    }
 }

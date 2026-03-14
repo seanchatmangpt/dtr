@@ -385,6 +385,16 @@ public class DtrContext implements RenderMachineCommands {
         renderMachine.sayAsciiChart(label, values, xLabels);
     }
 
+    @Override
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        renderMachine.sayContractVerification(contract, implementations);
+    }
+
+    @Override
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        renderMachine.sayEvolutionTimeline(clazz, maxEntries);
+    }
+
     // ========================================================================
     // Accessors for internal components
     // ========================================================================

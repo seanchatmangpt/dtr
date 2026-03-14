@@ -34,12 +34,14 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import io.github.seanchatmangpt.dtr.benchmark.BenchmarkRunner;
+import io.github.seanchatmangpt.dtr.contract.ContractVerifier;
 import io.github.seanchatmangpt.dtr.coverage.CoverageRow;
 import io.github.seanchatmangpt.dtr.coverage.DocCoverageAnalyzer;
 import io.github.seanchatmangpt.dtr.diagram.CallGraphBuilder;
 import io.github.seanchatmangpt.dtr.diagram.ClassDiagramGenerator;
 import io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer;
 import io.github.seanchatmangpt.dtr.diagram.ControlFlowGraphBuilder;
+import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -1143,6 +1145,86 @@ public final class RenderMachineImpl extends RenderMachine {
             markdownDocument.add("%-6s %s  %.0f".formatted(rowLabel, bar, values[i]));
         }
         markdownDocument.add("```");
+    }
+
+    // =========================================================================
+    // Contract Verification + Git Evolution Timeline
+    // =========================================================================
+
+    @Override
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        if (contract == null) return;
+
+        // Auto-detect implementations from sealed hierarchy if none provided
+        Class<?>[] impls = (implementations == null || implementations.length == 0)
+                ? (contract.isSealed() ? contract.getPermittedSubclasses() : new Class<?>[0])
+                : implementations;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Contract Verification: `" + contract.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        var rows = ContractVerifier.verify(contract, impls);
+        if (rows.isEmpty()) {
+            markdownDocument.add("*(No public abstract methods found in contract)*");
+            return;
+        }
+
+        // Build header from impl names
+        List<String> implNames = new ArrayList<>(rows.getFirst().implStatus().keySet());
+        StringBuilder header = new StringBuilder("| Method |");
+        StringBuilder sep = new StringBuilder("| --- |");
+        for (String name : implNames) {
+            header.append(" ").append(name).append(" |");
+            sep.append(" --- |");
+        }
+        markdownDocument.add(header.toString());
+        markdownDocument.add(sep.toString());
+
+        int missing = 0;
+        for (var row : rows) {
+            StringBuilder line = new StringBuilder("| `").append(row.methodSig()).append("` |");
+            for (String status : row.implStatus().values()) {
+                line.append(" ").append(status).append(" |");
+                if (status.contains("MISSING")) missing++;
+            }
+            markdownDocument.add(line.toString());
+        }
+
+        markdownDocument.add("");
+        if (missing == 0) {
+            markdownDocument.add("**All contract methods covered across all implementations.**");
+        } else {
+            markdownDocument.add("**" + missing + " missing implementation(s) detected above (❌ MISSING).**");
+        }
+    }
+
+    @Override
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        if (clazz == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Evolution Timeline: `" + clazz.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        var entries = GitHistoryReader.read(clazz, maxEntries > 0 ? maxEntries : 10);
+
+        if (entries.isEmpty()) {
+            markdownDocument.add("> [!NOTE]");
+            markdownDocument.add("> Git history unavailable in this environment. " +
+                    "Run in a git repository with `git log` accessible to see commit history.");
+            return;
+        }
+
+        markdownDocument.add("| Commit | Date | Author | Summary |");
+        markdownDocument.add("| --- | --- | --- | --- |");
+        for (var entry : entries) {
+            markdownDocument.add("| `" + entry.hash() + "` | " + entry.date()
+                    + " | " + entry.author() + " | " + entry.subject() + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("*" + entries.size() + " most recent commits touching `"
+                + clazz.getSimpleName() + ".java`*");
     }
 
     public String convertTextToId(String text) {

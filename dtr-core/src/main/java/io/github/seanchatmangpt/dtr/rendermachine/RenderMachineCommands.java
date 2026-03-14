@@ -395,4 +395,35 @@ public interface RenderMachineCommands {
      * @param xLabels labels for each bar (must have the same length as {@code values})
      */
     void sayAsciiChart(String label, double[] values, String[] xLabels);
+
+    // =========================================================================
+    // Bonus: Contract Verification + Git Evolution Timeline
+    // =========================================================================
+
+    /**
+     * Documents interface contract coverage across implementation classes. For each
+     * public method in the contract interface, checks whether each implementation
+     * provides a concrete override (✅ direct), inherits it (↗ inherited), or is
+     * missing it entirely (❌ MISSING). Uses only standard Java reflection.
+     *
+     * <p>If the contract is a sealed interface, permitted subclasses are automatically
+     * detected so the user does not need to enumerate them.</p>
+     *
+     * @param contract        the interface whose methods to verify
+     * @param implementations zero or more implementation classes to check
+     */
+    void sayContractVerification(Class<?> contract, Class<?>... implementations);
+
+    /**
+     * Derives the git commit history for the source file of the given class using
+     * {@code git log --follow} and renders it as a timeline table (commit, date,
+     * author, subject). Falls back gracefully with a note if git is unavailable.
+     *
+     * <p>Follows the same {@code ProcessBuilder} + try/catch + fallback pattern
+     * already used in {@code DocMetadata}.</p>
+     *
+     * @param clazz      the class whose source file history to document
+     * @param maxEntries maximum number of commits to include (most recent first)
+     */
+    void sayEvolutionTimeline(Class<?> clazz, int maxEntries);
 }

@@ -282,7 +282,40 @@ public class BlueOceanInnovationsTest extends DtrTest {
     }
 
     @Test
-    void c5_sayAsciiChart_inline_bar_chart() {
+    void c4_sayContractVerification_interface_coverage() {
+        sayNextSection("C4: sayContractVerification() — Interface Contract Coverage");
+
+        say("Documents interface contract coverage across implementation classes. " +
+                "For each public method in the contract interface, checks whether each " +
+                "implementation class provides a concrete override (✅ direct), inherits " +
+                "it (↗ inherited), or is missing it entirely (❌ MISSING). " +
+                "Uses only standard Java reflection — no external dependencies.");
+
+        sayContractVerification(
+                io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands.class,
+                io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl.class
+        );
+
+        sayNote("If the contract is a sealed interface, permitted subclasses are auto-detected.");
+    }
+
+    @Test
+    void c5_sayEvolutionTimeline_git_history() {
+        sayNextSection("C5: sayEvolutionTimeline() — Git Evolution Timeline");
+
+        say("Derives the git commit history for the source file of the given class " +
+                "using `git log --follow` and renders it as a timeline table " +
+                "(commit hash, date, author, subject). Falls back gracefully " +
+                "with a NOTE if git is unavailable.");
+
+        sayEvolutionTimeline(
+                io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl.class,
+                10
+        );
+    }
+
+    @Test
+    void c6_sayAsciiChart_inline_bar_chart() {
         sayNextSection("C5: sayAsciiChart() — Inline ASCII Bar Chart");
 
         say("Renders a horizontal ASCII bar chart using Unicode block characters " +
