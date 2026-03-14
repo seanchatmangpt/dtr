@@ -1,6 +1,6 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 25 | **Version:** 2.6.0
+**Project:** Markdown documentation generator for Java 25 | **Version:** 2026.1.0
 
 ---
 
@@ -9,7 +9,7 @@
 March 23 is not a deadline. It is a trigger.
 
 ```
-make release VERSION=1.0
+make release-minor
 ```
 
 That command fires a git tag. The tag fires GitHub Actions. Actions runs
@@ -139,26 +139,43 @@ When `mvnd verify` fails in CI, the question is always:
 
 ---
 
+## VERSION SCHEME: CalVer YYYY.MINOR.PATCH
+
+`2026.3.1` = third feature release of 2026, first patch fix within it.
+
+- **YYYY** — the year. Reads as a timestamp. `2026` dependency is two years old in 2028.
+- **MINOR** — feature iterations within the year. Starts at 1. Resets to 1 on year boundary.
+- **PATCH** — fixes within a MINOR. Resets to 0 on every MINOR bump.
+
+Year boundary is automatic: `scripts/bump.sh minor` reads `date +%Y`. If the year changed, MINOR resets to 1. No human decides when 2027 starts.
+
+`release-major` does not exist. Breaking changes use deprecation cycle + year boundary.
+
 ## RELEASE COMMANDS
 
 The human decides the type of change. The version number is derived.
 
 ```bash
-make release-patch   # bug fix, no API change      → bumps x.y.Z
-make release-minor   # new features, compatible     → bumps x.Y.0
-make release-major   # breaking API change          → bumps X.0.0
-make snapshot        # deploy SNAPSHOT (no tag, no release)
-make version         # print current version
+make release-minor      # new say* methods, additive features  → YYYY.(N+1).0
+make release-patch      # bug fix, no API change               → YYYY.MINOR.(N+1)
+make release-year       # explicit year boundary (January)     → YYYY.1.0
+
+make release-rc-minor   # RC for minor                         → YYYY.(N+1).0-rc.N
+make release-rc-patch   # RC for patch                         → YYYY.MINOR.(N+1)-rc.N
+
+make snapshot           # deploy SNAPSHOT (no tag, no release)
+make version            # print current version
 ```
 
 **Never type a version number. Never run `mvn deploy` directly.**
-The scripts own the arithmetic. You own the semantics (patch/minor/major).
+The scripts own the arithmetic. You own the semantics.
 
 Release sequence (all automated after `make release-*`):
-1. `scripts/current-version.sh` — reads version from pom.xml
-2. `scripts/bump-version.sh` — increments, updates all pom.xml files
-3. `scripts/release.sh` — commits, tags `v<VERSION>`, pushes tag
-4. GitHub Actions fires on tag push → `mvnd verify` → `mvnd deploy -Prelease` → `gh release create`
+1. `scripts/bump.sh` — computes NEXT (CalVer + year-aware), updates all pom.xml, writes to `.release-version`
+2. `scripts/release.sh` — generates `docs/CHANGELOG.md`, commits, tags `v<VERSION>`, pushes
+3. GitHub Actions fires on tag → `mvnd verify` → `mvnd deploy -Prelease` → `gh release create`
+
+RC sequence: same flow but `scripts/release-rc.sh` → `publish-rc.yml` → GitHub Packages only.
 
 ---
 
@@ -285,4 +302,5 @@ python3 maven-proxy-auth.py &
 
 **Last Updated:** March 14, 2026
 **Branch:** claude/maven-central-publishing-X03Au
+**Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
 **Invariant:** One command releases. The pipeline is the specification of done.

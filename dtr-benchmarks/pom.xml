@@ -21,7 +21,7 @@
     <parent>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr</artifactId>
-        <version>2.6.0</version>
+        <version>2026.1.0</version>
     </parent>
 
     <artifactId>dtr-benchmarks</artifactId>
