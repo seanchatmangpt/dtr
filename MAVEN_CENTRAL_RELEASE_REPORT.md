@@ -529,7 +529,7 @@ mvnd -pl dtr-core -P release clean deploy
 
 ### Java & Maven Versions
 ```
-openjdk version "25.0.2" 2026-01-20
+openjdk version "26.0.0" 2026-01-20
 Apache Maven Daemon (mvnd) 2.0.0-rc-3
 Apache Maven 4.0.0-rc-5
 ```
@@ -826,7 +826,7 @@ curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.d
 
 - **Official Guide:** https://central.sonatype.org/publish/publish-maven/
 - **Plugin GitHub:** https://github.com/sonatype/central-publishing-maven-plugin
-- **Requirements:** Maven 3.8.1+, Java 8+ (we have 25 ✅)
+- **Requirements:** Maven 3.8.1+, Java 8+ (we have 26 ✅)
 
 ---
 

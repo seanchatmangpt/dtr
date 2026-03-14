@@ -15,8 +15,8 @@ specific language governing permissions and limitations under the License. -->
 
 **Target Release:** Java 26 (GA: March 17, 2026)
 **Status:** Release Candidate (RC)
-**Java Version Currently Required:** Java 26 (LTS) with `--enable-preview`
-**Migration Timeline:** Java 26 adoption when GA available
+**Java Version Currently Required:** Java 26 with `--enable-preview`
+**Migration Timeline:** Java 26 GA (March 17, 2026)
 
 ---
 
@@ -355,7 +355,7 @@ private void dispatchToAll(Consumer<RenderMachine> action) throws Exception {
 
 ### Key Improvements in Java 26
 
-| Aspect | Java 26 | Java 26 |
+| Aspect | Java 26 | Java 27+ |
 |--------|---------|---------|
 | **Task Cancellation** | Manual future.cancel() | Automatic on scope close |
 | **Deadlines** | No built-in deadline support | `joinUntil(Instant)` |
@@ -851,7 +851,7 @@ WARNING: Use --illegal-access=permit to suppress the warning (default in Java 26
 ### Proper Pattern (Immutable Record)
 
 ```java
-// Java 26/26+: Use records for guaranteed immutability
+// Java 26/27+: Use records for guaranteed immutability
 public record Config(String apiKey) {
     public Config {
         Objects.requireNonNull(apiKey, "apiKey must not be null");
@@ -970,13 +970,13 @@ mvnd dependency:tree -pl dtr-core | grep -i applet
 
 ### Prerequisites
 
-- **Java 26 RC** (or later) installed at `/usr/lib/jvm/java-26-openjdk-amd64` (when available; currently use Java 26)
+- **Java 26** installed at `/usr/lib/jvm/java-26-openjdk-amd64`
 - **Maven 4.0.0+** or **mvnd 2.0+** (Maven Daemon)
 - **Unix shell** (bash, zsh) for scripting
 
-### Current Setup (Java 26, with Java 26 feature previews)
+### Current Setup (Java 26)
 
-**pom.xml** already configured for Java 26 with `--enable-preview`:
+**pom.xml** configured for Java 26 with `--enable-preview`:
 
 ```xml
 <properties>
@@ -1064,9 +1064,9 @@ mvnd clean install -pl dtr-core -DskipTests
 mvnd clean verify
 ```
 
-### Build Commands (Java 26 → 26 migration)
+### Build Commands (Java 26 → 27 migration)
 
-| Command | Purpose | Java 26 | Java 26 |
+| Command | Purpose | Java 26 | Java 27 |
 |---------|---------|---------|---------|
 | `mvnd clean compile` | Compile source | Works | Works |
 | `mvnd test` | Run tests with preview | Works | Works |
@@ -1076,16 +1076,6 @@ mvnd clean verify
 ### Environment Variables
 
 **Current (Java 26):**
-
-```bash
-export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
-export MAVEN_OPTS="--enable-preview"
-
-mvnd --version  # Maven 4.0.0-rc-5 / mvnd 2.x.x
-java -version   # openjdk 25.x.x
-```
-
-**Java 26 (when GA available):**
 
 ```bash
 export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
@@ -1222,7 +1212,7 @@ mvnd test -pl dtr-core \
 
 ### Memory Profiling
 
-**Heap usage comparison (Java 26 vs Java 26):**
+**Heap usage comparison (Java 26 vs Java 27):**
 
 ```bash
 # Java 26
@@ -1230,7 +1220,7 @@ java -Xms256m -Xmx512m \
      -XX:+UseG1GC \
      -XX:+PrintGCDetails \
      -XX:+PrintGCDateStamps \
-     -Xloggc:gc-java25.log \
+     -Xloggc:gc-java26.log \
      org.junit.platform.console.ConsoleLauncher \
      --scan-classpath
 
@@ -1340,7 +1330,7 @@ void benchmarkHttp3Latency() {
 
 **A:** Java 26 is in Release Candidate phase (as of March 11, 2026). General Availability is March 17, 2026. For production use, wait for GA. For development/testing, RC builds are stable.
 
-### Q: Do I need to change my code when upgrading Java 26 → 26?
+### Q: Do I need to change my code when upgrading Java 26 → 27?
 
 **A:** No breaking changes for DTR. Update `<release>26</release>` in pom.xml and rebuild. All preview features continue to work with `--enable-preview`.
 
@@ -1364,9 +1354,9 @@ void benchmarkHttp3Latency() {
 
 ### Q: What happens to my Java 26 code when Java 27 is released?
 
-**A:** No changes. Java maintains **backward compatibility**. Java 26 code runs unchanged on Java 26, 27, 28, etc. Preview features just require `--enable-preview` flag.
+**A:** No changes. Java maintains **backward compatibility**. Java 26 code runs unchanged on Java 27, 28, 29, etc. Preview features just require `--enable-preview` flag.
 
-### Q: Should I target Java 26 or 25 for DTR 2.6.0?
+### Q: Should I target Java 26 or 27 for DTR 2.6.0?
 
 **A:** Target Java **26 GA** (March 17, 2026):
 
@@ -1382,7 +1372,7 @@ This ensures access to all Java 26 features (stable and preview). Older Java ver
 
 ### Q: Does DTR 2.6.0 require Java 26?
 
-**A:** It requires **Java 26 minimum** (for sealed classes, records, pattern matching). Older Java versions should use DTR 2.5.x (Java 26).
+**A:** It requires **Java 26 minimum** (for sealed classes, records, pattern matching). Older Java versions should use DTR 2.5.x (Java 26 or earlier).
 
 ### Q: How do I verify my code has no illegal reflective access?
 

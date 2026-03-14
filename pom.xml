@@ -307,7 +307,7 @@ the specific language governing permissions and limitations under the License. -
                                 <rules>
                                     <requireJavaVersion>
                                         <version>[26,)</version>
-                                        <message>Java 26 or higher is required.</message>
+                                        <message>Java 26 or higher is required. Build will fail on any version below 26.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
@@ -510,9 +510,9 @@ the specific language governing permissions and limitations under the License. -
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.mycila.maven-license-plugin</groupId>
-                        <artifactId>maven-license-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <groupId>com.mycila</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <version>4.5</version>
                         <configuration>
                             <quiet>false</quiet>
                             <header>src/main/resources/license-header.txt</header>

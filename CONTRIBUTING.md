@@ -10,7 +10,7 @@ This project adheres to the Contributor Covenant Code of Conduct. By participati
 
 ### Prerequisites
 
-- **Java 26 or later** (Java 26.0.2+ recommended)
+- **Java 26 or later** (Java 26.0.0+ recommended)
 - **Maven 4.0.0-rc-5+** or **mvnd 2.0.0+**
 - **Git** for version control
 
@@ -22,7 +22,7 @@ git clone https://github.com/seanchatmangpt/dtr.git
 cd dtr
 
 # Verify Java version
-java -version  # Should show openjdk version "25.0.2" or later
+java -version  # Should show openjdk version "26.0.0" or later
 
 # Verify Maven
 mvnd --version  # Should show Maven 4.0.0-rc-5+

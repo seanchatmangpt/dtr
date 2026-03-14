@@ -16,7 +16,7 @@ DTR 2.0.0 is a major release with **breaking changes** that modernize the framew
 |--------|-----|-------|-----------|
 | Output Format | Bootstrap HTML | Markdown (portable) | **YES** |
 | Output Location | `target/site/dtr/` | `docs/test/` | **YES** |
-| Java Version | 1.8+ | **25 (LTS only)** | **YES** |
+| Java Version | 1.8+ | **26 (LTS only)** | **YES** |
 | Annotations | Manual method calls | `@DocSection`, `@DocDescription`, etc. | No (optional) |
 | WebSocket Support | None | Full support | No (new) |
 | Server-Sent Events | None | Full support | No (new) |
@@ -62,7 +62,7 @@ docs/test/
 ```bash
 # Verify your Java installation
 java -version
-# Must output: openjdk 25.x.x (or later 25 release)
+# Must output: openjdk 26.x.x (or later 26 release)
 
 # Update JAVA_HOME if needed
 export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
@@ -510,7 +510,7 @@ mkdocs build  # Static HTML in site/
 
 ```bash
 # 1. Verify Java 26
-java -version  # Must show "openjdk 25.x.x"
+java -version  # Must show "openjdk 26.x.x"
 
 # 2. Verify Maven 4
 mvn --version  # Must show "Apache Maven 4.0.0-rc-5" or higher
@@ -607,14 +607,14 @@ docs/test/
 **Solution:**
 ```bash
 # Install Java 26 (if not present)
-sudo apt install openjdk-25-jdk  # Ubuntu/Debian
-brew install openjdk@25           # macOS
+sudo apt install openjdk-26-jdk  # Ubuntu/Debian
+brew install openjdk@26           # macOS
 
 # Set JAVA_HOME
 export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 
 # Verify
-java -version  # Must show "openjdk 25.x.x"
+java -version  # Must show "openjdk 26.x.x"
 ```
 
 ### Problem: "Markdown output is not generating"
@@ -709,7 +709,7 @@ public static void afterTests() {
 ### Removed
 - ❌ HTML/Bootstrap output (replaced with Markdown)
 - ❌ jQuery/Bootstrap assets (no longer needed)
-- ❌ Support for Java < 25
+- ❌ Support for Java < 26
 
 ---
 
