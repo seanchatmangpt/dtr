@@ -14,7 +14,7 @@
 
 DTR is properly configured for Maven Central publication using the modern **central-publishing-maven-plugin** (0.6.0). The project:
 
-- ✅ Uses Java 25 with `--enable-preview` enabled
+- ✅ Uses Java 26 with `--enable-preview` enabled
 - ✅ Uses Maven 4.0.0-rc-5 enforced by `maven-enforcer-plugin`
 - ✅ Has correct SCM configuration (GitHub)
 - ✅ Has complete license/developer metadata
@@ -146,7 +146,7 @@ gpg: /root/.gnupg/trustdb.gpg: trustdb created
 
 Configured correctly:
 - ✅ `maven-source-plugin:3.3.1` — generates source JAR
-- ✅ `maven-javadoc-plugin:3.11.2` — generates javadoc JAR with Java 25 preview support
+- ✅ `maven-javadoc-plugin:3.11.2` — generates javadoc JAR with Java 26 preview support
 - ✅ Both artifacts attached to build lifecycle
 
 **Verdict:** Maven Central requirements met.
@@ -493,7 +493,7 @@ NoClassDefFound: Could not initialize class org.eclipse.jetty.servlet.ServletCon
 
 **Occurs in:** `dtr-integration-test` module (77 tests)
 
-**Root Cause:** Likely Jetty 9.4.x classpath issue with Ninja framework 7.0.0 + Java 25
+**Root Cause:** Likely Jetty 9.4.x classpath issue with Ninja framework 7.0.0 + Java 26
 
 **Workaround for Release:**
 ```bash
@@ -514,7 +514,7 @@ mvnd -pl dtr-core -P release clean deploy
 
 2. **Investigate Ninja framework configuration**
    - Check `conf/ServletModule.java` for Jetty bindings
-   - Verify Java 25 preview compatibility
+   - Verify Java 26 preview compatibility
 
 3. **Debug full stack trace:**
    ```bash
@@ -529,7 +529,7 @@ mvnd -pl dtr-core -P release clean deploy
 
 ### Java & Maven Versions
 ```
-openjdk version "25.0.2" 2026-01-20
+openjdk version "26.0.0" 2026-01-20
 Apache Maven Daemon (mvnd) 2.0.0-rc-3
 Apache Maven 4.0.0-rc-5
 ```
@@ -545,7 +545,7 @@ Apache Maven 4.0.0-rc-5
 -Dmaven.compiler.enablePreview=true
 ```
 
-✅ **Correct flags for Java 25 + Maven 4 CI/CD**
+✅ **Correct flags for Java 26 + Maven 4 CI/CD**
 
 ### Enforcer Plugin
 ```
@@ -553,7 +553,7 @@ Apache Maven 4.0.0-rc-5
 [INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
 ```
 
-✅ **Java 25 and Maven 4.0.0-rc-3+ enforced**
+✅ **Java 26 and Maven 4.0.0-rc-3+ enforced**
 
 ---
 
@@ -588,7 +588,7 @@ Apache Maven 4.0.0-rc-5
   - [ ] All tests pass (except known Jetty issues)
   - [ ] `mvnd clean verify` succeeds or use `-pl dtr-core` workaround
   - [ ] License headers present (`mvnd -P license license:check`)
-  - [ ] Code reviewed for Java 25 idioms
+  - [ ] Code reviewed for Java 26 idioms
 
 - [ ] **Documentation**
   - [ ] README.md updated with 2.0.0 features
@@ -826,7 +826,7 @@ curl -s "https://central.sonatype.com/api/v1/search?q=io.github.seanchatmangpt.d
 
 - **Official Guide:** https://central.sonatype.org/publish/publish-maven/
 - **Plugin GitHub:** https://github.com/sonatype/central-publishing-maven-plugin
-- **Requirements:** Maven 3.8.1+, Java 8+ (we have 25 ✅)
+- **Requirements:** Maven 3.8.1+, Java 8+ (we have 26 ✅)
 
 ---
 

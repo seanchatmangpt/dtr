@@ -15,8 +15,8 @@ specific language governing permissions and limitations under the License. -->
 
 **Target Release:** Java 26 (GA: March 17, 2026)
 **Status:** Release Candidate (RC)
-**Java Version Currently Required:** Java 25 (LTS) with `--enable-preview`
-**Migration Timeline:** Java 26 adoption when GA available
+**Java Version Currently Required:** Java 26 with `--enable-preview`
+**Migration Timeline:** Java 26 GA (March 17, 2026)
 
 ---
 
@@ -93,13 +93,13 @@ Java 26 includes 10 targeted JEPs released on March 17, 2026:
 
 ### What Changed
 
-**Java 25:** Basic primitive type patterns (`int i`) in exhaustive switches.
+**Java 26:** Basic primitive type patterns (`int i`) in exhaustive switches.
 
 **Java 26:** Fourth preview tightens dominance rules and unconditional exactness, improving pattern matching correctness and eliminating edge cases where two patterns could match the same value.
 
 ### How to Use
 
-**Before (Java 25):**
+**Before (Java 26):**
 ```java
 // Basic primitive pattern matching
 switch (value) {
@@ -128,7 +128,7 @@ switch (parseInteger(input)) {
 
 ### DTR Application
 
-**Current Use (Java 25):** `Java26ShowcaseTest.java` dispatches `SayEvent` hierarchy with pattern matching:
+**Current Use (Java 26):** `Java26ShowcaseTest.java` dispatches `SayEvent` hierarchy with pattern matching:
 
 ```java
 // status: USING IN PRODUCTION
@@ -198,13 +198,13 @@ mvnd clean verify --enable-preview
 
 ### What Changed
 
-**Java 25:** First preview of `LazyConstantPool` — JVM-optimized object caching for immutable constants.
+**Java 26:** First preview of `LazyConstantPool` — JVM-optimized object caching for immutable constants.
 
 **Java 26:** Second preview refines the API for declaring objects as "lazy constants" — computed once, cached forever, treated by the JVM as true constants for inlining and escape analysis.
 
 ### How to Use
 
-**Before (Java 25 — no lazy constant API):**
+**Before (Java 26 — no lazy constant API):**
 ```java
 // Manual singleton pattern with synchronization overhead
 public class ConfigCache {
@@ -322,7 +322,7 @@ mvnd clean verify -DskipTests && \
 
 ### How to Use
 
-**Before (Java 25 — manual thread coordination):**
+**Before (Java 26 — manual thread coordination):**
 ```java
 // MultiRenderMachine.java — manual virtual thread management (current)
 private void dispatchToAll(Consumer<RenderMachine> action) {
@@ -355,7 +355,7 @@ private void dispatchToAll(Consumer<RenderMachine> action) throws Exception {
 
 ### Key Improvements in Java 26
 
-| Aspect | Java 25 | Java 26 |
+| Aspect | Java 26 | Java 27+ |
 |--------|---------|---------|
 | **Task Cancellation** | Manual future.cancel() | Automatic on scope close |
 | **Deadlines** | No built-in deadline support | `joinUntil(Instant)` |
@@ -364,7 +364,7 @@ private void dispatchToAll(Consumer<RenderMachine> action) throws Exception {
 
 ### DTR Application
 
-**Current (Java 25):** `MultiRenderMachine` uses manual virtual thread executor:
+**Current (Java 26):** `MultiRenderMachine` uses manual virtual thread executor:
 
 ```java
 // Status: USING WITH PREVIEW
@@ -467,7 +467,7 @@ mvnd clean verify -DskipTests -pl dtr-core && \
 
 ### How to Use
 
-**Before (Java 25 — HTTP/1.1, HTTP/2 only):**
+**Before (Java 26 — HTTP/1.1, HTTP/2 only):**
 ```java
 // Only HTTP/1.1 and HTTP/2 available
 var client = HttpClient.newBuilder()
@@ -516,7 +516,7 @@ var response = client.send(request, HttpResponse.BodyHandlers.ofString());
 **Potential Enhancement:** TestBrowser could optionally use HTTP/3 for faster test execution:
 
 ```java
-// Current TestBrowserImpl.java (Java 25)
+// Current TestBrowserImpl.java (Java 26)
 public class TestBrowserImpl implements TestBrowser {
     private final HttpClient client;
 
@@ -594,13 +594,13 @@ mvnd test -pl dtr-core -Dtest=ProtocolBenchmark
 
 ### What Changed
 
-**Java 25:** AOT (Ahead-of-Time) compilation via GraalVM, but object cache tied to G1 GC.
+**Java 26:** AOT (Ahead-of-Time) compilation via GraalVM, but object cache tied to G1 GC.
 
 **Java 26:** AOT object caching works with **any garbage collector** (G1, ZGC, Shenandoah, Serial, Parallel). Enables Project Leyden's goal of faster Java startup for containerized workloads.
 
 ### How to Use
 
-**Before (Java 25):**
+**Before (Java 26):**
 ```bash
 # AOT compilation only with G1 GC
 java -XX:+UseG1GC -XX:+WriteAOTSnapshot -XX:AOTSnapshot=app.jsa MyApp
@@ -680,7 +680,7 @@ mvnd test -pl dtr-core \
 
 ### What Changed
 
-**Java 25:** First preview of `PEM.readPrivateKey()`, `PEM.writePrivateKey()` for cryptographic object serialization in PEM format (RFC 1421).
+**Java 26:** First preview of `PEM.readPrivateKey()`, `PEM.writePrivateKey()` for cryptographic object serialization in PEM format (RFC 1421).
 
 **Java 26:** Second preview refines:
 - Support for encrypted private keys (PKCS#8 with password protection)
@@ -689,7 +689,7 @@ mvnd test -pl dtr-core \
 
 ### How to Use
 
-**Before (Java 25):**
+**Before (Java 26):**
 ```java
 // Manual PEM parsing (tedious)
 String pemData = new String(Files.readAllBytes(Path.of("private.pem")));
@@ -812,7 +812,7 @@ c.intoArray(result, 0);
 
 ### What Changed
 
-**Java 25:** Deprecated reflection-based mutation of `final` fields via `Unsafe` and `Field.set()`.
+**Java 26:** Deprecated reflection-based mutation of `final` fields via `Unsafe` and `Field.set()`.
 
 **Java 26:** Transition phase — the reflection barrier is activated by default. Warnings emitted to stderr when code attempts to mutate a `final` field via `setAccessible(true).set()`.
 
@@ -820,7 +820,7 @@ c.intoArray(result, 0);
 
 ### How to Use
 
-**Before (Java 25 — allowed, but discouraged):**
+**Before (Java 26 — allowed, but discouraged):**
 ```java
 // Mutating a final field (works but breaks immutability guarantees)
 public class Config {
@@ -831,7 +831,7 @@ public class Config {
     }
 }
 
-// Reflection-based mutation (silently works in Java 25)
+// Reflection-based mutation (silently works in Java 26)
 var field = Config.class.getDeclaredField("apiKey");
 field.setAccessible(true);
 field.set(config, "hacked-key");  // Breaks immutability contract
@@ -845,13 +845,13 @@ Running the same code in Java 26 produces:
 WARNING: A direct buffer memory access operation has occured from a user-supplied method (com.example.Config)
 WARNING: Illegal reflective access by java.lang.reflect.Field::set to field org.example.Config.apiKey
 WARNING: Please consider reporting this to the maintainers of com.example.Config
-WARNING: Use --illegal-access=permit to suppress the warning (default in Java 25, denied in Java 27)
+WARNING: Use --illegal-access=permit to suppress the warning (default in Java 26, denied in Java 27)
 ```
 
 ### Proper Pattern (Immutable Record)
 
 ```java
-// Java 25/26+: Use records for guaranteed immutability
+// Java 26/27+: Use records for guaranteed immutability
 public record Config(String apiKey) {
     public Config {
         Objects.requireNonNull(apiKey, "apiKey must not be null");
@@ -970,17 +970,17 @@ mvnd dependency:tree -pl dtr-core | grep -i applet
 
 ### Prerequisites
 
-- **Java 26 RC** (or later) installed at `/usr/lib/jvm/java-26-openjdk-amd64` (when available; currently use Java 25)
+- **Java 26** installed at `/usr/lib/jvm/java-26-openjdk-amd64`
 - **Maven 4.0.0+** or **mvnd 2.0+** (Maven Daemon)
 - **Unix shell** (bash, zsh) for scripting
 
-### Current Setup (Java 25, with Java 26 feature previews)
+### Current Setup (Java 26)
 
-**pom.xml** already configured for Java 25 with `--enable-preview`:
+**pom.xml** configured for Java 26 with `--enable-preview`:
 
 ```xml
 <properties>
-    <maven.compiler.release>25</maven.compiler.release>
+    <maven.compiler.release>26</maven.compiler.release>
 </properties>
 
 <plugin>
@@ -988,7 +988,7 @@ mvnd dependency:tree -pl dtr-core | grep -i applet
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.13.0</version>
     <configuration>
-        <release>25</release>
+        <release>26</release>
         <compilerArgs>
             <arg>--enable-preview</arg>
         </compilerArgs>
@@ -1064,9 +1064,9 @@ mvnd clean install -pl dtr-core -DskipTests
 mvnd clean verify
 ```
 
-### Build Commands (Java 25 → 26 migration)
+### Build Commands (Java 26 → 27 migration)
 
-| Command | Purpose | Java 25 | Java 26 |
+| Command | Purpose | Java 26 | Java 27 |
 |---------|---------|---------|---------|
 | `mvnd clean compile` | Compile source | Works | Works |
 | `mvnd test` | Run tests with preview | Works | Works |
@@ -1075,17 +1075,7 @@ mvnd clean verify
 
 ### Environment Variables
 
-**Current (Java 25):**
-
-```bash
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
-export MAVEN_OPTS="--enable-preview"
-
-mvnd --version  # Maven 4.0.0-rc-5 / mvnd 2.x.x
-java -version   # openjdk 25.x.x
-```
-
-**Java 26 (when GA available):**
+**Current (Java 26):**
 
 ```bash
 export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
@@ -1099,10 +1089,10 @@ java -version   # openjdk 26.x.x
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `error: --enable-preview flag not allowed for target Java 25` | Preview feature used without flag | Add `<enablePreview>true</enablePreview>` to compiler config |
-| `error: record is not a feature` | Java < 16 targeted | Set `<release>25</release>` (or higher) |
+| `error: --enable-preview flag not allowed for target Java 26` | Preview feature used without flag | Add `<enablePreview>true</enablePreview>` to compiler config |
+| `error: record is not a feature` | Java < 16 targeted | Set `<release>26</release>` (or higher) |
 | `error: sealed types are not available` | Java < 17 targeted | Same as above |
-| `[WARNING] Source option 5 is no longer supported` | Old compiler config | Update to `<release>25</release>` (Maven 4 standard) |
+| `[WARNING] Source option 5 is no longer supported` | Old compiler config | Update to `<release>26</release>` (Maven 4 standard) |
 | `mvnd: command not found` | Maven Daemon not installed | Install: `cd /opt && wget https://dist.apache.org/repos/dist/release/maven/mvnd/...` |
 
 ---
@@ -1113,14 +1103,14 @@ java -version   # openjdk 26.x.x
 
 | JEP | Current Status | Java 26 | Java 27 (H2 2026) | Java 28+ |
 |-----|----------------|---------|------------------|----------|
-| **530** (Primitive patterns) | 3rd preview (Java 25) | **4th preview** | Likely stable | Standard |
-| **525** (Structured concurrency) | 5th preview (Java 25) | **6th preview** | Likely stable | Standard |
+| **530** (Primitive patterns) | 3rd preview (Java 26) | **4th preview** | Likely stable | Standard |
+| **525** (Structured concurrency) | 5th preview (Java 26) | **6th preview** | Likely stable | Standard |
 | **517** (HTTP/3) | New | **1st preview** | 2nd preview? | Uncertain |
-| **526** (Lazy constants) | 1st preview (Java 25) | **2nd preview** | Likely stable | Standard |
-| **524** (PEM encodings) | 1st preview (Java 25) | **2nd preview** | Likely stable | Standard |
+| **526** (Lazy constants) | 1st preview (Java 26) | **2nd preview** | Likely stable | Standard |
+| **524** (PEM encodings) | 1st preview (Java 26) | **2nd preview** | Likely stable | Standard |
 | **522** (G1 sync) | — | **Stable** | Stable | Standard |
 | **516** (AOT caching) | — | **1st preview** | 2nd preview? | Uncertain |
-| **529** (Vector API) | 10th incubator (Java 25) | **11th incubator** | 12th? | Uncertain |
+| **529** (Vector API) | 10th incubator (Java 26) | **11th incubator** | 12th? | Uncertain |
 | **500** (Final) | — | **Stable** (warnings) | Enforcement | Removal |
 | **504** (Applet) | — | **Removed** | Removed | Removed |
 
@@ -1182,7 +1172,7 @@ Preview features are **not guaranteed stable** until a final preview release. Ch
 - Parameter name changes
 - Removal of entire features if they don't prove popular
 
-**Risk mitigation:** DTR 2.6.0 targets Java 26 with preview features. When features stabilize, DTR 3.0.0 will remove preview flags. Older versions (2.5.x) remain compatible with Java 25.
+**Risk mitigation:** DTR 2.6.0 targets Java 26 with preview features. When features stabilize, DTR 3.0.0 will remove preview flags. Older versions (2.5.x) remain compatible with Java 26.
 
 ---
 
@@ -1222,15 +1212,15 @@ mvnd test -pl dtr-core \
 
 ### Memory Profiling
 
-**Heap usage comparison (Java 25 vs Java 26):**
+**Heap usage comparison (Java 26 vs Java 27):**
 
 ```bash
-# Java 25
+# Java 26
 java -Xms256m -Xmx512m \
      -XX:+UseG1GC \
      -XX:+PrintGCDetails \
      -XX:+PrintGCDateStamps \
-     -Xloggc:gc-java25.log \
+     -Xloggc:gc-java26.log \
      org.junit.platform.console.ConsoleLauncher \
      --scan-classpath
 
@@ -1249,7 +1239,7 @@ java -Xms256m -Xmx512m \
 
 ### Measuring Concurrent Rendering Throughput
 
-**Before (Java 25):**
+**Before (Java 26):**
 
 ```java
 // MultiRenderMachine throughput test
@@ -1272,7 +1262,7 @@ void benchmarkRenderingThroughput() {
     }
     long millis = (System.nanoTime() - start) / 1_000_000;
 
-    System.out.println("Java 25: " + millis + " ms for 30k say* calls across 11 formats");
+    System.out.println("Java 26: " + millis + " ms for 30k say* calls across 11 formats");
     // Expected: ~500-800 ms (sequential virtual threads)
 }
 ```
@@ -1340,7 +1330,7 @@ void benchmarkHttp3Latency() {
 
 **A:** Java 26 is in Release Candidate phase (as of March 11, 2026). General Availability is March 17, 2026. For production use, wait for GA. For development/testing, RC builds are stable.
 
-### Q: Do I need to change my code when upgrading Java 25 → 26?
+### Q: Do I need to change my code when upgrading Java 26 → 27?
 
 **A:** No breaking changes for DTR. Update `<release>26</release>` in pom.xml and rebuild. All preview features continue to work with `--enable-preview`.
 
@@ -1362,11 +1352,11 @@ void benchmarkHttp3Latency() {
 
 **A:** It's the 6th preview (Java 26). Likely stable in Java 27. The API has been stable for 2+ years; stabilization is mainly formality.
 
-### Q: What happens to my Java 25 code when Java 27 is released?
+### Q: What happens to my Java 26 code when Java 27 is released?
 
-**A:** No changes. Java maintains **backward compatibility**. Java 25 code runs unchanged on Java 26, 27, 28, etc. Preview features just require `--enable-preview` flag.
+**A:** No changes. Java maintains **backward compatibility**. Java 26 code runs unchanged on Java 27, 28, 29, etc. Preview features just require `--enable-preview` flag.
 
-### Q: Should I target Java 26 or 25 for DTR 2.6.0?
+### Q: Should I target Java 26 or 27 for DTR 2.6.0?
 
 **A:** Target Java **26 GA** (March 17, 2026):
 
@@ -1382,7 +1372,7 @@ This ensures access to all Java 26 features (stable and preview). Older Java ver
 
 ### Q: Does DTR 2.6.0 require Java 26?
 
-**A:** It requires **Java 26 minimum** (for sealed classes, records, pattern matching). Older Java versions should use DTR 2.5.x (Java 25).
+**A:** It requires **Java 26 minimum** (for sealed classes, records, pattern matching). Older Java versions should use DTR 2.5.x (Java 26 or earlier).
 
 ### Q: How do I verify my code has no illegal reflective access?
 
