@@ -1,0 +1,118 @@
+name: Publish RC to GitHub Packages
+
+# Triggered by release candidate tags created via `make release-rc-*`
+# Final releases are handled by publish.yml
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  JAVA_VERSION: '25'
+  MAVEN_OPTS: >-
+    -Xmx2g
+    -Xms1g
+    -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
+    -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
+
+jobs:
+  # ── 1. Build & Test ────────────────────────────────────────────────────────
+  build:
+    name: Build & Test (RC)
+    # RC tags only — final tags are routed to publish.yml via job condition
+    if: "contains(github.ref_name, '-rc.')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Build and test
+        run: ./mvnw clean verify --no-transfer-progress
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-rc
+          path: |
+            **/target/surefire-reports/
+            **/target/failsafe-reports/
+
+  # ── 2. Publish to GitHub Packages ─────────────────────────────────────────
+  publish:
+    name: Publish to GitHub Packages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+
+      - name: Configure Maven settings
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << 'EOF'
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
+              </server>
+            </servers>
+            <profiles>
+              <profile>
+                <id>gpg</id>
+                <activation><activeByDefault>true</activeByDefault></activation>
+                <properties>
+                  <gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
+                  <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                </properties>
+              </profile>
+            </profiles>
+          </settings>
+          EOF
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Publish RC to GitHub Packages
+        run: ./mvnw clean deploy -Prelease-rc -DskipTests --no-transfer-progress
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

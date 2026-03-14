@@ -1,6 +1,8 @@
 # How-to: Use Virtual Threads with Executors
 
-Spawn thousands of lightweight concurrent tasks using Java 25 virtual threads. This guide covers practical patterns for concurrent execution without resource overhead.
+Spawn thousands of lightweight concurrent tasks using Java 25 virtual threads. Benchmark the results with `sayBenchmark` and document dispatch performance with `MultiRenderMachine`.
+
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
@@ -21,7 +23,6 @@ This creates an executor that spawns one virtual thread per task. The JVM schedu
 ```java
 try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
     Future<String> future = executor.submit(() -> {
-        // This runs on a virtual thread
         Thread.sleep(1000);
         return "Result";
     });
@@ -30,11 +31,9 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 }
 ```
 
-`executor.submit(Callable)` returns a `Future` immediately (non-blocking). Call `.get()` to wait for the result.
-
 ---
 
-## Submit Multiple Tasks and Wait for All
+## Submit Multiple Tasks and Wait
 
 ```java
 try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -42,48 +41,93 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
     for (int i = 0; i < 100; i++) {
         futures.add(executor.submit(() -> {
-            // Simulate work
             Thread.sleep(50);
             return 42;
         }));
     }
 
-    // Collect all results
-    List<Integer> results = new ArrayList<>();
-    for (Future<Integer> future : futures) {
-        results.add(future.get());
-    }
+    List<Integer> results = futures.stream()
+        .map(f -> {
+            try { return f.get(); }
+            catch (Exception e) { throw new RuntimeException(e); }
+        })
+        .toList();
 
     System.out.println("Got " + results.size() + " results");
 }
 ```
 
-Or use streams:
+---
+
+## Benchmark Virtual Threads vs Platform Threads
+
+Use `sayBenchmark` to document the performance difference:
 
 ```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    List<Future<Integer>> futures = new ArrayList<>();
-    for (int i = 0; i < 100; i++) {
-        futures.add(executor.submit(() -> 42));
-    }
+@ExtendWith(DtrExtension.class)
+class VirtualThreadBenchmarkDocTest {
 
-    List<Integer> results = futures.stream()
-        .map(f -> {
-            try {
-                return f.get();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        })
-        .toList();
+    @Test
+    void benchmarkConcurrency(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("Virtual Thread vs Platform Thread Performance");
+        ctx.sayEnvProfile();
+
+        final int taskCount = 500;
+
+        ctx.sayBenchmark("Platform threads (" + taskCount + " tasks, pool=8)", () -> {
+            try (var exec = Executors.newFixedThreadPool(8)) {
+                var futures = new ArrayList<Future<?>>();
+                for (int i = 0; i < taskCount; i++) {
+                    futures.add(exec.submit(() -> { Thread.sleep(1); return null; }));
+                }
+                for (var f : futures) f.get();
+            } catch (Exception e) { throw new RuntimeException(e); }
+        }, 3, 10);
+
+        ctx.sayBenchmark("Virtual threads (" + taskCount + " tasks)", () -> {
+            try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
+                var futures = new ArrayList<Future<?>>();
+                for (int i = 0; i < taskCount; i++) {
+                    futures.add(exec.submit(() -> { Thread.sleep(1); return null; }));
+                }
+                for (var f : futures) f.get();
+            } catch (Exception e) { throw new RuntimeException(e); }
+        }, 3, 10);
+
+        ctx.sayNote("Virtual threads excel at I/O-bound workloads where platform threads " +
+                    "would block. For CPU-bound work, use ForkJoinPool instead.");
+    }
 }
 ```
 
 ---
 
-## Invoke Multiple Callables and Wait
+## Document MultiRenderMachine Virtual Thread Dispatch
 
-Use `invokeAll()` to submit multiple tasks and await all:
+DTR's `MultiRenderMachine` uses virtual threads to dispatch to output engines. Document this:
+
+```java
+@Test
+void documentDispatchOverhead(DtrContext ctx) {
+    ctx.sayNextSection("MultiRenderMachine Dispatch Performance");
+    ctx.sayEnvProfile();
+
+    ctx.say("Each say* call is dispatched to all configured output engines " +
+            "(Markdown, LaTeX, HTML, JSON) using virtual threads.");
+
+    ctx.sayBenchmark("say() dispatched to all engines", () -> {
+        ctx.say("benchmark payload");
+    }, 10, 100);
+
+    ctx.sayBenchmark("sayJson() with object serialization", () -> {
+        ctx.sayJson(java.util.Map.of("key", "value", "count", 42));
+    }, 10, 100);
+}
+```
+
+---
+
+## invokeAll: Submit All, Wait for All
 
 ```java
 try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -93,10 +137,8 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
         () -> { Thread.sleep(200); return "Task 3"; }
     );
 
-    // Submit all and wait for completion
     List<Future<String>> futures = executor.invokeAll(tasks);
 
-    // All are complete; collect results
     for (Future<String> f : futures) {
         System.out.println(f.get());
     }
@@ -105,9 +147,7 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 ---
 
-## Invoke and Get First Result
-
-Use `invokeAny()` to get the first successful result:
+## invokeAny: Get First Result
 
 ```java
 try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -117,9 +157,8 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
         () -> { Thread.sleep(300); return "Medium"; }
     );
 
-    // Returns the first to complete (usually "Fast")
     String result = executor.invokeAny(tasks);
-    System.out.println(result);
+    System.out.println(result); // "Fast"
 }
 ```
 
@@ -141,29 +180,6 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
         System.out.println("Task threw: " + e.getCause().getMessage());
     } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-    }
-}
-```
-
----
-
-## Timeout on Waiting
-
-Use `.get(timeout, unit)` to avoid waiting forever:
-
-```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    Future<String> future = executor.submit(() -> {
-        Thread.sleep(5000);
-        return "Done";
-    });
-
-    try {
-        String result = future.get(1, java.util.concurrent.TimeUnit.SECONDS);
-        System.out.println(result);
-    } catch (java.util.concurrent.TimeoutException e) {
-        System.out.println("Task took too long, cancelling");
-        future.cancel(true);
     }
 }
 ```
@@ -194,7 +210,7 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
     List<TaskResult> results = futures.stream()
         .map(f -> {
             try {
-                return new TaskResult.Success(f.get());
+                return (TaskResult) new TaskResult.Success(f.get());
             } catch (Exception e) {
                 return new TaskResult.Failure(e.getMessage());
             }
@@ -202,69 +218,29 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
         .toList();
 
     long successCount = results.stream()
-        .filter(r -> r instanceof TaskResult.Success)
-        .count();
-
+        .filter(r -> r instanceof TaskResult.Success).count();
     System.out.println(successCount + " succeeded");
 }
 ```
 
 ---
 
-## Scale Dynamically
-
-Virtual threads automatically scale — no pool sizing needed:
+## Timeout on Waiting
 
 ```java
 try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    // 10 tasks
-    for (int i = 0; i < 10; i++) {
-        executor.submit(() -> simulateWork());
-    }
-    // executor automatically sizes itself
+    Future<String> future = executor.submit(() -> {
+        Thread.sleep(5000);
+        return "Done";
+    });
 
-    // Later, 1000 tasks
-    for (int i = 0; i < 1000; i++) {
-        executor.submit(() -> simulateWork());
-    }
-    // executor scales up without configuration
-}
-
-void simulateWork() {
     try {
-        Thread.sleep(100);
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
+        String result = future.get(1, java.util.concurrent.TimeUnit.SECONDS);
+        System.out.println(result);
+    } catch (java.util.concurrent.TimeoutException e) {
+        System.out.println("Task took too long, cancelling");
+        future.cancel(true);
     }
-}
-```
-
----
-
-## Measure Execution Time
-
-Track how long concurrent execution takes:
-
-```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    long startNanos = System.nanoTime();
-
-    List<Future<Void>> futures = new ArrayList<>();
-    for (int i = 0; i < 100; i++) {
-        futures.add(executor.submit(() -> {
-            Thread.sleep(100);
-            return null;
-        }));
-    }
-
-    // Wait for all
-    for (Future<?> f : futures) {
-        f.get();
-    }
-
-    long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
-    System.out.println("100 tasks took " + elapsedMs + "ms");
-    // Output: ~100ms (all run in parallel), not ~10000ms (sequential)
 }
 ```
 
@@ -272,22 +248,20 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 ## Best Practices
 
-✅ **DO:**
-- Use try-with-resources to ensure executor cleanup
-- Call `.get()` to wait for results
-- Handle `ExecutionException` and `InterruptedException`
-- Use virtual threads for I/O-bound work
-- Spawn thousands if needed
+**Use try-with-resources.** The executor is closed automatically, which awaits all running tasks.
 
-❌ **DON'T:**
-- Forget to close the executor (creates thread leaks)
-- Use virtual threads for CPU-bound work (use `ForkJoinPool` instead)
-- Call `.get()` without exception handling
-- Assume `.submit()` blocks (it returns immediately)
+**Use virtual threads for I/O-bound work.** Virtual threads shine when tasks block on network, disk, or database I/O. For CPU-bound work, use `ForkJoinPool`.
+
+**Spawn thousands if needed.** Unlike platform threads (costly to create), virtual threads have very low overhead. Creating 10,000 virtual threads is normal.
+
+**Always handle `ExecutionException` and `InterruptedException`.** Both are checked exceptions from `Future.get()`.
+
+**Benchmark with `sayBenchmark`.** When comparing virtual vs. platform threads, let `sayBenchmark` handle the timing and produce documented results.
 
 ---
 
 ## See Also
 
-- [Tutorial: Virtual Threads for Concurrency](../tutorials/virtual-threads-lightweight-concurrency.md)
-- [Reference: Virtual Threads API](../reference/virtual-threads-reference.md)
+- [Benchmarking](benchmarking.md) — sayBenchmark for performance documentation
+- [Performance Tuning](performance-tuning.md) — Build-level optimization
+- [Pattern Matching with Sealed Records](pattern-matching.md) — Sealed TaskResult type handling

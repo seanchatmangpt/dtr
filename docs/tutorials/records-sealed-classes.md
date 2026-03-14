@@ -1,10 +1,10 @@
 # Tutorial: Records and Sealed Classes for Type-Safe Data Models
 
-Learn how Java 25 records and sealed classes eliminate boilerplate and enable exhaustive pattern matching. This tutorial shows how to model data types safely and concisely — key for writing maintainable test code.
+Learn how Java 25 records and sealed classes eliminate boilerplate and enable exhaustive pattern matching. This tutorial shows how to model data types safely and concisely, and how to use DTR 2.6.0 to auto-document your type hierarchy.
 
 **Time:** ~30 minutes
-**Prerequisites:** Java 25, familiarity with classes and inheritance
-**What you'll learn:** How records replace getters/setters/equals, and how sealed hierarchies enforce completeness
+**Prerequisites:** Java 25, DTR 2.6.0, familiarity with classes and interfaces
+**What you'll learn:** How records replace getters/setters/equals, how sealed hierarchies enforce completeness, and how `sayRecordComponents` and `sayCodeModel` document your types automatically
 
 ---
 
@@ -25,35 +25,17 @@ public class User {
         this.age = age;
     }
 
-    public String name() { return name; }
+    public String name()  { return name; }
     public String email() { return email; }
-    public int age() { return age; }
+    public int age()      { return age; }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
-        User user = (User) o;
-        return age == user.age &&
-               name.equals(user.name) &&
-               email.equals(user.email);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, email, age);
-    }
-
-    @Override
-    public String toString() {
-        return "User{" + "name='" + name + '\'' +
-               ", email='" + email + '\'' +
-               ", age=" + age + '}';
-    }
+    @Override public boolean equals(Object o) { /* ... */ }
+    @Override public int hashCode()           { /* ... */ }
+    @Override public String toString()        { /* ... */ }
 }
 ```
 
-Dozens of lines for a simple data carrier!
+Dozens of lines for a simple data carrier.
 
 ### The Java 25 Way: Records
 
@@ -62,304 +44,245 @@ Dozens of lines for a simple data carrier!
 record User(String name, String email, int age) {}
 ```
 
-That's it. The record compiler automatically generates:
-- ✅ Constructor with all fields
-- ✅ Accessor methods (`name()`, `email()`, `age()`)
-- ✅ `equals()` and `hashCode()`
-- ✅ `toString()`
-- ✅ Immutability (fields are final)
+The compiler automatically generates: constructor, accessors, `equals`, `hashCode`, `toString`, and immutable fields.
 
 ---
 
-## Step 1 — Use Records in Test Code
+## Step 1 — Document a Record Schema with sayRecordComponents
 
-Create `src/test/java/com/example/RecordsExampleTest.java`:
+Create `src/test/java/com/example/RecordsDocTest.java`:
 
 ```java
 package com.example;
 
-import org.junit.Test;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
+import java.util.Map;
 
-public class RecordsExampleTest extends DTR {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    @Test
-    public void useRecordsForApiPayloads() throws Exception {
+@ExtendWith(DtrExtension.class)
+class RecordsDocTest {
 
-        sayNextSection("Records for API Payloads");
-
-        say("Records eliminate boilerplate when modeling request and response bodies. "
-            + "Here we define a User record in one line:");
-
-        say("```java\nrecord User(String name, String email, int age) {}\n```");
-
-        // Create a user using the record constructor
-        var newUser = new User("alice", "alice@example.com", 30);
-
-        say("Create a user: " + newUser);
-
-        // Send it as JSON
-        Response response = sayAndMakeRequest(
-            Request.POST()
-                .url(testServerUrl().path("/api/users"))
-                .contentTypeApplicationJson()
-                .payload(newUser));
-
-        sayAndAssertThat(
-            "User created with 201 status",
-            201,
-            org.hamcrest.CoreMatchers.equalTo(response.httpStatus()));
-
-        say("The record was automatically serialized to JSON by Jackson. "
-            + "No custom serialization code needed.");
-    }
-
-    @Test
-    public void deserializeToRecords() throws Exception {
-
-        sayNextSection("Deserialize to Records");
-
-        say("Use response.payloadAs(User.class) to deserialize JSON back into a record:");
-
-        Response response = sayAndMakeRequest(
-            Request.GET().url(testServerUrl().path("/api/users/42")));
-
-        User user = response.payloadAs(User.class);
-
-        sayAndAssertThat(
-            "Deserialized user has correct name",
-            "Alice",
-            org.hamcrest.CoreMatchers.equalTo(user.name()));
-
-        say("The record constructor is called automatically. "
-            + "Immutability is enforced — you can't modify user.name after creation.");
-    }
-
-    // Record definition
+    // Domain records
     record User(String name, String email, int age) {}
+    record Address(String street, String city, String postalCode) {}
+    record Order(long id, User customer, List<String> items, double total) {}
 
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
+    @Test
+    void documentRecordSchemas(DtrContext ctx) {
+
+        ctx.sayNextSection("Record Schemas");
+
+        ctx.say("DTR can reflect on record classes and produce a schema table automatically. "
+            + "Each component shows its name and declared type.");
+
+        ctx.sayRecordComponents(User.class);
+
+        ctx.say("The `Address` record models a postal address:");
+
+        ctx.sayRecordComponents(Address.class);
+
+        ctx.say("The `Order` record composes `User` and a list of item names:");
+
+        ctx.sayRecordComponents(Order.class);
     }
 }
 ```
 
+Run the test:
+
+```bash
+mvnd test -Dtest=RecordsDocTest
+cat target/docs/test-results/RecordsDocTest.md
+```
+
+`sayRecordComponents` emits a two-column table with **Component** and **Type** for every component in the record.
+
 ---
 
-## Step 2 — Sealed Hierarchies for Type Safety
+## Step 2 — Document Record Construction and Assertions
 
-Define a sealed hierarchy when you have multiple record types that should be exhaustive:
+Add a second test method to the same class:
 
 ```java
-public class ApiResponseExampleTest extends DTR {
+    @Test
+    void documentRecordUsage(DtrContext ctx) {
 
-    // Sealed interface: only Success and Failure can implement it
-    sealed interface ApiResponse {
-        record Success(int status, String body) implements ApiResponse {}
-        record Failure(int status, String error) implements ApiResponse {}
+        ctx.sayNextSection("Creating and Asserting Records");
+
+        ctx.say("Construct records with the canonical constructor. "
+            + "All fields are `final` — the record is immutable by default.");
+
+        ctx.sayCode("""
+            var alice = new User("alice", "alice@example.com", 30);
+            var bob   = new User("bob",   "bob@example.com",   25);
+            """, "java");
+
+        var alice = new User("alice", "alice@example.com", 30);
+        var bob   = new User("bob",   "bob@example.com",   25);
+
+        assertThat(alice.name()).isEqualTo("alice");
+        assertThat(alice.age()).isPositive();
+        assertThat(bob.email()).contains("@");
+
+        ctx.sayAssertions(Map.of(
+            "alice.name()", alice.name(),
+            "alice.age() > 0", String.valueOf(alice.age() > 0),
+            "bob.email() contains '@'", String.valueOf(bob.email().contains("@"))
+        ));
+
+        ctx.say("Records implement `equals` structurally — two records with the same "
+            + "field values are equal, regardless of identity:");
+
+        var alice2 = new User("alice", "alice@example.com", 30);
+        assertThat(alice).isEqualTo(alice2);
+
+        ctx.sayNote("Records cannot be mutated after construction. "
+            + "To 'update' a field, create a new record instance.");
+    }
+```
+
+---
+
+## Step 3 — Sealed Hierarchies for Type Safety
+
+Define a sealed hierarchy when multiple record types must be handled exhaustively:
+
+```java
+    sealed interface Result<T> permits Result.Success, Result.Failure {
+        record Success<T>(T value)       implements Result<T> {}
+        record Failure<T>(String reason) implements Result<T> {}
     }
 
     @Test
-    public void sealedResponses() throws Exception {
+    void documentSealedHierarchy(DtrContext ctx) {
 
-        sayNextSection("Sealed Hierarchies");
+        ctx.sayNextSection("Sealed Hierarchies and Pattern Matching");
 
-        say("A sealed interface ensures we handle all possible response types. "
-            + "The compiler enforces this with pattern matching.");
+        ctx.say("A sealed interface restricts which classes may implement it. "
+            + "The compiler enforces exhaustiveness in `switch` expressions — "
+            + "no `default` clause is needed or allowed.");
 
-        // Make some requests and classify them
-        Response httpResponse = sayAndMakeRequest(
-            Request.GET().url(testServerUrl().path("/api/status")));
+        ctx.sayCode("""
+            sealed interface Result<T> permits Result.Success, Result.Failure {
+                record Success<T>(T value)       implements Result<T> {}
+                record Failure<T>(String reason) implements Result<T> {}
+            }
+            """, "java");
 
-        ApiResponse result = httpResponse.httpStatus() == 200
-            ? new ApiResponse.Success(
-                httpResponse.httpStatus(),
-                httpResponse.payloadAsString())
-            : new ApiResponse.Failure(
-                httpResponse.httpStatus(),
-                "Request failed");
+        Result<User> ok   = new Result.Success<>(new User("carol", "carol@example.com", 28));
+        Result<User> fail = new Result.Failure<>("User not found");
 
-        say("Classifying response: " + result);
-
-        // Pattern match on the sealed type
-        String message = switch (result) {
-            case ApiResponse.Success(int status, String body) ->
-                "✓ Success: " + status + " with " + body.length() + " bytes";
-            case ApiResponse.Failure(int status, String error) ->
-                "✗ Failure: " + status + " — " + error;
+        String okMsg = switch (ok) {
+            case Result.Success<User>(var u) -> "Found user: " + u.name();
+            case Result.Failure<User>(var r) -> "Error: " + r;
         };
 
-        say(message);
+        String failMsg = switch (fail) {
+            case Result.Success<User>(var u) -> "Found user: " + u.name();
+            case Result.Failure<User>(var r) -> "Error: " + r;
+        };
 
-        sayAndAssertThat(
-            "Response was successful",
-            true,
-            org.hamcrest.CoreMatchers.is(result instanceof ApiResponse.Success));
-    }
+        ctx.say("Pattern matching results:");
 
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
+        ctx.sayAssertions(Map.of(
+            "ok result message",   okMsg,
+            "fail result message", failMsg
+        ));
+
+        ctx.say("If a new subtype is added to the sealed interface, "
+            + "every switch expression that handles it becomes a compile error "
+            + "until the new case is added. This prevents silent omissions.");
     }
-}
 ```
-
-**Why this matters:**
-- The `switch` statement is **exhaustive** — the compiler requires you to handle every subtype
-- No `default` clause needed or allowed
-- If you add a new type to the sealed interface, the compiler forces you to update all `switch` expressions
-- This prevents silent bugs where you forget to handle a case
 
 ---
 
-## Step 3 — Records with Methods
+## Step 4 — Document Code Models with sayCodeModel
 
-Records can contain methods for validation or computation:
+DTR 2.6.0 can emit a structured view of a class's code model using Java 25 Code Reflection:
 
 ```java
-sealed interface HttpRequest permits CreateUserRequest, UpdateUserRequest {
-    int validate();
-}
+    @Test
+    void documentCodeModel(DtrContext ctx) throws Exception {
 
-record CreateUserRequest(String name, String email) implements HttpRequest {
-    // Constructor with validation
-    public CreateUserRequest {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("name cannot be empty");
+        ctx.sayNextSection("Code Model Documentation");
+
+        ctx.say("DTR can inspect the bytecode structure of a class and emit "
+            + "a human-readable summary of its operations. "
+            + "This is useful for auditing what a class actually does at runtime.");
+
+        ctx.sayCode("""
+            // sayCodeModel documents the internal structure of a class
+            ctx.sayCodeModel(User.class);
+            """, "java");
+
+        ctx.sayCodeModel(User.class);
+
+        ctx.say("For a specific method, pass a `java.lang.reflect.Method` reference:");
+
+        var method = User.class.getDeclaredMethod("name");
+        ctx.sayCodeModel(method);
+    }
+```
+
+---
+
+## Step 5 — Records with Custom Compact Constructors
+
+Records support compact constructor syntax for validation:
+
+```java
+    record PositiveAmount(double value) {
+        PositiveAmount {
+            if (value <= 0) throw new IllegalArgumentException(
+                "Amount must be positive, got: " + value);
         }
-        if (email == null || !email.contains("@")) {
-            throw new IllegalArgumentException("email must be valid");
+    }
+
+    @Test
+    void documentRecordValidation(DtrContext ctx) {
+
+        ctx.sayNextSection("Records with Constructor Validation");
+
+        ctx.say("The compact constructor runs before the canonical constructor assignments. "
+            + "Use it to validate or normalize inputs:");
+
+        ctx.sayCode("""
+            record PositiveAmount(double value) {
+                PositiveAmount {
+                    if (value <= 0) throw new IllegalArgumentException(
+                        "Amount must be positive, got: " + value);
+                }
+            }
+            """, "java");
+
+        ctx.sayRecordComponents(PositiveAmount.class);
+
+        // Valid case
+        var amount = new PositiveAmount(99.99);
+        assertThat(amount.value()).isEqualTo(99.99);
+
+        // Invalid case — document the exception
+        try {
+            new PositiveAmount(-5.0);
+        } catch (IllegalArgumentException e) {
+            ctx.sayException(e);
         }
+
+        ctx.sayAssertions(Map.of(
+            "PositiveAmount(99.99).value()", String.valueOf(amount.value()),
+            "PositiveAmount(-5.0) throws", "IllegalArgumentException"
+        ));
     }
-
-    @Override
-    public int validate() {
-        return 0; // 0 = valid
-    }
-}
-
-record UpdateUserRequest(int id, String email) implements HttpRequest {
-    @Override
-    public int validate() {
-        if (id <= 0) return 400;
-        if (email == null || !email.contains("@")) return 400;
-        return 0;
-    }
-}
-
-@Test
-public void recordsWithValidation() throws Exception {
-
-    sayNextSection("Records with Methods and Validation");
-
-    say("Records can implement interfaces and contain custom methods.");
-
-    // Validation in record constructor
-    try {
-        var invalid = new CreateUserRequest("", "alice@example.com");
-        say("ERROR: Should have thrown");
-    } catch (IllegalArgumentException e) {
-        say("✓ Constructor validation caught empty name: " + e.getMessage());
-    }
-
-    // Valid record
-    var valid = new CreateUserRequest("alice", "alice@example.com");
-
-    Response response = sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/users"))
-            .contentTypeApplicationJson()
-            .payload(valid));
-
-    sayAndAssertThat(
-        "Valid request accepted",
-        201,
-        org.hamcrest.CoreMatchers.equalTo(response.httpStatus()));
-}
 ```
 
----
-
-## Step 4 — Complex Records with Collections
-
-Records can contain collections and nested structures:
-
-```java
-@Test
-public void recordsWithCollections() throws Exception {
-
-    sayNextSection("Records with Collections");
-
-    // Records containing lists
-    record UserListResponse(List<User> users, int total) {}
-    record User(int id, String name, String email) {}
-
-    Response response = sayAndMakeRequest(
-        Request.GET().url(testServerUrl().path("/api/users")));
-
-    UserListResponse listing = response.payloadAs(UserListResponse.class);
-
-    say("Retrieved " + listing.total + " users");
-
-    long emailsValid = listing.users.stream()
-        .filter(u -> u.email().contains("@"))
-        .count();
-
-    say("Valid emails: " + emailsValid + "/" + listing.total);
-
-    sayAndAssertThat(
-        "All users have valid emails",
-        listing.total,
-        org.hamcrest.CoreMatchers.equalTo(emailsValid));
-}
-```
-
----
-
-## Step 5 — Pattern Matching with Records
-
-Use pattern matching to deconstruct records inline:
-
-```java
-sealed interface Result permits Success, Failure {
-    record Success(int code, User data) implements Result {}
-    record Failure(int code, String message) implements Result {}
-}
-
-record User(String name, String email) {}
-
-@Test
-public void patternMatchingOnRecords() throws Exception {
-
-    sayNextSection("Pattern Matching");
-
-    say("Pattern matching lets you destructure records in if/switch statements.");
-
-    Result outcome = new Result.Success(200, new User("bob", "bob@example.com"));
-
-    // Pattern match with deconstruction
-    if (outcome instanceof Result.Success(int code, User user)) {
-        say("Success code: " + code);
-        say("User: " + user.name());
-    }
-
-    // Exhaustive switch on sealed type
-    String description = switch (outcome) {
-        case Result.Success(int code, User user) ->
-            "✓ " + code + ": " + user.name();
-        case Result.Failure(int code, String msg) ->
-            "✗ " + code + ": " + msg;
-    };
-
-    say(description);
-}
-```
+`sayException(Throwable)` is a new DTR 2.6.0 method that renders a structured exception block including the type, message, and abbreviated stack trace.
 
 ---
 
@@ -367,35 +290,26 @@ public void patternMatchingOnRecords() throws Exception {
 
 | Feature | Class | Record |
 |---------|-------|--------|
-| Boilerplate | Lots (constructor, getters, equals, hashCode, toString) | None |
-| Mutability | Mutable by default | Immutable (fields are final) |
-| Inheritance | Any class | Implements interfaces only (no inheritance) |
-| Use case | Complex objects with behavior | Data carriers |
-| Jackson support | Yes (with annotations) | Yes (automatic) |
+| Boilerplate | Constructor, getters, equals, hashCode, toString | None |
+| Mutability | Mutable by default | Immutable (all fields are `final`) |
+| Inheritance | Supports `extends` | Implements interfaces only |
+| Use case | Complex objects with behavior | Data carriers, DTOs |
+| Pattern matching | `instanceof` check | Deconstruction patterns |
 
 ---
 
-## Best Practices
+## What You Learned
 
-✅ **DO:**
-- Use records for **data carriers** — DTOs, request/response bodies, configuration
-- Use sealed interfaces with records for **type-safe hierarchies**
-- Use pattern matching on sealed types for **exhaustive case handling**
-- Nest records in test classes to keep code local
-- Add validation to record constructors using compact syntax
-
-❌ **DON'T:**
-- Use records for entities with complex behavior (use regular classes)
-- Mix mutable and immutable data in the same model
-- Forget to seal hierarchies when you want exhaustiveness
-- Create deep inheritance chains (records support interfaces, not extends)
+- How to declare records and use the compact constructor for validation
+- How `sayRecordComponents(Class)` auto-generates a schema table
+- How `sayCodeModel(Class)` / `sayCodeModel(Method)` documents code structure
+- How sealed interfaces enforce exhaustive `switch` expressions
+- How `sayException(Throwable)` documents expected error conditions
 
 ---
 
 ## Next Steps
 
-- [Tutorial: Virtual Threads for Concurrency](virtual-threads-lightweight-concurrency.md) — lightweight parallelism
-- [How-to: Pattern Matching with Sealed Records](../how-to/pattern-matching.md) — advanced patterns
-- [How-to: Text Blocks for Documentation](../how-to/text-blocks.md) — multiline strings in Java 25
-- [Reference: Records API](../reference/records-sealed-reference.md) — complete documentation
-- [Explanation: Why Records and Sealed Classes](../explanation/records-sealed-philosophy.md) — design philosophy
+- [Tutorial: Benchmarking with Virtual Threads](virtual-threads-lightweight-concurrency.md) — measure record construction performance with `sayBenchmark`
+- [Tutorial: Testing a REST API](testing-a-rest-api.md) — use records as JSON DTOs with `java.net.http.HttpClient`
+- [Tutorial: Visualizing Code with sayMermaid](websockets-realtime.md) — diagram your type hierarchy

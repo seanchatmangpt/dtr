@@ -21,7 +21,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Extreme stress tests to find actual breakpoints where DTR
@@ -138,7 +138,7 @@ public class StressBreakpointTest extends DtrTest {
         long startTime = System.nanoTime();
 
         for (int i = 0; i < total; i++) {
-            sayAndAssertThat("Assert #" + i + " value matches", i, equalTo(i));
+            assertThat(i, equalTo(i));
         }
 
         long elapsed = (System.nanoTime() - startTime) / 1_000_000;

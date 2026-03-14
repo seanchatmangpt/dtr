@@ -1,159 +1,152 @@
 # Explanation: How DTR Works
 
-This document describes the lifecycle of a DocTest run — from test startup through HTML output. Understanding this helps you predict what will appear in the documentation and debug unexpected behavior.
+This document describes the lifecycle of a DTR documentation run — from test startup through multi-format file output. Understanding this helps you predict what will appear in the generated documentation and reason about unexpected behavior.
 
 ---
 
-## The three components
+## The Fundamental Model
 
-DTR separates concerns across three collaborating components:
+DTR is a JUnit 5 extension. When a test class annotated with `@ExtendWith(DtrExtension.class)` runs, DTR intercepts the JUnit lifecycle, injects a `DtrContext` parameter into each test method, captures every `say*()` call as a typed `SayEvent`, and then — when all test methods have run — flushes those events through a `MultiRenderMachine` that writes Markdown, LaTeX, HTML, and JSON output in parallel.
 
-```
-DTR (orchestrator)
-├── TestBrowser   (HTTP execution + cookie store)
-└── RenderMachine (HTML accumulation + file writing)
-```
-
-**`DTR`** is your test class's superclass. It coordinates between the other two: when you call `sayAndMakeRequest()`, DTR delegates to `TestBrowser` for HTTP and to `RenderMachine` to generate the panel HTML.
-
-**`TestBrowser`** handles the actual HTTP connection (Apache HttpClient), serializes payloads, and maintains a persistent cookie jar. It is stateful — cookies set by the server in one request are automatically sent in the next.
-
-**`RenderMachine`** accumulates HTML content as the test runs and writes output files at the end. It is also stateful — all the `say*` calls append to an internal buffer.
+The key insight is that **DTR decouples documentation capture from documentation rendering**. `say*()` calls do not immediately write anything. They create `SayEvent` records and queue them. Rendering happens once, at the end, using virtual threads.
 
 ---
 
-## Per-method vs per-class scope
+## Why Events, Not Direct Writes
 
-One important subtlety: `TestBrowser` and `RenderMachine` have different scopes.
+A test method does not know which output formats it is writing for. A call to `ctx.sayCode("...", "java")` might ultimately produce a fenced Markdown block, a LaTeX `lstlisting` environment, an HTML `<pre><code>` block, and a JSON node — all from the same method call.
 
-| Component | Scope | Consequence |
+If `sayCode` wrote to a file directly, it would have to know about every output format. Instead, it emits a `SayEvent.Code` record — an immutable value object containing the code string and the language — and enqueues it. The render machines handle format-specific rendering, each in its own virtual thread.
+
+This is why `SayEvent` is a sealed interface. Each render machine must handle every event type. Sealed + pattern matching turns a missing `case` into a compile-time error, not a silent blank in the rendered output.
+
+---
+
+## Step-by-Step: From Test to Output
+
+### Step 1: JUnit discovers the test class
+
+JUnit 5 finds the class annotated with `@ExtendWith(DtrExtension.class)` and instantiates `DtrExtension`. This extension implements `BeforeAllCallback`, `AfterAllCallback`, `BeforeEachCallback`, `AfterEachCallback`, and `ParameterResolver`.
+
+### Step 2: `beforeAll` — render machine setup
+
+Before any test method runs, `DtrExtension.beforeAll()` creates a `MultiRenderMachine` configured for all output targets (Markdown, LaTeX, HTML, JSON). This is the class-level render machine that will accumulate all documentation from all test methods in the class.
+
+### Step 3: `beforeEach` — context injection
+
+Before each `@Test` method, `DtrExtension.beforeEach()` creates a fresh `DtrContext` bound to the class-level `MultiRenderMachine`. `DtrContext` is injected into the test method as a parameter, resolved by the `ParameterResolver` implementation.
+
+### Step 4: Test method runs
+
+As the test executes, each `ctx.say*()` call:
+
+1. Creates a `SayEvent` record (immutable, specific type)
+2. Posts it to the per-class event queue (thread-safe)
+
+For introspection methods (`sayRecordComponents`, `sayClassHierarchy`, etc.), the method does the reflection work at call time and creates a structured `SayEvent` containing the results. The render machines receive already-resolved data, not `Class<?>` references.
+
+For benchmark methods (`sayBenchmark`), the lambda runs immediately, fully, with warmup iterations on virtual thread batches. The resulting statistics are packaged into a `SayEvent.Benchmark` record.
+
+For `sayCallSite()`, the Code Reflection API (JEP 516) captures the caller's source location — file, line number, method name — without a stack walk.
+
+### Step 5: `afterEach` — open block cleanup
+
+After each test method, `DtrExtension.afterEach()` closes any open section markers or unterminated blocks.
+
+### Step 6: `afterAll` — flush and render
+
+After all test methods complete, `DtrExtension.afterAll()` calls `finishAndWriteOut()` on the `MultiRenderMachine`. This triggers the parallel rendering pass:
+
+```
+finishAndWriteOut()
+    │
+    │  creates virtual thread per render machine
+    ▼
+┌─────────────────────────────────────────────┐
+│  MarkdownRenderMachine   │                  │
+│  LatexRenderMachine      │  pattern match   │
+│  HtmlRenderMachine       │  on each event   │
+│  JsonRenderMachine       │  (in parallel)   │
+└─────────────────────────────────────────────┘
+    │
+    ▼
+target/docs/test-results/
+    ├── PhDThesisDocTest.md
+    ├── PhDThesisDocTest.tex
+    ├── PhDThesisDocTest.html
+    └── PhDThesisDocTest.json
+```
+
+Because `SayEvent` records are immutable, sharing them across virtual threads requires no synchronization.
+
+---
+
+## How Introspection Caching Works
+
+Five methods derive documentation from JVM reflection:
+
+- `sayRecordComponents(Class<?>)`
+- `sayClassHierarchy(Class<?>)`
+- `sayAnnotationProfile(Class<?>)`
+- `sayStringProfile(Class<?>)`
+- `sayReflectiveDiff(Object, Object)`
+
+Reflection on a class costs roughly 150µs on first access. If these methods are called in multiple tests against the same class, that cost would accumulate. DTR's `reflectiontoolkit` module caches results in a `ConcurrentHashMap<Class<?>, Object>`. Subsequent calls cost approximately 50ns — a 3000x reduction.
+
+The cache is per-JVM-process, not per-test. If you run 100 tests that each call `sayRecordComponents(MyRecord.class)`, reflection runs once. The cache is populated on first call and read on all subsequent calls, with no synchronization needed beyond what `ConcurrentHashMap` provides.
+
+---
+
+## How MultiRenderMachine Uses Virtual Threads
+
+`MultiRenderMachine` holds a list of `RenderMachine` implementations. When `finishAndWriteOut()` is called, it opens a `Executors.newVirtualThreadPerTaskExecutor()` and submits one task per render machine. Each task drains the event queue through that render machine's pattern-match handler.
+
+The result: disk I/O in the Markdown writer does not delay the LaTeX writer. All four output files are written concurrently. On a four-format configuration, parallel rendering is effectively free — the bottleneck is the slowest format, not the sum of all formats.
+
+---
+
+## Why `--enable-preview` Is Required
+
+DTR requires Java 25 with `--enable-preview`. This is not optional, and it is not a cosmetic requirement about syntax.
+
+DTR uses the Code Reflection API (JEP 516, Project Babylon), a preview feature in Java 25, for `sayCallSite()`. This API allows DTR to capture the exact source location of a documentation call — the file, line number, and method name — at compile time, without a runtime stack walk.
+
+A stack walk (`Thread.currentThread().getStackTrace()`) would work but costs microseconds and allocates. The Code Reflection API is designed specifically for this kind of source-location capture and has lower runtime cost. It is in preview because Project Babylon is evolving. DTR will update to the stable API when it graduates from preview.
+
+The flag is set in `.mvn/maven.config` and propagates automatically to compile, test, and runtime phases.
+
+---
+
+## Per-Class vs. Per-Method Scope
+
+Understanding scope prevents common mistakes:
+
+| Component | Scope | Implication |
 |---|---|---|
-| `TestBrowser` | Per test method | Cookie jar is fresh for each `@Test` |
-| `RenderMachine` | Per test class | All `@Test` methods write to the same HTML page |
+| `MultiRenderMachine` | Per test class | All `@Test` methods in a class write to the same output files |
+| `DtrContext` | Per test method | Fresh context per method; context does not carry over |
+| Event queue | Per test class | Events from all methods in the class accumulate and flush together |
+| Reflection cache | Per JVM process | Shared across all tests in a test run |
 
-`DTR`'s `@Before` hook creates a new `TestBrowserImpl` instance for each test method:
+The most important consequence: a test class produces one set of output files, not one per test method. If `PhDThesisDocTest` has five `@Test` methods, they all contribute to `PhDThesisDocTest.md`. Use multiple test classes for logically separate documentation sections.
 
-```java
-// Simplified from DTR.java
-@Before
-public void setupForTestCaseMethod() {
-    renderMachine.setTestBrowser(getTestBrowser());  // fresh browser per method
-}
+---
+
+## The Output File Naming Convention
+
+Output files are named after the test class:
+
+```
+target/docs/test-results/{TestClassName}.{ext}
 ```
 
-This means cookies don't leak between test methods. If you authenticate in `test01_login()`, the session cookie is gone by `test02_createArticle()`. You need to authenticate again (silently, via `makeRequest`) in each test method that requires it.
+For `PhDThesisDocTest`, this produces:
 
-The `RenderMachine` is a class-level static field, so all test methods in a class contribute to a single output page.
+```
+target/docs/test-results/PhDThesisDocTest.md
+target/docs/test-results/PhDThesisDocTest.tex
+target/docs/test-results/PhDThesisDocTest.html
+target/docs/test-results/PhDThesisDocTest.json
+```
 
----
-
-## The lifecycle step by step
-
-### 1. JUnit starts the test class
-
-JUnit 4 discovers the test class via classpath scanning or explicit configuration. DTR hooks into JUnit via `@Before` and `@AfterClass` annotations on methods in `DTR` itself.
-
-### 2. `@Before setupForTestCaseMethod()`
-
-Before each `@Test` method:
-
-1. DTR calls `getTestBrowser()` to create a fresh browser
-2. The browser is injected into the `RenderMachine` so it can execute requests
-
-The `RenderMachine` is initialized lazily on first use (first `say*` call in any test method).
-
-### 3. Test method runs
-
-As your test executes:
-
-- `say(text)` → RenderMachine appends `<p>text</p>` to its buffer
-- `sayNextSection(title)` → appends `<h1>` and records the section for the sidebar
-- `sayAndMakeRequest(req)` → delegates:
-  1. `TestBrowser.makeRequest(req)` → executes HTTP, stores cookies
-  2. `RenderMachine` appends a request panel (method, URL, headers, payload) and a response panel (status, headers, body) to its buffer
-- `sayAndAssertThat(msg, actual, matcher)` → runs the assertion, then:
-  - On pass: appends green alert box to buffer
-  - On fail: appends red alert box with stack trace, then throws `AssertionError`
-
-### 4. `@AfterClass finishDocTest()`
-
-After all `@Test` methods in the class complete:
-
-1. `RenderMachine.finishAndWriteOut()` is called
-2. RenderMachine assembles the full HTML page:
-   - Bootstrap navbar
-   - Sidebar with section links
-   - Main content from the accumulated buffer
-3. HTML is written to `target/site/dtr/{ClassName}.html`
-4. Bootstrap/jQuery assets are copied if not already present
-5. `index.html` is regenerated with a link to the new page
-
-### 5. Test results
-
-JUnit reports test pass/fail normally. DTR adds no extra failures — if `sayAndAssertThat` throws `AssertionError`, JUnit catches it and marks the method as failed, same as any other assertion.
-
----
-
-## What the HTML panel shows
-
-For each `sayAndMakeRequest()` call, the rendered panel shows:
-
-**Request panel (blue):**
-- HTTP method (GET, POST, etc.)
-- Full URL with query parameters
-- All request headers (including `Content-Type`, cookies)
-- Request payload (pretty-printed JSON or XML)
-
-**Response panel (grey):**
-- HTTP status code with text (e.g., `200 OK`)
-- All response headers
-- Response body (pretty-printed JSON or XML)
-
-The pretty-printing is done by `PayloadUtils`, which detects JSON or XML from the content type header and re-formats using Jackson.
-
----
-
-## How cookies flow
-
-Cookie flow matches what a browser would do:
-
-1. Server sets a cookie via `Set-Cookie` header
-2. `TestBrowserImpl` stores it in Apache HttpClient's `CookieStore`
-3. On the next request to the same domain, the cookie is automatically included in the `Cookie` header
-4. The cookie appears in the request panel's headers section in the HTML
-
-When you call `getCookies()` or `getCookieWithName()`, you're querying this `CookieStore`.
-
----
-
-## Redirect handling
-
-By default `TestBrowserImpl` follows redirects automatically. When a redirect is followed:
-
-- The HTML panel shows the **final** response (after all redirects)
-- Intermediate 3xx responses are not shown
-- The URL shown is the **original** request URL, not the redirect target
-
-To capture a redirect response, use `Request.followRedirects(false)`.
-
----
-
-## What `makeRequest` vs `sayAndMakeRequest` actually do
-
-Both call `TestBrowser.makeRequest()`. The only difference:
-
-- `makeRequest` returns the `Response`; nothing is added to the HTML buffer
-- `sayAndMakeRequest` calls `makeRequest` internally and then renders the request/response panels to the HTML buffer
-
-Use `makeRequest` for HTTP calls that are test setup (login, data seeding, cleanup) rather than the documented API behavior.
-
----
-
-## Index.html generation
-
-`RenderMachineImpl` maintains a running list of generated documentation pages. Each time `finishAndWriteOut()` runs:
-
-1. It scans `target/site/dtr/` for existing `*.html` files
-2. Regenerates `index.html` with links to all of them
-
-This means `index.html` is updated incrementally — if you run tests from class A and then class B, `index.html` will link to both.
+If you re-run the tests, the files are overwritten. DTR does not version or append — each run produces the complete, current documentation.

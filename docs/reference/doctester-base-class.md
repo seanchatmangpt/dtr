@@ -1,275 +1,225 @@
-# Reference: DTR Base Class
+# Reference: DtrContext and DtrTest API Reference
 
-**Package:** `io.github.seanchatmangpt.dtr.dtr`
-**File:** `dtr-core/src/main/java/org/r10r/dtr/DTR.java`
+**Package:** `io.github.seanchatmangpt.dtr.core`
+**Version:** 2.6.0
 
-`DTR` is the abstract JUnit base class your test classes extend. It orchestrates both HTTP execution (via `TestBrowser`) and HTML documentation generation (via `RenderMachine`).
+`DtrContext` is the parameter-injection API for JUnit 5 tests. `DtrExtension` is the JUnit 5 extension that manages the documentation lifecycle. Together they replace the v2.4.x `DTR` abstract base class.
 
 ---
 
-## Extending DTR
+## Quick start
 
 ```java
-public class MyApiDocTest extends DTR {
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(DtrExtension.class)
+class MyDocTest {
 
     @Test
-    public void testSomething() {
-        // use say*, makeRequest, etc.
-    }
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
+    void example(DtrContext ctx) {
+        ctx.sayNextSection("My Feature");
+        ctx.say("This section documents the feature.");
+        ctx.sayCode("record User(String name) {}", "java");
     }
 }
 ```
 
----
-
-## Methods
-
-### Documentation output
-
-#### `say(String text)`
-
-Renders a paragraph `<p>` element in the HTML output.
-
-```java
-say("This endpoint returns a paginated list of all users.");
-```
-
-**Parameters:**
-- `text` — Plain text content (HTML-escaped before rendering)
+**Output:** `target/docs/test-results/MyDocTest.md` (and `.html`, `.tex`, `.json`)
 
 ---
 
-#### `sayNextSection(String title)`
+## DtrExtension
 
-Renders an `<h1>` heading and adds an entry to the HTML sidebar navigation. Use this to organize the documentation page into logical sections.
+**Class:** `io.github.seanchatmangpt.dtr.core.DtrExtension`
 
-```java
-sayNextSection("User Management");
-```
+Register on the test class with `@ExtendWith(DtrExtension.class)`.
 
-**Parameters:**
-- `title` — Section heading text (also used as anchor ID for navigation)
+### Extension lifecycle
 
----
+| JUnit event | DtrExtension action |
+|-------------|---------------------|
+| Before all tests in class | Creates shared `RenderMachine` (default: `RenderMachineImpl`) |
+| Before each test method | Creates `DtrContext` bound to the shared `RenderMachine` |
+| Parameter resolution | Injects `DtrContext` into `@Test` method parameters |
+| After all tests in class | Calls `RenderMachine.finishAndWriteOut()` → writes output files |
 
-#### `sayRaw(String html)`
-
-Inserts a raw HTML string directly into the documentation without escaping. Use for custom tables, alerts, or embedded markup.
-
-```java
-sayRaw("<div class='alert alert-warning'>Rate limit: 100 req/min</div>");
-```
-
-**Parameters:**
-- `html` — Raw HTML string injected verbatim
+The `RenderMachine` is shared across the entire test class (to produce a single coherent document per class). A fresh `DtrContext` wrapper is provided per test method, but all methods write to the same machine.
 
 ---
 
-#### `sayAndAssertThat(String message, T actual, Matcher<T> matcher)`
+## DtrContext
 
-Runs a Hamcrest assertion and renders the result as a colored box in the HTML output:
-- **Green box** (alert-success) on pass
-- **Red box** (alert-danger) with stack trace on failure
+**Class:** `io.github.seanchatmangpt.dtr.core.DtrContext`
 
-```java
-sayAndAssertThat("Status is 200", 200, equalTo(response.httpStatus()));
-```
+Provides access to all 37 `say*` documentation methods and the `RenderMachine` instance.
 
-**Parameters:**
-- `message` — Description shown in the HTML box
-- `actual` — The value being tested
-- `matcher` — Any Hamcrest `Matcher<T>`
+### say* methods
 
-**Throws:** `AssertionError` on failure (fails the JUnit test)
+All 37 documentation output methods are documented in [say* Core API Reference](request-api.md). The method groups are:
 
----
+| Group | Methods | Since |
+|-------|---------|-------|
+| Core | `say`, `sayNextSection`, `sayRaw`, `sayCode`, `sayJson`, `sayTable`, `sayWarning`, `sayNote`, `sayKeyValue`, `sayUnorderedList`, `sayOrderedList`, `sayAssertions`, `sayRef`, `sayCite` (×2), `sayFootnote` | v2.0 |
+| JVM Introspection | `sayCallSite`, `sayAnnotationProfile`, `sayClassHierarchy`, `sayStringProfile`, `sayReflectiveDiff` | v2.4.0 |
+| Code Reflection | `sayCodeModel` (×2), `sayControlFlowGraph`, `sayCallGraph`, `sayOpProfile` | v2.3.0 |
+| Benchmarking | `sayBenchmark` (×2) | v2.6.0 |
+| Mermaid | `sayMermaid`, `sayClassDiagram` | v2.6.0 |
+| Coverage and Quality | `sayDocCoverage`, `sayContractVerification`, `sayEvolutionTimeline` | v2.6.0 |
+| Utility | `sayEnvProfile`, `sayRecordComponents`, `sayException`, `sayAsciiChart` | v2.6.0 |
 
-#### `sayAndAssertThat(String message, String reason, T actual, Matcher<T> matcher)`
-
-Overload with an additional `reason` parameter for extra context when the assertion fails.
-
-```java
-sayAndAssertThat(
-    "Articles list is not empty",
-    "Server must return at least the seeded articles",
-    articles.size(),
-    greaterThan(0));
-```
-
----
-
-### HTTP requests
-
-#### `makeRequest(Request request)` → `Response`
-
-Executes an HTTP request via the `TestBrowser`. Does **not** generate any HTML output. Use for test setup (login, seeding data) that you don't want to document.
-
-```java
-// Silent login — not documented
-makeRequest(
-    Request.POST()
-        .url(testServerUrl().path("/api/login"))
-        .addFormParameter("username", "admin")
-        .addFormParameter("password", "secret"));
-```
-
-**Returns:** `Response` with status, headers, and body
-
----
-
-#### `sayAndMakeRequest(Request request)` → `Response`
-
-Executes an HTTP request and renders the full request/response cycle as a Bootstrap panel in the HTML output. The panel shows:
-- HTTP method and URL
-- Request headers
-- Request payload (pretty-printed JSON/XML)
-- Response status code
-- Response headers
-- Response body (pretty-printed JSON/XML)
-
-```java
-Response response = sayAndMakeRequest(
-    Request.GET().url(testServerUrl().path("/api/users")));
-```
-
-**Returns:** `Response` with status, headers, and body
-
----
-
-### Cookie management
-
-#### `getCookies()` → `List<Cookie>`
-
-Returns all cookies currently in the cookie jar. Does not generate HTML output.
-
-```java
-List<Cookie> cookies = getCookies();
-```
-
----
-
-#### `sayAndGetCookies()` → `List<Cookie>`
-
-Returns all cookies and renders them as a table in the HTML output.
-
-```java
-List<Cookie> cookies = sayAndGetCookies();
-```
-
----
-
-#### `getCookieWithName(String name)` → `Cookie`
-
-Returns the cookie with the given name, or `null` if not found.
-
-```java
-Cookie session = getCookieWithName("SESSION");
-```
-
----
-
-#### `sayAndGetCookieWithName(String name)` → `Cookie`
-
-Returns the named cookie and renders it in the HTML output.
-
-```java
-Cookie session = sayAndGetCookieWithName("SESSION");
-sayAndAssertThat("Session cookie exists", session, notNullValue());
-```
-
----
-
-#### `clearCookies()`
-
-Clears all cookies from the cookie jar. Useful when switching user contexts within a single test.
-
-```java
-clearCookies();
-```
-
----
-
-### Configuration (override in subclasses)
-
-#### `testServerUrl()` → `Url`
-
-Override to provide the base URL for the server under test. This URL is used as the starting point for all `Url` chaining in the test.
-
-```java
-@Override
-public Url testServerUrl() {
-    return Url.host("http://localhost:8080");
-}
-```
-
-**Default:** Returns `null` — you must override this method.
-
----
-
-#### `getTestBrowser()` → `TestBrowser`
-
-Override to supply a custom `TestBrowser` implementation.
-
-```java
-@Override
-public TestBrowser getTestBrowser() {
-    return new MyCustomTestBrowser();
-}
-```
-
-**Default:** Returns `new TestBrowserImpl()`
-
----
+### RenderMachine methods
 
 #### `getRenderMachine()` → `RenderMachine`
 
-Override to supply a custom `RenderMachine` implementation.
+Returns the current render machine for the test class.
 
 ```java
-@Override
-public RenderMachine getRenderMachine() {
-    return new MyCustomRenderMachine();
+RenderMachine rm = ctx.getRenderMachine();
+```
+
+#### `setRenderMachine(RenderMachine machine)` → `void`
+
+Replaces the render machine. All subsequent `say*` calls in all test methods of the class use the new machine.
+
+```java
+@Test
+void configureOutput(DtrContext ctx) {
+    // Switch to multi-format output for this entire test class
+    ctx.setRenderMachine(new MultiRenderMachine(
+        new RenderMachineImpl(),
+        new RenderMachineLatex(new ArXivTemplate(), new LatexmkStrategy())
+    ));
 }
 ```
 
-**Default:** Returns `new RenderMachineImpl()`
-
 ---
 
-#### `setClassNameForDTROutputFile(String name)`
-
-Sets an alternative filename for the HTML output file (without `.html` extension). Call this in a `@Before` method.
+## Complete test class template
 
 ```java
-@Before
-public void configureOutput() {
-    setClassNameForDTROutputFile("user-api-reference");
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine;
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineLatex;
+import io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate;
+import io.github.seanchatmangpt.dtr.rendermachine.latex.PdflatexStrategy;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
+import java.util.Map;
+
+@ExtendWith(DtrExtension.class)
+class FeatureDocTest {
+
+    @Test
+    void overview(DtrContext ctx) {
+        ctx.sayNextSection("Feature Overview");
+        ctx.say("This document describes the v2.6.0 release.");
+        ctx.sayNote("Requires Java 25+ with --enable-preview.");
+        ctx.sayWarning("API incompatible with DTR 2.5.x — see changelog.");
+    }
+
+    @Test
+    void apiSurface(DtrContext ctx) {
+        ctx.sayNextSection("API Surface");
+        ctx.sayTable(new String[][] {
+            {"Group",        "Method count"},
+            {"Core",         "16"},
+            {"Benchmarking", "2"},
+            {"Mermaid",      "2"},
+            {"Coverage",     "3"},
+            {"Utility",      "4"},
+        });
+        ctx.sayUnorderedList(List.of(
+            "37 total say* methods",
+            "RenderMachine: abstract, not sealed",
+            "MultiRenderMachine virtual thread dispatch"
+        ));
+    }
+
+    @Test
+    void benchmarkExample(DtrContext ctx) {
+        ctx.sayNextSection("Benchmark");
+        ctx.sayEnvProfile();
+        ctx.sayBenchmark("ArrayList 1K add", () -> {
+            var list = new java.util.ArrayList<String>();
+            for (int i = 0; i < 1_000; i++) list.add("item" + i);
+        }, 100, 1_000);
+    }
+
+    @Test
+    void diagramExample(DtrContext ctx) {
+        ctx.sayNextSection("Architecture");
+        ctx.sayMermaid("""
+            flowchart LR
+                Test --> DtrContext
+                DtrContext --> RenderMachine
+                RenderMachine --> Markdown
+                RenderMachine --> LaTeX
+                RenderMachine --> Blog
+            """);
+    }
 }
 ```
 
-Produces: `target/site/dtr/user-api-reference.html`
-
-**Default:** Uses the fully-qualified test class name, e.g., `com.example.UserApiDocTest`
-
 ---
 
-## Lifecycle
+## Output location
 
-DTR uses JUnit 4 lifecycle hooks internally:
+All output files are written to `target/docs/test-results/`:
 
-| Hook | What happens |
-|---|---|
-| `@Before setupForTestCaseMethod()` | Creates a fresh `TestBrowser` for the test method |
-| `@AfterClass finishDocTest()` | Writes HTML output to `target/site/dtr/` |
-
-The `RenderMachine` is shared across all test methods in a class; the `TestBrowser` (and its cookie jar) is reset per test method.
+```
+target/docs/test-results/
+├── FeatureDocTest.md
+├── FeatureDocTest.html
+├── FeatureDocTest.tex
+└── FeatureDocTest.json
+```
 
 ---
 
 ## Thread safety
 
-DTR is **not thread-safe**. Do not run tests from the same class in parallel. Maven Surefire's default (one thread per class) is safe.
+`DtrContext` is not thread-safe. Do not share a single instance across concurrent threads. Maven Surefire's default (one thread per test class) is safe. The `MultiRenderMachine` handles internal fan-out parallelism transparently.
+
+---
+
+## Maven dependency
+
+```xml
+<dependency>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-core</artifactId>
+    <version>2.6.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+---
+
+## Migration from v2.4.x DTR base class
+
+In v2.5.0 the `DTR` abstract base class and JUnit 4 lifecycle were replaced by `DtrContext` + `DtrExtension`.
+
+| v2.4.x (DTR base class) | v2.6.0 (DtrContext) |
+|-------------------------|---------------------|
+| `extends DTR` | `@ExtendWith(DtrExtension.class)` |
+| `sayNextSection("x")` | `ctx.sayNextSection("x")` |
+| `say("x")` | `ctx.say("x")` |
+| `getRenderMachine()` | `ctx.getRenderMachine()` |
+| `setRenderMachine(m)` | `ctx.setRenderMachine(m)` |
+| `@Before setupForTestCaseMethod()` | Handled automatically by `DtrExtension` |
+| `@AfterClass finishDocTest()` | Handled automatically by `DtrExtension` |
+
+---
+
+## See also
+
+- [say* Core API Reference](request-api.md) — all 37 method signatures
+- [RenderMachine API](rendermachine-api.md) — rendering implementations
+- [Configuration](configuration.md) — output directory, Maven settings

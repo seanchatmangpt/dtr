@@ -24,8 +24,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -197,59 +195,19 @@ public class StressTest extends DtrTest {
     }
 
     // =========================================================================
-    // Test 4: sayAndAssertThat() call scaling
-    // =========================================================================
-
-    @Test
-    public void stressAssertionCount() {
-        sayNextSection("Stress: sayAndAssertThat() assertion count scaling");
-        say("Verifies the assertion logging path scales to 50K assertions within SLA bounds.");
-
-        var sla = new StressSla("assertions x 50K", 15_000, 256);
-
-        int[] counts = {100, 1_000, 10_000, 50_000};
-        String[][] tableData = new String[counts.length + 1][4];
-        tableData[0] = new String[]{"Assertion Count", "Duration (ms)", "Mem Δ (MB)", "Status"};
-
-        StressResult finalResult = null;
-        for (int i = 0; i < counts.length; i++) {
-            final int count = counts[i];
-            var batchSla = new StressSla("assertions x " + count, sla.maxMs(), sla.maxMemDeltaMB());
-            var result = measure(batchSla, () -> {
-                for (int j = 0; j < count; j++) {
-                    sayAndAssertThat("Assertion " + j, true, is(true));
-                }
-            });
-            tableData[i + 1] = new String[]{
-                String.format("%,d", count),
-                String.valueOf(result.actualMs()),
-                String.valueOf(result.actualMemDeltaMB()),
-                result.timingViolated() ? "✗" : "✓"
-            };
-            if (count == 50_000) finalResult = result;
-        }
-
-        sayTable(tableData);
-
-        assertFalse(finalResult.slaViolated(),
-            "SLA violated: " + finalResult.summary() + "\n" + sla.describe());
-    }
-
-    // =========================================================================
-    // Test 5: Combined load (sections × says × assertions)
+    // Test 4: Combined load (sections × says)
     // =========================================================================
 
     @Test
     public void stressCombinedLoad() {
-        sayNextSection("Stress: combined load — sections × says × assertions");
-        say("Verifies 500 sections × 50 says × 10 assertions = 30,000 total operations " +
+        sayNextSection("Stress: combined load — sections × says");
+        say("Verifies 500 sections × 50 says = 25,000 total operations " +
             "complete within SLA bounds. Simulates a large, realistic documentation test.");
 
-        int sections          = 500;
-        int saysPerSection    = 50;
-        int assertsPerSection = 10;
+        int sections       = 500;
+        int saysPerSection = 50;
         var sla = new StressSla(
-            "combined " + sections + "×" + saysPerSection + "×" + assertsPerSection,
+            "combined " + sections + "×" + saysPerSection,
             30_000, 512);
 
         var result = measure(sla, () -> {
@@ -259,15 +217,12 @@ public class StressTest extends DtrTest {
                     say("Section " + s + " paragraph " + i + ": Lorem ipsum dolor sit amet, " +
                         "consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.");
                 }
-                for (int a = 0; a < assertsPerSection; a++) {
-                    sayAndAssertThat("Section " + s + " assertion " + a, s + a, equalTo(s + a));
-                }
             }
         });
 
         sayTable(new String[][] {
             {"Metric", "Value", "SLA", "Status"},
-            {"Total operations", String.format("%,d", sections * (saysPerSection + assertsPerSection)), "—", "—"},
+            {"Total operations", String.format("%,d", sections * saysPerSection), "—", "—"},
             {"Duration", result.actualMs() + "ms", sla.maxMs() + "ms", result.timingViolated() ? "✗" : "✓"},
             {"Memory Δ", result.actualMemDeltaMB() + "MB", sla.maxMemDeltaMB() + "MB", result.memoryViolated() ? "✗" : "✓"},
         });

@@ -1,181 +1,170 @@
-# Reference: WebSocket Testing API
+# Reference: Coverage and Contract API Reference
 
-Complete reference for WebSocket testing with Java 25.
+**Package:** `io.github.seanchatmangpt.dtr.core`
+**Version:** 2.6.0 (new in this release)
+
+DTR 2.6.0 introduces three methods for documenting code quality: documentation coverage, contract verification, and API evolution timelines.
 
 ---
 
-## @ClientEndpoint
-
-Marks a class as a WebSocket client endpoint.
+## sayDocCoverage
 
 ```java
-@ClientEndpoint
-public class MyEndpoint {
-    @OnOpen
-    public void onOpen(Session session) {}
+ctx.sayDocCoverage(Class<?>... classes)
+```
 
-    @OnMessage
-    public void onMessage(String message) {}
+Analyzes one or more classes and renders a documentation coverage report. The report shows which public methods have been exercised by at least one `say*` call in any DocTest in the project.
 
-    @OnMessage
-    public void onMessage(ByteBuffer binary) {}
+**Parameters:**
 
-    @OnClose
-    public void onClose(CloseReason reason) {}
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `classes` | `Class<?>...` | One or more classes to check |
 
-    @OnError
-    public void onError(Session session, Throwable error) {}
+**Output:** A table with columns: Class, Method, Signature, Documented.
+
+```java
+@Test
+void checkCoverage(DtrContext ctx) {
+    ctx.sayNextSection("Documentation Coverage Report");
+    ctx.sayDocCoverage(
+        UserService.class,
+        OrderService.class,
+        PaymentService.class
+    );
+}
+```
+
+**Example output table:**
+
+| Class | Method | Documented |
+|-------|--------|-----------|
+| `UserService` | `findById(long)` | Yes |
+| `UserService` | `deleteById(long)` | No |
+| `OrderService` | `processOrder(Order)` | Yes |
+
+Undocumented methods are highlighted. Use this report to identify API surface that lacks documentation tests.
+
+---
+
+## sayContractVerification
+
+```java
+ctx.sayContractVerification(Class<?> impl, Class<?>... contracts)
+```
+
+Verifies that an implementation class fulfills each contract interface and renders a compliance table.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `impl` | `Class<?>` | The implementation class to verify |
+| `contracts` | `Class<?>...` | One or more interface or abstract class contracts |
+
+**Output:** A table with columns: Contract, Method, Present in Impl, Documented.
+
+```java
+@Test
+void verifyRenderMachineContract(DtrContext ctx) {
+    ctx.sayNextSection("RenderMachine Contract Verification");
+    ctx.sayContractVerification(
+        RenderMachineImpl.class,
+        RenderMachine.class
+    );
+}
+```
+
+**Example output:**
+
+| Contract | Method | Present | Documented |
+|----------|--------|---------|-----------|
+| `RenderMachine` | `say(String)` | Yes | Yes |
+| `RenderMachine` | `sayNextSection(String)` | Yes | Yes |
+| `RenderMachine` | `sayBenchmark(String,Runnable)` | Yes | No |
+
+---
+
+## sayEvolutionTimeline
+
+```java
+ctx.sayEvolutionTimeline(Class<?> clazz, int versionCount)
+```
+
+Reads git history and renders a timeline table showing when public methods were added, removed, or changed across the most recent `versionCount` tagged releases.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `clazz` | `Class<?>` | The class to track |
+| `versionCount` | `int` | Number of past versions to include |
+
+**Output:** A Mermaid `timeline` diagram plus a table with columns: Version, Method, Change.
+
+```java
+@Test
+void showApiEvolution(DtrContext ctx) {
+    ctx.sayNextSection("DtrContext API Evolution");
+    ctx.sayEvolutionTimeline(DtrContext.class, 5);
+}
+```
+
+**Example output (timeline):**
+
+```
+timeline
+    title DtrContext API Changes
+    v2.2.0 : sayCode added
+    v2.3.0 : sayCodeModel added
+             sayControlFlowGraph added
+    v2.4.0 : sayCallSite added
+             sayAnnotationProfile added
+    v2.6.0 : sayBenchmark added
+             sayMermaid added
+             sayDocCoverage added
+```
+
+**Requirements:** The project must be a git repository with version tags following semver (e.g., `v2.5.0`). If git history is unavailable, the method renders a warning and skips the timeline.
+
+---
+
+## Combining coverage methods
+
+Best practice: run all three coverage methods together in a dedicated quality DocTest:
+
+```java
+@ExtendWith(DtrExtension.class)
+class QualityDocTest {
+
+    @Test
+    void documentationCoverage(DtrContext ctx) {
+        ctx.sayNextSection("Documentation Coverage");
+        ctx.sayDocCoverage(
+            UserService.class,
+            OrderService.class
+        );
+    }
+
+    @Test
+    void contractCompliance(DtrContext ctx) {
+        ctx.sayNextSection("Contract Compliance");
+        ctx.sayContractVerification(RenderMachineImpl.class, RenderMachine.class);
+        ctx.sayContractVerification(BlogRenderMachine.class, RenderMachine.class);
+    }
+
+    @Test
+    void apiHistory(DtrContext ctx) {
+        ctx.sayNextSection("API Evolution (last 5 releases)");
+        ctx.sayEvolutionTimeline(DtrContext.class, 5);
+    }
 }
 ```
 
 ---
 
-## WebSocketContainer
+## See also
 
-Factory and configuration for WebSocket connections.
-
-```java
-WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-
-// Configuration
-container.setDefaultMaxSessionIdleTimeout(30000);  // milliseconds
-container.setDefaultMaxBinaryMessageBufferSize(1024 * 1024);
-container.setDefaultMaxTextMessageBufferSize(1024 * 1024);
-
-// Connect
-Session session = container.connectToServer(
-    endpoint,
-    URI.create("ws://host:port/path"));
-```
-
----
-
-## Session
-
-Represents an active WebSocket connection.
-
-| Method | Description |
-|--------|-------------|
-| `isOpen()` | Check if connection is open |
-| `getId()` | Get unique session ID |
-| `getBasicRemote()` | Synchronous message sender |
-| `getAsyncRemote()` | Asynchronous message sender |
-| `close()` | Close connection gracefully |
-| `close(CloseReason)` | Close with code and reason |
-| `getMaxBinaryMessageBufferSize()` | Get buffer size |
-| `setMaxBinaryMessageBufferSize(long)` | Set buffer size |
-
----
-
-## Sending Messages
-
-### Synchronous (Blocking)
-
-```java
-Session.Basic remote = session.getBasicRemote();
-
-// Text
-remote.sendText("Hello");
-
-// Binary
-ByteBuffer data = ByteBuffer.wrap(new byte[]{1, 2, 3});
-remote.sendBinary(data);
-
-// Whole message
-remote.sendText("complete", true);
-
-// Throws IOException on failure
-```
-
-### Asynchronous (Non-blocking)
-
-```java
-Session.Async remote = session.getAsyncRemote();
-
-// Text with callback
-remote.sendText("Hello", result -> {
-    if (result.isOK()) {
-        System.out.println("Sent");
-    } else {
-        System.err.println(result.getException());
-    }
-});
-
-// Binary
-remote.sendBinary(data);
-```
-
----
-
-## Lifecycle Callbacks
-
-| Annotation | Parameter | Fired when |
-|-----------|-----------|-----------|
-| `@OnOpen` | `Session` | Connection established |
-| `@OnMessage` | `String` or `ByteBuffer` | Message received |
-| `@OnClose` | `Session`, `CloseReason` | Connection closed |
-| `@OnError` | `Session`, `Throwable` | Error occurs |
-
----
-
-## CloseReason
-
-Details about connection closure.
-
-```java
-CloseReason reason = ...;
-
-int code = reason.getCloseCode().getCode(); // 1000, 1001, etc.
-String phrase = reason.getReasonPhrase(); // "Normal closure"
-
-// Standard codes
-CloseReason.CloseCodes.NORMAL_CLOSURE           // 1000
-CloseReason.CloseCodes.GOING_AWAY               // 1001
-CloseReason.CloseCodes.PROTOCOL_ERROR           // 1002
-CloseReason.CloseCodes.UNSUPPORTED_DATA         // 1003
-CloseReason.CloseCodes.RESERVED                 // 1004
-CloseReason.CloseCodes.NO_STATUS_CODE           // 1005
-CloseReason.CloseCodes.CLOSED_ABNORMALLY        // 1006
-CloseReason.CloseCodes.NOT_CONSISTENT           // 1007
-CloseReason.CloseCodes.VIOLATED_POLICY          // 1008
-CloseReason.CloseCodes.TOO_BIG                  // 1009
-CloseReason.CloseCodes.MISSING_EXTENSION        // 1010
-CloseReason.CloseCodes.UNEXPECTED_CONDITION     // 1011
-```
-
----
-
-## Error Handling
-
-```java
-@OnError
-public void onError(Session session, Throwable error) {
-    if (error instanceof IOException) {
-        // Connection I/O error
-    } else if (error instanceof ProtocolException) {
-        // Protocol violation
-    } else {
-        // Other error
-    }
-}
-```
-
----
-
-## Configuration Best Practices
-
-| Setting | Default | Recommended |
-|---------|---------|------------|
-| Idle timeout | 15 minutes | 30 seconds (testing) |
-| Text buffer | 32KB | 1MB (for large messages) |
-| Binary buffer | 32KB | 1MB |
-
----
-
-## See Also
-
-- [How-to: Connect to WebSocket Servers](../how-to/websockets-connection.md)
-- [How-to: Handle WebSocket Errors](../how-to/websockets-error-handling.md)
-- [How-to: Broadcast Messages](../how-to/websockets-broadcast.md)
-- [Tutorial: WebSockets](../tutorials/websockets-realtime.md)
-- [Reference: Real-Time Protocols](realtime-protocols-reference.md)
+- [say* Core API Reference](request-api.md) — all 37 method signatures
+- [RenderMachine API Reference](response-api.md) — output implementations
+- [Mermaid Diagram API Reference](http-constants.md) — diagram rendering

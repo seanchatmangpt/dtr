@@ -1,108 +1,184 @@
-# Reference: RenderMachine Interface
+# Reference: RenderMachine API
 
-**Package:** `io.github.seanchatmangpt.dtr.dtr.rendermachine`
-**File:** `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachine.java`
+**Package:** `io.github.seanchatmangpt.dtr.rendermachine`
+**Version:** 2.6.0
 
-`RenderMachine` is the HTML documentation generator interface. The default implementation is `RenderMachineImpl`. Override `getRenderMachine()` in your `DTR` subclass to supply a custom renderer.
-
----
-
-## Interface hierarchy
-
-```
-RenderMachineCommands          (output methods)
-    └── RenderMachine          (lifecycle methods)
-            └── RenderMachineImpl  (default Bootstrap implementation)
-```
+`RenderMachine` is the abstract documentation rendering base class. Since v2.5.0 it is **not sealed** — any class may extend it. `DtrContext` delegates all `say*` calls to the active `RenderMachine`.
 
 ---
 
-## RenderMachineCommands
+## Class hierarchy
 
-Defines the documentation output methods (the `say*` API). All of these are called by `DTR` when you use the `say*` methods in your tests.
+```
+RenderMachine  (abstract — NOT sealed since v2.5.0)
+├── RenderMachineImpl       — Markdown + HTML + LaTeX + JSON (default)
+├── RenderMachineLatex      — LaTeX / PDF output
+├── BlogRenderMachine       — Social platform export
+├── SlideRenderMachine      — Reveal.js slide deck
+└── MultiRenderMachine      — Virtual-thread dispatcher to all above
+```
 
-#### `say(String text)`
-Render a paragraph.
+---
 
-#### `sayNextSection(String title)`
-Render a section heading and add to navigation sidebar.
+## RenderMachineCommands interface
 
-#### `sayRaw(String html)`
-Inject raw HTML.
+`RenderMachineCommands` declares all 37 documentation output methods that `RenderMachine` (and thus `DtrContext`) expose. The complete method reference is in [say* Core API Reference](request-api.md).
 
-#### `sayAndAssertThat(String message, T actual, Matcher<T> matcher)`
-Assert with visual output.
+Quick listing of all 37 signatures:
 
-#### `sayAndAssertThat(String message, String reason, T actual, Matcher<T> matcher)`
-Assert with reason and visual output.
+**Core (16):** `say(String)`, `sayNextSection(String)`, `sayRaw(String)`, `sayCode(String,String)`, `sayJson(Object)`, `sayTable(String[][])`, `sayWarning(String)`, `sayNote(String)`, `sayKeyValue(Map)`, `sayUnorderedList(List)`, `sayOrderedList(List)`, `sayAssertions(Map)`, `sayRef(DocTestRef)`, `sayCite(String)`, `sayCite(String,String)`, `sayFootnote(String)`
 
-#### `sayAndMakeRequest(Request request)` → `Response`
-Execute HTTP request and document it.
+**JVM Introspection — v2.4.0 (5):** `sayCallSite()`, `sayAnnotationProfile(Class<?>)`, `sayClassHierarchy(Class<?>)`, `sayStringProfile(String)`, `sayReflectiveDiff(Object,Object)`
 
-#### `sayAndGetCookies()` → `List<Cookie>`
-Document and return all cookies.
+**Code Reflection — v2.3.0 (5):** `sayCodeModel(Class<?>)`, `sayCodeModel(Method)`, `sayControlFlowGraph(Method)`, `sayCallGraph(Class<?>)`, `sayOpProfile(Method)`
 
-#### `sayAndGetCookieWithName(String name)` → `Cookie`
-Document and return a specific cookie.
+**Benchmarking — v2.6.0 (2):** `sayBenchmark(String,Runnable)`, `sayBenchmark(String,Runnable,int,int)`
+
+**Mermaid — v2.6.0 (2):** `sayMermaid(String)`, `sayClassDiagram(Class<?>...)`
+
+**Coverage and Quality — v2.6.0 (3):** `sayDocCoverage(Class<?>...)`, `sayContractVerification(Class<?>,Class<?>...)`, `sayEvolutionTimeline(Class<?>,int)`
+
+**Utility — v2.6.0 (4):** `sayEnvProfile()`, `sayRecordComponents(Class<? extends Record>)`, `sayException(Throwable)`, `sayAsciiChart(String,double[],String[])`
 
 ---
 
 ## RenderMachine lifecycle methods
 
-#### `setTestBrowser(TestBrowser browser)`
-Injects the `TestBrowser` used for HTTP calls.
+Abstract methods that every concrete implementation must override:
 
-#### `setFileName(String className)`
-Sets the output filename (based on the test class name).
+#### `setFileName(String className)` → `void`
 
-#### `finishAndWriteOut()`
-Finalizes the HTML and writes the output files. Called once per test class by `DTR`'s `@AfterClass`.
+Sets the output filename derived from the test class name. Called by `DtrExtension` before tests run.
+
+#### `finishAndWriteOut()` → `void`
+
+Finalizes and writes all output files. Called once per test class after all `@Test` methods in the class have run.
 
 ---
 
-## Default implementation: RenderMachineImpl
+## RenderMachineImpl (default)
 
-**File:** `dtr-core/src/main/java/org/r10r/dtr/rendermachine/RenderMachineImpl.java`
+**File:** `dtr-core/src/main/java/io/github/seanchatmangpt/dtr/rendermachine/RenderMachineImpl.java`
 
-**Output directory:** `target/site/dtr/`
+**Output directory:** `target/docs/test-results/`
 
-**Output files per test run:**
-1. `{FullyQualifiedClassName}.html` — The test's documentation page
-2. `index.html` — Updated index listing all DocTest pages
-3. `assets/` — Bootstrap 3.0.0 CSS/JS and jQuery 1.9.0 (copied once)
+**Output files per test class:**
 
-**Page structure:**
-- Bootstrap 3 `navbar` with the class name as title
-- Scrollable sidebar with section links (from `sayNextSection` calls)
-- Main content area with paragraphs, request panels, assertion boxes
+| File | Description |
+|------|-------------|
+| `{ClassName}.md` | Markdown documentation |
+| `{ClassName}.html` | HTML with embedded styles |
+| `{ClassName}.tex` | LaTeX source |
+| `{ClassName}.json` | Structured JSON representation |
 
-**Request/response panel:**
-- Bootstrap `panel-primary` for the request
-- Bootstrap `panel-default` for the response
-- Formatted request: method, URL, headers, payload (pretty-printed)
-- Formatted response: status code, headers, body (pretty-printed)
+---
 
-**Assertion boxes:**
-- `alert-success` (green) on pass, showing the message
-- `alert-danger` (red) on fail, showing message + stack trace
+## RenderMachineLatex
+
+Produces LaTeX output for academic publishing. Requires a `LatexTemplate` and a `LatexCompilerStrategy`.
+
+### Templates
+
+| Class | Target venue |
+|-------|-------------|
+| `ArXivTemplate` | arXiv preprints |
+| `NatureTemplate` | Nature journals |
+| `IEEETemplate` | IEEE conferences and journals |
+| `ACMTemplate` | ACM conferences and journals |
+| `UsPatentTemplate` | USPTO patent applications |
+
+### Compiler strategies
+
+| Class | Shell command | Notes |
+|-------|--------------|-------|
+| `PdflatexStrategy` | `pdflatex` | Standard TeX Live |
+| `XelatexStrategy` | `xelatex` | Unicode + system fonts |
+| `LatexmkStrategy` | `latexmk` | Automated multi-pass |
+| `PandocStrategy` | `pandoc` | Markdown → LaTeX → PDF |
+
+```java
+ctx.setRenderMachine(
+    new RenderMachineLatex(new IEEETemplate(), new PdflatexStrategy())
+);
+```
+
+---
+
+## BlogRenderMachine
+
+Exports documentation as blog posts for social publishing platforms.
+
+### Templates
+
+| Class | Platform |
+|-------|----------|
+| `DevToTemplate` | dev.to |
+| `MediumTemplate` | Medium |
+| `SubstackTemplate` | Substack |
+| `HashnodeTemplate` | Hashnode |
+| `LinkedInTemplate` | LinkedIn Articles |
+
+```java
+ctx.setRenderMachine(new BlogRenderMachine(new SubstackTemplate()));
+```
+
+---
+
+## SlideRenderMachine
+
+Generates Reveal.js slide decks. Each `sayNextSection` call starts a new slide.
+
+```java
+ctx.setRenderMachine(new SlideRenderMachine());
+ctx.sayNextSection("Overview");    // slide 1
+ctx.say("DTR 2.6.0 at a glance.");
+ctx.sayNextSection("API");         // slide 2
+ctx.sayCode("ctx.sayBenchmark(\"label\", task);", "java");
+```
+
+---
+
+## MultiRenderMachine
+
+Dispatches every `say*` call to a list of `RenderMachine` implementations concurrently using one virtual thread per machine. `finishAndWriteOut()` waits for all machines to complete before returning.
+
+```java
+MultiRenderMachine multi = new MultiRenderMachine(
+    new RenderMachineImpl(),
+    new RenderMachineLatex(new ACMTemplate(), new LatexmkStrategy()),
+    new BlogRenderMachine(new DevToTemplate()),
+    new SlideRenderMachine()
+);
+ctx.setRenderMachine(multi);
+```
+
+### Virtual thread dispatch
+
+```
+ctx.sayBenchmark("task", runnable)
+    ├── virtual thread → RenderMachineImpl.sayBenchmark(...)
+    ├── virtual thread → RenderMachineLatex.sayBenchmark(...)
+    ├── virtual thread → BlogRenderMachine.sayBenchmark(...)
+    └── virtual thread → SlideRenderMachine.sayBenchmark(...)
+```
+
+All four machines receive the same call simultaneously. Total wall time equals the slowest machine, not the sum.
 
 ---
 
 ## Custom RenderMachine
 
-Implement `RenderMachine` to generate different output formats:
+Extend `RenderMachine` to produce any output format. Since v2.5.0 there is no `sealed` restriction.
 
 ```java
-public class MarkdownRenderMachine implements RenderMachine {
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public class AsciidocRenderMachine extends RenderMachine {
 
     private final StringBuilder sb = new StringBuilder();
-    private TestBrowser browser;
     private String fileName;
-
-    @Override
-    public void setTestBrowser(TestBrowser browser) {
-        this.browser = browser;
-    }
 
     @Override
     public void setFileName(String className) {
@@ -111,43 +187,47 @@ public class MarkdownRenderMachine implements RenderMachine {
 
     @Override
     public void say(String text) {
-        sb.append("\n").append(text).append("\n");
+        sb.append(text).append("\n\n");
     }
 
     @Override
     public void sayNextSection(String title) {
-        sb.append("\n## ").append(title).append("\n");
+        sb.append("== ").append(title).append("\n\n");
     }
 
     @Override
-    public Response sayAndMakeRequest(Request request) {
-        Response response = browser.makeRequest(request);
-        sb.append("\n```\n")
-          .append(request.method()).append(" ").append(request.uri())
-          .append("\n→ ").append(response.httpStatus())
-          .append("\n```\n");
-        return response;
+    public void sayCode(String code, String language) {
+        sb.append("[source,").append(language).append("]\n")
+          .append("----\n").append(code).append("\n----\n\n");
     }
 
     @Override
-    public void finishAndWriteOut() {
-        Path out = Path.of("target/site/dtr/" + fileName + ".md");
+    public void finishAndWriteOut() throws Exception {
+        Path out = Path.of("target/docs/test-results/" + fileName + ".adoc");
         Files.createDirectories(out.getParent());
         Files.writeString(out, sb.toString());
     }
 
-    // ... implement remaining methods
+    // implement remaining RenderMachineCommands methods...
 }
 ```
 
-Inject it:
+Inject via `DtrContext`:
 
 ```java
-public abstract class MarkdownDTR extends DTR {
-
-    @Override
-    public RenderMachine getRenderMachine() {
-        return new MarkdownRenderMachine();
-    }
+@Test
+void test(DtrContext ctx) {
+    ctx.setRenderMachine(new AsciidocRenderMachine());
+    ctx.sayNextSection("My AsciiDoc Section");
+    ctx.say("This output is AsciiDoc, not Markdown.");
 }
 ```
+
+---
+
+## See also
+
+- [say* Core API Reference](request-api.md) — complete 37-method reference
+- [DtrContext and DtrExtension API Reference](testbrowser-api.md) — context and extension lifecycle
+- [Benchmarking API Reference](url-builder.md) — `sayBenchmark` overloads
+- [Mermaid Diagram API Reference](http-constants.md) — diagram rendering

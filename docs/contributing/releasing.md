@@ -1,126 +1,130 @@
 # Contributing: Releasing
 
-This guide is for maintainers with write access and Sonatype credentials.
+This guide is for maintainers with push access to the repository.
 
-## Versioning
+---
 
-DTR uses [Semantic Versioning](https://semver.org/):
+## Version Scheme: CalVer YYYY.MINOR.PATCH
 
-- **Patch** (`1.1.x`): Bug fixes, no API changes
-- **Minor** (`1.x.0`): New features, backwards-compatible API additions
-- **Major** (`x.0.0`): Breaking API changes (rare)
+DTR uses Calendar Versioning. The version number is a temporal receipt.
 
-## Pre-release checklist
+| Component | Meaning | Rule |
+|-----------|---------|------|
+| `YYYY` | Year of release | Set by calendar. `2026` means this was the truth in 2026. |
+| `MINOR` | Feature iteration within the year | Starts at 1. Resets to 1 on year boundary. |
+| `PATCH` | Fix counter within a MINOR | Starts at 0. Resets to 0 on every MINOR bump. |
 
-Before cutting a release:
+**`2026.7.2`** means: seventh feature release of 2026, second patch fix within it.
 
-1. **All tests pass:**
-   ```bash
-   mvnd clean verify
-   ```
+Year boundary is automatic. `scripts/bump.sh minor` reads `date +%Y` at bump time.
+If the year has changed, MINOR resets to 1.
 
-2. **`changelog.md` is up to date** — every notable change since the last release is listed
+---
 
-3. **No `SNAPSHOT` dependencies** in `pom.xml`
-
-4. **Version in parent `pom.xml`** reflects the release (remove `-SNAPSHOT`)
-
-## Release process
-
-DTR releases to Maven Central via Sonatype OSS.
-
-### Step 1: Prepare the release
+## The Only Release Interface
 
 ```bash
-mvn release:clean
-mvn release:prepare
+make release-minor   # new features, additive changes    → YYYY.(N+1).0
+make release-patch   # bug fix, no API change            → YYYY.MINOR.(N+1)
+make release-year    # explicit year boundary (January)  → YYYY.1.0
+
+make release-rc-minor  # RC for a minor bump → YYYY.(N+1).0-rc.N
+make release-rc-patch  # RC for a patch fix  → YYYY.MINOR.(N+1)-rc.N
 ```
 
-This will:
-- Prompt for the release version (e.g., `1.1.12`)
-- Prompt for the next development version (e.g., `1.1.13-SNAPSHOT`)
-- Update `pom.xml` files
-- Create a git tag (e.g., `dtr-1.1.12`)
-- Commit and push the version changes
+**No human types a version number. No human does arithmetic.**
+The only decision is: what kind of change is this?
 
-### Step 2: Perform the release
+---
+
+## What Each Target Does
+
+```
+make release-minor
+  └─ scripts/bump.sh minor
+       reads CURRENT from pom.xml
+       computes NEXT (year-aware)
+       sed-updates all pom.xml files
+       writes NEXT to .release-version
+  └─ scripts/release.sh
+       reads VERSION from .release-version
+       runs scripts/changelog.sh → docs/CHANGELOG.md + docs/releases/VERSION.md
+       git add pom.xml files + docs
+       git commit "chore: release vVERSION"
+       git tag -a vVERSION
+       git push origin HEAD vVERSION
+       → GitHub Actions fires (publish.yml)
+       → mvnd verify
+       → mvnd deploy -Prelease → Maven Central
+       → gh release create vVERSION --generate-notes
+```
+
+---
+
+## Release Candidates
+
+RC builds go to GitHub Packages only. Maven Central receives final versions only.
 
 ```bash
-mvn release:perform
+# Create first RC
+make release-rc-minor          # → v2026.2.0-rc.1
+
+# If RC needs fixes, push code changes, then:
+make release-rc-minor          # → v2026.2.0-rc.2 (N auto-increments from git tags)
+
+# Promote to final when RC is good:
+make release-minor             # → v2026.2.0 (strips -rc.N, publishes to Maven Central)
 ```
 
-This will:
-- Check out the release tag
-- Build and sign the artifacts
-- Deploy to Sonatype staging repository
+RC promotion (`make release-minor` from a `-rc.N` state) strips the RC suffix and
+publishes the final version. The minor number is not incremented again — it was
+already bumped when the RC was created.
 
-### Step 3: Promote from staging
+---
 
-1. Log in at [oss.sonatype.org](https://oss.sonatype.org)
-2. Navigate to **Staging Repositories**
-3. Find the `orgdtr-XXXX` staging repository
-4. Click **Close** — Sonatype runs validation checks
-5. Once closed, click **Release** to promote to Maven Central
+## Breaking Changes
 
-Maven Central sync takes ~10–30 minutes.
+`release-major` does not exist. **The calendar owns the major version.**
 
-### Step 4: Back to development
+Breaking API changes are handled by deprecation cycle:
+1. Mark the old method `@Deprecated` in release `2026.X.0`
+2. Include a migration guide in `docs/releases/2026.X.0.md`
+3. Remove the method no earlier than `2027.1.0` (one full year of warning)
 
-```bash
-git checkout develop  # or main, depending on branch strategy
-git merge master
-```
+The year boundary IS the breaking change window. Downstream users who pin
+`[2026.1.0,2027)` are protected by the range.
 
-Verify the `pom.xml` version is now `1.1.13-SNAPSHOT`.
+---
 
-## GPG signing
+## Downstream Maven Ranges
 
-Maven release plugin signs artifacts with GPG. You need:
-
-1. A GPG key registered with Sonatype
-2. The key in your local keyring
-3. Maven configured with the key ID and passphrase:
-
+Document this in README once:
 ```xml
-<!-- ~/.m2/settings.xml -->
-<settings>
-    <servers>
-        <server>
-            <id>ossrh</id>
-            <username>your-sonatype-username</username>
-            <password>your-sonatype-password</password>
-        </server>
-    </servers>
-    <profiles>
-        <profile>
-            <id>ossrh</id>
-            <properties>
-                <gpg.keyname>YOUR_KEY_ID</gpg.keyname>
-                <gpg.passphrase>YOUR_PASSPHRASE</gpg.passphrase>
-            </properties>
-        </profile>
-    </profiles>
-    <activeProfiles>
-        <activeProfile>ossrh</activeProfile>
-    </activeProfiles>
-</settings>
+<!-- Pinned to 2026 — protected from year-boundary changes -->
+<version>[2026.1.0,2027)</version>
+
+<!-- From specific release onward within 2026 -->
+<version>[2026.3.0,2027)</version>
 ```
 
-## Verify the release
+---
 
-After Maven Central sync:
+## Version Lifecycle
 
-```bash
-# Verify the artifact is available
-mvn dependency:get \
-    -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2.5.0 \
-    -Ddest=/tmp/dtr-verify.jar
-```
+| Pattern | Status | Policy |
+|---------|--------|--------|
+| `2026.x.x-rc.*` | Candidate | GitHub Packages only |
+| `2026.x.x` | Current | Maven Central |
+| `2025.x.x` | Maintained | Security patches only, until Jan 2027 |
+| `2024.x.x` | EOL | No patches |
 
-Check the [Maven Central search](https://search.maven.org/artifact/io.github.seanchatmangpt.dtr/dtr-core) page.
+---
 
-## Post-release
+## Prerequisites
 
-1. Create a GitHub Release with the tag and changelog excerpt
-2. Update the version in `README.md` and `docs/index.md` if they reference a specific version
-3. Announce on any relevant channels
+GPG signing, Maven Central credentials, and GitHub Packages auth are injected by
+GitHub Actions as secrets. There is no `~/.m2/settings.xml` required locally to
+do a release. The release is triggered by the tag. The pipeline owns credentials.
+
+To add a new maintainer GPG key, update `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE`,
+and `GPG_KEY_ID` in GitHub repository Settings → Secrets → Actions.

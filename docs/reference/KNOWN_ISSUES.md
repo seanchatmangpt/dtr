@@ -1,299 +1,259 @@
-# Known Issues & Limitations
+# Known Issues and Limitations
 
-DTR 2.5.0 has excellent coverage of REST APIs and modern Java features. This document lists known limitations and workarounds.
+**DTR 2.6.0** — Current limitations, workarounds, and version-specific notes.
+
+---
 
 ## Version Information
 
-**Current Version:** 2.5.0-SNAPSHOT
-**Java Requirement:** 25+
-**Maven Requirement:** 4.0.0-rc-5+
+| Property | Value |
+|----------|-------|
+| Current version | 2.6.0 |
+| Java requirement | 25+ with `--enable-preview` |
+| Maven requirement | 4.0.0-rc-3+ |
+| mvnd requirement | 2.0.0+ |
+
+---
+
+## v2.6.0 Breaking Changes
+
+### HTTP client layer removed
+
+**Status:** Intentional breaking change
+**Severity:** High (if upgrading from v2.5.x)
+
+`TestBrowser`, `TestBrowserImpl`, `Request`, `Response`, `Url`, `sayAndMakeRequest`, `sayAndAssertThat`, `WebSocketClient`, `ServerSentEventsClient`, `BearerTokenAuth`, `ApiKeyAuth`, `BasicAuth`, and `HttpConstants` are all removed.
+
+**Migration:** Use standard Java HTTP clients (`java.net.http.HttpClient`) and document results with `ctx.sayCode(...)`, `ctx.sayJson(...)`, and `ctx.sayAssertions(Map)`.
+
+See [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) for migration examples.
 
 ---
 
 ## Core API
 
-### Limited Support for Streaming Responses
-
-**Status:** Known limitation
-**Severity:** Medium
-
-Large streaming responses (video, large files) are buffered entirely in memory. This can cause OutOfMemoryError with responses >100MB.
-
-**Workaround:**
-- Test with smaller payloads in documentation tests
-- Use separate integration tests for large file streaming
-- Monitor heap usage with `MAVEN_OPTS="-Xmx2g"`
-
----
-
-### Request Body Size Limit
+### Documentation generation overhead
 
 **Status:** Known limitation
 **Severity:** Low
 
-DTR buffers request/response bodies for documentation. Very large request bodies (>50MB) may slow down documentation generation.
+Generating documentation adds approximately 10–15% overhead to test execution time. Significant only in high-volume stress tests.
 
 **Workaround:**
-- Keep test payloads reasonably sized
-- Use parameterized tests to avoid repeated large bodies
-- Consider splitting into multiple smaller requests
+- Use `ctx.sayBenchmark(...)` for precise measurement; its timing excludes documentation rendering overhead
+- Disable documentation in stress tests by using standard JUnit without `DtrExtension`
+
+---
+
+### Memory usage with large test suites
+
+**Measured:** ~50 MB base + ~1–5 MB per 1 000 `say*` calls
+
+Large test suites may exhaust heap memory.
+
+**Workaround:**
+```bash
+export MAVEN_OPTS="-Xmx2g"
+mvnd clean install
+```
 
 ---
 
 ## Output Rendering
 
-### LaTeX/PDF Output Dependencies
+### LaTeX PDF generation requires system LaTeX
 
 **Status:** Known limitation
 **Severity:** Medium (for LaTeX users)
 
-PDF generation requires system-level LaTeX installation (`pdflatex`, `xelatex`, or `lualatex`).
+`RenderMachineLatex` with `PdflatexStrategy` or `XelatexStrategy` requires a system-level LaTeX installation.
 
 **Workaround:**
-- Install TeXLive: `sudo apt-get install texlive-latex-base` (Linux) or `brew cask install mactex` (macOS)
-- Alternatively, export as Markdown and use Pandoc for PDF conversion
-- Use online LaTeX services (Overleaf) for PDF generation
+- Install TeX Live: `sudo apt-get install texlive-latex-base` (Linux) or `brew install --cask mactex` (macOS)
+- Use `PandocStrategy` (requires only Pandoc): `new RenderMachineLatex(new ACMTemplate(), new PandocStrategy())`
+- Export as Markdown and convert offline
 
 ---
 
-### Blog Export Limited Styling
+### Mermaid diagram export in LaTeX
 
 **Status:** Known limitation
 **Severity:** Low
 
-Blog export generates basic HTML. Advanced styling requires manual CSS customization.
+`sayMermaid` and `sayClassDiagram` embed diagram source in LaTeX output as verbatim code. PDF rendering requires `mermaid-cli` (`mmdc`) to be installed and on `PATH`.
 
 **Workaround:**
-- Use HTML output for richer styling
-- Customize CSS in generated blog files post-generation
-- Consider using static site generators (Hugo, Jekyll) with exported Markdown
+- Install `mermaid-cli`: `npm install -g @mermaid-js/mermaid-cli`
+- Or render Mermaid diagrams in HTML output (works without `mmdc`) and export as PDF via browser
 
 ---
 
-### OpenAPI Generation Limitations
-
-**Status:** Known limitation
-**Severity:** Medium
-
-OpenAPI generation infers schema from test payloads. Complex types, recursive structures, or optional fields not present in tests may not be fully documented.
-
-**Workaround:**
-- Ensure test payloads cover all important fields
-- Manually add OpenAPI extensions in javadoc comments
-- Use tools like Swagger Editor to refine generated specs
-
----
-
-## Real-Time Protocols
-
-### WebSocket Message Ordering
+### Blog export styling
 
 **Status:** Known limitation
 **Severity:** Low
 
-High-volume WebSocket message tests may have messages arrive out of documented order due to buffering. Order is preserved within a connection but not guaranteed across rapid message bursts.
-
-**Workaround:**
-- Add explicit ordering validation in tests (sequence numbers)
-- Use smaller message batches in tests
-- Document expected behavior in comments
+`BlogRenderMachine` generates Markdown formatted for the target platform. Advanced platform-specific styling (Medium `subtitle`, Substack `preview text`) requires manual post-editing.
 
 ---
 
-### gRPC Server Reflection
+## Code Reflection
+
+### sayCodeModel / sayControlFlowGraph require --enable-preview
+
+**Status:** By design
+**Severity:** Low
+
+JEP 516 Code Reflection is a preview feature in Java 25. All `sayCodeModel`, `sayControlFlowGraph`, `sayCallGraph`, and `sayOpProfile` calls will fail with `IllegalAccessError` if `--enable-preview` is not active.
+
+**Workaround:** Ensure `--enable-preview` is in `.mvn/maven.config` and passed to Surefire via `<argLine>`.
+
+---
+
+### sayEvolutionTimeline requires git tags
 
 **Status:** Known limitation
 **Severity:** Low
 
-DTR doesn't auto-discover gRPC services via server reflection. Services must be explicitly defined in test code.
+`sayEvolutionTimeline` reads git history for version tags matching `v[0-9]+\.[0-9]+\.[0-9]+`. If the repository has no such tags, the method renders a warning and skips the timeline output.
 
-**Workaround:**
-- Explicitly import proto-generated service classes
-- Manually construct service stubs in tests
-- Generate OpenAPI specs from proto definitions as supplementary documentation
+**Workaround:** Create semver tags: `git tag v2.6.0`
 
 ---
 
-### SSE Connection Limits
+## WireMock and Jetty Warnings
 
-**Status:** Known limitation
+**Status:** Known warning (non-fatal)
 **Severity:** Low
 
-SSE tests don't support multiplexed connections to multiple SSE endpoints in a single test. Connection limit is ~1 per test method.
+WireMock (if present as a test dependency) emits a Jetty 9.4.x deprecation warning on Java 25:
 
-**Workaround:**
-- Test each endpoint in separate test methods
-- Use parameterized tests for similar endpoints
-- Consider gRPC streaming for multi-endpoint scenarios
+```
+WARNING: Jetty 9.4.x is deprecated
+```
+
+This is a WireMock/Jetty compatibility issue, not a DTR issue. The warning is harmless; tests run correctly.
+
+**Workaround:** Suppress the warning by adding to Surefire `<argLine>`:
+```
+-Dorg.eclipse.jetty.util.log.announce=false
+```
 
 ---
 
 ## Java Language Features
 
-### Limited Pattern Matching for Complex Types
+### Pattern matching on complex nested types
 
 **Status:** Known limitation
 **Severity:** Low
 
-Pattern matching in DTR tests works best with simple records and sealed classes. Complex nested types may require manual destructuring.
+`sayReflectiveDiff` and `sayRecordComponents` work best with flat records. Deeply nested record hierarchies or types with circular references may produce incomplete or truncated output.
 
 **Workaround:**
-- Use records for test payloads (simpler structure)
-- Keep sealed class hierarchies relatively flat
-- Use traditional if-else for complex type discrimination
+- Keep record hierarchies flat for documentation targets
+- For circular types, use `ctx.sayJson(object)` instead
 
 ---
 
-### Virtual Thread Performance Varies
+### Virtual thread performance varies by workload
 
 **Status:** Known limitation
 **Severity:** Low
 
-Virtual thread performance characteristics vary significantly based on workload and JVM tuning. Real measurements are essential.
+`MultiRenderMachine` uses one virtual thread per machine. For tests that produce very small documentation, the fan-out overhead may exceed single-machine execution time.
 
 **Workaround:**
-- Always use `System.nanoTime()` for measurements
-- Run benchmarks multiple times (100+ iterations)
-- Use JMH for reliable performance data
-
-See [Benchmarking](../how-to/benchmarking.md) for measurement best practices.
+- Use `MultiRenderMachine` only when output volume per test class is substantial
+- For lightweight tests, `RenderMachineImpl` is faster
 
 ---
 
 ## Performance Characteristics
 
-### Documentation Generation Overhead
+### sayBenchmark: same-JVM measurements
 
-**Measured Impact:** ~10-15% test execution time overhead for typical tests
+**Status:** Known limitation
+**Severity:** Low
 
-Generating documentation (capturing requests, rendering output) adds measurable overhead. Minimal impact for most tests, but significant for high-volume stress tests.
+`sayBenchmark` measures within the same JVM as the test. JIT compilation state, GC pauses, and other JVM activities can affect readings. Results are suitable for documentation and relative comparisons, not for production SLA claims.
 
 **Workaround:**
-- Disable documentation in stress tests: use standard JUnit instead
-- Use fewer `say*()` calls in performance-critical tests
-- Run performance benchmarks in separate test suite
+- Use JMH for production-grade benchmarking
+- Use `sayBenchmark` with high iteration counts (≥ 10 000) to amortize JVM noise
+- Always call `ctx.sayEnvProfile()` alongside benchmark results to record the execution context
 
 ---
 
-### Memory Usage with Large Test Suites
+### Maven build slow on first run
 
-**Measured Impact:** ~50MB base + ~1-5MB per 1000 test assertions
-
-Large test suites may exhaust heap memory. Typical `DTRContext` overhead is minimal, but accumulated across hundreds of tests it becomes visible.
+**Measured:** First build 2–3x slower than subsequent builds (daemon warm-up + artifact download)
 
 **Workaround:**
-- Set `MAVEN_OPTS="-Xmx2g"` for large test suites
-- Break very large test classes into multiple files
-- Use test suite organization to enable parallel execution
-
----
-
-### Maven Build Slow on First Run
-
-**Measured Impact:** First build takes 2-3x longer than subsequent builds (Maven daemon warm-up)
-
-Maven daemon speeds up builds significantly. First build downloads artifacts, initializes daemon, and compiles all modules.
-
-**Workaround:**
-- Use `mvnd` instead of `mvn` (Maven daemon is much faster)
-- Run `mvnd clean install` once, then incremental builds are fast
-- Use `mvnd -T 1C` for parallel module builds
+- Use `mvnd` (Maven daemon) for all builds; subsequent builds reuse the warm daemon
+- Run `mvnd clean install -T 1C` for parallel module builds
 
 ---
 
 ## Browser Compatibility
 
-### Old Browser Support
+### HTML output requires modern browser
 
-**Status:** HTML5 required
+Generated HTML uses HTML5 and Mermaid.js (ES2015+). Internet Explorer is not supported.
 
-Generated HTML documentation uses modern HTML5 and ES6 JavaScript. Internet Explorer and very old browsers are not supported.
-
-**Workaround:**
-- Use modern browsers (Chrome, Firefox, Safari, Edge 2020+)
-- For legacy browser support, manually convert HTML to XHTML 1.0
-
----
-
-### Mobile Browser Rendering
-
-**Status:** Responsive design implemented
-
-HTML output is responsive but designed primarily for desktop viewing. Code blocks may be difficult to read on small screens.
-
-**Workaround:**
-- View on desktop/tablet for full experience
-- Use Markdown output for mobile-friendly viewing
-- Export as PDF for consistent cross-device rendering
+**Workaround:** Use Chrome, Firefox, Safari, or Edge (2020+). Export as PDF for archival.
 
 ---
 
 ## Framework Integration
 
-### Spring Boot Testing
+### Spring Boot: no auto-configuration
 
-**Status:** Supported but limited auto-configuration
+DTR does not auto-wire Spring test context. Manual setup is required.
 
-DTR works with Spring Boot but doesn't auto-wire Spring test context. Manual setup required.
+**Workaround:** Use `@SpringBootTest` and inject the base URL explicitly:
 
-**Workaround:**
-- Use `@SpringBootTest` with manual `testServerUrl()` configuration
-- Or use standalone test server in test class
-- See [Integrate with Frameworks](../how-to/integrate-with-frameworks.md)
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(DtrExtension.class)
+class SpringDocTest {
 
----
+    @LocalServerPort
+    int port;
 
-### Quarkus Native Image
-
-**Status:** Limited support
-
-Quarkus native image compilation is partially supported. Some reflection-heavy operations may fail in native mode.
-
-**Workaround:**
-- Use JVM mode for testing: `quarkus run` instead of native
-- For native tests, mark reflection-sensitive classes in `reflection-config.json`
-
----
-
-## Java Version Compatibility
-
-### Java 26+ Preview Features
-
-**Status:** Required for next release
-
-DTR 2.5.0 targets Java 25. Java 26+ preview features are not yet fully integrated (records and sealed classes become standard, pattern matching expands).
-
-**Workaround:**
-- Use Java 25 with `--enable-preview`
-- Monitor DTR release notes for Java 26 upgrades
-- Preview features remain backward-compatible
+    @Test
+    void test(DtrContext ctx) {
+        var uri = URI.create("http://localhost:" + port + "/api/users");
+        // use java.net.http.HttpClient to call uri
+        ctx.say("Port: " + port);
+    }
+}
+```
 
 ---
 
 ## Workarounds Summary
 
 | Issue | Severity | Workaround |
-|-------|----------|-----------|
-| Large streaming responses | Medium | Use smaller payloads in tests |
-| LaTeX/PDF dependencies | Medium | Install TeXLive or use alternative PDF tools |
-| OpenAPI schema inference | Medium | Ensure test payloads cover all fields |
-| Memory on large suites | Medium | Set `MAVEN_OPTS="-Xmx2g"` |
-| Build slow on first run | Low | Use mvnd daemon for faster builds |
-| WebSocket message ordering | Low | Add explicit ordering validation |
-| Pattern matching on complex types | Low | Use simpler record structures |
-| Old browser support | Low | Use modern browsers or PDF export |
-| Spring Boot integration | Low | Manual test server setup required |
+|-------|----------|------------|
+| HTTP client layer removed | High | Use `java.net.http.HttpClient` directly |
+| LaTeX PDF dependencies | Medium | Install TeX Live or use PandocStrategy |
+| Mermaid in LaTeX | Low | Install mermaid-cli or use HTML output |
+| WireMock Jetty warnings | Low | Suppress with `-Dorg.eclipse.jetty.util.log.announce=false` |
+| sayEvolutionTimeline no tags | Low | Create semver git tags |
+| sayBenchmark same-JVM noise | Low | Use high iteration counts; call sayEnvProfile |
+| Memory on large test suites | Low | Set `MAVEN_OPTS="-Xmx2g"` |
+| Spring Boot no auto-wire | Low | Use `@LocalServerPort` and inject URL manually |
 
 ---
 
-## Reporting Issues
+## Reporting issues
 
 If you encounter an issue not listed here:
 
-1. Check [FAQ & Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) for diagnostic steps
+1. Check [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md)
 2. Enable debug output: `mvnd test -X`
-3. Consult relevant tutorial or how-to guide
-4. Report to project maintainers with:
+3. Report with:
    - Java version (`java -version`)
    - Maven version (`mvnd --version`)
    - Minimal test case that reproduces the issue
@@ -301,14 +261,13 @@ If you encounter an issue not listed here:
 
 ---
 
-## Future Work
+## Roadmap
 
-The following limitations are on the roadmap for future releases:
+The following items are planned for future releases:
 
-- [ ] Streaming response handling without buffering
-- [ ] Enhanced native image support for Quarkus
-- [ ] Auto-discovery of gRPC services via reflection
-- [ ] Advanced OpenAPI schema inference
-- [ ] Java 26 sealed classes as public standard feature (not preview)
+- [ ] `sayMermaid` LaTeX embedding without external `mmdc` dependency
+- [ ] Blog platform API integration for direct publish from `BlogRenderMachine`
+- [ ] `sayDocCoverage` integration with JaCoCo for line-level coverage data
+- [ ] Quarkus native image support for reflection-heavy methods
 
-Last updated: March 12, 2026
+Last updated: 2026-03-14

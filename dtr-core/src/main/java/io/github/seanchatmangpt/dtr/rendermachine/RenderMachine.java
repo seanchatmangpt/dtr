@@ -15,8 +15,6 @@
  */
 package io.github.seanchatmangpt.dtr.rendermachine;
 
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-
 /**
  * Abstract base class for render machines that convert test execution into documentation.
  *
@@ -41,13 +39,6 @@ import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
  * </ul>
  */
 public abstract class RenderMachine implements RenderMachineCommands {
-
-    /**
-     * Sets the TestBrowser instance for HTTP request execution.
-     *
-     * @param testBrowser the HTTP client to use for requests
-     */
-    public abstract void setTestBrowser(TestBrowser testBrowser);
 
     /**
      * Sets the output filename (typically the test class name).
@@ -158,6 +149,48 @@ public abstract class RenderMachine implements RenderMachineCommands {
 
     /** Documents reflective diff — no-op in base class. */
     public void sayReflectiveDiff(Object before, Object after) {}
+
+    /** Control flow graph — no-op in base class. */
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {}
+
+    /** Call graph — no-op in base class. */
+    public void sayCallGraph(Class<?> clazz) {}
+
+    /** Op profile — no-op in base class. */
+    public void sayOpProfile(java.lang.reflect.Method method) {}
+
+    /** Benchmark — no-op in base class. */
+    public void sayBenchmark(String label, Runnable task) {}
+
+    /** Benchmark with explicit rounds — no-op in base class. */
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {}
+
+    /** Raw Mermaid diagram — no-op in base class. */
+    public void sayMermaid(String diagramDsl) {}
+
+    /** Class diagram — no-op in base class. */
+    public void sayClassDiagram(Class<?>... classes) {}
+
+    /** Documentation coverage — no-op in base class. */
+    public void sayDocCoverage(Class<?>... classes) {}
+
+    /** Environment profile — no-op in base class. */
+    public void sayEnvProfile() {}
+
+    /** Record components schema — no-op in base class. */
+    public void sayRecordComponents(Class<? extends Record> recordClass) {}
+
+    /** Exception chain documentation — no-op in base class. */
+    public void sayException(Throwable t) {}
+
+    /** ASCII chart — no-op in base class. */
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {}
+
+    /** Contract verification — no-op in base class. */
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {}
+
+    /** Git evolution timeline — no-op in base class. */
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {}
 
     /**
      * Finishes documentation generation and writes output to disk.

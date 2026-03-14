@@ -1,332 +1,224 @@
-# Reference: Real-Time Protocols
+# Reference: JVM Introspection API Reference
 
-Complete reference for testing WebSockets, gRPC, and Server-Sent Events.
+**Package:** `io.github.seanchatmangpt.dtr.core`
+**Version:** 2.4.0+ (stable in 2.6.0)
 
----
-
-## Quick Comparison
-
-| Feature | WebSocket | gRPC | SSE |
-|---------|-----------|------|-----|
-| Direction | Bidirectional | Bidirectional | One-way (↓) |
-| Protocol | HTTP/1.1 upgrade | HTTP/2 | HTTP/1.1 |
-| Transport | Binary frames | Binary (protobuf) | Text (JSON) |
-| Auto-reconnect | No | No | Yes |
-| Firewall friendly | Good | Good | Excellent |
-| Performance | Medium | High | Low |
-| Data format | JSON/binary | Protobuf | Text/JSON |
-| Use case | Chat, real-time UI | Microservices | Notifications |
+DTR provides five JVM introspection methods that expose runtime metadata about classes, call sites, annotations, and object state. These methods use standard Java reflection and are available on all Java 25 JVMs without additional flags.
 
 ---
 
-## WebSockets
-
-### Connection
+## sayCallSite
 
 ```java
-WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-
-Session session = container.connectToServer(
-    new MyEndpoint(),
-    URI.create("ws://localhost:8080/path"));
+ctx.sayCallSite()
 ```
 
-### Lifecycle Callbacks
+Captures the source location of the calling method at the point `sayCallSite()` is invoked and renders it as a table row.
+
+**Output:** A table row with: Class name, Method name, File name, Line number.
+
+**Example:**
 
 ```java
-@ClientEndpoint
-public class MyEndpoint {
-    @OnOpen
-    public void onOpen(Session session) { }
-
-    @OnMessage
-    public void onMessage(String text) { }
-
-    @OnMessage
-    public void onMessage(ByteBuffer binary) { }
-
-    @OnClose
-    public void onClose(CloseReason reason) { }
-
-    @OnError
-    public void onError(Session session, Throwable error) { }
+@Test
+void documentCallSite(DtrContext ctx) {
+    ctx.sayNextSection("Call Site Capture");
+    ctx.say("The following call site was captured at documentation time:");
+    ctx.sayCallSite();  // captures this exact line
 }
 ```
 
-### Send Messages
+**Use case:** Useful when generating documentation that must reference the specific test location where a behavior was verified. Also useful for meta-documentation of the DTR framework itself.
+
+---
+
+## sayAnnotationProfile
 
 ```java
-// Text
-session.getBasicRemote().sendText("Hello");
-
-// Binary
-ByteBuffer data = ByteBuffer.wrap(new byte[]{1, 2, 3});
-session.getBasicRemote().sendBinary(data);
-
-// Async (with callback)
-session.getAsyncRemote().sendText("Hello", result -> {
-    if (result.isOK()) {
-        // Success
-    } else {
-        // Error
-    }
-});
+ctx.sayAnnotationProfile(Class<?> clazz)
 ```
 
-### Configuration
+Reflects on the given class and all its members and renders all present annotations in a structured table.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `clazz` | `Class<?>` | The class to inspect |
+
+**Output:** A table with columns: Target (class/method/field), Annotation, Attributes.
+
+**Example:**
 
 ```java
-// Timeout
-container.setDefaultMaxSessionIdleTimeout(30000); // milliseconds
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
 
-// Message buffer size
-session.setMaxBinaryMessageBufferSize(1024 * 1024); // 1MB
-session.setMaxTextMessageBufferSize(1024 * 1024);
+@Test
+void documentExtensionAnnotations(DtrContext ctx) {
+    ctx.sayNextSection("DtrExtension Annotation Profile");
+    ctx.sayAnnotationProfile(DtrExtension.class);
+}
+```
+
+**Example output:**
+
+| Target | Annotation | Attributes |
+|--------|-----------|------------|
+| Class | `@SupportedAnnotationTypes` | `value={"*"}` |
+| Method `process` | `@Override` | — |
+
+---
+
+## sayClassHierarchy
+
+```java
+ctx.sayClassHierarchy(Class<?> clazz)
+```
+
+Reflects on the given class and renders its full inheritance chain and implemented interfaces as an indented tree.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `clazz` | `Class<?>` | The root class |
+
+**Output:** A code block (or Mermaid tree diagram in HTML output) showing the full hierarchy up to `Object`.
+
+**Example:**
+
+```java
+import io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine;
+
+@Test
+void documentMultiRenderMachineHierarchy(DtrContext ctx) {
+    ctx.sayNextSection("MultiRenderMachine Class Hierarchy");
+    ctx.sayClassHierarchy(MultiRenderMachine.class);
+}
+```
+
+**Example output:**
+
+```
+MultiRenderMachine
+  extends RenderMachine (abstract)
+    implements RenderMachineCommands
+    extends Object
 ```
 
 ---
 
-## gRPC
-
-### Channel Management
+## sayStringProfile
 
 ```java
-ManagedChannel channel = ManagedChannelBuilder
-    .forAddress("localhost", 50051)
-    .usePlaintext()
-    .build();
-
-// Shutdown (graceful)
-channel.shutdown();
-channel.awaitTermination(5, TimeUnit.SECONDS);
-
-// Or force
-channel.shutdownNow();
+ctx.sayStringProfile(String value)
 ```
 
-### Stubs
+Introspects the given string and renders a profile table: length, UTF-16 code unit count, Unicode code point count, detected character categories.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `value` | `String` | The string to profile |
+
+**Output:** A key/value table with string metrics.
+
+**Example:**
 
 ```java
-// Blocking (synchronous)
-MyServiceGrpc.MyServiceBlockingStub stub =
-    MyServiceGrpc.newBlockingStub(channel);
-
-// Async (callbacks)
-MyServiceGrpc.MyServiceStub asyncStub =
-    MyServiceGrpc.newStub(channel);
-
-// Futures (CompletableFuture-like)
-MyServiceGrpc.MyServiceFutureStub futureStub =
-    MyServiceGrpc.newFutureStub(channel);
-```
-
-### RPC Methods
-
-```java
-// Unary
-Response response = stub.unaryMethod(request);
-
-// Server streaming
-Iterator<Response> responses = stub.serverStream(request);
-
-// Client streaming
-StreamObserver<Response> observer = ...;
-StreamObserver<Request> requestObserver = stub.clientStream(observer);
-requestObserver.onNext(request);
-requestObserver.onCompleted();
-
-// Bidirectional streaming
-StreamObserver<Response> observer = ...;
-StreamObserver<Request> requestObserver = stub.bidirectional(observer);
-```
-
-### Error Handling
-
-```java
-try {
-    response = stub.method(request);
-} catch (io.grpc.StatusRuntimeException e) {
-    io.grpc.Status status = e.getStatus();
-
-    // Status codes
-    // OK, CANCELLED, UNKNOWN, INVALID_ARGUMENT, DEADLINE_EXCEEDED,
-    // NOT_FOUND, ALREADY_EXISTS, PERMISSION_DENIED, RESOURCE_EXHAUSTED,
-    // FAILED_PRECONDITION, ABORTED, OUT_OF_RANGE, UNIMPLEMENTED,
-    // INTERNAL, UNAVAILABLE, DATA_LOSS, UNAUTHENTICATED
-
-    System.out.println(status.getCode());
-    System.out.println(status.getDescription());
+@Test
+void documentStringHandling(DtrContext ctx) {
+    ctx.sayNextSection("Unicode String Profile");
+    ctx.say("DTR handles multi-byte Unicode strings correctly:");
+    ctx.sayStringProfile("Hello, 世界 🌍");
 }
 ```
 
-### Timeout and Deadline
+**Example output:**
 
-```java
-stub = stub.withDeadlineAfter(5, TimeUnit.SECONDS);
-response = stub.method(request);
-
-// Or explicit deadline
-Instant deadline = Instant.now().plusSeconds(5);
-stub = stub.withDeadline(io.grpc.Deadline.create(deadline));
-```
+| Property | Value |
+|----------|-------|
+| Java length (chars) | 12 |
+| Unicode code points | 10 |
+| ASCII characters | 7 |
+| Non-ASCII characters | 3 |
+| Supplementary characters (BMP > U+FFFF) | 1 |
+| Contains surrogate pairs | Yes |
 
 ---
 
-## Server-Sent Events
-
-### Event Format
-
-```
-event: eventType
-data: {"key":"value"}
-id: 1
-
-event: anotherType
-data: some data
-id: 2
-
-```
-
-Fields:
-- `event:` — Event type (optional, default: "message")
-- `data:` — Payload (required; multi-line with `data:` prefix)
-- `id:` — Event ID (optional, used for reconnection)
-- `retry:` — Reconnection delay in milliseconds
-
-### Parsing
+## sayReflectiveDiff
 
 ```java
-sealed interface SseEvent {
-    record Event(String type, String data, String id) implements SseEvent {}
+ctx.sayReflectiveDiff(Object a, Object b)
+```
+
+Compares two objects of the same type using reflection and renders a field-level diff table showing which fields differ between the two instances.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `a` | `Object` | First object (labeled "Before" or "A") |
+| `b` | `Object` | Second object (labeled "After" or "B") |
+
+**Output:** A three-column table: Field, Value in A, Value in B. Fields with equal values are shown with a checkmark; differing fields are highlighted.
+
+**Example:**
+
+```java
+record ServerConfig(String host, int port, boolean tls, int maxConnections) {}
+
+@Test
+void documentConfigMigration(DtrContext ctx) {
+    ctx.sayNextSection("Configuration Migration");
+    ctx.say("The following shows the difference between v1 and v2 server configurations:");
+
+    var v1 = new ServerConfig("localhost", 8080, false, 100);
+    var v2 = new ServerConfig("0.0.0.0", 443,  true,  1000);
+
+    ctx.sayReflectiveDiff(v1, v2);
 }
-
-List<SseEvent> parseStream(String stream) {
-    List<SseEvent> events = new ArrayList<>();
-    String[] lines = stream.split("\n");
-
-    String type = null, data = null, id = null;
-
-    for (String line : lines) {
-        if (line.isEmpty()) {
-            if (type != null) {
-                events.add(new SseEvent.Event(type, data, id));
-                type = null;
-                data = null;
-                id = null;
-            }
-        } else if (line.startsWith("event: ")) {
-            type = line.substring(7);
-        } else if (line.startsWith("data: ")) {
-            data = line.substring(6);
-        } else if (line.startsWith("id: ")) {
-            id = line.substring(4);
-        }
-    }
-
-    return events;
-}
 ```
 
-### Multiline Data
+**Example output:**
 
-```
-event: message
-data: Line 1
-data: Line 2
-data: Line 3
-id: 1
+| Field | Before (v1) | After (v2) | Changed |
+|-------|------------|-----------|---------|
+| `host` | `localhost` | `0.0.0.0` | Yes |
+| `port` | `8080` | `443` | Yes |
+| `tls` | `false` | `true` | Yes |
+| `maxConnections` | `100` | `1000` | Yes |
 
-```
-
-Combine with newlines: `"Line 1\nLine 2\nLine 3"`
-
-### Reconnection
-
-```
-retry: 1000
-
-```
-
-Tells client to wait 1000ms before reconnecting.
+Works with records, plain Java beans (public fields or getter methods), and any Jackson-serializable type.
 
 ---
 
-## Testing Patterns
-
-### Synchronize Async Operations
+## Combining introspection methods
 
 ```java
-// Wait for specific event
-CountDownLatch latch = new CountDownLatch(1);
+@Test
+void introspectRenderMachine(DtrContext ctx) {
+    ctx.sayNextSection("RenderMachineImpl Introspection");
 
-observer.onNext(value);
-// or
-eventHandler.onEvent(() -> latch.countDown());
+    ctx.sayClassHierarchy(RenderMachineImpl.class);
+    ctx.sayAnnotationProfile(RenderMachineImpl.class);
 
-latch.await(5, TimeUnit.SECONDS);
-```
+    ctx.sayNextSection("Call Site");
+    ctx.sayCallSite();
 
-### Collect Results
-
-```java
-List<Result> results = Collections.synchronizedList(new ArrayList<>());
-
-observer.onNext(result -> results.add(result));
-
-// Use results...
-```
-
-### Handle Streams with Virtual Threads
-
-```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    for (int i = 0; i < 1000; i++) {
-        executor.submit(() -> {
-            // Each virtual thread handles one stream/call
-            handleStream();
-        });
-    }
+    ctx.sayNextSection("Configuration Diff");
+    var defaultConfig = RenderMachineImpl.defaultConfig();
+    var customConfig  = RenderMachineImpl.customConfig("target/my-docs");
+    ctx.sayReflectiveDiff(defaultConfig, customConfig);
 }
 ```
 
 ---
 
-## Best Practices
+## See also
 
-✅ **DO:**
-- Close connections/channels properly
-- Handle all callback methods
-- Use timeouts for network operations
-- Wait for async completion (`CountDownLatch`, callbacks)
-- Validate received data before processing
-
-❌ **DON'T:**
-- Assume immediate message delivery
-- Leave connections open
-- Ignore error callbacks
-- Test in isolation from actual server
-
----
-
-## Performance Comparison
-
-For 1000 concurrent messages:
-
-| Protocol | Memory | Latency | Throughput |
-|----------|--------|---------|-----------|
-| WebSocket | ~5MB | 10-50ms | 10K msg/s |
-| gRPC | ~2MB | 1-10ms | 100K msg/s |
-| SSE | ~10MB | 50-200ms | 1K msg/s |
-
-(Approximate; depends on message size and server)
-
----
-
-## See Also
-
-- [Tutorial: WebSockets](../tutorials/websockets-realtime.md)
-- [Tutorial: gRPC Streaming](../tutorials/grpc-streaming.md)
-- [Tutorial: Server-Sent Events](../tutorials/server-sent-events.md)
-- [How-to: WebSocket Connection](../how-to/websockets-connection.md)
-- [How-to: gRPC Unary Calls](../how-to/grpc-unary.md)
-- [How-to: SSE Subscription](../how-to/sse-subscription.md)
+- [say* Core API Reference](request-api.md) — all 37 method signatures
+- [Code Reflection API Reference](grpc-reference.md) — JEP 516 Code Reflection methods
+- [Records and Sealed Reference](records-sealed-reference.md) — records used as introspection targets

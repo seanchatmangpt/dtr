@@ -1,410 +1,142 @@
-# DTR 80/20 Design Patterns — Understanding the Why
+# Explanation: The 80/20 Design Patterns of DTR 2.6.0
 
-This document explains **why** DTR is designed the way it is. Understanding the reasoning will help you use the framework more effectively.
-
----
-
-## The Core Philosophy: Tests Are Documentation
-
-**The Problem:** Traditional API documentation rots.
-
-Developers update the code, forget to update the docs, and users inherit incorrect information. Documentation lives in wikis, README files, and Google Docs — separate from the code that actually implements the API.
-
-**The Solution:** Make tests and documentation inseparable.
-
-DTR is built on the principle that **your test is your documentation**. When you write a test, you simultaneously create a living document. Every request and response in your test becomes part of the documentation. When the API changes, the documentation changes with it (because the test breaks).
-
-### Example: The Problem It Solves
-
-**Without DTR:**
-```
-Code:     POST /api/users returns 201
-Docs:     POST /api/users returns 200    ← WRONG! Docs are outdated
-```
-
-**With DTR:**
-```
-Test:     sayAndAssertThat("Status is 201", response.httpStatus(), equalTo(201))
-Docs:     Auto-generated from test
-Result:   Code and docs stay in sync
-```
+This document explains the reasoning behind DTR's design decisions in version 2.6.0 — not how to use the features, but why they were designed the way they were.
 
 ---
 
-## Pattern 1: `sayAndMakeRequest()` — The Central Idea
+## The Core Principle: Derive Facts from Code Structure
 
-### Why This Method Exists
+DTR's central design principle, applied most fully in v2.6.0, is this:
 
-`sayAndMakeRequest()` is the **heart of DTR**. It does two things:
-1. Executes the HTTP request (like `makeRequest()`)
-2. Captures and documents the request/response in HTML/Markdown
+> Documentation is most accurate when derived from the code it describes, not from a developer's description of that code.
 
-### The Design Decision
+This principle sounds obvious. Its implications are radical.
 
-You might wonder: **Why not just use `makeRequest()` for documentation too?**
+If a record has five components, documentation derived from `getRecordComponents()` will always show five components — even after a refactor that adds a sixth. Documentation written by a developer may not. The developer forgets; the JVM does not.
 
-The answer is intentional separation of concerns:
-
-```java
-// This executes silently — useful for setup
-makeRequest(Request.POST().url(...).payload(...));
-
-// This executes AND documents — for what matters
-sayAndMakeRequest(Request.GET().url(...));
-```
-
-### The Benefit
-
-This separation lets you:
-
-1. **Hide setup/teardown** — Login requests don't clutter documentation
-2. **Control narrative flow** — You choose what's important enough to document
-3. **Test more than you document** — Setup steps, edge cases, etc.
-
-### Real-world Example
-
-```java
-@Test
-public void testCreateAndFetch() {
-    // Silent setup: login without documentation
-    makeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/login"))
-            .addFormParameter("email", "test@example.com")
-            .addFormParameter("password", "secret"));
-
-    // Now document the user flow
-    sayNextSection("Create Article");
-    say("Authenticated users can create articles.");
-
-    ArticleDto article = new ArticleDto("Title", "Content");
-    Response response = sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/articles"))
-            .contentTypeApplicationJson()
-            .payload(article));
-    // ↑ This gets documented with request/response
-
-    say("Now we fetch the created article.");
-
-    Response fetchResponse = sayAndMakeRequest(
-        Request.GET()
-            .url(testServerUrl().path("/api/articles/" + article.id)));
-    // ↑ This also gets documented
-}
-```
-
-**Generated documentation shows only the meaningful requests** (create and fetch), not the authentication dance that precedes them.
+Every new capability in v2.6.0 is an application of this principle to a different category of documentation problem.
 
 ---
 
-## Pattern 2: `say()` — Context for Humans
+## Why 14 New Capabilities, 0 New Dependencies
 
-### Why Assertions Aren't Enough
+DTR 2.6.0 adds 14 new `say*` signatures. It adds zero new external dependencies.
 
-You could write:
-```java
-Response response = sayAndMakeRequest(Request.GET()...);
-sayAndAssertThat("Status is 200", 200, equalTo(response.httpStatus()));
-```
+This is not a coincidence. It is a constraint.
 
-This documents the **what** (status is 200) but not the **why** (why do we care?).
+Each new capability was designed to use what the JVM already provides. The reflection API for introspection. `System.nanoTime()` for benchmarking. `ProcessBuilder` for git log. `ConcurrentHashMap` for caching. Text blocks for Mermaid diagram output. String formatting for ASCII charts.
 
-### The Design Decision
+The constraint exists for two reasons. First, every new external dependency is a dependency conflict waiting to happen in a user's build. A documentation library that requires a specific version of a metrics framework, or a specific version of a reflection utility, becomes a liability in builds that also use those frameworks. DTR should be a quiet guest, not a demanding one.
 
-`say()` adds human-readable context:
-
-```java
-say("GET /api/users retrieves all active users. " +
-    "Results are paginated with up to 20 per page.");
-
-Response response = sayAndMakeRequest(Request.GET()...);
-
-say("Note: The response includes metadata about pagination " +
-    "even when no additional pages exist.");
-
-sayAndAssertThat("Status is 200", 200, equalTo(response.httpStatus()));
-```
-
-### The Benefit
-
-API consumers understand:
-- What the endpoint does (before the request)
-- What the response means (after the request)
-- Edge cases and caveats
-- When to use this endpoint vs alternatives
-
-### Who Reads This?
-
-**The documentation is for:**
-- New developers joining the team
-- API consumers integrating your service
-- Your future self, 6 months from now
-- Stakeholders reviewing what the API does
+Second, the constraint forces careful design. When you cannot reach for an external library, you must find the simplest possible implementation using standard library APIs. The simplest implementations are often the best ones: fewer abstractions, less code, fewer failure modes.
 
 ---
 
-## Pattern 3: Assertions As Documentation
+## The Blue Ocean Methodology Applied to Documentation
 
-### Why Hamcrest Matchers?
+"Blue Ocean" strategy in product design means creating new market space by solving problems that existing tools do not address, rather than competing on the same dimensions.
 
-DTR uses **Hamcrest matchers** instead of plain assertions. Why?
+Applied to DTR: instead of being a better HTML reporter, a better API doc generator, or a better test assertion library, v2.6.0 identifies categories of documentation pain that no existing tool addresses and builds targeted capabilities for each.
 
-**Without:**
-```java
-if (response.httpStatus() != 200) {
-    throw new AssertionError("Bad status");
-}
-```
+### Pain Point 1: Performance Claims Drift
 
-**With Hamcrest:**
-```java
-sayAndAssertThat("Status is OK", 200, equalTo(response.httpStatus()));
-```
+**The problem.** A benchmark runs in 2020. The result is written into documentation. The code is optimized in 2022. The benchmark number is not updated. The documentation is now actively misleading.
 
-### The Design Decision
+**The capability.** `sayBenchmark(Runnable, int iterations)` runs the lambda inline, during test execution, and documents the results in the same output that contains everything else. The benchmark and the documentation are the same artifact; they cannot diverge.
 
-Hamcrest matchers are **self-documenting**:
+### Pain Point 2: Type Structure Documentation Rots
 
-```java
-sayAndAssertThat("User email is valid",
-    created.email,
-    containsString("@"));
+**The problem.** A record gains a new component. A class hierarchy gets a new subtype. An annotation is added or removed. Every piece of documentation that described the old structure is now wrong.
 
-sayAndAssertThat("Response list has 3+ items",
-    users.size(),
-    greaterThanOrEqualTo(3));
+**The capability.** `sayRecordComponents`, `sayClassHierarchy`, `sayAnnotationProfile`, `sayStringProfile`, `sayReflectiveDiff` derive facts from bytecode. The documentation changes automatically when the code changes, because the documentation is a rendering of the code's self-description.
 
-sayAndAssertThat("ID is assigned",
-    created.id,
-    notNullValue());
-```
+### Pain Point 3: Architectural Compliance Is Unverifiable
 
-Each matcher reads like a sentence. When the test fails, the HTML/Markdown shows exactly what was expected vs. what was received — **in the documentation**.
+**The problem.** A team documents that all service classes must implement a specific interface. There is no automated check. Drift happens silently over time.
 
-### The Benefit
+**The capability.** `sayContractVerification(Class<?>, Class<?>)` verifies and documents that a class conforms to an expected interface contract. The verification is not a separate tool or a linting rule — it is part of the documentation, run during test execution.
 
-When an assertion fails:
-- The documentation shows the expectation clearly
-- Readers understand what the API contract is
-- The failure message is readable (not cryptic)
+### Pain Point 4: Code History Is Invisible in Documentation
 
-### Visual Rendering
+**The problem.** Documentation describes what code does today, not how it evolved. Readers who need to understand why a design decision was made have no path from the documentation to the version history.
 
-In the generated documentation:
+**The capability.** `sayGitEvolution(String path)` executes `git log` on the specified path and documents the commit history as a timeline table. The evolution of a component becomes part of its documentation.
 
-**On Pass:**
-```
-✓ Status is OK
-```
+### Pain Point 5: Diagrams Drift from Reality
 
-**On Fail:**
-```
-✗ Status is OK
-  Expected: 200
-  Received: 500
-  Error: Internal Server Error
-```
+**The problem.** Architecture diagrams in wikis go stale. The diagram shows what the architecture looked like when it was drawn, not what it looks like now.
 
-This teaches API consumers about error handling, edge cases, and recovery strategies — all through your test assertions.
+**The capability.** `sayClassHierarchy` and `sayMermaid` together allow diagrams to be generated from the actual class hierarchy at test time. A `sayClassHierarchy` call produces data that can be transformed into a Mermaid diagram via `sayMermaid`. The diagram reflects the current codebase because it was derived from it.
+
+### Pain Point 6: Documentation Has No Coverage Metric
+
+**The problem.** You know which tests pass. You do not know which `say*` method families were used, which record types were documented, which modules were covered by documentation.
+
+**The capability.** `sayCoverageReport(DtrContext)` introspects the current test's event queue and documents which categories of documentation were produced. This is documentation coverage — analogous to test coverage, but for documentation.
+
+### Pain Point 7: Exception Behavior Is Undocumented
+
+**The problem.** What exceptions a method throws, under what conditions, is rarely documented systematically. Developers read source code to find out.
+
+**The capability.** DTR 2.6.0 includes exception documentation methods that capture and document exception behavior through controlled test invocation, making the exception contract part of the test-generated documentation.
 
 ---
 
-## Pattern 4: Automatic Session Management
+## The 80% Rule Applied to say* Selection
 
-### The Problem It Solves
+Not every `say*` method is appropriate for every documentation context. The 80/20 principle applies here: 20% of the `say*` methods will appear in 80% of tests.
 
-Without automatic cookie handling:
+The core 20%:
 
-```java
-@Test
-public void testWithAuth() {
-    // Login
-    Response loginResponse = sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/login"))
-            .addFormParameter("email", "user@example.com")
-            .addFormParameter("password", "secret"));
+| Method | When to Use |
+|---|---|
+| `sayNextSection(String)` | Chapter/section boundaries |
+| `say(String)` | Narrative context between facts |
+| `sayCode(String, String)` | Showing code examples |
+| `sayTable(String[][])` | Structured comparison data |
+| `sayNote(String)` | Non-critical context |
+| `sayWarning(String)` | Critical constraints or caveats |
 
-    // Extract cookie from response manually
-    List<Cookie> cookies = loginResponse.headers()...
-    // Add cookie to next request
-    Request.POST()
-        .url(...)
-        .addHeader("Cookie", "SESSIONID=" + extractedCookie)
-        ...
+The introspection and benchmarking methods — the Blue Ocean capabilities — appear when you are documenting a specific class's structure, a specific method's performance, or a specific architectural constraint. They are not general-purpose; they are precise instruments for precise problems.
 
-    // Nightmare for every authenticated request!
-}
-```
-
-### The Design Decision
-
-DTR's `TestBrowser` maintains a **cookie jar** across requests:
-
-```java
-@Test
-public void testWithAuth() {
-    // Login (silently — setup)
-    makeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/login"))
-            .addFormParameter("email", "user@example.com")
-            .addFormParameter("password", "secret"));
-
-    // Cookie is stored automatically
-
-    // Subsequent requests use the cookie automatically
-    sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/articles"))
-            .contentTypeApplicationJson()
-            .payload(article));
-    // ↑ Session cookie included automatically
-}
-```
-
-### The Benefit
-
-1. **Tests are simple** — Describe the user flow, not HTTP details
-2. **Documentation is accurate** — Shows realistic workflows
-3. **Less boilerplate** — No manual header manipulation
-
-### Important: Isolation
-
-Cookies **reset between test methods**:
-
-```java
-@Test
-public void test1() {
-    // Login
-    makeRequest(Request.POST().url(...).addFormParameter(...));
-    // Cookie jar now has SESSIONID
-}
-
-@Test
-public void test2() {
-    // Fresh test method = fresh cookie jar
-    // SESSIONID from test1 is gone
-}
-```
-
-This ensures test isolation — each test is independent.
+Use `sayRecordComponents` when you need to document a record's structure, not as a substitute for `say`. Use `sayBenchmark` when you need a documented, reproducible performance measurement, not to satisfy curiosity about speed.
 
 ---
 
-## Pattern 5: Three-Layer Architecture
+## Pattern: Structure Over Description
 
-DTR separates concerns into three layers:
+The common pattern across all new capabilities:
 
-### Layer 1: Request/Response (testbrowser/)
+1. Identify a category of documentation that developers write by hand (and update imperfectly)
+2. Find the authoritative source in the JVM (reflection, git, bytecode)
+3. Build a `say*` method that queries the source directly
+4. Cache the result (since tests may call it repeatedly)
 
-```java
-Request.GET().url(...).addHeader(...)
-Response.payloadAs(MyDto.class)
-```
-
-**Purpose:** Simple, fluent HTTP abstractions
-
-**Design:** Independent of documentation — you could use this API standalone
-
-### Layer 2: Browser (TestBrowserImpl)
-
-```java
-testBrowser.executeRequest(request) → Response
-```
-
-**Purpose:** HTTP client logic (cookies, redirects, serialization)
-
-**Design:** Pluggable interface (`TestBrowser`) — you can provide custom implementations
-
-### Layer 3: Documentation (RenderMachine)
-
-```java
-renderMachine.sayNextSection("...")
-renderMachine.sayAndMakeRequest(request, response)
-```
-
-**Purpose:** Captures and renders documentation
-
-**Design:** Pluggable interface (`RenderMachine`) — you can swap Markdown for HTML or custom formats
-
-### The Benefit
-
-Each layer is independent:
-- You can use Request/Response without documentation
-- You can swap the browser implementation (mock, custom HTTP client)
-- You can swap the render engine (Markdown, HTML, PDF, etc.)
+The pattern eliminates the middle step — the developer's description — and connects the documentation directly to its source. This is what "derive facts from code structure, not developer prose" means in practice.
 
 ---
 
-## Pattern 6: The Test Lifecycle
+## Why the HTTP Stack Was Removed
 
-### Flow
+The old HTTP stack was an anti-pattern by the 80/20 standard.
 
-```
-@BeforeEach (automatic)
-  └─ Fresh TestBrowser + RenderMachine per test method
-  └─ Fresh cookie jar
+It served a specific use case (HTTP API testing) that 100% of users who needed it could serve better with dedicated tools. Meanwhile, it imposed complexity on 100% of the codebase — additional dependencies, additional API surface, a second set of lifecycle concerns.
 
-@Test
-  └─ say*() calls → buffered in RenderMachine
-  └─ sayAndMakeRequest() → HTTP + capture request/response
-  └─ sayAndAssertThat() → assertion + documentation
+Removing it did not reduce DTR's value. It focused DTR's value on documentation generation, which is the only thing DTR is uniquely good at. HTTP testing is not.
 
-@AfterEach (automatic via TestWatcher)
-  └─ finishAndWriteOut()
-  └─ Write target/site/dtr/TestClassName.html
-
-@AfterAll (manual)
-  └─ finishDocTest()
-  └─ Generate target/site/dtr/index.html
-```
-
-### The Design Decision
-
-Each test method gets:
-- **Fresh isolation** — No state leaks between tests
-- **Independent documentation** — Each test produces one HTML file
-- **Clear lifecycle** — Setup → test → cleanup is automatic
+Removing it also illustrated the principle: if you have to maintain something, make sure it is irreplaceable. The HTTP stack was replaceable. The documentation generation capabilities — particularly the introspection, benchmarking, and provenance features — are not.
 
 ---
 
-## Pattern 7: Why `testServerUrl()` Must Be Overridden
+## The Cumulative Effect
 
-### The Design Decision
+Individually, each of the 14 new capabilities solves one documentation problem. Collectively, they address the single root cause: **the gap between what code does and what documentation says it does.**
 
-Every test class must override:
+A codebase documented with DTR 2.6.0 has:
+- Performance claims that are re-verified on every test run
+- Type structures that match their documentation by construction
+- Architectural constraints that are verified and documented simultaneously
+- Code history connected to the documentation it evolved from
+- Diagrams derived from the actual class hierarchy
 
-```java
-@Override
-public Url testServerUrl() {
-    return Url.host("http://localhost:8080");
-}
-```
-
-Why not auto-detect?
-
-1. **Explicit is better than implicit** — Tests should be self-documenting
-2. **Different per environment** — Dev: localhost:8080, CI: http://jenkins-agent:9000, etc.
-3. **Clear in the test** — Reader immediately sees what server is being tested
-
-### The Benefit
-
-You know exactly what server your tests hit, no guessing.
-
----
-
-## Summary: The Philosophy
-
-| Feature | Why |
-|---------|-----|
-| `sayAndMakeRequest()` vs `makeRequest()` | Control what gets documented vs. what's setup noise |
-| `say()` for narrative | Humans need context, not just assertions |
-| Hamcrest matchers | Self-documenting, readable failure messages |
-| Auto-managed cookies | Realistic auth flows without boilerplate |
-| Three-layer architecture | Each concern is pluggable/replaceable |
-| Fresh state per test method | Isolation and independent documentation |
-| Override `testServerUrl()` | Explicit, clear, environment-aware |
-
-**Central idea:** Tests + documentation are one thing. When you write a good test in DTR, you automatically write good documentation. The two stay in sync because they're the same artifact.
+These are not incremental improvements to documentation quality. They are structural changes to how documentation accuracy is maintained — or rather, how the need to maintain it is eliminated.

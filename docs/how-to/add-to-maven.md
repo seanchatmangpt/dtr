@@ -1,42 +1,25 @@
 # How-to: Add DTR to a Maven Project
 
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
+
 ## Add the dependency
 
 ```xml
 <dependency>
-    <groupId>org.dtr</groupId>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>1.1.12</version>
+    <version>2.6.0</version>
     <scope>test</scope>
 </dependency>
 ```
 
-DTR requires JUnit 4:
+DTR 2.6.0 requires JUnit 5:
 
 ```xml
 <dependency>
-    <groupId>junit</groupId>
-    <artifactId>junit</artifactId>
-    <version>4.12</version>
-    <scope>test</scope>
-</dependency>
-```
-
-## Add SLF4J logging
-
-DTR's HTTP client (Apache HttpClient) uses SLF4J. Without a binding you'll see warnings. Add these:
-
-```xml
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-simple</artifactId>
-    <version>1.7.12</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>jcl-over-slf4j</artifactId>
-    <version>1.7.12</version>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.11.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -73,6 +56,16 @@ DTR targets Java 25 with preview features enabled:
 
 > The `maven-surefire-plugin` `argLine` is required so the JVM running tests also has `--enable-preview` active.
 
+## Add `.mvn/maven.config`
+
+Create `.mvn/maven.config` at the project root with:
+
+```
+--enable-preview
+```
+
+This ensures the preview flag is applied consistently to all Maven goals.
+
 ## Complete minimal pom.xml
 
 ```xml
@@ -84,7 +77,7 @@ DTR targets Java 25 with preview features enabled:
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
-    <artifactId>my-api</artifactId>
+    <artifactId>my-project</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -94,27 +87,15 @@ DTR targets Java 25 with preview features enabled:
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.github.seanchatmangpt.dtr</groupId>
             <artifactId>dtr-core</artifactId>
-            <version>2.5.0</version>
+            <version>2.6.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.12</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -145,11 +126,46 @@ DTR targets Java 25 with preview features enabled:
 </project>
 ```
 
+## Write your first DTR test
+
+```java
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(DtrExtension.class)
+class MyDocTest {
+
+    @Test
+    void myFirstTest(DtrContext ctx) {
+        ctx.sayNextSection("Hello DTR");
+        ctx.say("DTR 2.6.0 is running on Java " + System.getProperty("java.version"));
+        ctx.sayEnvProfile();
+    }
+}
+```
+
 ## Verify the setup
 
 ```bash
 mvnd test
-ls target/site/dtr/
+ls target/docs/test-results/
 ```
 
-If `index.html` appears, DTR is working.
+If `MyDocTest.md` appears in `target/docs/test-results/`, DTR is working.
+
+## Optional: AssertJ for fluent assertions
+
+DTR 2.6.0 works with standard AssertJ assertions:
+
+```xml
+<dependency>
+    <groupId>org.assertj</groupId>
+    <artifactId>assertj-core</artifactId>
+    <version>3.26.3</version>
+    <scope>test</scope>
+</dependency>
+```
+
+Use `assertThat(...)` directly in your test methods — no DTR-specific assertion wrapper needed.

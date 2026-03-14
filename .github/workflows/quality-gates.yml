@@ -59,9 +59,9 @@ jobs:
         run: |
           echo "🛡️ Running guard validation..."
 
-          # Check for TODO/FIXME patterns
-          if grep -r -i -E "(TODO|FIXME|HACK|XXX)" --include="*.java" dtr-core/src/ || \
-             grep -r -i -E "(TODO|FIXME|HACK|XXX)" --include="*.java" dtr-core/src/; then
+          # Check for TODO/FIXME patterns (word-boundary match, case-sensitive to avoid
+          # false positives on identifiers like anchorToDocTest or hackathon)
+          if grep -r -E "\b(TODO|FIXME|HACK|XXX)\b" --include="*.java" dtr-core/src/; then
             echo "❌ Found TODO/FIXME patterns in source code"
             echo "📋 These patterns are forbidden in production code"
             echo "💡 Implement or remove these items"

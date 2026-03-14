@@ -1,6 +1,119 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 26 | **Version:** 2.5.0
+**Project:** Markdown documentation generator for Java 26 | **Version:** 2026.1.0
+
+---
+
+## THE PIPELINE IS THE SPECIFICATION OF DONE
+
+March 23 is not a deadline. It is a trigger.
+
+```
+make release-minor
+```
+
+That command fires a git tag. The tag fires GitHub Actions. Actions runs
+`mvnd verify` then `mvnd deploy -Prelease`. If verify passes, the artifact
+publishes to Maven Central, the GitHub Release is created, and the receipt
+exists. If verify fails, nothing publishes.
+
+**Everything generated in this repo during the next 10 days must be designed
+to pass `mvnd verify` in a GitHub Actions runner — not on your laptop.**
+
+The right question is never "what features does X need by March 23?"
+It is: "What must be true for `make release VERSION=1.0` to succeed in CI
+on March 23 and produce a complete, receipted, published release artifact?"
+That question has a finite, enumerable answer. The pipeline answers it.
+
+---
+
+## THE ARMSTRONG INVARIANT
+
+One command releases. No manual steps at release time. Ever.
+
+**The only release path is:**
+```
+make tag          # creates v<VERSION> tag, pushes to origin
+                  # GitHub Actions fires automatically
+                  # mvnd verify → mvnd deploy -Prelease → gh release create
+```
+
+**These paths are closed — do not suggest them:**
+- `mvn deploy` run locally
+- Uploading JARs by hand to Sonatype
+- Setting up `~/.m2/settings.xml` with real credentials
+- Any step a human must perform between `make tag` and a published artifact
+
+If you find yourself suggesting a manual deploy step, stop. The pipeline
+is broken. Fix the pipeline, not the workaround.
+
+---
+
+## THE CI GATE: `mvnd verify`
+
+Every piece of code generated — DTR tests, benchmarks, JOTP implementation,
+documentation — must pass this gate:
+
+```bash
+mvnd verify --enable-preview
+```
+
+**CI environment constraints (design for these, not for localhost):**
+
+| Constraint | CI value | What it means for generated code |
+|---|---|---|
+| Java | 26.ea.13, `--enable-preview` | All preview syntax must compile under `--enable-preview` |
+| GPG | loopback pinentry, key from `$GPG_PRIVATE_KEY` secret | No interactive passphrase prompts; no `~/.gnupg` assumed |
+| Maven Central credentials | `$CENTRAL_USERNAME` / `$CENTRAL_TOKEN` secrets | Never reference `~/.m2/settings.xml` |
+| Maven settings | Written by Actions at deploy time | No local settings assumed |
+| Network | No corporate proxy | Don't generate proxy-dependent code paths |
+| Enforcer | Java ≥ 26, Maven ≥ 4.0.0-rc-3 | These versions are hard requirements, not suggestions |
+
+**GPG loopback is load-bearing context.** This pipeline has been through real
+GPG failure in CI. The `--pinentry-mode loopback` configuration in the release
+profile exists because interactive pinentry breaks headless runners. Do not
+remove it, and do not generate signing code that assumes a TTY.
+
+---
+
+## OUTPUT CONTRACT
+
+Generated DTR tests must land artifacts where the pipeline expects them:
+
+```
+target/docs/test-results/    ← Markdown documentation output
+target/docs/blog/            ← Blog post output
+target/docs/pdf/             ← LaTeX/PDF output
+```
+
+A DTR test that generates output somewhere else produces nothing visible in
+the release artifact. The pipeline doesn't pick it up. The release is incomplete.
+
+**Configure via system properties (already set in surefire config):**
+```xml
+<dtr.output.dir>docs/test</dtr.output.dir>
+<dtr.format>markdown</dtr.format>
+```
+
+Do not hardcode output paths in test code. The pipeline owns the output contract.
+
+---
+
+## FAILURE SEMANTICS
+
+`mvnd verify` fails → nothing publishes.
+
+This is not a bug. This is the invariant enforced.
+
+Consequences for generated code:
+- Tests that pass locally but fail in CI (due to preview flags, missing secrets,
+  path assumptions) silently break the release. There is no partial publish.
+- Optimistic code — "this will probably work in CI" — violates the invariant.
+- If you cannot make a test pass under the CI constraints above, do not generate
+  the test. Generate a failing test that documents what is missing instead.
+
+When `mvnd verify` fails in CI, the question is always:
+"What assumption about the local environment did this code make?"
 
 ---
 
@@ -14,9 +127,9 @@
 - **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26.ea.13)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
-- ✅ JUnit 5 tests with DtrContext
-- ✅ Output through RenderMachine rendering pipeline
-- ❌ Never bypass with standalone generators
+- JUnit 5 tests with `DtrContext`
+- Output through RenderMachine rendering pipeline
+- Never bypass with standalone generators
 
 ### 3. Toolchain (Non-Negotiable)
 - Java 26: `/usr/lib/jvm/java-26-openjdk-amd64` or SDKMAN: `26.ea.13-graal`
@@ -27,75 +140,72 @@
 
 ---
 
-## 🔧 QUICK BUILD
+## VERSION SCHEME: CalVer YYYY.MINOR.PATCH
+
+`2026.3.1` = third feature release of 2026, first patch fix within it.
+
+- **YYYY** — the year. Reads as a timestamp. `2026` dependency is two years old in 2028.
+- **MINOR** — feature iterations within the year. Starts at 1. Resets to 1 on year boundary.
+- **PATCH** — fixes within a MINOR. Resets to 0 on every MINOR bump.
+
+Year boundary is automatic: `scripts/bump.sh minor` reads `date +%Y`. If the year changed, MINOR resets to 1. No human decides when 2027 starts.
+
+`release-major` does not exist. Breaking changes use deprecation cycle + year boundary.
+
+## RELEASE COMMANDS
+
+The human decides the type of change. The version number is derived.
 
 ```bash
-# Run real DTR test
-mvnd test -pl dtr-integration-test -Dtest=PhDThesisDocTest
+make release-minor      # new say* methods, additive features  → YYYY.(N+1).0
+make release-patch      # bug fix, no API change               → YYYY.MINOR.(N+1)
+make release-year       # explicit year boundary (January)     → YYYY.1.0
 
-# If Maven auth fails, start proxy first
-python3 maven-proxy-auth.py &
+make release-rc-minor   # RC for minor                         → YYYY.(N+1).0-rc.N
+make release-rc-patch   # RC for patch                         → YYYY.MINOR.(N+1)-rc.N
 
-# Then build with proxy
-mvnd clean install -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128 \
-  -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
-
-# Check output
-ls target/docs/test-results/
-cat target/docs/test-results/PhDThesisDocTest.md
+make snapshot           # deploy SNAPSHOT (no tag, no release)
+make version            # print current version
 ```
+
+**Never type a version number. Never run `mvn deploy` directly.**
+The scripts own the arithmetic. You own the semantics.
+
+Release sequence (all automated after `make release-*`):
+1. `scripts/bump.sh` — computes NEXT (CalVer + year-aware), updates all pom.xml, writes to `.release-version`
+2. `scripts/release.sh` — generates `docs/CHANGELOG.md`, commits, tags `v<VERSION>`, pushes
+3. GitHub Actions fires on tag → `mvnd verify` → `mvnd deploy -Prelease` → `gh release create`
+
+RC sequence: same flow but `scripts/release-rc.sh` → `publish-rc.yml` → GitHub Packages only.
 
 ---
 
-## 🌐 MAVEN PROXY SOLUTION
-
-**Problem:** "too many authentication attempts" from Maven Central
-
-**Fix:** 3 steps
-```bash
-# 1. Start proxy
-python3 maven-proxy-auth.py &
-
-# 2. Add to .mvn/jvm.config
--Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128
--Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
--Dhttp.nonProxyHosts=localhost|127.0.0.1
-
-# 3. Set env var
-export https_proxy=http://user:pass@proxy.company.com:8080
-```
-
-**What it does:** Listens on 127.0.0.1:3128, handles HTTPS CONNECT tunneling, injects Proxy-Authorization header automatically.
-
-**Troubleshoot:**
-- Still failing? `pkill -f maven-proxy && python3 maven-proxy-auth.py &`
-- Check env? `echo $https_proxy`
-
----
-
-## 📝 HOW TO ADD A TEST
+## HOW TO ADD A TEST
 
 ```java
 @ExtendWith(DtrExtension.class)
-class PhDThesisDocTest {
+class MyDocTest {
     @Test
-    void testThesis(DtrContext ctx) {
-        ctx.sayNextSection("Chapter Title");
-        ctx.say("Content here.");
-        ctx.sayCode("System.out.println(\"code\");", "java");
+    void myFeature(DtrContext ctx) {
+        ctx.sayNextSection("Feature Name");
+        ctx.say("Description.");
+        ctx.sayCode("System.out.println(\"example\");", "java");
         ctx.sayTable(new String[][] {{"Col1", "Col2"}, {"V1", "V2"}});
-        ctx.sayJson(someObject);
-        ctx.sayWarning("Important!");
-        ctx.sayNote("FYI...");
+        ctx.sayWarning("Critical constraint.");
+        ctx.sayNote("Context.");
     }
 }
 ```
 
-**Output:** `target/docs/test-results/PhDThesisDocTest.md` (+ .tex, .html, .json)
+**Output:** `target/docs/test-results/MyDocTest.md` (+ .tex, .html, .json)
+
+**Before writing the test, ask:** Will this pass `mvnd verify --enable-preview`
+in a headless GitHub Actions runner with no local credentials? If not, fix
+that first.
 
 ---
 
-## 📊 say* API (Documentation Methods)
+## say* API
 
 | Method | Output | Use For |
 |--------|--------|---------|
@@ -112,17 +222,15 @@ class PhDThesisDocTest {
 
 ---
 
-## 🎯 DTR ARCHITECTURE (80/20)
+## DTR ARCHITECTURE
 
 **Input:** JUnit 5 test calls `say*` methods
 **Process:** RenderMachine captures calls → formats → routes to output engines
-**Output:** Markdown + LaTeX + HTML + OpenAPI + Blog (auto-generated)
+**Output:** Markdown + LaTeX + HTML + OpenAPI + Blog (all written to `target/docs/`)
 
-**Example:**
 ```java
-ctx.sayAndMakeRequest(Request.GET().url(api));  // Executes HTTP + documents
-ctx.sayAndAssertThat("Status", actual, is(200)); // Assert + document result
-// Output: Complete API doc with request/response examples
+ctx.sayAndMakeRequest(Request.GET().url(api));       // HTTP + documents
+ctx.sayAndAssertThat("Status", actual, is(200));     // Assert + documents
 ```
 
 ---
@@ -130,7 +238,7 @@ ctx.sayAndAssertThat("Status", actual, is(200)); // Assert + document result
 ## 🚀 JAVA 26 FEATURES (Use These)
 
 ```java
-// Records (immutable data)
+// Records
 record Response(int status, String body) {}
 
 // Sealed classes + pattern matching
@@ -140,12 +248,12 @@ String msg = switch(result) {
     case Error(var m) -> "FAIL: " + m;
 };
 
-// Virtual threads (millions of concurrent tasks)
+// Virtual threads
 try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
     executor.submit(() -> generateDoc());
 }
 
-// Text blocks (multi-line strings)
+// Text blocks
 String html = """
     <div>Content</div>
     """;
@@ -156,15 +264,17 @@ List<String> result = stream.gather(
 ).toList();
 ```
 
+All preview syntax requires `--enable-preview` at compile and runtime.
+Both are configured in `.mvn/maven.config` and `maven-surefire-plugin`.
+
 ---
 
-## ✅ BEFORE CODING
+## BEFORE CODING
 
 1. `java -version` → 26.ea.13+
 2. `mvnd --version` → Maven 4.0.0-rc-3+
 3. `.mvn/maven.config` contains `--enable-preview`
-4. Proxy running (if needed): `python3 maven-proxy-auth.py &`
-5. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
+4. Ask: **will this pass `mvnd verify` in CI?**
 
 ---
 
@@ -325,27 +435,36 @@ act -j deployment-ready --secret-file .secrets -v
 ## 🔍 TROUBLESHOOTING
 
 ```bash
-mvnd --stop                    # Stop daemon on auth issues
-mvnd -X clean install          # Verbose output
+mvnd verify                    # The gate — run this before anything else
+mvnd --stop                    # Stop daemon if stale
+mvnd -X clean verify           # Verbose — find the real failure
 cat target/surefire-reports/*  # Test details
-echo $JAVA_HOME                # Verify Java path
-ps aux | grep maven-proxy      # Check proxy running
+echo $JAVA_HOME                # Verify Java 26
+
+# If Maven Central auth fails locally (not in CI):
+python3 maven-proxy-auth.py &
 ```
 
 ---
 
-## 📚 FILES YOU NEED
+## KEY FILES
 
-- `maven-proxy-auth.py` — Enterprise proxy solution
-- `dtr-core/` — Core library
-- `dtr-integration-test/` — Integration tests
-- `.mvn/maven.config` — Build flags (--enable-preview)
-- `pom.xml` — `<release>26</release>`
-- `.github/workflows/ci-gate.yml` — GitHub Actions CI/CD pipeline
-- `.secrets` — Local act secrets (NEVER commit)
+| File | Purpose |
+|------|---------|
+| `Makefile` | Release control surface — start here |
+| `.github/workflows/publish.yml` | CI pipeline — tag-triggered, 3 jobs |
+| `pom.xml` | Root config, release profile, enforcer |
+| `dtr-core/` | Core library (deployed to Maven Central) |
+| `dtr-integration-test/` | Integration tests (not deployed) |
+| `.mvn/maven.config` | `--enable-preview`, `--batch-mode` |
+| `.github/workflows/ci-gate.yml` | GitHub Actions CI/CD pipeline |
+| `.secrets` | Local act secrets (NEVER commit) |
+| `maven-proxy-auth.py` | Enterprise proxy solution |
 
 ---
 
-**Last Updated:** March 13, 2026
+**Last Updated:** March 14, 2026
 **Branch:** feat/java-26-migration-github-actions
+**Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
+**Invariant:** One command releases. The pipeline is the specification of done.
 **Rule:** Always measure real, report real, use real DTR code.

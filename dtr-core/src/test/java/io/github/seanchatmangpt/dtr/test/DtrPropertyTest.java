@@ -16,13 +16,9 @@
 package io.github.seanchatmangpt.dtr;
 
 import net.jqwik.api.*;
-import net.jqwik.api.constraints.AlphaChars;
-import net.jqwik.api.constraints.StringLength;
 import net.jqwik.api.lifecycle.BeforeProperty;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -39,10 +35,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *       including null-like edge cases and adversarial Unicode.</li>
  *   <li><b>ID generation invariant</b> — {@code convertTextToId()} always
  *       returns a non-null string composed only of lowercase word chars.</li>
- *   <li><b>Url structural invariants</b> — trailing-slash stripping,
- *       leading-slash injection on paths, query-parameter round-trip.</li>
- *   <li><b>Assertion contract</b> — {@code sayAndAssertThat()} with a
- *       matching value never throws for any comparable type.</li>
  * </ol>
  */
 @Label("DTR — property-based tests (jqwik)")
@@ -108,85 +100,4 @@ class DtrPropertyTest {
                 "convertTextToId must be idempotent");
     }
 
-    // =========================================================================
-    // 3. Url structural invariants
-    // =========================================================================
-
-    /** Trailing slash on host is always stripped. */
-    @Property
-    @Label("Url.host() strips trailing slash")
-    void urlHostStripsTrailingSlash(
-            @ForAll("safeHosts") String host) {
-        String withSlash = Url.host(host + "/").toString();
-        String without   = Url.host(host).toString();
-        assertEquals(without, withSlash,
-                "Trailing slash on host must be stripped");
-    }
-
-    /** path() always ensures a leading '/' in the result. */
-    @Property
-    @Label("Url path() always results in a leading /")
-    void pathAlwaysHasLeadingSlash(
-            @ForAll @AlphaChars @StringLength(min = 1, max = 30) String segment) {
-        String url = Url.host("http://localhost:8080").path(segment).toString();
-        assertTrue(url.contains("/" + segment),
-                "Path must appear with a leading slash; url=" + url);
-    }
-
-    /** path() normalises a path that already has a leading '/'. */
-    @Property
-    @Label("Url path() with leading slash is idempotent")
-    void pathWithLeadingSlashIdempotent(
-            @ForAll @AlphaChars @StringLength(min = 1, max = 30) String segment) {
-        String withSlash    = Url.host("http://localhost:8080").path("/" + segment).toString();
-        String withoutSlash = Url.host("http://localhost:8080").path(segment).toString();
-        assertEquals(withSlash, withoutSlash,
-                "path() must not double-add the leading slash");
-    }
-
-    /** Query parameter key always appears in the stringified URL. */
-    @Property
-    @Label("Query parameter key appears in URL")
-    void queryParamKeyAppearsInUrl(
-            @ForAll @AlphaChars @StringLength(min = 1, max = 20) String key,
-            @ForAll @AlphaChars @StringLength(min = 1, max = 20) String value) {
-        String url = Url.host("http://localhost:8080")
-                .addQueryParameter(key, value)
-                .toString();
-        assertTrue(url.contains(key),   "key must appear in URL; url=" + url);
-        assertTrue(url.contains(value), "value must appear in URL; url=" + url);
-    }
-
-    // =========================================================================
-    // 4. Assertion contract
-    // =========================================================================
-
-    @Property
-    @Label("sayAndAssertThat(msg, v, equalTo(v)) never throws for any String v")
-    void sayAndAssertThatMatchingNeverThrows(@ForAll String value) {
-        assertDoesNotThrow(() ->
-                rm.sayAndAssertThat("Property assertion", value, equalTo(value)));
-    }
-
-    @Property
-    @Label("sayAndAssertThat(msg, v, equalTo(v)) never throws for any int v")
-    void sayAndAssertThatMatchingIntNeverThrows(@ForAll int value) {
-        assertDoesNotThrow(() ->
-                rm.sayAndAssertThat("Property int assertion", value, equalTo(value)));
-    }
-
-    // =========================================================================
-    // Providers
-    // =========================================================================
-
-    /** Well-formed HTTP host strings (the URL class rejects malformed URIs). */
-    @Provide
-    Arbitrary<String> safeHosts() {
-        return Arbitraries.of(
-                "http://localhost:8080",
-                "http://example.com",
-                "http://test.org:9090",
-                "https://api.example.com:443",
-                "http://127.0.0.1:3000");
-    }
 }

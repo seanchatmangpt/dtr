@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
+import io.github.seanchatmangpt.dtr.coverage.CoverageRow;
 
 /**
  * Sealed event hierarchy for the DTR render pipeline.
@@ -63,7 +64,18 @@ public sealed interface SayEvent
                 SayEvent.FootnoteEvent,
                 SayEvent.RefEvent,
                 SayEvent.RawEvent,
-                SayEvent.CodeModelEvent {
+                SayEvent.CodeModelEvent,
+                SayEvent.MethodCodeModelEvent,
+                SayEvent.ControlFlowGraphEvent,
+                SayEvent.CallGraphEvent,
+                SayEvent.OpProfileEvent,
+                SayEvent.BenchmarkEvent,
+                SayEvent.MermaidEvent,
+                SayEvent.DocCoverageEvent,
+                SayEvent.EnvProfileEvent,
+                SayEvent.RecordSchemaEvent,
+                SayEvent.ExceptionEvent,
+                SayEvent.AsciiChartEvent {
 
     /**
      * A narrative paragraph — the most fundamental documentation unit.
@@ -197,4 +209,96 @@ public sealed interface SayEvent
             java.util.Objects.requireNonNull(clazz, "clazz must not be null");
         }
     }
+
+    /**
+     * A method code model event using Java 26 Code Reflection (JEP 516 / Project Babylon).
+     * Carries the op-count map, block count, IR excerpt, and method signature.
+     */
+    record MethodCodeModelEvent(
+            String methodSig,
+            Map<String, Long> opCounts,
+            int blockCount,
+            int totalOps,
+            List<String> irExcerpt
+    ) implements SayEvent {}
+
+    /**
+     * A control flow graph rendered as a Mermaid flowchart, derived from the Java 26
+     * Code Reflection IR of a method.
+     */
+    record ControlFlowGraphEvent(String mermaidDsl, String methodSig) implements SayEvent {}
+
+    /**
+     * A call graph showing method-to-method invocation relationships, derived from
+     * InvokeOp traversal of the Code Reflection IR.
+     */
+    record CallGraphEvent(String mermaidDsl, String className) implements SayEvent {}
+
+    /**
+     * A lightweight op-profile table (counts only, no IR excerpt) for a method.
+     */
+    record OpProfileEvent(
+            String methodSig,
+            Map<String, Long> opCounts,
+            int blockCount
+    ) implements SayEvent {}
+
+    /**
+     * A real benchmark measurement using System.nanoTime() with warmup rounds.
+     */
+    record BenchmarkEvent(
+            String label,
+            long avgNs,
+            long minNs,
+            long maxNs,
+            long p99Ns,
+            long opsPerSec,
+            int warmupRounds,
+            int measureRounds
+    ) implements SayEvent {}
+
+    /**
+     * A Mermaid diagram (any type) to be rendered as a fenced mermaid code block.
+     */
+    record MermaidEvent(String diagramDsl) implements SayEvent {
+        public MermaidEvent {
+            java.util.Objects.requireNonNull(diagramDsl, "diagramDsl must not be null");
+        }
+    }
+
+    /**
+     * Documentation coverage report for a class — which public methods were documented
+     * during this test and which were not.
+     */
+    record DocCoverageEvent(
+            String className,
+            List<CoverageRow> rows,
+            int covered,
+            int total
+    ) implements SayEvent {}
+
+    /**
+     * A snapshot of the current runtime environment (Java version, OS, heap, etc.).
+     */
+    record EnvProfileEvent(Map<String, String> properties) implements SayEvent {}
+
+    /**
+     * A schema table for a Java record class — component names, types, and annotations.
+     */
+    record RecordSchemaEvent(String recordName, List<String> componentLines) implements SayEvent {}
+
+    /**
+     * An exception chain — type, message, causes, and top stack frames.
+     */
+    record ExceptionEvent(
+            String exceptionType,
+            String message,
+            List<String> causeChain,
+            List<String> topFrames
+    ) implements SayEvent {}
+
+    /**
+     * An ASCII horizontal bar chart for numeric data.
+     */
+    record AsciiChartEvent(String label, double[] values, String[] xLabels) implements SayEvent {}
 }

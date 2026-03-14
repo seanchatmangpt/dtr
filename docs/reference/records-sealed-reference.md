@@ -1,6 +1,8 @@
 # Reference: Records and Sealed Classes
 
-Complete API reference for Java 25 records and sealed class hierarchies. Records eliminate boilerplate for immutable data carriers; sealed classes enforce exhaustiveness in type hierarchies.
+Complete API reference for Java 25 records and sealed class hierarchies.
+
+**v2.6.0 note:** `RenderMachine` was changed from `sealed` to plain `abstract` in v2.5.0. The new `sayRecordComponents` method (v2.6.0) introspects records and renders their components.
 
 ---
 
@@ -9,15 +11,10 @@ Complete API reference for Java 25 records and sealed class hierarchies. Records
 ### Syntax
 
 ```java
-record Name(Type1 field1, Type2 field2, ...) {}
+record Name(Type1 field1, Type2 field2) {}
 ```
 
-The record compiler generates:
-- Constructor accepting all fields in order
-- Accessor methods named after fields (no `get` prefix)
-- `equals()` and `hashCode()` based on all fields
-- `toString()` showing all fields
-- All fields are `final` (immutable)
+The compiler generates: positional constructor, field accessor methods (no `get` prefix), `equals()`, `hashCode()`, `toString()`. All fields are `final`.
 
 ---
 
@@ -26,55 +23,51 @@ The record compiler generates:
 ```java
 record User(String name, String email, int age) {}
 
-// Usage
 User user = new User("alice", "alice@example.com", 30);
 System.out.println(user.name());     // "alice"
-System.out.println(user.equals(new User("alice", "alice@example.com", 30))); // true
+System.out.println(user.email());    // "alice@example.com"
+System.out.println(user.age());      // 30
 System.out.println(user);            // User[name=alice, email=alice@example.com, age=30]
+System.out.println(user.equals(new User("alice", "alice@example.com", 30))); // true
 ```
 
 ---
 
-### Record with Methods
-
-Add custom methods and validation:
+### Record with Validation
 
 ```java
 record Email(String value) {
-    // Compact constructor: implicit parameters are the record fields
+    // Compact constructor — parameters are the record components
     public Email {
         if (!value.contains("@")) {
-            throw new IllegalArgumentException("Invalid email");
+            throw new IllegalArgumentException("Invalid email: " + value);
         }
+        value = value.toLowerCase();  // normalize
     }
 
-    // Custom method
     public String domain() {
         return value.substring(value.indexOf("@") + 1);
     }
 
-    // Static method
     public static Email system() {
         return new Email("system@example.com");
     }
 }
 ```
 
-**Compact constructor syntax:** Parameters are implicit; you receive the fields directly and can validate them.
-
 ---
 
 ### Record Implementing Interface
 
 ```java
-interface Serializable {
-    byte[] serialize();
+interface Describable {
+    String describe();
 }
 
-record User(String name, String email) implements Serializable {
+record Config(String host, int port, boolean tls) implements Describable {
     @Override
-    public byte[] serialize() {
-        return (name + "," + email).getBytes();
+    public String describe() {
+        return (tls ? "https" : "http") + "://" + host + ":" + port;
     }
 }
 ```
@@ -83,22 +76,19 @@ Records can implement interfaces but cannot extend other classes.
 
 ---
 
-### Record with Generic Type
+### Generic Record
 
 ```java
-record Pair<T, U>(T first, U second) {}
+record Pair<A, B>(A first, B second) {}
 
-// Usage
 Pair<String, Integer> pair = new Pair<>("Alice", 30);
-System.out.println(pair.first());  // "Alice"
-System.out.println(pair.second()); // 30
+System.out.println(pair.first());   // "Alice"
+System.out.println(pair.second());  // 30
 ```
 
 ---
 
 ### Jackson Serialization
-
-Records work seamlessly with Jackson (JSON serialization):
 
 ```java
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -106,117 +96,118 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 record User(String name, String email) {}
 
 ObjectMapper mapper = new ObjectMapper();
-
-// Serialize to JSON
-User user = new User("alice", "alice@example.com");
-String json = mapper.writeValueAsString(user);
-// Result: {"name":"alice","email":"alice@example.com"}
-
-// Deserialize from JSON
+User user   = new User("alice", "alice@example.com");
+String json = mapper.writeValueAsString(user);   // {"name":"alice","email":"alice@example.com"}
 User restored = mapper.readValue(json, User.class);
 ```
 
 ---
 
-## Sealed Classes and Interfaces
+### sayRecordComponents (v2.6.0)
 
-### Sealed Interface Syntax
+`DtrContext.sayRecordComponents(Class<? extends Record>)` renders a table of all record components with their names, types, and generic signatures:
 
 ```java
-sealed interface Result permits Success, Failure {
-    // Only Success and Failure can implement this
-}
+record ApiResponse(int status, String body, java.util.Map<String, String> headers) {}
 
-record Success(String data) implements Result {}
-record Failure(String error) implements Result {}
+@Test
+void documentApiResponse(DtrContext ctx) {
+    ctx.sayNextSection("ApiResponse Record");
+    ctx.sayRecordComponents(ApiResponse.class);
+}
 ```
 
-The `permits` clause lists all subtypes. Only those can implement/extend the sealed type.
+**Output:**
+
+| Component | Type | Generic Signature |
+|-----------|------|-------------------|
+| `status` | `int` | `int` |
+| `body` | `String` | `java.lang.String` |
+| `headers` | `Map` | `java.util.Map<java.lang.String, java.lang.String>` |
+
+---
+
+## Sealed Classes and Interfaces
+
+### Sealed Interface
+
+```java
+sealed interface Result permits Success, Failure {}
+
+record Success(Object value) implements Result {}
+record Failure(String error)  implements Result {}
+```
+
+Only the types listed in `permits` may implement the sealed interface.
+
+---
+
+### Exhaustive Pattern Matching
+
+```java
+String describe(Result r) {
+    return switch (r) {
+        case Success s -> "OK: " + s.value();
+        case Failure f -> "ERR: " + f.error();
+        // No default needed — compiler verifies exhaustiveness
+    };
+}
+```
 
 ---
 
 ### Sealed Class Hierarchy
 
 ```java
-sealed class Animal permits Dog, Cat {
-    public abstract void speak();
-}
+sealed class Shape permits Circle, Rectangle {}
 
-final class Dog extends Animal {
-    @Override
-    public void speak() { System.out.println("Woof"); }
-}
-
-final class Cat extends Animal {
-    @Override
-    public void speak() { System.out.println("Meow"); }
-}
+final class Circle    extends Shape { double radius() { return r; } private final double r; Circle(double r) { this.r = r; } }
+final class Rectangle extends Shape { double width() { return w; } double height() { return h; }
+    private final double w, h; Rectangle(double w, double h) { this.w = w; this.h = h; } }
 ```
 
-Each subtype must be either:
-- `final` (cannot be extended further)
-- `sealed` (further restricted)
-- `non-sealed` (open for extension)
+Each permitted subtype must be `final`, `sealed`, or `non-sealed`.
 
 ---
 
-### Pattern Matching on Sealed Types
+### RenderMachine is NOT sealed (since v2.5.0)
+
+In DTR 2.4.x `RenderMachine` was declared `sealed`. As of v2.5.0 it is a plain `abstract` class. Any class can extend it:
 
 ```java
-sealed interface Response {
-    record Ok(String body) implements Response {}
-    record Error(int code) implements Response {}
-}
-
-String describe(Response response) {
-    return switch (response) {
-        case Response.Ok(String body) -> "Success: " + body;
-        case Response.Error(int code) -> "Error: " + code;
-        // No default needed; compiler knows all cases
-    };
-}
-```
-
-The compiler **forces exhaustiveness**: you must handle all permitted types.
-
----
-
-### Sealed with Generics
-
-```java
-sealed interface Container<T> permits Box {
-    T contents();
-}
-
-record Box<T>(T value) implements Container<T> {
+// This compiles in v2.6.0 — no permits restriction
+public class MyCustomRenderer extends RenderMachine {
     @Override
-    public T contents() {
-        return value;
-    }
+    public void say(String text) { /* custom rendering */ }
+    // ... implement other abstract methods
 }
-
-// Usage
-Container<String> box = new Box<>("hello");
-String contents = box.contents();
 ```
+
+The current hierarchy is:
+```
+RenderMachine (abstract)
+├── RenderMachineImpl
+├── RenderMachineLatex
+├── BlogRenderMachine
+├── SlideRenderMachine
+└── MultiRenderMachine
+```
+
+See [RenderMachine API](rendermachine-api.md) for full hierarchy documentation.
 
 ---
 
 ## Pattern Matching
 
-### Basic Pattern
+### Basic Deconstruction Pattern
 
 ```java
 record Point(int x, int y) {}
 
-Point p = new Point(3, 4);
-
-if (p instanceof Point(int x, int y) && x > 0 && y > 0) {
+if (new Point(3, 4) instanceof Point(int x, int y) && x > 0) {
     System.out.println("First quadrant: " + x + ", " + y);
 }
 ```
-
-The pattern `Point(int x, int y)` destructures the record.
 
 ---
 
@@ -226,14 +217,27 @@ The pattern `Point(int x, int y)` destructures the record.
 record Person(String name, Address address) {}
 record Address(String city, String country) {}
 
-Person person = new Person("alice", new Address("London", "UK"));
-
-if (person instanceof Person(String name, Address(String city, String country))) {
-    System.out.println(name + " lives in " + city + ", " + country);
+if (person instanceof Person(String name, Address(String city, _))) {
+    System.out.println(name + " lives in " + city);
 }
 ```
 
-Patterns can nest arbitrarily deep.
+---
+
+### Switch with Sealed Types
+
+```java
+sealed interface Number permits Whole, Decimal {}
+record Whole(int value) implements Number {}
+record Decimal(double value) implements Number {}
+
+String category = switch (number) {
+    case Whole(int v) when v > 0    -> "Positive integer";
+    case Whole(int v) when v < 0    -> "Negative integer";
+    case Whole(0)                   -> "Zero";
+    case Decimal(double d)          -> "Decimal: " + d;
+};
+```
 
 ---
 
@@ -241,63 +245,35 @@ Patterns can nest arbitrarily deep.
 
 ```java
 Object obj = "hello";
-
 if (obj instanceof String s) {
-    System.out.println("String: " + s.toUpperCase());
+    System.out.println(s.toUpperCase());
 }
 ```
 
-Simple type pattern for non-record types.
-
 ---
 
-### Guarded Pattern
-
-```java
-sealed interface Number {
-    record Int(int value) implements Number {}
-    record Double(double value) implements Number {}
-}
-
-Number num = new Number.Int(42);
-
-String category = switch (num) {
-    case Number.Int(int v) when v > 0 -> "Positive";
-    case Number.Int(int v) when v < 0 -> "Negative";
-    case Number.Int(0) -> "Zero";
-    case Number.Double(double d) -> "Decimal";
-};
-```
-
-The `when` guard narrows the case condition.
-
----
-
-### Unnamed Pattern
+### Unnamed Pattern Variable
 
 ```java
 record User(String name, int age, String email) {}
 
-// Only care about name and age
-if (user instanceof User(String name, int age, _)) {
-    System.out.println(name + " is " + age);
-    // email is ignored
+// Only destructure what you need
+if (user instanceof User(String name, _, _)) {
+    System.out.println("Name: " + name);
 }
 ```
 
-Use `_` to ignore fields.
-
 ---
 
-## Comparison Table
+## Comparison Tables
 
 ### Records vs. Regular Classes
 
 | Feature | Record | Class |
 |---------|--------|-------|
-| Boilerplate | None (auto-generated) | Lots (constructor, getters, equals, etc.) |
-| Constructor | Positional (all fields) | Custom, any parameters |
-| Mutability | Immutable (fields are final) | Mutable by default |
+| Boilerplate | None (auto-generated) | Constructor, getters, equals, etc. |
+| Constructor | Positional (all fields) | Custom |
+| Mutability | Immutable (fields are `final`) | Mutable by default |
 | Inheritance | Interfaces only | Any class |
 | `equals()` | Field-based | Custom or identity |
 | Use case | Data carriers, DTOs | Complex objects with behavior |
@@ -306,35 +282,33 @@ Use `_` to ignore fields.
 
 | Feature | Sealed | Open |
 |---------|--------|------|
-| Permitted subtypes | Explicit list | Unlimited |
-| Compiler exhaustiveness | Enforced | Not enforced |
-| Maintenance | Safer (can't forget cases) | More flexible |
-| Switch patterns | Can omit default | Need default |
-| Runtime polymorphism | Bounded | Unlimited |
+| Permitted subtypes | Explicit `permits` list | Unlimited |
+| Compiler exhaustiveness | Enforced in `switch` | Not enforced |
+| Safety | Can't forget cases | More flexible |
+| Switch patterns | Can omit `default` | Requires `default` |
 
 ---
 
 ## Best Practices
 
-✅ **DO:**
+**DO:**
 - Use records for data carriers — immutable, boilerplate-free
-- Use sealed hierarchies when you have fixed subtypes
-- Use pattern matching in `switch` for sealed types
-- Leverage compact constructors for validation
-- Combine sealed records for type-safe designs
+- Use sealed interfaces for bounded type hierarchies where all subtypes are known
+- Use compact constructors for input validation in records
+- Use pattern matching in `switch` over sealed types — let the compiler check exhaustiveness
+- Use `sayRecordComponents` to auto-document record API surface
 
-❌ **DON'T:**
+**DON'T:**
 - Use records for entities with mutable state
-- Forget to add validation in compact constructors
-- Create deep, complex hierarchies (keep sealed interfaces focused)
-- Mix sealed and non-sealed in the same hierarchy
-- Use `default` in exhaustive switches on sealed types
+- Create deep, complex sealed hierarchies — keep them focused
+- Add a `default` arm to a `switch` over a sealed type (defeats exhaustiveness checking)
+- Mix `sealed` and `non-sealed` subtypes unless you intentionally need an escape hatch
 
 ---
 
-## See Also
+## See also
 
-- [Tutorial: Records and Sealed Classes](../tutorials/records-sealed-classes.md)
-- [How-to: Pattern Matching](../how-to/pattern-matching.md)
-- [How-to: Switch Expressions](../how-to/switch-expressions.md)
-- [Explanation: Records and Sealed Philosophy](../explanation/records-sealed-philosophy.md)
+- [say* Core API Reference](request-api.md) — `sayRecordComponents`, `sayReflectiveDiff`
+- [Java 25 Features Reference](java25-features-reference.md) — records and sealed in broader context
+- [JVM Introspection API Reference](realtime-protocols-reference.md) — `sayReflectiveDiff` usage
+- [RenderMachine API](rendermachine-api.md) — RenderMachine hierarchy (abstract, not sealed)

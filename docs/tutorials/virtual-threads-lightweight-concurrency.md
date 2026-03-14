@@ -1,365 +1,274 @@
-# Tutorial: Virtual Threads for Lightweight Concurrency
+# Tutorial: Benchmarking with Virtual Threads and sayBenchmark
 
-Learn how Java 25 virtual threads enable you to write naturally concurrent code without the resource overhead of traditional threads. This tutorial uses HTTP testing as an example, but virtual threads apply to any I/O-bound workload.
+Learn how to measure and document performance using DTR 2.6.0's `sayBenchmark` method. This tutorial uses Java 25 virtual threads as a real-world subject: you will benchmark virtual thread creation overhead, compare warmup strategies, and document results directly in generated Markdown.
 
-**Time:** ~25 minutes
-**Prerequisites:** Java 25, understanding of concurrency concepts
-**What you'll learn:** How to spawn thousands of virtual threads cheaply and write straightforward sequential code that runs in parallel
-
----
-
-## What Are Virtual Threads?
-
-Traditional Java threads are **platform threads** — each one is an OS thread with its own memory (stack), consuming ~2MB of RAM. Creating 1000 of them exhausts resources.
-
-**Virtual threads** (Java 19+, matured in Java 25) are lightweight, JVM-managed threads:
-- Cost pennies of RAM (kilobytes, not megabytes)
-- Automatically scheduled on a small pool of carrier threads
-- Scale to millions in a single JVM
-- Make your code read sequentially while running in parallel
-
-This changes what's practical. You can now:
-- Spawn one virtual thread per incoming request
-- Never block on "thread pool exhaustion"
-- Write straightforward blocking code instead of async/await chains
+**Time:** ~30 minutes
+**Prerequisites:** Java 25, DTR 2.6.0, completion of [Your First DocTest](your-first-doctest.md)
+**What you'll learn:** How `sayBenchmark` works, when to use explicit warmup rounds, and how to embed benchmark results in living documentation
 
 ---
 
-## Step 1 — Basic Virtual Thread Usage
+## What Is sayBenchmark?
 
-Create `src/test/java/com/example/VirtualThreadsExampleTest.java`:
+`sayBenchmark` is a DTR 2.6.0 method that runs a `Runnable` task, measures its execution time using `System.nanoTime()`, performs virtual-thread-based warmup, and emits a formatted result table in the documentation output.
+
+Two signatures are available:
+
+```java
+// Simple: DTR chooses warmup and measure rounds
+ctx.sayBenchmark(String label, Runnable task);
+
+// Explicit: you control warmup and measure rounds
+ctx.sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds);
+```
+
+The output includes the label, average nanoseconds per iteration, total elapsed time, and the Java version.
+
+---
+
+## Step 1 — Set Up the Test Class
+
+Create `src/test/java/com/example/BenchmarkDocTest.java`:
 
 ```java
 package com.example;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-
-public class VirtualThreadsExampleTest {
-
-    public static void main(String[] args) throws Exception {
-        System.out.println("Creating virtual thread executor...");
-
-        // Create an executor backed by virtual threads
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-
-            // Submit 1000 tasks concurrently
-            System.out.println("Submitting 1000 tasks");
-            long start = System.nanoTime();
-
-            for (int i = 1; i <= 1000; i++) {
-                final int id = i;
-                executor.submit(() -> {
-                    try {
-                        // Simulate I/O work (e.g., HTTP request, database query)
-                        Thread.sleep(100);
-                        System.out.println("Task " + id + " completed");
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                });
-            }
-
-            // Wait for all to complete
-            executor.shutdown();
-            executor.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS);
-
-            long elapsedMs = (System.nanoTime() - start) / 1_000_000;
-            System.out.println("1000 tasks completed in " + elapsedMs + "ms");
-            System.out.println("If using platform threads, this would take ~100 seconds");
-            System.out.println("With virtual threads, all tasks run concurrently");
-        }
-    }
-}
-```
-
-**Run it:**
-```bash
-mvnd compile exec:java -Dexec.mainClass="com.example.VirtualThreadsExampleTest"
-```
-
-**Output (actual time ~100ms, not 100+ seconds):**
-```
-Creating virtual thread executor...
-Submitting 1000 tasks
-Task 1 completed
-Task 2 completed
-...
-1000 tasks completed in 103ms
-```
-
-This demonstrates the core principle: **thousands of tasks, negligible overhead, natural blocking code**.
-
----
-
-## Step 2 — Virtual Threads in Tests (with DTR)
-
-Extend `DTR` and use virtual threads to make concurrent assertions:
-
-```java
-package com.example;
-
-import org.junit.Test;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class VirtualThreadsDocTest extends DTR {
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(DtrExtension.class)
+class BenchmarkDocTest {
 
     @Test
-    public void demonstrateVirtualThreads() throws Exception {
+    void benchmarkVirtualThreadCreation(DtrContext ctx) throws Exception {
 
-        sayNextSection("Virtual Threads in Java 25");
+        ctx.sayNextSection("Virtual Thread Creation Overhead");
 
-        say("Virtual threads allow us to spawn thousands of concurrent tasks "
-            + "without creating expensive OS threads. "
-            + "Each virtual thread is lightweight — the JVM schedules them automatically.");
+        ctx.say("Virtual threads are lightweight JVM-managed threads. "
+            + "Unlike platform threads (~2 MB stack each), virtual threads cost "
+            + "kilobytes and are created in nanoseconds. "
+            + "This benchmark measures the overhead of spawning and joining one virtual thread.");
 
-        int concurrency = 1000;
-        say("Submitting " + concurrency + " concurrent HTTP requests...");
-
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-
-            long startNanos = System.nanoTime();
-            List<Future<Response>> futures = new ArrayList<>();
-
-            // Submit 1000 requests
-            for (int i = 1; i <= concurrency; i++) {
-                final int id = i;
-                futures.add(executor.submit(() ->
-                    makeRequest(Request.GET()
-                        .url(testServerUrl().path("/api/users/" + id)))));
-            }
-
-            // Collect results
-            List<Response> responses = new ArrayList<>();
-            for (Future<Response> future : futures) {
-                responses.add(future.get());
-            }
-
-            long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
-
-            long successCount = responses.stream()
-                .filter(r -> r.httpStatus() == 200)
-                .count();
-
-            say("All " + concurrency + " requests completed in " + elapsedMs + "ms");
-            say("Success rate: " + (successCount * 100 / concurrency) + "%");
-
-            sayAndAssertThat(
-                "All virtual threads completed without error",
-                concurrency,
-                org.hamcrest.CoreMatchers.equalTo(successCount));
-        }
-
-        say("The virtual thread executor automatically sized itself based on workload. "
-            + "There was no explicit thread pool configuration — the JVM handled it.");
-    }
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
-    }
-}
-```
-
-**Key points:**
-- `Executors.newVirtualThreadPerTaskExecutor()` — creates an executor that spawns one virtual thread per task
-- `executor.submit(Callable)` — returns a `Future` you can await
-- No explicit sizing — the JVM creates as many virtual threads as needed
-- Code reads sequentially; execution is parallel
-
----
-
-## Step 3 — Compare Virtual Threads to Platform Threads
-
-Write a benchmark showing the difference:
-
-```java
-@Test
-public void virtualVsPlatformThreadComparison() throws Exception {
-
-    sayNextSection("Virtual Threads vs Platform Threads");
-
-    say("Here we compare the resource usage and execution time of "
-        + "the same 100 concurrent tasks using platform threads vs virtual threads.");
-
-    int taskCount = 100;
-
-    // Platform thread executor
-    say("Platform threads (cached thread pool):");
-    long platformStart = System.nanoTime();
-    try (ExecutorService platformExec = Executors.newCachedThreadPool()) {
-        List<Future<Integer>> futures = new ArrayList<>();
-        for (int i = 0; i < taskCount; i++) {
-            futures.add(platformExec.submit(() -> {
-                Thread.sleep(100); // Simulate I/O
-                return 1;
-            }));
-        }
-        int platformCount = 0;
-        for (Future<Integer> f : futures) {
-            platformCount += f.get();
-        }
-    }
-    long platformMs = (System.nanoTime() - platformStart) / 1_000_000;
-
-    // Virtual thread executor
-    say("Virtual threads:");
-    long virtualStart = System.nanoTime();
-    try (ExecutorService virtualExec = Executors.newVirtualThreadPerTaskExecutor()) {
-        List<Future<Integer>> futures = new ArrayList<>();
-        for (int i = 0; i < taskCount; i++) {
-            futures.add(virtualExec.submit(() -> {
-                Thread.sleep(100); // Same I/O
-                return 1;
-            }));
-        }
-        int virtualCount = 0;
-        for (Future<Integer> f : futures) {
-            virtualCount += f.get();
-        }
-    }
-    long virtualMs = (System.nanoTime() - virtualStart) / 1_000_000;
-
-    say("Platform threads time: " + platformMs + "ms");
-    say("Virtual threads time: " + virtualMs + "ms");
-    say("Both complete in roughly the same time (~100ms) because all tasks block together. "
-        + "The difference appears at scale: virtual threads consume 1/100th the memory "
-        + "and don't exhaust system resources.");
-}
-```
-
----
-
-## Step 4 — Structured Concurrency (try-with-resources)
-
-Always close the executor to ensure all virtual threads complete:
-
-```java
-@Test
-public void structuredConcurrency() throws Exception {
-
-    sayNextSection("Structured Concurrency with Virtual Threads");
-
-    say("Use try-with-resources to guarantee all virtual threads complete before moving on.");
-
-    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-        // All tasks run here
-        for (int i = 0; i < 100; i++) {
-            executor.submit(() -> makeRequest(
-                Request.GET().url(testServerUrl().path("/api/data"))));
-        }
-        // Executor automatically shuts down and waits for completion
-    }
-
-    say("By the time we exit the try block, all 100 virtual threads have completed. "
-        + "This is called structured concurrency — scoped execution with guaranteed cleanup.");
-}
-```
-
-**Why this matters:** You never "forget" threads running in the background. The JVM enforces cleanup.
-
----
-
-## Step 5 — Exception Handling with Virtual Threads
-
-Handle errors from concurrent tasks elegantly:
-
-```java
-@Test
-public void errorHandlingInVirtualThreads() throws Exception {
-
-    sayNextSection("Exception Handling");
-
-    say("When a virtual thread throws an exception, it's captured in the Future.");
-
-    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-
-        List<Future<Response>> futures = new ArrayList<>();
-
-        for (int i = 1; i <= 50; i++) {
-            final int id = i;
-            futures.add(executor.submit(() -> {
-                if (id % 7 == 0) {
-                    throw new IllegalStateException("Simulated error for ID " + id);
-                }
-                return makeRequest(Request.GET()
-                    .url(testServerUrl().path("/api/users/" + id)));
-            }));
-        }
-
-        sealed interface TaskResult {
-            record Success(Response response) implements TaskResult {}
-            record Failure(String error) implements TaskResult {}
-        }
-
-        List<TaskResult> results = new ArrayList<>();
-        for (Future<Response> future : futures) {
+        ctx.sayBenchmark("spawn and join one virtual thread", () -> {
             try {
-                results.add(new TaskResult.Success(future.get()));
-            } catch (Exception e) {
-                results.add(new TaskResult.Failure(e.getMessage()));
+                Thread vt = Thread.ofVirtual().start(() -> {});
+                vt.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-        }
+        });
 
-        long successCount = results.stream()
-            .filter(r -> r instanceof TaskResult.Success)
-            .count();
-
-        long failureCount = results.stream()
-            .filter(r -> r instanceof TaskResult.Failure)
-            .count();
-
-        say("Results: " + successCount + " succeeded, " + failureCount + " failed");
-        say("We used sealed records and pattern matching (Java 25 features) "
-            + "to type-safely classify results.");
+        ctx.say("The result above shows the average cost in nanoseconds per iteration "
+            + "after JIT warmup.");
     }
 }
 ```
 
----
+Run it:
 
-## Key Takeaways
+```bash
+mvnd test -Dtest=BenchmarkDocTest
+cat target/docs/test-results/BenchmarkDocTest.md
+```
 
-| Concept | Explanation |
-|---------|-------------|
-| **Virtual Thread** | JVM-managed, lightweight thread (kilobytes, not megabytes) |
-| **Executor** | `Executors.newVirtualThreadPerTaskExecutor()` creates a virtual thread per task |
-| **Future** | Result of an async computation; call `.get()` to wait and retrieve |
-| **Structured Concurrency** | Try-with-resources guarantees all threads complete and clean up |
-| **Blocking is OK** | Virtual threads are designed for blocking I/O; the JVM handles scheduling |
+The Markdown output will contain a benchmark result table under the section heading.
 
 ---
 
-## Best Practices
+## Step 2 — Control Warmup and Measure Rounds
 
-✅ **DO:**
-- Use `newVirtualThreadPerTaskExecutor()` for I/O-bound workloads
-- Close executors with try-with-resources
-- Call `.get()` on futures to await results
-- Catch `ExecutionException` and `InterruptedException`
-- Spawn thousands if needed — virtual threads scale
+The default `sayBenchmark` chooses warmup and measurement iterations automatically. When you need precise control — for example to match a published benchmark or reduce test time — use the four-argument form:
 
-❌ **DON'T:**
-- Create unbounded thread pools of platform threads
-- Forget to close executors (memory leaks)
-- Use virtual threads for CPU-bound work (use `ForkJoinPool` instead)
-- Assume `.submit()` starts execution immediately (submit is async)
+```java
+    @Test
+    void benchmarkWithExplicitRounds(DtrContext ctx) {
+
+        ctx.sayNextSection("Explicit Warmup and Measure Rounds");
+
+        ctx.say("For reproducible comparisons, fix the warmup and measure counts. "
+            + "Here we use 5 warmup rounds and 20 measure rounds.");
+
+        // Benchmark: creating an ArrayList and adding 1000 elements
+        ctx.sayBenchmark(
+            "ArrayList construction (1000 elements)",
+            () -> {
+                var list = new ArrayList<Integer>(1000);
+                for (int i = 0; i < 1000; i++) list.add(i);
+            },
+            5,   // warmupRounds
+            20   // measureRounds
+        );
+
+        ctx.say("Explicit rounds are useful when comparing multiple workloads side by side: "
+            + "keep the rounds identical so the numbers are comparable.");
+    }
+```
+
+---
+
+## Step 3 — Compare Two Implementations
+
+Use consecutive `sayBenchmark` calls to document a side-by-side comparison:
+
+```java
+    @Test
+    void comparePlatformVsVirtualThreadScheduling(DtrContext ctx) throws Exception {
+
+        ctx.sayNextSection("Platform Threads vs Virtual Threads: Scheduling 100 Tasks");
+
+        ctx.say("Both executors submit 100 tasks that each sleep for 10 ms. "
+            + "Virtual threads are scheduled cooperatively by the JVM, "
+            + "so all 100 tasks overlap. Platform threads from a fixed pool "
+            + "of 8 are serialized in batches of 8.");
+
+        int taskCount = 100;
+        int sleepMs   = 10;
+
+        // Platform thread executor (fixed pool of 8)
+        ctx.sayBenchmark(
+            "platform thread pool (size 8), 100 tasks × 10 ms",
+            () -> {
+                try (ExecutorService exec = Executors.newFixedThreadPool(8)) {
+                    List<Future<?>> futures = new ArrayList<>();
+                    for (int i = 0; i < taskCount; i++) {
+                        futures.add(exec.submit(() -> {
+                            try { Thread.sleep(sleepMs); }
+                            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+                        }));
+                    }
+                    for (Future<?> f : futures) {
+                        try { f.get(); }
+                        catch (Exception e) { /* ignore */ }
+                    }
+                }
+            },
+            2,  // warmupRounds
+            5   // measureRounds
+        );
+
+        // Virtual thread executor (unbounded)
+        ctx.sayBenchmark(
+            "virtual thread executor, 100 tasks × 10 ms",
+            () -> {
+                try (ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor()) {
+                    List<Future<?>> futures = new ArrayList<>();
+                    for (int i = 0; i < taskCount; i++) {
+                        futures.add(exec.submit(() -> {
+                            try { Thread.sleep(sleepMs); }
+                            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+                        }));
+                    }
+                    for (Future<?> f : futures) {
+                        try { f.get(); }
+                        catch (Exception e) { /* ignore */ }
+                    }
+                }
+            },
+            2,  // warmupRounds
+            5   // measureRounds
+        );
+
+        ctx.say("With a fixed pool of 8 platform threads, 100 × 10 ms tasks need "
+            + "roughly 13 batches, so wall-clock time is ~130 ms. "
+            + "With virtual threads all 100 tasks overlap, so wall-clock time is ~10 ms. "
+            + "The benchmark numbers above reflect real measurements on this machine.");
+    }
+```
+
+---
+
+## Step 4 — Benchmark a Pure CPU Computation
+
+Virtual threads excel at I/O-bound work. For CPU-bound tasks, benchmark with caution — the JVM's carrier thread pool is bounded by `Runtime.availableProcessors()`. This benchmark shows a CPU task for contrast:
+
+```java
+    @Test
+    void benchmarkCpuBoundComputation(DtrContext ctx) {
+
+        ctx.sayNextSection("CPU-Bound Computation Baseline");
+
+        ctx.say("Sorting a shuffled list of 10,000 integers is a pure CPU task. "
+            + "Virtual threads offer no throughput advantage here, "
+            + "but the benchmark establishes a baseline for comparison.");
+
+        var data = new ArrayList<Integer>(10_000);
+        for (int i = 0; i < 10_000; i++) data.add(i);
+        java.util.Collections.shuffle(data);
+
+        ctx.sayBenchmark(
+            "Collections.sort on 10,000 integers",
+            () -> {
+                var copy = new ArrayList<>(data);
+                java.util.Collections.sort(copy);
+            },
+            10,   // warmupRounds
+            50    // measureRounds
+        );
+
+        ctx.sayNote("For CPU-bound parallelism, use `ForkJoinPool` or parallel streams, "
+            + "not virtual threads. Virtual threads park on I/O and wake efficiently; "
+            + "CPU-bound tasks never park.");
+    }
+```
+
+---
+
+## Step 5 — Capture Environment Context
+
+Close the documentation with an environment snapshot so readers know which machine the numbers came from:
+
+```java
+    @Test
+    void captureEnvironment(DtrContext ctx) {
+
+        ctx.sayNextSection("Benchmark Environment");
+
+        ctx.say("Benchmark results are only meaningful in context. "
+            + "DTR captures the environment automatically:");
+
+        ctx.sayEnvProfile();
+    }
+```
+
+`sayEnvProfile()` emits a key-value table with Java version, OS, available processors, heap size, and DTR version — no arguments required.
+
+---
+
+## What Virtual Threads Are (and Are Not)
+
+| Concept | Detail |
+|---------|--------|
+| **Virtual thread** | JVM-managed, lightweight — kilobytes of stack, not megabytes |
+| **Carrier thread** | OS thread that actually runs virtual threads; pool size = CPU count |
+| **Parking** | When a virtual thread blocks on I/O, it parks and frees its carrier thread |
+| **Best for** | High-concurrency I/O workloads: HTTP, JDBC, file I/O |
+| **Not for** | CPU-bound loops (use `ForkJoinPool` or parallel streams instead) |
+| **`Executors.newVirtualThreadPerTaskExecutor()`** | Creates one virtual thread per submitted task |
+
+---
+
+## What You Learned
+
+- How `sayBenchmark(label, task)` measures and documents performance in one call
+- How `sayBenchmark(label, task, warmupRounds, measureRounds)` gives explicit control
+- The pattern of side-by-side `sayBenchmark` calls for comparisons
+- Why virtual threads outperform platform thread pools for I/O-bound concurrent tasks
+- How `sayEnvProfile()` anchors benchmark numbers to the execution environment
 
 ---
 
 ## Next Steps
 
-- [Tutorial: Records and Sealed Classes](records-sealed-classes.md) — type-safe data models with Java 25
-- [How-to: Use Virtual Threads with Executors](../how-to/use-virtual-threads.md) — patterns and examples
-- [How-to: Pattern Matching with Sealed Records](../how-to/pattern-matching.md) — exhaustive type handling
-- [Reference: Virtual Threads API](../reference/virtual-threads-reference.md) — complete documentation
-- [Explanation: Why Virtual Threads Matter](../explanation/virtual-threads-philosophy.md) — design rationale
+- [Tutorial: Records and Sealed Classes](records-sealed-classes.md) — benchmark record construction vs class construction
+- [Tutorial: Testing a REST API](testing-a-rest-api.md) — measure HTTP endpoint latency with `sayBenchmark`
+- [Tutorial: Visualizing Code with sayMermaid](websockets-realtime.md) — diagram the virtual thread scheduler
