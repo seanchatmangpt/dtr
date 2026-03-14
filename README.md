@@ -69,7 +69,7 @@ See [`CHANGELOG.md`](CHANGELOG.md) for the complete version history.
 
 ```xml
 <properties>
-    <maven.compiler.release>25</maven.compiler.release>
+    <maven.compiler.release>26</maven.compiler.release>
 </properties>
 
 <dependencies>
@@ -94,7 +94,7 @@ See [`CHANGELOG.md`](CHANGELOG.md) for the complete version history.
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.13.0</version>
             <configuration>
-                <release>25</release>
+                <release>26</release>
                 <compilerArgs>
                     <arg>--enable-preview</arg>
                 </compilerArgs>

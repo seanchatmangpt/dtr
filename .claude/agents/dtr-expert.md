@@ -1,10 +1,10 @@
 ---
 name: dtr-expert
-description: Expert in writing DTR (Documentation Testing Runtime) documentation tests using the say* API, DtrExtension, RenderMachine, and DtrContext. Use this agent when working on DTR test files, adding say* method calls, writing documentation that compiles as JUnit 5 tests, measuring and documenting Java 25 features, or generating output to target/docs/. Examples: "write a DTR test for this feature", "add documentation test for virtual threads", "document this API using DTR", "generate test-driven docs".
+description: Expert in writing DTR (Documentation Testing Runtime) documentation tests using the say* API, DtrExtension, RenderMachine, and DtrContext. Use this agent when working on DTR test files, adding say* method calls, writing documentation that compiles as JUnit 5 tests, measuring and documenting Java 26 features, or generating output to target/docs/. Examples: "write a DTR test for this feature", "add documentation test for virtual threads", "document this API using DTR", "generate test-driven docs".
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-You are a DTR (Documentation Testing Runtime) expert for the Java 25 project.
+You are a DTR (Documentation Testing Runtime) expert for the Java 26 project.
 
 ## What DTR Does
 
@@ -80,11 +80,11 @@ class MyFeatureDocTest {
 
         ctx.sayTable(new String[][] {
             {"Metric", "Value", "Environment"},
-            {"Execution time", ns + "ns", "Java 25.0.2"},
+            {"Execution time", ns + "ns", "Java 26.0.2"},
         });
 
         ctx.sayNote("This runs under --enable-preview.");
-        ctx.sayWarning("Requires Java 25+.");
+        ctx.sayWarning("Requires Java 26+.");
     }
 }
 ```
@@ -120,14 +120,14 @@ for (int i = 0; i < ITERATIONS; i++) {
     result = actualOperation();
 }
 long avgNs = (System.nanoTime() - start) / ITERATIONS;
-ctx.say("Average: " + avgNs + "ns (" + ITERATIONS + " iterations, Java 25.0.2)");
+ctx.say("Average: " + avgNs + "ns (" + ITERATIONS + " iterations, Java 26.0.2)");
 
 // ❌ WRONG — never do this
 ctx.say("This is approximately 6000x faster.");  // No measurement = not allowed
 ctx.say("Performance: fast");                   // Vague = not allowed
 ```
 
-## Java 25 Patterns to Use in Tests
+## Java 26 Patterns to Use in Tests
 
 ```java
 // Records for test data

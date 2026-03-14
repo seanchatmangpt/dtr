@@ -201,7 +201,7 @@ the specific language governing permissions and limitations under the License. -
             </exclusions>
         </dependency>
 
-        <!-- Mockito 5.x for Java 25 compatibility (replaces transitive 1.9.5 from ninja-test-utilities) -->
+        <!-- Mockito 5.x for Java 26 compatibility (replaces transitive 1.9.5 from ninja-test-utilities) -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

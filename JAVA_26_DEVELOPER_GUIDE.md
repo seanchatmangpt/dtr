@@ -15,8 +15,8 @@ specific language governing permissions and limitations under the License. -->
 
 **Target Release:** Java 26 (GA: March 17, 2026)
 **Status:** Release Candidate (RC)
-**Java Version Currently Required:** Java 25 (LTS) with `--enable-preview`
-**Migration Timeline:** Java 26 adoption when GA available
+**Java Version Currently Required:** Java 26 with `--enable-preview`
+**Migration Timeline:** Java 26 GA (March 17, 2026)
 
 ---
 
@@ -93,7 +93,7 @@ Java 26 includes 10 targeted JEPs released on March 17, 2026:
 
 ### What Changed
 
-**Java 25:** Basic primitive type patterns (`int i`) in exhaustive switches.
+**Java 26:** Basic primitive type patterns (`int i`) in exhaustive switches.
 
 **Java 26:** Fourth preview tightens dominance rules and unconditional exactness, improving pattern matching correctness and eliminating edge cases where two patterns could match the same value.
 
@@ -970,17 +970,17 @@ mvnd dependency:tree -pl dtr-core | grep -i applet
 
 ### Prerequisites
 
-- **Java 26 RC** (or later) installed at `/usr/lib/jvm/java-26-openjdk-amd64` (when available; currently use Java 25)
+- **Java 26** installed at `/usr/lib/jvm/java-26-openjdk-amd64`
 - **Maven 4.0.0+** or **mvnd 2.0+** (Maven Daemon)
 - **Unix shell** (bash, zsh) for scripting
 
-### Current Setup (Java 25, with Java 26 feature previews)
+### Current Setup (Java 26)
 
-**pom.xml** already configured for Java 25 with `--enable-preview`:
+**pom.xml** configured for Java 26 with `--enable-preview`:
 
 ```xml
 <properties>
-    <maven.compiler.release>25</maven.compiler.release>
+    <maven.compiler.release>26</maven.compiler.release>
 </properties>
 
 <plugin>
@@ -988,7 +988,7 @@ mvnd dependency:tree -pl dtr-core | grep -i applet
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.13.0</version>
     <configuration>
-        <release>25</release>
+        <release>26</release>
         <compilerArgs>
             <arg>--enable-preview</arg>
         </compilerArgs>
@@ -1075,17 +1075,7 @@ mvnd clean verify
 
 ### Environment Variables
 
-**Current (Java 25):**
-
-```bash
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
-export MAVEN_OPTS="--enable-preview"
-
-mvnd --version  # Maven 4.0.0-rc-5 / mvnd 2.x.x
-java -version   # openjdk 25.x.x
-```
-
-**Java 26 (when GA available):**
+**Current (Java 26):**
 
 ```bash
 export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
@@ -1099,10 +1089,10 @@ java -version   # openjdk 26.x.x
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `error: --enable-preview flag not allowed for target Java 25` | Preview feature used without flag | Add `<enablePreview>true</enablePreview>` to compiler config |
-| `error: record is not a feature` | Java < 16 targeted | Set `<release>25</release>` (or higher) |
+| `error: --enable-preview flag not allowed for target Java 26` | Preview feature used without flag | Add `<enablePreview>true</enablePreview>` to compiler config |
+| `error: record is not a feature` | Java < 16 targeted | Set `<release>26</release>` (or higher) |
 | `error: sealed types are not available` | Java < 17 targeted | Same as above |
-| `[WARNING] Source option 5 is no longer supported` | Old compiler config | Update to `<release>25</release>` (Maven 4 standard) |
+| `[WARNING] Source option 5 is no longer supported` | Old compiler config | Update to `<release>26</release>` (Maven 4 standard) |
 | `mvnd: command not found` | Maven Daemon not installed | Install: `cd /opt && wget https://dist.apache.org/repos/dist/release/maven/mvnd/...` |
 
 ---

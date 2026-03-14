@@ -2,7 +2,7 @@
 ## DocMetadata Global Singleton Caching
 
 **Date:** March 11, 2026  
-**System:** Linux 6.18.5, Java 25.0.2, Maven 4.0.0-rc-5  
+**System:** Linux 6.18.5, Java 26.0.0, Maven 4.0.0-rc-5  
 **Test Environment:** Standalone benchmark + existing unit test suite  
 
 ---
@@ -135,7 +135,7 @@ The static field initialization is **implicitly synchronized** by the JVM, makin
 ```
 Metadata Fields:
   Project:           unknown vunknown (from test environment)
-  Java Version:      25.0.2 ✓
+  Java Version:      26.0.0 ✓
   Maven Version:     Apache Maven 4.0.0-rc-5 ✓
   Git Commit:        7218d4e... ✓
   Git Branch:        claude/fix-latex-errors-rzhxB ✓
@@ -394,7 +394,7 @@ long nanos = nanoEnd - nanoStart;          // Nanosecond precision
 
 ### Test Environment
 
-- **JDK:** OpenJDK 25.0.2
+- **JDK:** OpenJDK 26.0.0
 - **Platform:** Linux 6.18.5 x86_64
 - **JVM Flags:** `-ea --enable-preview` (assertions enabled for safety)
 - **Daemon:** Maven Daemon (mvnd 2.x) for compilation
@@ -404,7 +404,7 @@ long nanos = nanoEnd - nanoStart;          // Nanosecond precision
 
 ## References
 
-- [Java Language Specification 12.4.1 - Class Initialization](https://docs.oracle.com/javase/specs/jls/se25/html/jls-12.html#jls-12.4.1)
+- [Java Language Specification 12.4.1 - Class Initialization](https://docs.oracle.com/javase/specs/jls/se26/html/jls-12.html#jls-12.4.1)
 - [JEP 516 (Projected) - AoT Object Caching for Java](https://openjdk.org/jeps/516)
 - [Project Leyden - Faster Startup & Time-to-Peak](https://openjdk.org/projects/leyden/)
 - DocMetadata Source: `/home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/metadata/DocMetadata.java`

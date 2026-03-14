@@ -10,7 +10,7 @@ on:
     branches: [main, master]
 
 env:
-  JAVA_VERSION: '25'
+  JAVA_VERSION: '26'
   MAVEN_OPTS: >-
     -Xmx2g
     -Xms512m

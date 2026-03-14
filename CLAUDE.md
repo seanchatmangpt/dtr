@@ -1,6 +1,6 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 25 | **Version:** 2026.1.0
+**Project:** Markdown documentation generator for Java 26 | **Version:** 2026.1.0
 
 ---
 
@@ -100,7 +100,7 @@ documentation, generated sources — must pass `mvnd verify` in CI.
 Not locally. In CI.
 
 CI environment facts that are load-bearing:
-- Java 25 + `--enable-preview` (enforced by pom.xml compiler plugin)
+- Java 26 + `--enable-preview` (enforced by pom.xml compiler plugin)
 - GPG signing uses `--pinentry-mode loopback` (non-interactive, no TTY)
 - `~/.gnupg/gpg-agent.conf` must contain `allow-loopback-pinentry`
 - Credentials come from **GitHub secrets**, never from `~/.m2/settings.xml`
@@ -159,7 +159,7 @@ If those six things are true, the release succeeds. That is the scope.
 - Use actual DTR code (RenderMachine + say* methods)
 - Measure with `System.nanoTime()` on real execution
 - Report: metric + units + Java version + iterations + environment
-- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)" NOT "6667x faster"
+- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26.0.0)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
 - JUnit 5 tests with `DtrContext`
@@ -167,7 +167,7 @@ If those six things are true, the release succeeds. That is the scope.
 - Never bypass with standalone generators
 
 ### 3. Toolchain (Non-Negotiable)
-- Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
+- Java 26: `/usr/lib/jvm/java-26-openjdk-amd64`
 - mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred locally for speed)
 - CI uses `./mvnw` — downloads Maven 4.0.0-rc-5 via wrapper; do NOT use Maven 3
 - Flag: `--enable-preview` in `.mvn/maven.config` (also `-Dmaven.compiler.enablePreview=true`)
@@ -289,7 +289,7 @@ ctx.sayAndAssertThat("Status", actual, is(200));     // Assert + documents
 
 ---
 
-## JAVA 25 FEATURES (Use These)
+## JAVA 26 FEATURES (Use These)
 
 ```java
 // Records
@@ -323,7 +323,7 @@ Both are configured in `.mvn/maven.config` and `maven-surefire-plugin`.
 Ask this first: **"Does this pass `mvnd verify` in CI?"**
 
 Then:
-1. `java -version` → 25.0.2+
+1. `java -version` → 26.0.0+
 2. `mvnd --version` → 2.0.0+
 3. `.mvn/maven.config` contains `--enable-preview` and `-Dmaven.compiler.enablePreview=true`
 4. Output goes to `target/docs/` — not anywhere else
@@ -339,7 +339,7 @@ mvnd verify                    # The gate — run this before anything else
 mvnd --stop                    # Stop daemon if stale
 mvnd -X clean verify           # Verbose — find the real failure
 cat target/surefire-reports/*  # Test details
-echo $JAVA_HOME                # Verify Java 25
+echo $JAVA_HOME                # Verify Java 26
 make check                     # Verify entire toolchain
 
 # If Maven Central auth fails locally (not in CI):

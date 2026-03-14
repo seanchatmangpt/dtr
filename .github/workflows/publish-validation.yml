@@ -20,13 +20,13 @@ on:
 
 # Validation jobs that run before deployment
 env:
-  JAVA_VERSION: '25'
+  JAVA_VERSION: '26'
   MAVEN_OPTS: >-
     -Xmx2g
     -Xms1g
     -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
     -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
-    -Dmaven.compiler.release=25
+    -Dmaven.compiler.release=26
 
 jobs:
   # Validate project structure
@@ -291,7 +291,7 @@ jobs:
     if: needs.validate-structure.outputs.is-valid == 'true'
     strategy:
       matrix:
-        java-version: ['21', '22', '25']
+        java-version: ['26']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

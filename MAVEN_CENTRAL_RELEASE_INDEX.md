@@ -66,7 +66,7 @@
 **Time to read:** 30-45 minutes (or reference as needed)
 
 **Key findings:**
-- ✅ All configuration correct for Maven 4 + Java 25
+- ✅ All configuration correct for Maven 4 + Java 26
 - ❌ Missing: Sonatype credentials (Issue #1)
 - ❌ Missing: GPG signing key (Issue #2)
 - ⚠️ Integration tests failing (Issue #3, has workaround)
@@ -78,7 +78,7 @@
 **Purpose:** Step-by-step instructions to set up credentials and execute release
 
 **Contains:**
-- Step 1: Verify environment (Java 25, Maven 4, mvnd)
+- Step 1: Verify environment (Java 26, Maven 4, mvnd)
 - Step 2: Set up Sonatype Central credentials (3 substeps)
 - Step 3: Set up GPG signing (5 substeps)
 - Step 4: Configure Git (user.email, SSH)
@@ -142,7 +142,7 @@
 ├── dtr-core/pom.xml                  (main artifact to publish)
 ├── dtr-integration-test/pom.xml      (test artifact)
 │
-├── .mvn/maven.config                       (Java 25 preview flags)
+├── .mvn/maven.config                       (Java 26 preview flags)
 ├── CLAUDE.md                               (project architecture guide)
 └── README.md                               (general project info)
 ```
@@ -155,14 +155,14 @@
 
 | Component | Status | Location | Notes |
 |-----------|--------|----------|-------|
-| Maven compiler (3.13.0) | ✅ OK | pom.xml:289-298 | Java 25 + preview enabled |
+| Maven compiler (3.13.0) | ✅ OK | pom.xml:289-298 | Java 26 + preview enabled |
 | Surefire (3.5.3) | ✅ OK | pom.xml:300-307 | --enable-preview for tests |
-| Enforcer (3.5.0) | ✅ OK | pom.xml:344-366 | Java 25 + Maven 4.0.0-rc-3+ |
+| Enforcer (3.5.0) | ✅ OK | pom.xml:344-366 | Java 26 + Maven 4.0.0-rc-3+ |
 | GPG Plugin (3.2.7) | ✅ OK | pom.xml:429-449 | Loopback mode for CI/CD |
 | Release Plugin (3.1.1) | ✅ OK | pom.xml:451-463 | Maven 4 compatible |
 | Central Publishing (0.6.0) | ✅ OK | pom.xml:387-397 | Modern approach, auto-publish |
 | Source Plugin (3.3.1) | ✅ OK | pom.xml:400-412 | Source JAR attachment |
-| Javadoc Plugin (3.11.2) | ✅ OK | pom.xml:415-426 | Java 25 preview support |
+| Javadoc Plugin (3.11.2) | ✅ OK | pom.xml:415-426 | Java 26 preview support |
 
 ### Credentials Status
 
@@ -176,7 +176,7 @@
 
 | Test | Result | Date | Notes |
 |------|--------|------|-------|
-| Enforcer plugin | ✅ PASS | 2026-03-10 | Java 25 + Maven 4 enforced |
+| Enforcer plugin | ✅ PASS | 2026-03-10 | Java 26 + Maven 4 enforced |
 | Dry-run (no GPG) | ✅ PARTIAL | 2026-03-10 | Failed only on GPG (expected) |
 | Core build | ✅ PASS | 2026-03-10 | `mvnd clean install -pl dtr-core -DskipTests` |
 | Integration tests | ⚠️ FAIL | 2026-03-10 | Jetty issue (workaround available) |
@@ -341,7 +341,7 @@ A: See `RELEASE_SETUP_GUIDE.md` Step 8 (verification commands)
 
 ### For infrastructure issues:
 
-- Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
+- Java 26: `/usr/lib/jvm/java-26-openjdk-amd64`
 - Maven 4: `/opt/apache-maven-4.0.0-rc-5/bin/mvn`
 - mvnd: `/opt/mvnd/bin/mvnd`
 
