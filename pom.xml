@@ -520,9 +520,9 @@ the specific language governing permissions and limitations under the License. -
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.mycila.maven-license-plugin</groupId>
-                        <artifactId>maven-license-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <groupId>com.mycila</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <version>4.5</version>
                         <configuration>
                             <quiet>false</quiet>
                             <header>src/main/resources/license-header.txt</header>

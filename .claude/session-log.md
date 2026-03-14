@@ -86,3 +86,25 @@ clean
 ### Build
 Tests: mvnd verify not run this session (no surefire reports)
 
+
+---
+
+## Session: 2026-03-14T20:06:02Z
+**Session ID:** unknown
+**Branch:** claude/enforce-java-26-M7q00
+
+### Last 3 Commits
+```
+4f139b8 Enforce Java 26 in session hooks for web (G Visor) and macOS desktop
+ac92557 Apply remaining Java 26 doc updates from background agent
+bcd31f3 Update session log and finalize Java 26 developer guide
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+

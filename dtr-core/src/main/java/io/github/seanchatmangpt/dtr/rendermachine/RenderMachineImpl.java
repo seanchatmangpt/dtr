@@ -832,7 +832,7 @@ public final class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("| Min | `" + result.minNs() + " ns` |");
         markdownDocument.add("| Max | `" + result.maxNs() + " ns` |");
         markdownDocument.add("| p99 | `" + result.p99Ns() + " ns` |");
-        markdownDocument.add("| Ops/sec | `" + String.format("%,d", result.opsPerSec()) + "` |");
+        markdownDocument.add("| Ops/sec | `" + "%,d".formatted(result.opsPerSec()) + "` |");
         markdownDocument.add("| Warmup rounds | `" + warmupRounds + "` |");
         markdownDocument.add("| Measure rounds | `" + measureRounds + "` |");
         markdownDocument.add("| Java | `" + System.getProperty("java.version") + "` |");
