@@ -21,12 +21,7 @@ import java.util.Map;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.function.Consumer;
 
-import org.apache.hc.client5.http.cookie.Cookie;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
-import org.hamcrest.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -386,49 +381,6 @@ public final class MultiRenderMachine extends RenderMachine {
     @Override
     public void sayCallToAction(String url) {
         dispatchToAll(m -> m.sayCallToAction(url));
-    }
-
-    @Override
-    public List<Cookie> sayAndGetCookies() {
-        // Only the first machine's cookies matter; all observe the same browser state
-        return machines.getFirst().sayAndGetCookies();
-    }
-
-    @Override
-    public Cookie sayAndGetCookieWithName(String name) {
-        return machines.getFirst().sayAndGetCookieWithName(name);
-    }
-
-    @Override
-    public Response sayAndMakeRequest(Request httpRequest) {
-        // First machine executes the HTTP request and documents it
-        Response response = machines.getFirst().sayAndMakeRequest(httpRequest);
-
-        // Remaining machines document the same exchange without re-executing HTTP
-        // Uses SequencedCollection.subList semantics for the tail
-        if (machines.size() > 1) {
-            machines.subList(1, machines.size()).forEach(m ->
-                m.sayRaw("*[HTTP exchange documented by primary render machine]*"));
-        }
-
-        return response;
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
-        dispatchToAll(m -> m.sayAndAssertThat(message, actual, matcher));
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher) {
-        dispatchToAll(m -> m.sayAndAssertThat(message, reason, actual, matcher));
-    }
-
-    @Override
-    public void setTestBrowser(TestBrowser testBrowser) {
-        for (RenderMachine machine : machines) {
-            machine.setTestBrowser(testBrowser);
-        }
     }
 
     @Override

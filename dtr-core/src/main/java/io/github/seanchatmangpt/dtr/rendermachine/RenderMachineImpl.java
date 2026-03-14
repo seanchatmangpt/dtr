@@ -44,16 +44,9 @@ import io.github.seanchatmangpt.dtr.diagram.ControlFlowGraphBuilder;
 import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hc.client5.http.cookie.Cookie;
 import io.github.seanchatmangpt.dtr.bibliography.BibliographyManager;
 import io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-import org.hamcrest.Matcher;
-
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,8 +80,6 @@ import org.slf4j.LoggerFactory;
  * <pre>{@code
  * RenderMachine markdown = new RenderMachineImpl();
  * markdown.setFileName("UserApiDocTest");
- * markdown.setTestBrowser(browser);
- *
  * markdown.sayNextSection("User Registration");
  * markdown.say("Creates a new user account via POST /api/users");
  * markdown.sayTable(new String[][] {
@@ -97,9 +88,6 @@ import org.slf4j.LoggerFactory;
  *     {"password", "String", "Yes"}
  * });
  *
- * // HTTP request/response with documentation
- * Response resp = markdown.sayAndMakeRequest(
- *     Request.POST().url(...).payload(...));
  *
  * markdown.finishAndWriteOut();  // Write to disk
  * }</pre>
@@ -130,9 +118,6 @@ public final class RenderMachineImpl extends RenderMachine {
     /** Accumulated markdown document lines. */
     List<String> markdownDocument = new ArrayList<>();
 
-    /** HTTP client for making requests and documenting them. */
-    private TestBrowser testBrowser;
-
     /** Output filename (typically the test class name). */
     private String fileName;
 
@@ -156,60 +141,6 @@ public final class RenderMachineImpl extends RenderMachine {
 
         markdownDocument.add("");
         markdownDocument.add("## " + heading);
-    }
-
-    @Override
-    public List<Cookie> sayAndGetCookies() {
-        List<Cookie> cookies = testBrowser.getCookies();
-        markdownDocument.add("");
-        markdownDocument.add("### Cookies");
-        for (Cookie cookie : cookies) {
-            markdownDocument.add("- **%s**: `%s` (path: %s, domain: %s)".formatted(
-                    cookie.getName(), cookie.getValue(), cookie.getPath(), cookie.getDomain()));
-        }
-        return cookies;
-    }
-
-    @Override
-    public Cookie sayAndGetCookieWithName(String name) {
-        Cookie cookie = testBrowser.getCookieWithName(name);
-        markdownDocument.add("");
-        markdownDocument.add("### Cookie: " + name);
-        if (cookie != null) {
-            markdownDocument.add("- **Value**: `%s`".formatted(cookie.getValue()));
-            markdownDocument.add("- **Path**: `%s`".formatted(cookie.getPath()));
-            markdownDocument.add("- **Domain**: `%s`".formatted(cookie.getDomain()));
-        }
-        return cookie;
-    }
-
-    @Override
-    public Response sayAndMakeRequest(Request request) {
-        Response response = testBrowser.makeRequest(request);
-        formatHttpExchange(request, response);
-        return response;
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
-        sayAndAssertThat(message, "", actual, matcher);
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher) {
-        try {
-            Assert.assertThat(reason, actual, matcher);
-            markdownDocument.add("");
-            markdownDocument.add("✓ " + message);
-        } catch (AssertionError e) {
-            markdownDocument.add("");
-            markdownDocument.add("✗ **FAILED**: " + message);
-            markdownDocument.add("");
-            markdownDocument.add("```");
-            markdownDocument.add(convertStackTraceToString(e));
-            markdownDocument.add("```");
-            throw e;
-        }
     }
 
     @Override
@@ -502,11 +433,6 @@ public final class RenderMachineImpl extends RenderMachine {
     }
 
     @Override
-    public void setTestBrowser(TestBrowser testBrowser) {
-        this.testBrowser = testBrowser;
-    }
-
-    @Override
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -583,52 +509,6 @@ public final class RenderMachineImpl extends RenderMachine {
         } catch (IOException e) {
             throw new RuntimeException(
                 "DTR failed to write documentation file: " + outputFile.getAbsolutePath(), e);
-        }
-    }
-
-    private void formatHttpExchange(Request request, Response response) {
-        markdownDocument.add("");
-        markdownDocument.add("### Request");
-        markdownDocument.add("");
-
-        String httpMethod = request.httpRequestType;
-        String url = request.uri.toString();
-        markdownDocument.add("```");
-        markdownDocument.add(httpMethod + " " + url);
-
-        for (Entry<String, String> header : request.headers.entrySet()) {
-            markdownDocument.add(header.getKey() + ": " + header.getValue());
-        }
-
-        if (request.payload != null) {
-            markdownDocument.add("");
-            markdownDocument.add(request.payloadAsPrettyString());
-        }
-
-        markdownDocument.add("```");
-
-        markdownDocument.add("");
-        markdownDocument.add("### Response");
-        markdownDocument.add("");
-        markdownDocument.add("**Status**: `" + response.httpStatus + "`");
-        markdownDocument.add("");
-
-        if (!response.headers.isEmpty()) {
-            markdownDocument.add("**Headers**:");
-            for (Entry<String, String> header : response.headers.entrySet()) {
-                markdownDocument.add("- `" + header.getKey() + ": " + header.getValue() + "`");
-            }
-            markdownDocument.add("");
-        }
-
-        if (response.payload != null) {
-            markdownDocument.add("**Body**:");
-            markdownDocument.add("");
-            markdownDocument.add("```json");
-            markdownDocument.add(response.payloadAsPrettyString());
-            markdownDocument.add("```");
-        } else {
-            markdownDocument.add("*(No response body)*");
         }
     }
 
