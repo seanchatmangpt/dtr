@@ -365,6 +365,59 @@ python3 maven-proxy-auth.py &
 | `scripts/release-rc.sh` | RC variant: commits, tags rc.N, pushes to Packages |
 | `scripts/changelog.sh` | git log → `docs/releases/VERSION.md` + `docs/CHANGELOG.md` |
 | `maven-proxy-auth.py` | Local dev proxy (not used in CI) |
+| `scripts/rust/dtr-guard/` | H-Guard enforcement scanner (Rust) — blocks semantic lies at write time |
+| `scripts/rust/dtr-observatory/` | Observatory fact generator (Rust) — compact JSON codebase facts |
+| `docs/facts/` | Agent-readable compact JSON facts — refresh with `make observe` |
+
+---
+
+## OBSERVATORY
+
+The Observatory generates compact JSON facts about the codebase into `docs/facts/`.
+Runs automatically at session start. Use these facts **before** grepping the codebase.
+
+**Why:** Each fact file is ~50 tokens. Running grep sweeps costs ~5000 tokens. 100× efficiency gain.
+
+```bash
+make build-observatory   # compile once (after first clone or after upgrading)
+make observe             # refresh docs/facts/*.json now
+cat docs/facts/guard-status.json    # GREEN/RED/UNKNOWN
+cat docs/facts/modules.json         # version + module list
+```
+
+| Fact File | Use it when you need... |
+|-----------|------------------------|
+| `modules.json` | project version, which Maven modules exist, Java release |
+| `java-profile.json` | Java compiler flags, preview mode |
+| `rust-capabilities.json` | which Rust binaries are built and available |
+| `source-stats.json` | Java file counts per module (main vs test) |
+| `tests.json` | test class counts per module |
+| `guard-status.json` | current H-Guard status (GREEN = no semantic lies in main sources) |
+
+**guard-status** values:
+- `GREEN` — no H-Guard violations in `dtr-core/src/main/java`
+- `RED` — violations present — see `make guard-scan` for details
+- `UNKNOWN` — guard binary not built yet (`make build-guard`)
+
+---
+
+## H-GUARD
+
+The H-Guard scanner (`dtr-guard-scan`) enforces honesty in Java source files.
+It runs automatically via the `PreToolUse` hook when writing `.java` files.
+
+Seven forbidden patterns: H_TODO, H_MOCK, H_MOCK_CLASS, H_STUB, H_EMPTY, H_FALLBACK, H_SILENT.
+Canonical fix for all auto-fixable violations:
+```java
+throw new UnsupportedOperationException("Not implemented");
+```
+
+```bash
+make build-guard      # compile once
+make guard-scan       # scan main sources (exits 2 on violations)
+make guard-scan-json  # JSON receipt
+make guard-test       # run 14 Rust unit tests
+```
 
 ---
 

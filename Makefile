@@ -23,7 +23,9 @@ CURRENT_VERSION := $(shell scripts/current-version.sh)
         release-minor release-patch release-year \
         release-rc-minor release-rc-patch \
         publish version check \
-        build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs
+        build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs \
+        build-guard guard-scan guard-scan-json guard-test clean-guard \
+        build-observatory observe observe-test clean-observatory
 
 help:
 	@echo ""
@@ -184,3 +186,20 @@ guard-test: ## Run Rust unit tests for H-Guard patterns
 ## Clean H-Guard build artifacts
 clean-guard: ## Clean dtr-guard build artifacts
 	cd scripts/rust/dtr-guard && cargo clean
+
+# ─── Observatory ──────────────────────────────────────────────────────────────
+
+build-observatory: ## Build dtr-observe binary (Observatory fact generator)
+	cd scripts/rust/dtr-observatory && cargo build --release
+
+observe: build-observatory ## Generate compact codebase facts to docs/facts/
+	scripts/rust/dtr-observatory/target/release/dtr-observe \
+		--root . \
+		--output docs/facts
+
+observe-test: ## Run Observatory Rust unit tests
+	cd scripts/rust/dtr-observatory && cargo test
+
+clean-observatory: ## Clean Observatory build artifacts
+	cd scripts/rust/dtr-observatory && cargo clean
+

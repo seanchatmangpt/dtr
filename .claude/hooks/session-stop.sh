@@ -23,6 +23,25 @@ else
     VERIFY_NOTE="Tests: mvnd verify not run this session (no surefire reports)"
 fi
 
+# Read Observatory guard status (best effort)
+FACTS_GUARD="$PROJECT_DIR/docs/facts/guard-status.json"
+if [ -f "$FACTS_GUARD" ]; then
+    GUARD_LINE=$(python3 -c "
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+    status = d.get('status', '?')
+    v = d.get('violations', '?')
+    f = d.get('scanned_files', '?')
+    ts = d.get('generated', '')
+    print(f'Guard: {status} | violations={v} | files_scanned={f} | as_of={ts}')
+except Exception as e:
+    print(f'Guard: unreadable ({e})')
+" "$FACTS_GUARD" 2>/dev/null || echo "Guard: unavailable")
+else
+    GUARD_LINE="Guard: facts not generated (run: make observe)"
+fi
+
 # Append to session log
 mkdir -p "$(dirname "$LOG_FILE")"
 cat >> "$LOG_FILE" << EOF
@@ -45,6 +64,9 @@ ${GIT_STATUS:-clean}
 
 ### Build
 $VERIFY_NOTE
+
+### Observatory
+$GUARD_LINE
 
 EOF
 

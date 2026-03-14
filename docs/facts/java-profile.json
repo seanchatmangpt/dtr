@@ -1,0 +1,1 @@
+{"enable_preview":true,"java_release":"26","maven_config":["--no-transfer-progress","--batch-mode","-Dmaven.compiler.enablePreview=true","-Dmaven.compiler.release=26"]}
