@@ -9,7 +9,7 @@ By the end you will have:
 - A Markdown file in `target/docs/test-results/` you can read directly
 
 **Time:** ~20 minutes
-**Prerequisites:** Java 25, Maven 4 (`mvnd`)
+**Prerequisites:** Java 26, Maven 4 (`mvnd`)
 
 ---
 
@@ -55,7 +55,7 @@ Configure the compiler plugin for Java 25 with preview features enabled:
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.13.0</version>
             <configuration>
-                <release>25</release>
+                <release>26</release>
                 <compilerArgs>
                     <arg>--enable-preview</arg>
                 </compilerArgs>

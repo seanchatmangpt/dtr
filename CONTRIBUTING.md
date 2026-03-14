@@ -310,7 +310,7 @@ Feature suggestions are welcome! When proposing a feature:
 - Use the formatting configured in `.mvn/maven.config`
 - Keep methods focused and concise
 - Add meaningful comments for complex logic
-- Java 25+ features (records, sealed classes, pattern matching) are encouraged
+- Java 26+ features (records, sealed classes, pattern matching, gatherers) are encouraged
 
 ### Commit Guidelines
 
