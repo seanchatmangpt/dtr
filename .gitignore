@@ -18,3 +18,4 @@ nb-configuration.xml
 # DocTester outputs to docs/test/ directory during test execution
 docs/
 doctester-core/docs/
+.secrets

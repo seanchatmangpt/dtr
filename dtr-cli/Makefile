@@ -7,7 +7,7 @@ YELLOW := \033[0;33m
 NC := \033[0m
 
 help:
-	@echo "$(BLUE)DocTester CLI — Development Commands$(NC)"
+	@echo "$(BLUE)DTR CLI — Development Commands$(NC)"
 	@echo ""
 	@echo "$(GREEN)Installation:$(NC)"
 	@echo "  make install          Install CLI in development mode"

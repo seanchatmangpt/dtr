@@ -1,12 +1,11 @@
 # DTR Quick Reference | v2.5.0 | Java 25.0.2 | Maven 4.0.0-rc-5 | mvnd 2.0.0-rc-3
 **Rules:** (1) REAL measurements only — `System.nanoTime()`, report: value+units+Java+iterations. (2) Always use real DTR CLI — JUnit 5 + DtrContext + RenderMachine pipeline, never bypass. (3) Toolchain: Java `/usr/lib/jvm/java-25-openjdk-amd64`, mvnd `/opt/mvnd/bin/mvnd`, `.mvn/maven.config`: `--enable-preview release=25`.
-## Build
-```bash
-mvnd test -pl dtr-integration-test -Dtest=ApiControllerDocTest   # run test → docs/test/<Class>.md
-python3 maven-proxy-auth.py &                                     # fix auth errors (listens :3128)
-mvnd clean install -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128 -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
-mvnd --stop && mvnd test ...                                      # restart daemon on failures
-```
+## Make Targets
+**Lifecycle:** `make build` | `make test` | `make verify` | `make package` | `make clean`
+**Proxy:** `make proxy` (start :3128 auth proxy) | `make proxy-build` (build through proxy)
+**act (local CI):** `make act-ci` | `make act-qual` | `make act-pub` (needs `.secrets` file)
+**Publish:** `make deploy` | `make release` — env vars: `GPG_PASSPHRASE` `CENTRAL_TOKEN` `CENTRAL_USERNAME`
+**Daemon:** `mvnd --stop && make test` — restart on auth failures | Output: `docs/test/<Class>.md`
 ## Modules
 `dtr-core/` JAR — RenderMachine + say* API + TestBrowser + JUnit 5 extension | `dtr-integration-test/` WAR — Ninja Framework integration tests, extend `NinjaApiDtr` | `dtr-benchmarks/` fat JAR — JMH benchmarks | `dtr-cli/` Python — CLI exports/publishing
 ## say* API
