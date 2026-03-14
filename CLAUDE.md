@@ -1,6 +1,86 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 25 | **Version:** 2.5.0
+**Project:** Markdown documentation generator for Java 25 | **Version:** 2.6.0
+
+---
+
+## THE PIPELINE IS THE SPECIFICATION
+
+This is the most important section. Read it before writing any code.
+
+### The Armstrong Invariant: One-Command Release
+
+The only release path is:
+
+```bash
+make tag VERSION=x.y.z
+git push origin main && git push origin vx.y.z
+# GitHub Actions does everything else
+```
+
+`mvn deploy` as a manual step is **forbidden**. That path is closed.
+If you find yourself suggesting `mvn deploy`, `mvn release:perform`, or
+any manual publish step — stop. You are breaking the invariant.
+The tag is the trigger. The trigger is the specification of done.
+
+### The Gate: `mvnd verify`
+
+Everything generated in this project — DTR tests, benchmarks, JOTP code,
+documentation, generated sources — must pass `mvnd verify` in CI.
+Not locally. In CI.
+
+CI environment facts that are load-bearing:
+- Java 25 + `--enable-preview` (enforced by pom.xml compiler plugin)
+- GPG signing uses `--pinentry-mode loopback` (non-interactive, no TTY)
+- `~/.gnupg/gpg-agent.conf` must contain `allow-loopback-pinentry`
+- Credentials come from **GitHub secrets**, never from `~/.m2/settings.xml`
+- Required secrets: `CENTRAL_USERNAME`, `CENTRAL_TOKEN`, `GPG_PRIVATE_KEY`,
+  `GPG_PASSPHRASE`, `GPG_KEY_ID`
+- Maven cache: `.m2/repository` in `${{ github.workspace }}`
+
+If `mvnd verify` fails, nothing publishes. Design for CI, not the laptop.
+
+### The GPG Loopback Scar
+
+The `--pinentry-mode loopback` configuration is not a workaround.
+It is load-bearing context from real CI failure.
+It tells you: this pipeline has been through real failure and survived.
+Do not remove it. Do not "simplify" it. It is correct.
+
+### The Output Contract
+
+DTR tests must produce artifacts where the Actions pipeline expects them:
+
+| Output | Path |
+|--------|------|
+| Documentation | `target/docs/` |
+| Blog posts | `target/blog/` |
+| PDF/LaTeX | `target/pdf/` |
+| Test results | `target/docs/test-results/` |
+| Surefire reports | `target/surefire-reports/` |
+
+A DTR test that produces output at any other path is wrong.
+An agent that doesn't know this generates tests that produce output nowhere.
+
+### Reasoning About Dates as Triggers, Not Deadlines
+
+March 23 is not "when JOTP is ready."
+March 23 is when `make release VERSION=1.0` fires.
+
+The right question is always:
+> **What needs to be true for `make release VERSION=x.y.z` to succeed
+> in a GitHub Actions runner and produce a complete receipted release?**
+
+That question has a finite, enumerable answer:
+1. `mvnd verify` passes on all modules
+2. All DTR test output lands in `target/docs/`
+3. GPG key is loaded and loopback-capable
+4. `CENTRAL_USERNAME` and `CENTRAL_TOKEN` secrets are set
+5. The `release` Maven profile signs, packages, and publishes via
+   `central-publishing-maven-plugin`
+6. GitHub Release is created with `gh release create`
+
+If those six things are true, the release succeeds. That is the scope.
 
 ---
 
@@ -20,7 +100,7 @@
 
 ### 3. Toolchain (Non-Negotiable)
 - Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
-- Maven 4.0.0-rc-3+: `/opt/apache-maven-4.0.0-rc-3/bin/mvn`
+- Maven 4.0.0-rc-5: `/opt/apache-maven-4.0.0-rc-5/bin/mvn`
 - mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred)
 - Flag: `--enable-preview` in `.mvn/maven.config`
 
@@ -29,15 +109,12 @@
 ## 🔧 QUICK BUILD
 
 ```bash
-# Run real DTR test
+make test              # run unit tests (mvnd verify)
+make verify            # compile + test + checks
+make tag VERSION=2.7.0 # bump version, commit, tag (then push to release)
+
+# Run a specific DTR test
 mvnd test -pl dtr-integration-test -Dtest=PhDThesisDocTest
-
-# If Maven auth fails, start proxy first
-python3 maven-proxy-auth.py &
-
-# Then build with proxy
-mvnd clean install -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128 \
-  -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
 
 # Check output
 ls target/docs/test-results/
@@ -48,27 +125,18 @@ cat target/docs/test-results/PhDThesisDocTest.md
 
 ## 🌐 MAVEN PROXY SOLUTION
 
-**Problem:** "too many authentication attempts" from Maven Central
+**Problem:** "too many authentication attempts" from Maven Central (local dev only)
 
-**Fix:** 3 steps
+**Fix:**
 ```bash
-# 1. Start proxy
 python3 maven-proxy-auth.py &
-
-# 2. Add to .mvn/jvm.config
--Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128
--Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
--Dhttp.nonProxyHosts=localhost|127.0.0.1
-
-# 3. Set env var
-export https_proxy=http://user:pass@proxy.company.com:8080
 ```
 
-**What it does:** Listens on 127.0.0.1:3128, handles HTTPS CONNECT tunneling, injects Proxy-Authorization header automatically.
+Listens on 127.0.0.1:3128, handles HTTPS CONNECT tunneling, injects
+Proxy-Authorization header automatically.
 
-**Troubleshoot:**
-- Still failing? `pkill -f maven-proxy && python3 maven-proxy-auth.py &`
-- Check env? `echo $https_proxy`
+**This is a local dev problem only.** CI uses direct Maven Central access
+with token credentials from GitHub secrets.
 
 ---
 
@@ -91,6 +159,9 @@ class PhDThesisDocTest {
 ```
 
 **Output:** `target/docs/test-results/PhDThesisDocTest.md` (+ .tex, .html, .json)
+
+The test must pass `mvnd verify` in CI before it is correct.
+Output anywhere other than `target/docs/` is wrong.
 
 ---
 
@@ -154,11 +225,15 @@ String html = """
 
 ## ✅ BEFORE CODING
 
+Ask this first: **"Does this pass `mvnd verify` in CI?"**
+
+Then:
 1. `java -version` → 25.0.2+
-2. `mvnd --version` → Maven 4.0.0-rc-3+
+2. `mvnd --version` → Maven 4.0.0-rc-5+
 3. `.mvn/maven.config` contains `--enable-preview`
-4. Proxy running (if needed): `python3 maven-proxy-auth.py &`
-5. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
+4. Output goes to `target/docs/` — not anywhere else
+5. No manual deploy steps — the tag triggers everything
+6. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
 
 ---
 
@@ -169,21 +244,25 @@ mvnd --stop                    # Stop daemon on auth issues
 mvnd -X clean install          # Verbose output
 cat target/surefire-reports/*  # Test details
 echo $JAVA_HOME                # Verify Java path
-ps aux | grep maven-proxy      # Check proxy running
+ps aux | grep maven-proxy      # Check proxy running (local dev)
+make check                     # Verify entire toolchain
 ```
 
 ---
 
 ## 📚 FILES YOU NEED
 
-- `maven-proxy-auth.py` — Enterprise proxy solution
+- `Makefile` — **start here**: `make help` shows all targets
+- `.github/workflows/publish.yml` — tag-triggered release to Maven Central
+- `.github/workflows/ci.yml` — `mvnd verify` gate for every push/PR
+- `maven-proxy-auth.py` — local dev proxy (not used in CI)
 - `dtr-core/` — Core library
 - `dtr-integration-test/` — Integration tests
 - `.mvn/maven.config` — Build flags (--enable-preview)
-- `pom.xml` — `<release>25</release>`
+- `pom.xml` — `<release>25</release>`, release profile, GPG config
 
 ---
 
-**Last Updated:** March 12, 2026
-**Branch:** claude/audit-codebase-quality-yjLpu
-**Rule:** Always measure real, report real, use real DTR code.
+**Last Updated:** March 14, 2026
+**Branch:** claude/setup-makefile-github-actions-M0Kiz
+**Invariant:** The tag is the trigger. The pipeline is the specification. mvnd verify is the gate.
