@@ -1,12 +1,12 @@
 # Tutorial: Your First DocTest
 
-In this tutorial you will write a DocTest that hits a real HTTP endpoint, asserts on the response, and produces an HTML documentation page — all from a single JUnit test class.
+In this tutorial you will write a DocTest that exercises real Java code, asserts on results, and produces a Markdown documentation page — all from a single JUnit 5 test class.
 
 By the end you will have:
 
-- A Maven project with DTR configured
-- A working test that documents a GET request
-- An HTML page in `target/site/dtr/` you can open in a browser
+- A Maven project with DTR 2.6.0 configured
+- A working test that documents a Java data model
+- A Markdown file in `target/docs/test-results/` you can read directly
 
 **Time:** ~20 minutes
 **Prerequisites:** Java 25, Maven 4 (`mvnd`)
@@ -19,39 +19,33 @@ Open your `pom.xml` and add DTR to the test dependencies:
 
 ```xml
 <dependencies>
-    <!-- JUnit 4 -->
+    <!-- JUnit 5 -->
     <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.11.0</version>
         <scope>test</scope>
     </dependency>
 
-    <!-- DTR -->
+    <!-- DTR 2.6.0 -->
     <dependency>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>2.5.0</version>
+        <version>2.6.0</version>
         <scope>test</scope>
     </dependency>
 
-    <!-- SLF4J (required by DTR's HTTP client) -->
+    <!-- AssertJ -->
     <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-simple</artifactId>
-        <version>1.7.12</version>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>1.7.12</version>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.26.0</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
 ```
 
-Also configure the compiler plugin for Java 25:
+Configure the compiler plugin for Java 25 with preview features enabled:
 
 ```xml
 <build>
@@ -67,175 +61,207 @@ Also configure the compiler plugin for Java 25:
                 </compilerArgs>
             </configuration>
         </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.5.0</version>
+            <configuration>
+                <argLine>--enable-preview</argLine>
+            </configuration>
+        </plugin>
     </plugins>
 </build>
+```
+
+Create `.mvn/maven.config` to apply preview flags globally:
+
+```
+--enable-preview
 ```
 
 ---
 
 ## Step 2 — Create your first test class
 
-Create the file `src/test/java/com/example/HttpBinDocTest.java`:
+Create the file `src/test/java/com/example/ProductDocTest.java`:
 
 ```java
 package com.example;
 
-import org.junit.Test;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import java.util.List;
+import java.util.Map;
 
-public class HttpBinDocTest extends DTR {
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(DtrExtension.class)
+class ProductDocTest {
+
+    // A simple domain record
+    record Product(long id, String name, double price, String category) {}
 
     @Test
-    public void testGetRequest() {
+    void documentProductModel(DtrContext ctx) {
 
-        sayNextSection("Basic GET Request");
+        ctx.sayNextSection("Product Data Model");
 
-        say("We start by making a simple GET request to the /get endpoint. "
-            + "This endpoint echoes back information about the request.");
+        ctx.say("The `Product` record is the core data model. It is immutable, "
+            + "serializable to JSON, and has compiler-generated equals, hashCode, and toString.");
 
-        Response response = sayAndMakeRequest(
-            Request.GET().url(testServerUrl().path("/get")));
+        // Show the record schema using DTR's built-in reflection
+        ctx.sayRecordComponents(Product.class);
 
-        sayAndAssertThat(
-            "The server responds with HTTP 200 OK",
-            200,
-            equalTo(response.httpStatus()));
+        ctx.sayNextSection("Creating Products");
 
-        sayAndAssertThat(
-            "The response body is not empty",
-            response.payloadAsString(),
-            notNullValue());
-    }
+        ctx.say("Construct a Product with the canonical record constructor:");
 
-    @Override
-    public Url testServerUrl() {
-        return Url.host("https://httpbin.org");
+        ctx.sayCode("""
+            var widget = new Product(1L, "Widget Pro", 49.99, "tools");
+            var gadget = new Product(2L, "Gadget Mini", 19.99, "electronics");
+            """, "java");
+
+        var widget = new Product(1L, "Widget Pro", 49.99, "tools");
+        var gadget = new Product(2L, "Gadget Mini", 19.99, "electronics");
+
+        ctx.sayNextSection("Assertions");
+
+        ctx.say("DTR documents the shape of your data alongside your assertions. "
+            + "Use AssertJ for rich, readable checks:");
+
+        assertThat(widget.name()).isEqualTo("Widget Pro");
+        assertThat(widget.price()).isPositive();
+        assertThat(gadget.category()).isEqualTo("electronics");
+
+        ctx.sayAssertions(Map.of(
+            "widget.name()", "Widget Pro",
+            "widget.price() > 0", "true",
+            "gadget.category()", "electronics"
+        ));
+
+        ctx.sayNextSection("Collection Operations");
+
+        ctx.say("Java streams work naturally with records. Here we filter by category "
+            + "and collect to a list:");
+
+        var products = List.of(widget, gadget,
+            new Product(3L, "Wrench Set", 34.50, "tools"));
+
+        var tools = products.stream()
+            .filter(p -> p.category().equals("tools"))
+            .toList();
+
+        ctx.say("Tools category contains " + tools.size() + " products.");
+
+        assertThat(tools).hasSize(2);
+        assertThat(tools).allMatch(p -> p.category().equals("tools"));
+
+        ctx.sayTable(new String[][] {
+            {"ID", "Name", "Price", "Category"},
+            {"1", "Widget Pro", "$49.99", "tools"},
+            {"3", "Wrench Set", "$34.50", "tools"}
+        });
     }
 }
 ```
 
 **What's happening here?**
 
-- `extends DTR` — inherits the documentation and HTTP methods
-- `sayNextSection(...)` — creates a heading in the HTML output
-- `say(...)` — adds a paragraph of explanatory text
-- `sayAndMakeRequest(...)` — executes the HTTP request **and** documents it
-- `sayAndAssertThat(...)` — asserts and adds a visible green/red indicator to the docs
-- `testServerUrl()` — the base URL for all requests in this test class
+- `@ExtendWith(DtrExtension.class)` — registers DTR with JUnit 5
+- `DtrContext ctx` — injected parameter that gives access to all `say*` methods
+- `ctx.sayNextSection(...)` — creates a section heading in the output
+- `ctx.say(...)` — adds a paragraph of explanatory text
+- `ctx.sayRecordComponents(...)` — auto-generates a schema table from the record class
+- `ctx.sayAssertions(...)` — documents assertion results in a readable table
+- `ctx.sayTable(...)` — renders a Markdown table
 
 ---
 
 ## Step 3 — Run the test
 
 ```bash
-mvnd test -Dtest=HttpBinDocTest
+mvnd test -Dtest=ProductDocTest
 ```
 
-You'll see normal JUnit output in the console. After it completes:
+You will see standard JUnit 5 output. After it completes:
 
 ```bash
-ls target/site/dtr/
+ls target/docs/test-results/
 ```
 
 You should see:
+
 ```
-com.example.HttpBinDocTest.html
-index.html
-assets/
+ProductDocTest.md
+ProductDocTest.html
+ProductDocTest.tex
+ProductDocTest.json
 ```
 
 ---
 
-## Step 4 — Open the documentation
+## Step 4 — Read the documentation
 
-Open `target/site/dtr/com.example.HttpBinDocTest.html` in your browser.
+Open `target/docs/test-results/ProductDocTest.md` in any Markdown viewer:
 
-You'll see a Bootstrap-styled page with:
+```bash
+cat target/docs/test-results/ProductDocTest.md
+```
 
-- A **navigation sidebar** built from your `sayNextSection()` calls
-- A **request panel** showing the HTTP method, URL, and headers
-- A **response panel** showing the status code, headers, and formatted body
-- **Green assertion boxes** confirming what was validated
+You will see structured sections with:
 
-This is your living API documentation. It was generated by running the test.
+- A **record schema table** generated by `sayRecordComponents`
+- **Code blocks** showing usage examples
+- An **assertion table** showing what was validated
+- A **data table** of the filtered results
+
+This is your living documentation. It was generated by running the test against real code.
 
 ---
 
-## Step 5 — Add more documentation
+## Step 5 — Add an environment snapshot
 
-Expand the test to document multiple scenarios:
+Append a final test method to capture build-time environment facts:
 
 ```java
 @Test
-public void testGetWithQueryParameters() {
+void documentEnvironment(DtrContext ctx) {
 
-    sayNextSection("GET with Query Parameters");
+    ctx.sayNextSection("Build Environment");
 
-    say("Query parameters are passed using the Url builder's addQueryParameter() method. "
-        + "The server will echo them back in the 'args' field.");
+    ctx.say("DTR can capture a snapshot of the environment in which tests run. "
+        + "This is useful for reproducibility and audit trails.");
 
-    Response response = sayAndMakeRequest(
-        Request.GET()
-            .url(testServerUrl()
-                .path("/get")
-                .addQueryParameter("user", "alice")
-                .addQueryParameter("format", "json")));
-
-    sayAndAssertThat(
-        "Request succeeds with query parameters",
-        200,
-        equalTo(response.httpStatus()));
-}
-
-@Test
-public void testPostJsonPayload() {
-
-    sayNextSection("POST with JSON Body");
-
-    say("To send a JSON body, use contentTypeApplicationJson() and pass any "
-        + "Java object as the payload. DTR serializes it automatically.");
-
-    record UserRequest(String name, String email) {}
-
-    Response response = sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/post"))
-            .contentTypeApplicationJson()
-            .payload(new UserRequest("alice", "alice@example.com")));
-
-    sayAndAssertThat("POST accepted", 200, equalTo(response.httpStatus()));
+    ctx.sayEnvProfile();
 }
 ```
 
-Run the tests again:
+`sayEnvProfile()` takes no arguments. It reads Java version, OS, heap size, and DTR version at runtime and emits a formatted key-value table.
+
+Run again and observe the new section in the output:
 
 ```bash
-mvnd test -Dtest=HttpBinDocTest
+mvnd test -Dtest=ProductDocTest
+cat target/docs/test-results/ProductDocTest.md
 ```
-
-Refresh the HTML page — all three scenarios are now documented.
 
 ---
 
 ## What you learned
 
-- How to add DTR to a Maven project
-- The structure of a DocTest class (`extends DTR`, override `testServerUrl()`)
-- The core `say*` methods: `sayNextSection`, `say`, `sayAndMakeRequest`, `sayAndAssertThat`
-- How to build URLs with `Url.host()`, `.path()`, `.addQueryParameter()`
-- Where DTR writes its output (`target/site/dtr/`)
+- How to add DTR 2.6.0 to a Maven project with JUnit 5
+- The JUnit 5 extension pattern: `@ExtendWith(DtrExtension.class)` + `DtrContext ctx` parameter
+- Core `say*` methods: `sayNextSection`, `say`, `sayCode`, `sayTable`, `sayAssertions`
+- New 2.6.0 methods: `sayRecordComponents`, `sayEnvProfile`
+- Where DTR writes its output (`target/docs/test-results/`)
 
 ---
 
 ## Next steps
 
-- [Tutorial: Testing a REST API](testing-a-rest-api.md) — a complete CRUD workflow with authentication
-- [How-to: Test JSON Endpoints](../how-to/test-json-endpoints.md) — deserialize and assert on response bodies
-- [How-to: Use Cookies](../how-to/use-cookies.md) — session and authentication cookie handling
-- [Reference: DTR Base Class](../reference/dtr-base-class.md) — every method available
+- [Tutorial: Testing a REST API](testing-a-rest-api.md) — call real HTTP endpoints and document the results
+- [Tutorial: Records and Sealed Classes](records-sealed-classes.md) — advanced record patterns with `sayRecordComponents` and `sayCodeModel`
+- [Tutorial: Benchmarking with sayBenchmark](virtual-threads-lightweight-concurrency.md) — measure and document performance

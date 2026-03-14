@@ -1,145 +1,177 @@
-# Tutorial: Testing a REST API End-to-End
+# Tutorial: Testing a REST API and Documenting It with DTR
 
-In this tutorial you will build a complete documented test suite for a CRUD REST API. You will cover authentication, JSON payloads, response deserialization, and assertions — producing a multi-section HTML documentation page that reads like a developer guide.
+In this tutorial you will call a real HTTP API using `java.net.http.HttpClient`, assert on the responses with AssertJ, and document each step using DTR `say*` methods. The result is a living API reference generated from your test run.
 
 **Time:** ~45 minutes
 **Prerequisites:** Complete [Your First DocTest](your-first-doctest.md) first
+**Java:** 25+ with `--enable-preview`
 
 ---
 
-## The API we'll test
+## The API we'll document
 
-We'll document a hypothetical Articles API with these endpoints:
+We'll document the public [JSONPlaceholder](https://jsonplaceholder.typicode.com) API. It requires no authentication and is available in any environment.
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/login` | Authenticate, receive session cookie |
-| `GET` | `/api/articles` | List all articles |
-| `POST` | `/api/articles` | Create an article |
-| `GET` | `/api/articles/{id}` | Get a single article |
-| `DELETE` | `/api/articles/{id}` | Delete an article |
-
-This is the same structure as the DTR integration test — adapt the URLs and DTOs to your own API.
+| `GET` | `/posts` | List all posts |
+| `GET` | `/posts/{id}` | Get a single post |
+| `POST` | `/posts` | Create a post |
+| `PUT` | `/posts/{id}` | Replace a post |
+| `DELETE` | `/posts/{id}` | Delete a post |
 
 ---
 
-## Step 1 — Create the DTO classes
+## Step 1 — Define your data records
 
-Create simple Java records for the request/response bodies.
-
-`src/test/java/com/example/dto/Article.java`:
+Create `src/test/java/com/example/api/Post.java`:
 
 ```java
-package com.example.dto;
+package com.example.api;
 
-public record Article(Long id, String title, String body, String author) {}
+public record Post(Integer id, Integer userId, String title, String body) {}
 ```
 
-`src/test/java/com/example/dto/ArticleRequest.java`:
+Create `src/test/java/com/example/api/NewPost.java`:
 
 ```java
-package com.example.dto;
+package com.example.api;
 
-public record ArticleRequest(String title, String body, String author) {}
+public record NewPost(Integer userId, String title, String body) {}
 ```
 
-`src/test/java/com/example/dto/ArticleList.java`:
-
-```java
-package com.example.dto;
-
-import java.util.List;
-
-public record ArticleList(List<Article> articles) {}
-```
+Records are ideal for REST DTOs: they are immutable, serialize to JSON cleanly, and require no annotations.
 
 ---
 
-## Step 2 — Create a base test class
+## Step 2 — Create a shared HTTP helper
 
-When testing a real server, create a base class that sets the server URL once. This is the recommended pattern for projects with multiple DocTest classes.
-
-`src/test/java/com/example/ApiDTR.java`:
+Create `src/test/java/com/example/api/JsonHttp.java`:
 
 ```java
-package com.example;
+package com.example.api;
 
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class ApiDTR extends DTR {
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
-    @Override
-    public Url testServerUrl() {
-        // In CI, read from a system property; fall back to localhost
-        String host = System.getProperty("test.server.url", "http://localhost:8080");
-        return Url.host(host);
+/**
+ * Thin wrapper around java.net.http.HttpClient for JSON REST calls.
+ * DTR has no built-in HTTP client in v2.6.0 — use the JDK client directly.
+ */
+public class JsonHttp {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final HttpClient CLIENT = HttpClient.newBuilder()
+        .connectTimeout(Duration.ofSeconds(10))
+        .build();
+
+    private final String baseUrl;
+
+    public JsonHttp(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
+
+    public <T> T get(String path, Class<T> responseType) throws Exception {
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("Accept", "application/json")
+            .GET()
+            .build();
+        var response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        return MAPPER.readValue(response.body(), responseType);
+    }
+
+    public RawResponse getRaw(String path) throws Exception {
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("Accept", "application/json")
+            .GET()
+            .build();
+        var response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        return new RawResponse(response.statusCode(), response.body());
+    }
+
+    public RawResponse postJson(String path, Object body) throws Exception {
+        String json = MAPPER.writeValueAsString(body);
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(json))
+            .build();
+        var response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        return new RawResponse(response.statusCode(), response.body());
+    }
+
+    public RawResponse putJson(String path, Object body) throws Exception {
+        String json = MAPPER.writeValueAsString(body);
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .PUT(HttpRequest.BodyPublishers.ofString(json))
+            .build();
+        var response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        return new RawResponse(response.statusCode(), response.body());
+    }
+
+    public RawResponse delete(String path) throws Exception {
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .DELETE()
+            .build();
+        var response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        return new RawResponse(response.statusCode(), response.body());
+    }
+
+    public record RawResponse(int status, String body) {}
 }
 ```
 
-All your DocTest classes extend `ApiDTR` instead of `DTR` directly.
-
 ---
 
-## Step 3 — Write the authentication section
+## Step 3 — Write the DocTest class
 
-`src/test/java/com/example/ArticlesApiDocTest.java`:
+Create `src/test/java/com/example/PostsApiDocTest.java`:
 
 ```java
 package com.example;
 
-import com.example.dto.Article;
-import com.example.dto.ArticleList;
-import com.example.dto.ArticleRequest;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
+import com.example.api.JsonHttp;
+import com.example.api.JsonHttp.RawResponse;
+import com.example.api.NewPost;
+import com.example.api.Post;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import java.util.Map;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)  // ensures test order
-public class ArticlesApiDocTest extends ApiDTR {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    // shared state across tests
-    private static Long createdArticleId;
+@ExtendWith(DtrExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class PostsApiDocTest {
 
-    @Test
-    public void test01_authentication() {
+    static final String BASE_URL = "https://jsonplaceholder.typicode.com";
+    static JsonHttp http;
+    static ObjectMapper mapper = new ObjectMapper();
 
-        sayNextSection("Authentication");
-
-        say("All write operations require authentication. "
-            + "Authenticate via POST /api/login with form credentials. "
-            + "The server sets a session cookie used in subsequent requests.");
-
-        // Use makeRequest (not sayAndMakeRequest) — we don't want to document
-        // internal test setup that isn't interesting to API consumers.
-        Response response = sayAndMakeRequest(
-            Request.POST()
-                .url(testServerUrl().path("/api/login"))
-                .addFormParameter("username", "admin")
-                .addFormParameter("password", "secret"));
-
-        sayAndAssertThat(
-            "Login returns 200 OK",
-            200,
-            equalTo(response.httpStatus()));
-
-        sayAndAssertThat(
-            "Session cookie is set",
-            getCookieWithName("SESSION"),
-            notNullValue());
-
-        say("The session cookie is stored automatically and sent with all "
-            + "subsequent requests in this test. You do not need to manage it manually.");
+    @BeforeAll
+    static void setup() {
+        http = new JsonHttp(BASE_URL);
     }
 ```
-
-**Key point:** `makeRequest` (without `say`) runs the HTTP call silently. `sayAndMakeRequest` documents it. Use whichever fits the narrative you want to tell.
 
 ---
 
@@ -147,200 +179,257 @@ public class ArticlesApiDocTest extends ApiDTR {
 
 ```java
     @Test
-    public void test02_listArticles() {
+    @org.junit.jupiter.api.Order(1)
+    void listPosts(DtrContext ctx) throws Exception {
 
-        sayNextSection("Listing Articles");
+        ctx.sayNextSection("Listing Posts");
 
-        say("GET /api/articles returns all articles as a JSON array. "
-            + "No authentication required for read operations.");
+        ctx.say("GET /posts returns all posts as a JSON array. "
+            + "No authentication is required for read operations.");
 
-        Response response = sayAndMakeRequest(
-            Request.GET()
-                .url(testServerUrl().path("/api/articles"))
-                .contentTypeApplicationJson());
+        ctx.sayCode("""
+            GET https://jsonplaceholder.typicode.com/posts
+            Accept: application/json
+            """, "http");
 
-        sayAndAssertThat(
-            "Response is 200 OK",
-            200,
-            equalTo(response.httpStatus()));
+        Post[] posts = http.get("/posts", Post[].class);
 
-        ArticleList articleList = response.payloadAs(ArticleList.class);
+        ctx.say("The response is a JSON array. Each element has `id`, `userId`, "
+            + "`title`, and `body` fields.");
 
-        sayAndAssertThat(
-            "Response contains articles",
-            articleList.articles(),
-            notNullValue());
+        assertThat(posts).isNotEmpty();
+        assertThat(posts[0].id()).isNotNull();
 
-        say("The response body is a JSON object with an `articles` array. "
-            + "Each article contains `id`, `title`, `body`, and `author` fields.");
-    }
-```
+        ctx.sayAssertions(Map.of(
+            "posts.length > 0", String.valueOf(posts.length > 0),
+            "posts[0].id != null", String.valueOf(posts[0].id() != null)
+        ));
 
-`response.payloadAs(ArticleList.class)` automatically detects JSON or XML from the `Content-Type` header and deserializes the body.
+        ctx.sayTable(new String[][] {
+            {"id", "userId", "title (truncated)"},
+            {String.valueOf(posts[0].id()), String.valueOf(posts[0].userId()),
+             posts[0].title().substring(0, Math.min(40, posts[0].title().length()))},
+            {String.valueOf(posts[1].id()), String.valueOf(posts[1].userId()),
+             posts[1].title().substring(0, Math.min(40, posts[1].title().length()))}
+        });
 
----
-
-## Step 5 — Document creating a resource
-
-```java
-    @Test
-    public void test03_createArticle() {
-
-        sayNextSection("Creating an Article");
-
-        say("POST /api/articles with a JSON body creates a new article. "
-            + "Requires an authenticated session.");
-
-        var newArticle = new ArticleRequest(
-            "Getting Started with DTR",
-            "DTR makes API documentation effortless...",
-            "Alice");
-
-        Response response = sayAndMakeRequest(
-            Request.POST()
-                .url(testServerUrl().path("/api/articles"))
-                .contentTypeApplicationJson()
-                .payload(newArticle));
-
-        sayAndAssertThat(
-            "Article created with 201 Created",
-            201,
-            equalTo(response.httpStatus()));
-
-        Article created = response.payloadAs(Article.class);
-        createdArticleId = created.id();
-
-        sayAndAssertThat("Created article has an ID", created.id(), notNullValue());
-        sayAndAssertThat(
-            "Title matches what was sent",
-            "Getting Started with DTR",
-            equalTo(created.title()));
-
-        say("The `Location` header in the response contains the URL of the "
-            + "newly created resource: `" + response.headers().get("Location") + "`");
+        ctx.say("Received " + posts.length + " posts total.");
     }
 ```
 
 ---
 
-## Step 6 — Document retrieving a single resource
+## Step 5 — Document retrieving a single resource
 
 ```java
     @Test
-    public void test04_getArticleById() {
+    @org.junit.jupiter.api.Order(2)
+    void getPostById(DtrContext ctx) throws Exception {
 
-        sayNextSection("Retrieving a Single Article");
+        ctx.sayNextSection("Retrieving a Single Post");
 
-        say("GET /api/articles/{id} returns the article with the given ID.");
+        ctx.say("GET /posts/{id} returns the post with the given ID. "
+            + "The response body is a JSON object, not an array.");
 
-        Response response = sayAndMakeRequest(
-            Request.GET()
-                .url(testServerUrl().path("/api/articles/" + createdArticleId)));
+        ctx.sayCode("""
+            GET https://jsonplaceholder.typicode.com/posts/1
+            Accept: application/json
+            """, "http");
 
-        sayAndAssertThat("Article found", 200, equalTo(response.httpStatus()));
+        Post post = http.get("/posts/1", Post.class);
 
-        Article article = response.payloadAs(Article.class);
+        assertThat(post.id()).isEqualTo(1);
+        assertThat(post.title()).isNotBlank();
 
-        sayAndAssertThat(
-            "Article ID matches",
-            createdArticleId,
-            equalTo(article.id()));
+        ctx.sayJson(post);
 
-        sayAndAssertThat(
-            "Title is correct",
-            "Getting Started with DTR",
-            equalTo(article.title()));
+        ctx.sayAssertions(Map.of(
+            "post.id()", String.valueOf(post.id()),
+            "post.title() not blank", String.valueOf(!post.title().isBlank())
+        ));
     }
 ```
 
 ---
 
-## Step 7 — Document deleting a resource
+## Step 6 — Document creating a resource
 
 ```java
     @Test
-    public void test05_deleteArticle() {
+    @org.junit.jupiter.api.Order(3)
+    void createPost(DtrContext ctx) throws Exception {
 
-        sayNextSection("Deleting an Article");
+        ctx.sayNextSection("Creating a Post");
 
-        say("DELETE /api/articles/{id} permanently removes an article. "
-            + "Returns 204 No Content on success. Requires authentication.");
+        ctx.say("POST /posts with a JSON body creates a new post. "
+            + "JSONPlaceholder simulates creation and echoes back the object with an assigned ID.");
 
-        Response deleteResponse = sayAndMakeRequest(
-            Request.DELETE()
-                .url(testServerUrl().path("/api/articles/" + createdArticleId)));
+        var newPost = new NewPost(1, "Getting Started with DTR 2.6.0",
+            "DTR generates living documentation from JUnit 5 tests.");
 
-        sayAndAssertThat(
-            "Article deleted — 204 No Content",
-            204,
-            equalTo(deleteResponse.httpStatus()));
+        ctx.sayCode("""
+            POST https://jsonplaceholder.typicode.com/posts
+            Content-Type: application/json
 
-        say("After deletion, attempting to GET the same article returns 404:");
+            {
+              "userId": 1,
+              "title": "Getting Started with DTR 2.6.0",
+              "body": "DTR generates living documentation from JUnit 5 tests."
+            }
+            """, "http");
 
-        Response getResponse = sayAndMakeRequest(
-            Request.GET()
-                .url(testServerUrl().path("/api/articles/" + createdArticleId)));
+        RawResponse response = http.postJson("/posts", newPost);
 
-        sayAndAssertThat(
-            "Deleted article is gone — 404 Not Found",
-            404,
-            equalTo(getResponse.httpStatus()));
+        assertThat(response.status()).isEqualTo(201);
+        assertThat(response.body()).contains("id");
+
+        Post created = mapper.readValue(response.body(), Post.class);
+
+        ctx.say("The server responds with 201 Created and returns the new post, "
+            + "including the assigned `id`:");
+
+        ctx.sayJson(created);
+
+        ctx.sayAssertions(Map.of(
+            "HTTP status", String.valueOf(response.status()),
+            "created.id() != null", String.valueOf(created.id() != null),
+            "created.title()", created.title()
+        ));
+    }
+```
+
+---
+
+## Step 7 — Document updating a resource
+
+```java
+    @Test
+    @org.junit.jupiter.api.Order(4)
+    void updatePost(DtrContext ctx) throws Exception {
+
+        ctx.sayNextSection("Updating a Post");
+
+        ctx.say("PUT /posts/{id} replaces the entire post resource. "
+            + "All fields must be included in the request body.");
+
+        var updatedPost = new NewPost(1, "Updated Title for Post 1", "Revised body content.");
+
+        ctx.sayCode("""
+            PUT https://jsonplaceholder.typicode.com/posts/1
+            Content-Type: application/json
+
+            {
+              "userId": 1,
+              "title": "Updated Title for Post 1",
+              "body": "Revised body content."
+            }
+            """, "http");
+
+        RawResponse response = http.putJson("/posts/1", updatedPost);
+
+        assertThat(response.status()).isEqualTo(200);
+
+        Post updated = mapper.readValue(response.body(), Post.class);
+
+        ctx.say("The server responds with 200 OK and returns the updated post:");
+
+        ctx.sayJson(updated);
+
+        ctx.sayAssertions(Map.of(
+            "HTTP status", String.valueOf(response.status()),
+            "updated.title()", updated.title()
+        ));
+    }
+```
+
+---
+
+## Step 8 — Document deleting a resource
+
+```java
+    @Test
+    @org.junit.jupiter.api.Order(5)
+    void deletePost(DtrContext ctx) throws Exception {
+
+        ctx.sayNextSection("Deleting a Post");
+
+        ctx.say("DELETE /posts/{id} removes the post. "
+            + "The server responds with 200 OK and an empty JSON body `{}`.");
+
+        ctx.sayCode("""
+            DELETE https://jsonplaceholder.typicode.com/posts/1
+            """, "http");
+
+        RawResponse response = http.delete("/posts/1");
+
+        assertThat(response.status()).isEqualTo(200);
+
+        ctx.sayAssertions(Map.of(
+            "HTTP status", String.valueOf(response.status()),
+            "body", response.body()
+        ));
+
+        ctx.sayNote("JSONPlaceholder simulates deletion but does not actually remove data. "
+            + "On a real API, a subsequent GET /posts/1 would return 404.");
     }
 }
 ```
 
 ---
 
-## Step 8 — Run and review
+## Step 9 — Run and review
 
 ```bash
-mvnd test -Dtest=ArticlesApiDocTest
-open target/site/dtr/com.example.ArticlesApiDocTest.html
+mvnd test -Dtest=PostsApiDocTest
+cat target/docs/test-results/PostsApiDocTest.md
 ```
 
-The generated page now has five sections with full request/response documentation for each, plus your narrative text woven throughout.
+The generated Markdown file contains five sections with:
+- HTTP request examples as code blocks
+- Real JSON responses captured at test run time
+- Assertion tables showing what was validated
+- Narrative prose linking the steps together
 
 ---
 
 ## Writing good narrative
 
-The `say()` calls are prose aimed at API consumers. Write them like you're explaining to a colleague:
+The `say()` calls are prose aimed at API consumers. Write them like you are explaining to a colleague:
 
 **Too terse:**
 ```java
-say("POST /api/articles");
+ctx.say("POST /posts");
 ```
 
-**Too technical:**
+**Too mechanical:**
 ```java
-say("This method sends an HTTP POST request with Content-Type: application/json " +
-    "to the /api/articles endpoint and parses the 201 response body.");
+ctx.say("This method sends an HTTP POST request with Content-Type: application/json "
+    + "to the /posts endpoint and parses the 201 response body.");
 ```
 
 **Just right:**
 ```java
-say("To create an article, POST a JSON object with `title`, `body`, and `author` " +
-    "fields. The server assigns an ID and returns the full article in the response body.");
+ctx.say("To create a post, POST a JSON object with userId, title, and body fields. "
+    + "The server assigns an id and returns the full post in the response body.");
 ```
 
-Think of DTR output as the narrative section of a developer guide, with the request/response panels as embedded examples.
+Think of DTR output as the narrative section of a developer guide, with JSON payloads as embedded examples.
 
 ---
 
 ## What you learned
 
-- How to create a shared base class with `testServerUrl()`
-- Using `@FixMethodOrder` to control test sequence for scenario-based tests
-- When to use `sayAndMakeRequest` vs `makeRequest` (documented vs undocumented)
-- Deserializing JSON responses with `response.payloadAs(MyClass.class)`
-- Sharing state between tests with static fields
-- Writing good narrative text with `say()`
+- How to use `java.net.http.HttpClient` (JDK built-in) for REST calls in DTR 2.6.0
+- The pattern: make an HTTP call, assert with AssertJ, document with `say*`
+- `sayJson(Object)` — pretty-prints any object as JSON in the docs
+- `sayAssertions(Map)` — renders a table of assertion results
+- `sayCode(String, String)` — inline HTTP request examples
+- `sayNote(String)` — callout boxes for caveats
 
 ---
 
 ## Next steps
 
-- [How-to: Integrate with Frameworks](../how-to/integrate-with-frameworks.md) — Ninja, Arquillian, Spring Boot, Jetty
-- [How-to: Test XML Endpoints](../how-to/test-xml-endpoints.md) — XML payloads and deserialization
-- [How-to: Upload Files](../how-to/upload-files.md) — multipart form data
-- [Explanation: How DTR Works](../explanation/how-dtr-works.md) — the lifecycle in detail
+- [Tutorial: Records and Sealed Classes](records-sealed-classes.md) — model API responses with records
+- [Tutorial: Benchmarking with sayBenchmark](virtual-threads-lightweight-concurrency.md) — measure endpoint latency
+- [Tutorial: Visualizing Code with sayMermaid](websockets-realtime.md) — diagram your API architecture
