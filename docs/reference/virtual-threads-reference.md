@@ -1,6 +1,6 @@
 # Reference: Virtual Threads API
 
-Complete API reference for Java 25 virtual threads. Virtual threads are lightweight, JVM-managed threads that enable scalable concurrent programming.
+Complete API reference for Java 25 virtual threads. Includes v2.6.0 `MultiRenderMachine` virtual dispatch and `sayBenchmark` warmup patterns.
 
 ---
 
@@ -8,23 +8,22 @@ Complete API reference for Java 25 virtual threads. Virtual threads are lightwei
 
 ### `java.util.concurrent.Executors`
 
-Factory methods for creating virtual thread executors:
-
 #### `newVirtualThreadPerTaskExecutor()`
 
 ```java
 ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 ```
 
-Creates an unbounded executor that spawns a new virtual thread for each task. Automatically scales based on load.
+Creates an unbounded executor that spawns a new virtual thread for each task.
 
 **Returns:** `ExecutorService`
 
-**Example:**
 ```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    executor.submit(() -> System.out.println("Running on virtual thread"));
-}
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    for (int i = 0; i < 10_000; i++) {
+        executor.submit(() -> processRequest());
+    }
+} // blocks until all tasks complete
 ```
 
 ---
@@ -34,227 +33,197 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 #### `Thread.ofVirtual()`
 
 ```java
-Thread virtualThread = Thread.ofVirtual()
-    .name("my-thread")
-    .start(() -> System.out.println("Hello"));
+Thread vt = Thread.ofVirtual()
+    .name("worker-1")
+    .start(() -> System.out.println("Running on virtual thread"));
 ```
-
-Creates and starts a single virtual thread with a name.
-
-**Returns:** `Thread`
 
 **Chaining methods:**
 - `.name(String)` — set thread name
-- `.start(Runnable)` — start immediately with runnable
-
----
+- `.start(Runnable)` — start and return the thread
 
 #### `Thread.ofPlatform()`
 
-For comparison: creates a traditional OS-managed platform thread.
+Traditional OS-managed thread for CPU-bound work.
 
 ```java
-Thread platformThread = Thread.ofPlatform()
-    .name("platform-thread")
-    .start(() -> System.out.println("Platform thread"));
+Thread pt = Thread.ofPlatform().name("cpu-worker").start(() -> compute());
 ```
 
 ---
 
 ### `java.util.concurrent.ExecutorService`
 
-Standard executor interface — same for platform and virtual threads.
-
-#### `submit(Callable<T>)`
+#### `submit(Callable<T>)` → `Future<T>`
 
 ```java
 Future<String> future = executor.submit(() -> {
-    // Do work
-    return "result";
+    return fetchFromDatabase();  // blocking I/O — ideal for virtual threads
 });
-
-String result = future.get(); // Block until done
+String result = future.get();
 ```
 
-**Returns:** `Future<T>`
-
----
-
-#### `submit(Runnable)`
+#### `submit(Runnable)` → `Future<?>`
 
 ```java
-Future<?> future = executor.submit(() -> {
-    System.out.println("Work without return value");
-});
-
-future.get(); // Wait for completion
+Future<?> future = executor.submit(() -> writeLog());
+future.get(); // wait for completion
 ```
 
-**Returns:** `Future<?>`
+#### `invokeAll(Collection<Callable<T>>)` → `List<Future<T>>`
 
----
-
-#### `invokeAll(Collection<Callable<T>>)`
-
-```java
-List<Callable<Integer>> tasks = List.of(
-    () -> 1,
-    () -> 2,
-    () -> 3
-);
-
-List<Future<Integer>> futures = executor.invokeAll(tasks);
-// All complete before returning
-```
-
-Submits all tasks and waits for completion. Blocks until all are done.
-
-**Returns:** `List<Future<T>>`
-
----
-
-#### `invokeAny(Collection<Callable<T>>)`
+Submits all tasks and waits for all to complete before returning.
 
 ```java
 List<Callable<String>> tasks = List.of(
-    () -> { Thread.sleep(100); return "slow"; },
-    () -> { Thread.sleep(50); return "fast"; },
-    () -> { Thread.sleep(200); return "slower"; }
+    () -> callServiceA(),
+    () -> callServiceB(),
+    () -> callServiceC()
 );
 
-String firstResult = executor.invokeAny(tasks); // "fast"
+List<Future<String>> futures = executor.invokeAll(tasks);
+// all three complete before this line
 ```
 
-Returns the first successful result; cancels others.
+#### `invokeAny(Collection<Callable<T>>)` → `T`
 
-**Returns:** `T` (not a Future)
+Returns the first successful result; cancels remaining tasks.
 
-**Throws:** `InterruptedException`, `ExecutionException`
+```java
+String fastest = executor.invokeAny(List.of(
+    () -> callRegion("us-east"),
+    () -> callRegion("eu-west"),
+    () -> callRegion("ap-south")
+));
+```
 
----
-
-#### `shutdown()`
+#### `shutdown()` / `awaitTermination(long, TimeUnit)`
 
 ```java
 executor.shutdown();
-// No new tasks accepted; wait for existing to complete
 executor.awaitTermination(10, TimeUnit.SECONDS);
 ```
 
-Gracefully shutdown: no new tasks, wait for existing.
+#### `shutdownNow()` → `List<Runnable>`
 
----
-
-#### `shutdownNow()`
-
-```java
-List<Runnable> pending = executor.shutdownNow();
-// Immediate shutdown; returns unstarted tasks
-```
-
-Aggressive shutdown: interrupt running tasks, return pending.
-
-**Returns:** `List<Runnable>`
+Interrupt running tasks, return unstarted tasks.
 
 ---
 
 ### `java.util.concurrent.Future<T>`
 
-Represents the result of an asynchronous computation.
+#### `get()` → `T`
 
-#### `get()`
+Block until result is ready. Throws `ExecutionException` if the task threw an exception.
 
-```java
-T result = future.get(); // Block until result available
-```
-
-Blocks indefinitely until the result is ready.
-
-**Throws:** `ExecutionException` (task threw exception), `InterruptedException` (thread was interrupted)
-
----
-
-#### `get(long timeout, TimeUnit unit)`
-
-```java
-T result = future.get(5, TimeUnit.SECONDS);
-```
+#### `get(long timeout, TimeUnit unit)` → `T`
 
 Block with timeout. Throws `TimeoutException` if not done in time.
 
-**Throws:** `TimeoutException`, `ExecutionException`, `InterruptedException`
+#### `isDone()` → `boolean`
+
+True if completed (success, exception, or cancelled).
+
+#### `cancel(boolean mayInterruptIfRunning)` → `boolean`
+
+Attempt to cancel. Returns `true` if cancelled, `false` if already done.
 
 ---
 
-#### `isDone()`
+## DTR 2.6.0: MultiRenderMachine Virtual Dispatch
+
+`MultiRenderMachine` uses virtual threads to dispatch every `say*` call to all registered `RenderMachine` implementations concurrently. Total wall time equals the slowest machine, not the sum.
 
 ```java
-if (future.isDone()) {
-    System.out.println("Task completed");
+@Test
+void setup(DtrContext ctx) {
+    ctx.setRenderMachine(new MultiRenderMachine(
+        new RenderMachineImpl(),                                              // Markdown + HTML
+        new RenderMachineLatex(new ACMTemplate(), new LatexmkStrategy()),    // LaTeX
+        new BlogRenderMachine(new DevToTemplate()),                           // Blog
+        new SlideRenderMachine()                                              // Slides
+    ));
 }
 ```
 
-Returns `true` if task is done (success, exception, or cancelled).
+### Dispatch model
 
-**Returns:** `boolean`
-
----
-
-#### `cancel(boolean mayInterruptIfRunning)`
-
-```java
-boolean wasCancelled = future.cancel(true);
-// true: interrupt if currently running
-// false: cancel only if not yet started
+```
+ctx.say("text")
+    ├── virtual thread 1 → RenderMachineImpl.say("text")
+    ├── virtual thread 2 → RenderMachineLatex.say("text")
+    ├── virtual thread 3 → BlogRenderMachine.say("text")
+    └── virtual thread 4 → SlideRenderMachine.say("text")
+(all four run in parallel; ctx.say returns after all complete)
 ```
 
-Attempt to cancel the task.
-
-**Returns:** `boolean` — true if cancel succeeded, false if already done
-
 ---
 
-#### `isCancelled()`
+## DTR 2.6.0: sayBenchmark with Virtual Thread Warmup
+
+`sayBenchmark` runs warmup iterations before measurement to allow the JIT compiler to optimize the task. For virtual thread benchmarks, increase warmup to account for JVM thread scheduler warm-up:
 
 ```java
-if (future.isCancelled()) {
-    System.out.println("Task was cancelled");
+@Test
+void benchmarkVirtualThread(DtrContext ctx) {
+    ctx.sayNextSection("Virtual Thread Performance");
+    ctx.sayEnvProfile();
+
+    // Platform thread baseline
+    ctx.sayBenchmark(
+        "Platform thread spawn + join",
+        () -> {
+            try {
+                Thread.ofPlatform().start(() -> {}).join();
+            } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        },
+        500, 5_000
+    );
+
+    // Virtual thread measurement
+    ctx.sayBenchmark(
+        "Virtual thread spawn + join",
+        () -> {
+            try {
+                Thread.ofVirtual().start(() -> {}).join();
+            } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        },
+        500, 5_000
+    );
 }
 ```
-
-Returns `true` if task was cancelled.
-
-**Returns:** `boolean`
 
 ---
 
 ## Common Patterns
 
-### Pattern: Collect Multiple Results
+### Collect Multiple Results
 
 ```java
-List<Future<String>> futures = new ArrayList<>();
-for (int i = 0; i < 100; i++) {
-    futures.add(executor.submit(() -> "result"));
-}
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    List<Future<String>> futures = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+        futures.add(executor.submit(() -> fetchItem()));
+    }
 
-List<String> results = futures.stream()
-    .map(f -> {
-        try {
-            return f.get();
-        } catch (Exception e) {
-            return "ERROR: " + e.getMessage();
-        }
-    })
-    .toList();
+    List<String> results = futures.stream()
+        .map(f -> {
+            try {
+                return f.get();
+            } catch (Exception e) {
+                return "ERROR: " + e.getMessage();
+            }
+        })
+        .toList();
+}
 ```
 
 ---
 
-### Pattern: Partition Results into Success/Failure
+### Partition Results into Success/Failure
 
 ```java
-sealed interface TaskResult {
+sealed interface TaskResult permits TaskResult.Success, TaskResult.Failure {
     record Success(String value) implements TaskResult {}
     record Failure(String error) implements TaskResult {}
 }
@@ -262,7 +231,7 @@ sealed interface TaskResult {
 List<TaskResult> results = futures.stream()
     .map(f -> {
         try {
-            return new TaskResult.Success(f.get());
+            return (TaskResult) new TaskResult.Success(f.get());
         } catch (Exception e) {
             return new TaskResult.Failure(e.getMessage());
         }
@@ -276,57 +245,55 @@ long successCount = results.stream()
 
 ---
 
-### Pattern: Timeout Handling
+### Timeout Handling
 
 ```java
 try {
     String result = future.get(5, TimeUnit.SECONDS);
 } catch (TimeoutException e) {
-    System.out.println("Task took too long");
+    System.out.println("Timed out");
     future.cancel(true);
 } catch (ExecutionException e) {
     System.out.println("Task failed: " + e.getCause());
 } catch (InterruptedException e) {
-    System.out.println("Waiting was interrupted");
     Thread.currentThread().interrupt();
 }
 ```
 
 ---
 
-## Virtual vs. Platform Threads Comparison
+## Virtual vs. Platform Thread Comparison
 
 | Aspect | Virtual Thread | Platform Thread |
-|--------|---|---|
-| **Creation cost** | Microseconds, kilobytes | Milliseconds, megabytes |
-| **Max per JVM** | Millions | Thousands |
-| **Context switch** | JVM-managed, fast | OS-managed, slower |
-| **Use case** | I/O-bound work | CPU-bound work (ForkJoinPool better) |
-| **Executor** | `newVirtualThreadPerTaskExecutor()` | `newFixedThreadPool()`, `newCachedThreadPool()` |
-| **Blocking** | Designed for blocking I/O | OK for blocking |
+|--------|----------------|-----------------|
+| Creation cost | Microseconds, ~KB | Milliseconds, ~MB |
+| Max per JVM | Millions | Thousands |
+| Context switch | JVM-managed, fast | OS-managed, slower |
+| Use case | I/O-bound | CPU-bound (use ForkJoinPool) |
+| Executor | `newVirtualThreadPerTaskExecutor()` | `newFixedThreadPool()` |
+| Blocking I/O | Designed for it | Works but wastes OS thread |
 
 ---
 
 ## Best Practices
 
-✅ **DO:**
+**DO:**
 - Use `Executors.newVirtualThreadPerTaskExecutor()` for I/O workloads
-- Call `.get()` with timeout for network operations
-- Handle `ExecutionException` — task may have failed
-- Use try-with-resources to ensure executor cleanup
-- Spawn thousands if needed — virtual threads scale
+- Use try-with-resources to ensure executor shutdown
+- Call `.get()` with a timeout for network-bound operations
+- Use `MultiRenderMachine` when generating multiple output formats — it handles parallelism automatically
+- Use `sayBenchmark` with ≥ 500 warmup iterations for virtual thread benchmarks
 
-❌ **DON'T:**
-- Use virtual threads for CPU-bound work (use `ForkJoinPool`)
+**DON'T:**
+- Use virtual threads for CPU-bound computation (use `ForkJoinPool` or `newFixedThreadPool` instead)
 - Forget exception handling in `.get()` calls
-- Leave executors running (memory leaks)
-- Assume `.submit()` blocks (it returns immediately)
-- Create custom thread factories — use `Executors`
+- Assume `.submit()` blocks — it returns a `Future` immediately
+- Create custom thread factories for virtual threads — use `Thread.ofVirtual()` or `Executors`
 
 ---
 
-## See Also
+## See also
 
-- [Tutorial: Virtual Threads for Concurrency](../tutorials/virtual-threads-lightweight-concurrency.md)
-- [How-to: Use Virtual Threads](../how-to/use-virtual-threads.md)
-- [Explanation: Why Virtual Threads Matter](../explanation/virtual-threads-philosophy.md)
+- [Benchmarking API Reference](url-builder.md) — `sayBenchmark` overloads
+- [RenderMachine API](rendermachine-api.md) — `MultiRenderMachine` virtual thread dispatch
+- [Java 25 Features Reference](java25-features-reference.md) — virtual threads in broader context
