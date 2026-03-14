@@ -1,4 +1,43 @@
-.PHONY: build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs
+.PHONY: release-minor release-patch release-year \
+        release-rc-minor release-rc-patch \
+        snapshot version tag \
+        build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs
+
+# ─── Release Commands ─────────────────────────────────────────────────────────
+# The human decides the type of change. The version number is derived.
+# Never type a version number. Never run mvn deploy directly.
+# All paths flow through scripts/bump.sh → scripts/release.sh → GitHub Actions.
+
+release-minor:
+	scripts/bump.sh minor
+	scripts/release.sh
+
+release-patch:
+	scripts/bump.sh patch
+	scripts/release.sh
+
+release-year:
+	scripts/bump.sh year
+	scripts/release.sh
+
+release-rc-minor:
+	scripts/bump.sh minor rc
+	scripts/release-rc.sh
+
+release-rc-patch:
+	scripts/bump.sh patch rc
+	scripts/release-rc.sh
+
+snapshot:
+	./mvnw clean deploy --no-transfer-progress
+
+version:
+	@scripts/current-version.sh
+
+tag:
+	scripts/release.sh
+
+# ─── Javadoc ──────────────────────────────────────────────────────────────────
 
 build-dtr-javadoc:
 	cd scripts/rust/dtr-javadoc && cargo build --release

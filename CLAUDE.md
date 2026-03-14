@@ -464,7 +464,7 @@ python3 maven-proxy-auth.py &
 ---
 
 **Last Updated:** March 14, 2026
-**Branch:** feat/java-26-migration-github-actions
+**Branch:** feat/java-26-with-calver
 **Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
 **Invariant:** One command releases. The pipeline is the specification of done.
 **Rule:** Always measure real, report real, use real DTR code.

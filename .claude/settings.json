@@ -10,15 +10,53 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-stop.sh"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)"
+    ],
+    "ask": [],
     "allow": [
       "Bash(mvnd:*)",
       "Bash(mvn:*)",
       "Bash(java:*)",
       "Bash(javac:*)",
-      "Bash(git:*)"
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git fetch*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git show*)",
+      "Bash(git stash*)",
+      "Bash(git push*)",
+      "Bash(git tag*)"
     ]
   }
 }

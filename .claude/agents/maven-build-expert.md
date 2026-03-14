@@ -13,7 +13,9 @@ This project uses **only**:
 - **mvnd 2.x** (Maven Daemon) — installed at `/opt/mvnd/bin/mvnd`
 - **Java 25** — enforced by `maven-enforcer-plugin`
 
-Do NOT suggest Maven 3.x commands or syntax. Do NOT use `./mvnw` (it downloads Maven 3). Use `mvnd` or `mvn` (system Maven 4).
+Do NOT suggest Maven 3.x commands or syntax. Do NOT use system `mvn` if it points to Maven 3.
+
+**`./mvnw` downloads Maven 4.0.0-rc-5** (see `.mvn/wrapper/maven-wrapper.properties`) and is used in all CI workflows. For local development, prefer `mvnd` for speed. In CI, `./mvnw` is canonical.
 
 ## Key Maven 4 Differences from Maven 3
 
@@ -92,12 +94,12 @@ mvnd dependency:tree -Dincludes=groupId:artifactId
 
 ## Plugin Configuration Reference
 
-### maven-compiler-plugin (3.13.0)
+### maven-compiler-plugin (3.14.0)
 ```xml
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
-    <version>3.13.0</version>
+    <version>3.14.0</version>
     <configuration>
         <release>25</release>
         <enablePreview>true</enablePreview>
@@ -108,12 +110,12 @@ mvnd dependency:tree -Dincludes=groupId:artifactId
 </plugin>
 ```
 
-### maven-surefire-plugin (3.5.2)
+### maven-surefire-plugin (3.5.3)
 ```xml
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-surefire-plugin</artifactId>
-    <version>3.5.2</version>
+    <version>3.5.3</version>
     <configuration>
         <argLine>--enable-preview</argLine>
         <useModulePath>false</useModulePath>
