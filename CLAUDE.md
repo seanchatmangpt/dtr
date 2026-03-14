@@ -133,9 +133,9 @@ When `mvnd verify` fails in CI, the question is always:
 
 ### 3. Toolchain (Non-Negotiable)
 - Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
-- mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred over bare `mvn`)
-- Flag: `--enable-preview` in `.mvn/maven.config`
-- Maven wrapper: `./mvnw` (use this, not system mvn)
+- mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred locally for speed)
+- CI uses `./mvnw` — downloads Maven 4.0.0-rc-5 via wrapper; do NOT use Maven 3
+- Flag: `--enable-preview` in `.mvn/maven.config` (also `-Dmaven.compiler.enablePreview=true`)
 
 ---
 
@@ -267,7 +267,7 @@ Both are configured in `.mvn/maven.config` and `maven-surefire-plugin`.
 
 1. `java -version` → 25.0.2+
 2. `mvnd --version` → 2.0.0+
-3. `.mvn/maven.config` contains `--enable-preview`
+3. `.mvn/maven.config` contains `--enable-preview` and `-Dmaven.compiler.enablePreview=true`
 4. Ask: **will this pass `mvnd verify` in CI?**
 
 ---
@@ -301,6 +301,6 @@ python3 maven-proxy-auth.py &
 ---
 
 **Last Updated:** March 14, 2026
-**Branch:** claude/maven-central-publishing-X03Au
+**Branch:** claude/align-claude-configs-XEzc5
 **Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
 **Invariant:** One command releases. The pipeline is the specification of done.
