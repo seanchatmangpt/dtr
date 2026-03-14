@@ -1,222 +1,137 @@
-# How-to: Test gRPC Error Codes
+# How-To: Generate Documentation Coverage with sayDocCoverage
 
-Handle and validate gRPC error responses.
+Document which public methods and classes have associated documentation using DTR 2.6.0's `sayDocCoverage` method.
+
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
-## Catch Status Runtime Exception
+## What sayDocCoverage Does
+
+`sayDocCoverage(Class<?>... classes)` uses reflection to:
+1. Enumerate all public methods in each class
+2. Check for Javadoc or annotation-based documentation presence
+3. Generate a coverage matrix showing documented vs. undocumented methods
+
+This is the replacement for gRPC error code documentation guides, which relied on the removed HTTP stack. Documentation coverage is applicable to any Java class.
+
+---
+
+## Basic Usage
 
 ```java
-try {
-    MyRequest request = MyRequest.newBuilder()
-        .setUserId(999) // Non-existent
-        .build();
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-    MyResponse response = stub.getUser(request);
+@ExtendWith(DtrExtension.class)
+class ServiceDocCoverageDocTest {
 
-} catch (io.grpc.StatusRuntimeException e) {
-    io.grpc.Status status = e.getStatus();
-    System.out.println("Code: " + status.getCode());
-    System.out.println("Description: " + status.getDescription());
+    @Test
+    void documentCoverage(DtrContext ctx) {
+        ctx.sayNextSection("Service Layer Documentation Coverage");
+        ctx.say("The following matrix shows which public methods have " +
+                "associated documentation across the service layer.");
+
+        ctx.sayDocCoverage(
+            UserService.class,
+            OrderService.class,
+            ProductService.class
+        );
+
+        ctx.sayWarning("Methods marked MISSING require Javadoc before the next release.");
+    }
 }
 ```
 
 ---
 
-## Test Specific Error Codes
+## Coverage Report for a Single Class
 
 ```java
-void testNotFoundError() {
-    MyRequest request = MyRequest.newBuilder()
-        .setUserId(99999)
-        .build();
+@Test
+void documentUserServiceCoverage(DtrContext ctx) {
+    ctx.sayNextSection("UserService Documentation Coverage");
+
+    ctx.sayDocCoverage(UserService.class);
+
+    ctx.sayNote("This report was generated on Java " +
+                System.getProperty("java.version") + ".");
+}
+```
+
+---
+
+## Combine Coverage with Contract Verification
+
+Get both coverage and contract fulfillment in one test:
+
+```java
+@Test
+void fullServiceAudit(DtrContext ctx) {
+    ctx.sayNextSection("Service Layer Audit");
+
+    ctx.say("**1. Contract Verification** — Are all interface methods implemented?");
+    ctx.sayContractVerification(
+        UserService.class,
+        UserServiceImpl.class
+    );
+
+    ctx.say("**2. Documentation Coverage** — Are all public methods documented?");
+    ctx.sayDocCoverage(UserServiceImpl.class);
+
+    ctx.say("**3. Call Graph** — What is the internal call structure?");
+    ctx.sayCallGraph(UserServiceImpl.class);
+}
+```
+
+---
+
+## Document Exception Handling Coverage
+
+Combine `sayDocCoverage` with `sayException` to show both coverage and what exceptions are thrown:
+
+```java
+@Test
+void documentExceptionHandling(DtrContext ctx) {
+    ctx.sayNextSection("Error Handling Documentation");
+    ctx.say("Service methods throw structured exceptions for known error conditions:");
+
+    // Document the exceptions
+    try {
+        throw new IllegalArgumentException("userId must be positive");
+    } catch (IllegalArgumentException e) {
+        ctx.sayException(e);
+    }
 
     try {
-        stub.getUser(request);
-        fail("Should have thrown StatusRuntimeException");
-    } catch (io.grpc.StatusRuntimeException e) {
-        assert e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND;
-        assert e.getStatus().getDescription().contains("User not found");
+        throw new java.util.NoSuchElementException("User 42 not found");
+    } catch (java.util.NoSuchElementException e) {
+        ctx.sayException(e);
     }
-}
 
-void testInvalidArgumentError() {
-    MyRequest request = MyRequest.newBuilder()
-        .setUserId(-1) // Invalid ID
-        .build();
-
-    try {
-        stub.getUser(request);
-        fail("Should have thrown StatusRuntimeException");
-    } catch (io.grpc.StatusRuntimeException e) {
-        assert e.getStatus().getCode() == io.grpc.Status.Code.INVALID_ARGUMENT;
-    }
-}
-
-void testPermissionDeniedError() {
-    MyRequest request = MyRequest.newBuilder()
-        .setUserId(42)
-        .build();
-
-    try {
-        stub.getUser(request);
-        fail("Should have thrown StatusRuntimeException");
-    } catch (io.grpc.StatusRuntimeException e) {
-        assert e.getStatus().getCode() == io.grpc.Status.Code.PERMISSION_DENIED;
-    }
+    ctx.say("Documentation coverage for the service layer:");
+    ctx.sayDocCoverage(UserService.class);
 }
 ```
 
 ---
 
-## Standard gRPC Error Codes
+## Track Coverage Over Time
+
+Use `sayEvolutionTimeline` alongside `sayDocCoverage` to show documentation improvement over commits:
 
 ```java
-// Common error codes and meanings:
-io.grpc.Status.Code.OK                  // Success (0)
-io.grpc.Status.Code.CANCELLED           // Cancelled (1)
-io.grpc.Status.Code.UNKNOWN             // Unknown error (2)
-io.grpc.Status.Code.INVALID_ARGUMENT    // Bad argument (3)
-io.grpc.Status.Code.DEADLINE_EXCEEDED   // Timeout (4)
-io.grpc.Status.Code.NOT_FOUND           // Not found (5)
-io.grpc.Status.Code.ALREADY_EXISTS      // Already exists (6)
-io.grpc.Status.Code.PERMISSION_DENIED   // No permission (7)
-io.grpc.Status.Code.RESOURCE_EXHAUSTED  // Quota exceeded (8)
-io.grpc.Status.Code.FAILED_PRECONDITION // Invalid state (9)
-io.grpc.Status.Code.ABORTED             // Aborted (10)
-io.grpc.Status.Code.OUT_OF_RANGE        // Out of range (11)
-io.grpc.Status.Code.UNIMPLEMENTED       // Not implemented (12)
-io.grpc.Status.Code.INTERNAL            // Server error (13)
-io.grpc.Status.Code.UNAVAILABLE         // Service unavailable (14)
-io.grpc.Status.Code.DATA_LOSS           // Data loss (15)
-io.grpc.Status.Code.UNAUTHENTICATED     // No authentication (16)
-```
+@Test
+void trackDocumentationEvolution(DtrContext ctx) {
+    ctx.sayNextSection("Documentation Coverage Evolution");
 
----
+    ctx.say("Git history of UserService documentation improvements:");
+    ctx.sayEvolutionTimeline(UserService.class, 10);
 
-## Extract Error Details
-
-```java
-void handleGrpcError(StatusRuntimeException e) {
-    io.grpc.Status status = e.getStatus();
-    String code = status.getCode().name();
-    String message = status.getDescription();
-    Throwable cause = status.getCause();
-
-    System.err.println("Error Code: " + code);
-    System.err.println("Error Message: " + message);
-    if (cause != null) {
-        System.err.println("Caused by: " + cause.getMessage());
-    }
-
-    // Get metadata if available
-    Metadata metadata = io.grpc.Status.trailingMetadataFromThrowable(e);
-    if (metadata != null) {
-        System.err.println("Metadata: " + metadata);
-    }
-}
-```
-
----
-
-## Retry on Transient Errors
-
-```java
-MyResponse callWithRetry(MyServiceGrpc.MyServiceBlockingStub stub,
-                        MyRequest request,
-                        int maxRetries) throws io.grpc.StatusRuntimeException {
-    for (int attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            return stub.getUser(request);
-        } catch (io.grpc.StatusRuntimeException e) {
-            io.grpc.Status.Code code = e.getStatus().getCode();
-
-            // Only retry transient errors
-            if (code == io.grpc.Status.Code.UNAVAILABLE ||
-                code == io.grpc.Status.Code.DEADLINE_EXCEEDED ||
-                code == io.grpc.Status.Code.RESOURCE_EXHAUSTED) {
-
-                if (attempt == maxRetries) throw e;
-
-                long delayMs = (long) Math.pow(2, attempt - 1) * 100;
-                System.out.println("Retrying in " + delayMs + "ms...");
-                Thread.sleep(delayMs);
-            } else {
-                // Don't retry permanent errors
-                throw e;
-            }
-        }
-    }
-    throw new IllegalStateException("Should not reach here");
-}
-```
-
----
-
-## Handle Streaming Errors
-
-```java
-StreamObserver<Response> responseObserver = new StreamObserver<Response>() {
-    @Override
-    public void onNext(Response response) {
-        System.out.println("Got: " + response);
-    }
-
-    @Override
-    public void onError(Throwable t) {
-        if (t instanceof io.grpc.StatusRuntimeException) {
-            io.grpc.StatusRuntimeException e = (io.grpc.StatusRuntimeException) t;
-            System.err.println("Stream error: " + e.getStatus().getCode());
-        } else {
-            System.err.println("Non-gRPC error: " + t.getMessage());
-        }
-    }
-
-    @Override
-    public void onCompleted() {
-        System.out.println("Stream completed");
-    }
-};
-
-StreamObserver<Request> requests = stub.streamMethod(responseObserver);
-// Use requests...
-```
-
----
-
-## Test Deadline Exceeded
-
-```java
-void testDeadlineExceeded() {
-    try {
-        MyResponse response = stub
-            .withDeadlineAfter(100, java.util.concurrent.TimeUnit.MILLISECONDS)
-            .slowMethod(request);
-
-        fail("Should timeout");
-    } catch (io.grpc.StatusRuntimeException e) {
-        assert e.getStatus().getCode() == io.grpc.Status.Code.DEADLINE_EXCEEDED;
-    }
-}
-```
-
----
-
-## Custom Error Details
-
-```java
-// Some servers include custom error details in metadata
-io.grpc.StatusRuntimeException error = ...;
-io.grpc.Metadata metadata = io.grpc.Status.trailingMetadataFromThrowable(error);
-
-if (metadata != null) {
-    // Check for custom keys
-    String customError = metadata.get(
-        io.grpc.Metadata.Key.of("x-custom-error", io.grpc.Metadata.ASCII_STRING_MARSHALLER));
-
-    if (customError != null) {
-        System.out.println("Custom error: " + customError);
-    }
+    ctx.say("Current coverage snapshot:");
+    ctx.sayDocCoverage(UserService.class);
 }
 ```
 
@@ -224,36 +139,19 @@ if (metadata != null) {
 
 ## Best Practices
 
-✅ **DO:**
-- Check error code first (identity)
-- Use specific catch patterns
-- Retry only transient errors
-- Log full error details
-- Extract metadata for context
+**Run coverage reports in CI.** Add `sayDocCoverage` to a dedicated documentation audit test that runs on every pull request.
 
-❌ **DON'T:**
-- Retry permanent errors (BAD_ARGUMENT, NOT_FOUND, PERMISSION_DENIED)
-- Retry indefinitely
-- Ignore error descriptions
-- Assume all errors are transient
+**Set a coverage threshold.** Define a minimum coverage percentage in your team's definition of done. Use the generated report to enforce it in code review.
 
----
+**Prioritize public API methods.** Focus on documenting methods that appear in interfaces. Internal private methods are lower priority.
 
-## Error Decision Tree
-
-```
-Is it UNAVAILABLE or DEADLINE_EXCEEDED?
-  YES → Retry with exponential backoff
-  NO  → Check if it's transient
-    Is it RESOURCE_EXHAUSTED?
-      YES → Retry (server is busy)
-      NO  → Permanent error, fail immediately
-```
+**Combine with sayContractVerification.** An undocumented method that doesn't implement a contract is a double problem. Check both together.
 
 ---
 
 ## See Also
 
-- [How-to: Make Unary RPC Calls](grpc-unary.md)
-- [How-to: Handle gRPC Streaming](grpc-streaming.md)
-- [Tutorial: gRPC Streaming](../tutorials/grpc-streaming.md)
+- [Verify Interface Contracts](grpc-unary.md) — sayContractVerification
+- [Document Call Graphs](grpc-streaming.md) — sayCallGraph
+- [Use sayEnvProfile](use-cookies.md) — Environment snapshot with coverage audit
+- [Document Exception Handling](test-xml-endpoints.md) — sayException

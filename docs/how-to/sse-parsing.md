@@ -1,219 +1,162 @@
-# How-to: Parse Server-Sent Events
+# How-To: Render ASCII Charts with sayAsciiChart
 
-Extract and validate event data from SSE streams.
+Generate Unicode bar charts from numerical data using DTR 2.6.0's `sayAsciiChart` method.
+
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
-## Parse Basic Events
+## What sayAsciiChart Does
+
+`sayAsciiChart(String label, double[] values, String[] xLabels)` renders a Unicode horizontal bar chart directly in the documentation. Each bar represents one value with its label. The chart is proportionally scaled to the maximum value.
+
+Use it to visualize benchmark results, comparison data, test coverage percentages, and any other numerical series.
+
+---
+
+## Basic Usage
 
 ```java
-sealed interface SseEvent {
-    record Event(String type, String data, String id) implements SseEvent {}
-}
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-List<SseEvent> parseEvents(String stream) {
-    List<SseEvent> events = new ArrayList<>();
-    String[] lines = stream.split("\n");
+@ExtendWith(DtrExtension.class)
+class CollectionBenchmarkDocTest {
 
-    String type = null, data = null, id = null;
+    @Test
+    void chartCollectionPerformance(DtrContext ctx) {
+        ctx.sayNextSection("Collection Add Performance");
+        ctx.sayEnvProfile();
 
-    for (String line : lines) {
-        if (line.isEmpty()) {
-            if (type != null) {
-                events.add(new SseEvent.Event(type, data, id));
-                type = null;
-                data = null;
-                id = null;
-            }
-        } else if (line.startsWith("event: ")) {
-            type = line.substring(7);
-        } else if (line.startsWith("data: ")) {
-            data = line.substring(6);
-        } else if (line.startsWith("id: ")) {
-            id = line.substring(4);
+        String[] labels = {"ArrayList", "LinkedList", "ArrayDeque", "HashSet", "TreeSet"};
+        double[] timesNs = new double[labels.length];
+
+        // Warmup
+        for (int w = 0; w < 100; w++) {
+            new java.util.ArrayList<>().add(0);
         }
-    }
 
-    if (type != null) {
-        events.add(new SseEvent.Event(type, data, id));
-    }
-
-    return events;
-}
-
-// Usage
-String sseStream = """
-    event: message
-    data: Hello
-    id: 1
-
-    event: notification
-    data: Alert
-    id: 2
-    """;
-
-List<SseEvent> events = parseEvents(sseStream);
-assert events.size() == 2;
-```
-
----
-
-## Parse Multiline Data
-
-```java
-String multilineStream = """
-    event: longMessage
-    data: Line 1
-    data: Line 2
-    data: Line 3
-    id: 1
-    """;
-
-// Combine multiline data with newlines
-List<SseEvent> events = parseEvents(multilineStream);
-String combined = String.join("\n", events.get(0).data.split("\n"));
-assert combined.contains("Line 1");
-assert combined.contains("Line 3");
-```
-
----
-
-## Parse JSON Events
-
-```java
-record NotificationEvent(String id, String title, String message) {}
-
-List<NotificationEvent> parseJsonEvents(List<SseEvent> events) {
-    ObjectMapper mapper = new ObjectMapper();
-    return events.stream()
-        .filter(e -> "notification".equals(e.type))
-        .map(e -> {
-            try {
-                JsonNode json = mapper.readTree(e.data);
-                return new NotificationEvent(
-                    e.id,
-                    json.get("title").asText(),
-                    json.get("message").asText());
-            } catch (Exception ex) {
-                return null;
-            }
-        })
-        .filter(Objects::nonNull)
-        .toList();
-}
-
-// Usage
-String jsonStream = """
-    event: notification
-    data: {"title":"Alert","message":"High CPU usage"}
-    id: 1
-    """;
-
-List<SseEvent> events = parseEvents(jsonStream);
-List<NotificationEvent> notifications = parseJsonEvents(events);
-assert notifications.size() == 1;
-assert "Alert".equals(notifications.get(0).title);
-```
-
----
-
-## Filter Events by Type
-
-```java
-List<SseEvent> events = parseEvents(sseStream);
-
-List<SseEvent> userMessages = events.stream()
-    .filter(e -> "message".equals(e.type))
-    .toList();
-
-List<SseEvent> alerts = events.stream()
-    .filter(e -> "alert".equals(e.type))
-    .toList();
-
-System.out.println("Messages: " + userMessages.size());
-System.out.println("Alerts: " + alerts.size());
-```
-
----
-
-## Validate Event IDs
-
-```java
-// Check that event IDs are in order
-List<SseEvent> events = parseEvents(sseStream);
-
-long lastId = -1;
-for (SseEvent event : events) {
-    long currentId = Long.parseLong(event.id);
-    assert currentId > lastId : "Event IDs out of order";
-    lastId = currentId;
-}
-```
-
----
-
-## Parse Retry Field
-
-```java
-long parseRetryField(String stream) {
-    for (String line : stream.split("\n")) {
-        if (line.startsWith("retry: ")) {
-            return Long.parseLong(line.substring(7));
-        }
-    }
-    return 0; // Default
-}
-
-// Usage
-String streamWithRetry = """
-    retry: 5000
-
-    event: message
-    data: Hello
-    id: 1
-    """;
-
-long retryMs = parseRetryField(streamWithRetry);
-assert retryMs == 5000;
-```
-
----
-
-## Handle Parse Errors
-
-```java
-List<SseEvent> safeParseEvents(String stream) {
-    List<SseEvent> events = new ArrayList<>();
-
-    try {
-        String[] lines = stream.split("\n");
-        String type = null, data = null, id = null;
-
-        for (String line : lines) {
-            try {
-                if (line.isEmpty()) {
-                    if (type != null) {
-                        events.add(new SseEvent.Event(type, data, id));
-                    }
-                    type = null;
-                    data = null;
-                    id = null;
-                } else if (line.startsWith("event: ")) {
-                    type = line.substring(7);
-                } else if (line.startsWith("data: ")) {
-                    data = line.substring(6);
-                } else if (line.startsWith("id: ")) {
-                    id = line.substring(4);
+        // Measure
+        for (int c = 0; c < labels.length; c++) {
+            final int idx = c;
+            long start = System.nanoTime();
+            for (int i = 0; i < 100_000; i++) {
+                switch (idx) {
+                    case 0 -> new java.util.ArrayList<>().add(i);
+                    case 1 -> new java.util.LinkedList<>().add(i);
+                    case 2 -> new java.util.ArrayDeque<>().add(i);
+                    case 3 -> new java.util.HashSet<>().add(i);
+                    case 4 -> new java.util.TreeSet<>().add(i);
                 }
-            } catch (Exception e) {
-                System.err.println("Error parsing line: " + e.getMessage());
             }
+            timesNs[c] = (double)(System.nanoTime() - start) / 100_000;
         }
-    } catch (Exception e) {
-        System.err.println("Failed to parse SSE stream: " + e.getMessage());
+
+        ctx.sayAsciiChart("Add operation: ns/op (lower is better)", timesNs, labels);
+        ctx.say("Measured on Java " + System.getProperty("java.version") +
+                ", " + Runtime.getRuntime().availableProcessors() + " cores.");
+    }
+}
+```
+
+---
+
+## Visualize Benchmark Results
+
+Combine `sayBenchmark` with `sayAsciiChart` — run the detailed benchmark first, then visualize a summary:
+
+```java
+@Test
+void benchmarkAndChart(DtrContext ctx) {
+    ctx.sayNextSection("String Formatting Performance");
+    ctx.sayEnvProfile();
+
+    String[] operations = {
+        "String.format",
+        "String.formatted()",
+        "StringBuilder",
+        "String.valueOf + +"
+    };
+
+    double[] avgNs = new double[operations.length];
+    int iterations = 100_000;
+
+    // Measure each
+    avgNs[0] = measureNs(iterations, () -> String.format("Hello %s, you are %d", "Alice", 30));
+    avgNs[1] = measureNs(iterations, () -> "Hello %s, you are %d".formatted("Alice", 30));
+    avgNs[2] = measureNs(iterations, () -> {
+        new StringBuilder().append("Hello ").append("Alice").append(", you are ").append(30).toString();
+    });
+    avgNs[3] = measureNs(iterations, () -> "Hello " + "Alice" + ", you are " + 30);
+
+    // Detailed benchmarks
+    for (int i = 0; i < operations.length; i++) {
+        final int idx = i;
+        ctx.sayBenchmark(operations[idx] + " (" + iterations + " iterations)", () -> {
+            switch (idx) {
+                case 0 -> String.format("Hello %s, you are %d", "Alice", 30);
+                case 1 -> "Hello %s, you are %d".formatted("Alice", 30);
+                case 2 -> new StringBuilder().append("Hello ").append("Alice").append(30).toString();
+                case 3 -> "Hello " + "Alice" + ", you are " + 30;
+            }
+        });
     }
 
-    return events;
+    // Summary chart
+    ctx.sayAsciiChart("String formatting avg ns/op (lower is better)", avgNs, operations);
+}
+
+private double measureNs(int iterations, Runnable r) {
+    // Warmup
+    for (int i = 0; i < 100; i++) r.run();
+    long start = System.nanoTime();
+    for (int i = 0; i < iterations; i++) r.run();
+    return (double)(System.nanoTime() - start) / iterations;
+}
+```
+
+---
+
+## Chart Documentation Coverage Percentages
+
+Visualize coverage data across multiple classes:
+
+```java
+@Test
+void chartDocumentationCoverage(DtrContext ctx) {
+    ctx.sayNextSection("Documentation Coverage by Module");
+
+    // Hypothetical coverage percentages derived from sayDocCoverage analysis
+    String[] modules = {"UserService", "OrderService", "PaymentService", "ProductService", "ReportService"};
+    double[] coverage = {87.5, 72.3, 95.1, 60.0, 44.8};
+
+    ctx.sayAsciiChart("Documentation coverage % (higher is better)", coverage, modules);
+
+    ctx.sayWarning("Modules below 70% require documentation before the next release. " +
+                   "ProductService and ReportService are blocked.");
+}
+```
+
+---
+
+## Chart Trend Data
+
+Use `sayAsciiChart` to show trends over time (data gathered from CI builds):
+
+```java
+@Test
+void chartBuildTrend(DtrContext ctx) {
+    ctx.sayNextSection("Test Suite Build Time Trend");
+
+    String[] builds = {"2025-01", "2025-04", "2025-07", "2025-10", "2026-01", "2026-03"};
+    double[] buildTimeSec = {145.2, 138.7, 127.4, 118.9, 103.2, 94.6};
+
+    ctx.sayAsciiChart("Build time in seconds (lower is better)", buildTimeSec, builds);
+    ctx.say("Build time has decreased by " +
+            String.format("%.0f%%", (1 - buildTimeSec[5] / buildTimeSec[0]) * 100) +
+            " since January 2025, driven by test parallelization and mvnd caching.");
 }
 ```
 
@@ -221,23 +164,18 @@ List<SseEvent> safeParseEvents(String stream) {
 
 ## Best Practices
 
-✅ **DO:**
-- Handle multiline data with `data:` prefix
-- Validate event IDs if ordering matters
-- Parse JSON defensively with try/catch
-- Use sealed types for type safety
-- Filter events by type
+**Always measure before charting.** Never hard-code values into `sayAsciiChart`. All values must come from real measurements via `System.nanoTime()`, CI metrics, or reflection.
 
-❌ **DON'T:**
-- Assume data is always single-line
-- Trust IDs without validation
-- Forget to handle parse errors
-- Lose data on malformed events
+**Add context with `say()`.** The chart shows relative differences; use prose to explain the absolute values and their significance.
+
+**Use `sayEnvProfile()` before benchmark charts.** Timing data is meaningless without knowing the hardware and Java version.
+
+**Pair with `sayBenchmark` for detail.** `sayAsciiChart` gives the visual summary; `sayBenchmark` provides the detailed statistics. Use both in the same test.
 
 ---
 
 ## See Also
 
-- [How-to: Subscribe to SSE Streams](sse-subscription.md)
-- [How-to: Handle SSE Reconnection](sse-reconnection.md)
-- [Tutorial: Server-Sent Events](../tutorials/server-sent-events.md)
+- [Benchmark Inline](sse-reconnection.md) — sayBenchmark for detailed statistics
+- [Document Evolution Timeline](sse-subscription.md) — sayEvolutionTimeline for git history
+- [Benchmarking (full guide)](benchmarking.md) — Complete benchmarking workflow
