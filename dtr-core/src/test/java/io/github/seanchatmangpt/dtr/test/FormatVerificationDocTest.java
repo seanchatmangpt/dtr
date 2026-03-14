@@ -18,7 +18,6 @@ package io.github.seanchatmangpt.dtr;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import io.github.seanchatmangpt.dtr.rendermachine.SayEvent;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 
 import java.util.Arrays;
 import java.util.List;
@@ -425,11 +424,6 @@ public class FormatVerificationDocTest extends DtrTest {
         sayNote("Add SayEvent.NewFormatEvent to the sealed interface: every switch " +
             "in every renderer fails to compile until it handles the new case. " +
             "Silent no-ops are structurally impossible.");
-    }
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
     }
 
     @AfterAll

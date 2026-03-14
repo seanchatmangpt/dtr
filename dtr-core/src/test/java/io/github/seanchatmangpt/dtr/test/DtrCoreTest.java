@@ -15,7 +15,6 @@
  */
 package io.github.seanchatmangpt.dtr;
 
-import io.github.seanchatmangpt.dtr.DtrTest;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.junit.jupiter.api.Assertions;
@@ -31,8 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -116,38 +113,6 @@ public class DtrCoreTest extends DtrTest {
         // Verify the markdown file was created and contains test content
         assertThatFileContainsText(expectedDoctestfile, "another fun heading!");
         assertThatFileContainsText(expectedDoctestfile, "and a very long text...!");
-
-    }
-
-    @Test
-    public void testThatUsageOfTestBrowserWithoutSpecifyingGetTestUrlIsNotAllowed() {
-
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            testServerUrl();
-        });
-
-    }
-
-    @Test
-    public void testThatAssertionFailureGetsWrittenToMarkdownFile() throws Exception {
-
-        boolean gotTestFailure = false;
-
-        try {
-            sayAndAssertThat("This will go wrong", false, is(true));
-        } catch (AssertionError assertionError) {
-            gotTestFailure = true;
-        }
-
-        assertThat(gotTestFailure, is(true));
-
-        finishDocTest();
-
-        File expectedDoctestfile = new File("docs/test/" + DtrCoreTest.EXPECTED_FILENAME);
-
-        // Verify that assertion failures are marked with ✗ and include error message
-        assertThatFileContainsText(expectedDoctestfile, "✗ **FAILED**: This will go wrong");
-        assertThatFileContainsText(expectedDoctestfile, "java.lang.AssertionError");
 
     }
 

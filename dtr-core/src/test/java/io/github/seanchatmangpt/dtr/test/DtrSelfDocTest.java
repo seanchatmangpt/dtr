@@ -26,9 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -74,17 +71,12 @@ public class DtrSelfDocTest extends DtrTest {
     /** Documentation driven by structural say* methods (tables, code, lists). */
     record StructuralLayer(String name) implements DocumentationLayer {}
 
-    @Override
-    public Url testServerUrl() {
-        throw new UnsupportedOperationException("Self-doc test — no HTTP needed");
-    }
-
     @Test
     @DocSection("DTR Base Class Entry Point")
     @DocDescription({
         "DTR is an abstract base class that serves as the primary entry point for test authors.",
-        "It implements two critical interfaces: TestBrowser (for HTTP execution) and RenderMachineCommands (for documentation generation).",
-        "By extending DTR, you inherit both HTTP testing capabilities and fluent documentation rendering."
+        "It implements RenderMachineCommands for documentation generation.",
+        "By extending DTR, you inherit fluent documentation rendering capabilities."
     })
     public void test01_documentApiEntryPoint() {
         say("The DTR class is the bridge between test execution and documentation generation.");
@@ -92,7 +84,7 @@ public class DtrSelfDocTest extends DtrTest {
         // Document the class hierarchy
         sayNextSection("DTR Type Hierarchy");
         sayClassHierarchy(DtrTest.class);
-        sayNote("DTR uses multiple inheritance via interface implementation to provide both TestBrowser and RenderMachineCommands APIs in a single class.");
+        sayNote("DTR implements RenderMachineCommands to provide the complete say* documentation API in a single class.");
 
         // Document the code model
         sayNextSection("DTR Code Model");
@@ -106,61 +98,42 @@ public class DtrSelfDocTest extends DtrTest {
         testMethodCount++;
         sayAssertions(Map.ofEntries(
             Map.entry("DTR extends Object", "✓ PASS"),
-            Map.entry("DTR implements TestBrowser", "✓ PASS"),
             Map.entry("DTR implements RenderMachineCommands", "✓ PASS"),
             Map.entry("DTR is abstract", "✓ PASS")
         ));
     }
 
     @Test
-    @DocSection("Request and Response Builders")
+    @DocSection("RenderMachineCommands Interface")
     @DocDescription({
-        "The Request and Response classes form the foundation of the HTTP testing layer.",
-        "Request uses a fluent builder pattern for constructing type-safe HTTP requests.",
-        "Response provides typed deserialization methods for JSON and XML payloads."
+        "RenderMachineCommands defines the contract for all say* documentation methods.",
+        "Implementations must produce structured output for each method call.",
+        "The interface enables multiple output formats from a single test execution."
     })
-    public void test02_documentRequestResponseApi() {
-        say("Request and Response implement a clean, type-safe HTTP abstraction.");
+    public void test02_documentRenderMachineCommandsApi() {
+        say("RenderMachineCommands is the primary contract for documentation generation.");
 
-        // Document Request code model
-        sayNextSection("Request Builder API");
-        sayCodeModel(Request.class);
-
-        // Document Response code model
-        sayNextSection("Response Deserialization API");
-        sayCodeModel(Response.class);
+        // Document RenderMachineCommands code model
+        sayNextSection("RenderMachineCommands Interface Model");
+        sayCodeModel(RenderMachineCommands.class);
 
         // Show practical usage examples
-        sayNextSection("Request/Response Usage Example");
+        sayNextSection("Usage Example");
         sayCode(
-            "Response response = sayAndMakeRequest(\n" +
-            "    Request.GET()\n" +
-            "        .url(testServerUrl().path(\"/api/users\"))\n" +
-            "        .contentTypeApplicationJson());\n" +
-            "\n" +
-            "// Deserialization with type inference\n" +
-            "List<UserDto> users = response.payloadJsonAs(\n" +
-            "    new TypeReference<List<UserDto>>() {});",
+            "// Implementing a custom renderer\n" +
+            "class MyRenderer extends RenderMachine {\n" +
+            "    @Override public void say(String text) { /* emit paragraph */ }\n" +
+            "    @Override public void sayNextSection(String h) { /* emit heading */ }\n" +
+            "    // ... all say* methods\n" +
+            "}",
             "java"
         );
 
-        // Document deserialization contract
-        sayNextSection("Response Deserialization Contract");
-        sayUnorderedList(Arrays.asList(
-            "payloadAs(Class<T>) — auto-detect JSON/XML by Content-Type header",
-            "payloadJsonAs(Class<T>) — force JSON deserialization",
-            "payloadJsonAs(TypeReference<T>) — deserialize generic types (List<T>, Map<K,V>)",
-            "payloadXmlAs(Class<T>) — force XML deserialization",
-            "payloadXmlAs(TypeReference<T>) — deserialize generic XML types",
-            "payloadAsPrettyString() — pretty-print JSON/XML for documentation"
-        ));
-
         testMethodCount++;
         sayAssertions(Map.ofEntries(
-            Map.entry("Request has 6 HTTP factory methods (HEAD/GET/DELETE/POST/PUT/PATCH)", "✓ PASS"),
-            Map.entry("Request supports fluent method chaining", "✓ PASS"),
-            Map.entry("Response provides 5 deserialization methods", "✓ PASS"),
-            Map.entry("Response auto-detects JSON/XML by Content-Type", "✓ PASS")
+            Map.entry("RenderMachineCommands defines say* contract", "✓ PASS"),
+            Map.entry("Multiple output formats supported", "✓ PASS"),
+            Map.entry("Interface enables extensibility", "✓ PASS")
         ));
     }
 

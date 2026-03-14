@@ -81,7 +81,6 @@ the specific language governing permissions and limitations under the License. -
         <org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.expand-tabs>false</org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.expand-tabs>
 
         <!-- Dependency versions -->
-        <jetty.version>9.4.53.v20231009</jetty.version>
         <jackson.version>2.21.1</jackson.version>
         <junit5.version>6.0.3</junit5.version>
         <mockito.version>5.22.0</mockito.version>
@@ -101,13 +100,6 @@ the specific language governing permissions and limitations under the License. -
 
     <dependencyManagement>
         <dependencies>
-            <!-- Core HTTP client -->
-            <dependency>
-                <groupId>org.apache.httpcomponents.client5</groupId>
-                <artifactId>httpclient5</artifactId>
-                <version>${httpclient5.version}</version>
-            </dependency>
-
             <!-- Jackson (JSON/XML serialization) -->
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -115,23 +107,14 @@ the specific language governing permissions and limitations under the License. -
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
                 <version>${jackson.version}</version>
-            </dependency>
-
-            <!-- XML processing -->
-            <dependency>
-                <groupId>com.fasterxml.woodstox</groupId>
-                <artifactId>woodstox-core</artifactId>
-                <version>${woodstox.version}</version>
-            </dependency>
-
-            <!-- WebSocket client -->
-            <dependency>
-                <groupId>org.java-websocket</groupId>
-                <artifactId>Java-WebSocket</artifactId>
-                <version>${java-websocket.version}</version>
             </dependency>
 
             <!-- Logging -->
@@ -157,12 +140,6 @@ the specific language governing permissions and limitations under the License. -
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-            <dependency>
-                <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload</artifactId>
-                <version>${commons-fileupload.version}</version>
-            </dependency>
-
             <!-- Testing -->
             <dependency>
                 <groupId>junit</groupId>
@@ -209,13 +186,6 @@ the specific language governing permissions and limitations under the License. -
                 <version>${jqwik.version}</version>
             </dependency>
 
-            <!-- Fault injection testing -->
-            <dependency>
-                <groupId>org.wiremock</groupId>
-                <artifactId>wiremock-standalone</artifactId>
-                <version>${wiremock.version}</version>
-            </dependency>
-
             <!-- Database -->
             <dependency>
                 <groupId>com.h2database</groupId>
@@ -228,30 +198,6 @@ the specific language governing permissions and limitations under the License. -
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-core</artifactId>
                 <version>${flyway.version}</version>
-            </dependency>
-
-            <!-- JAXB (required for Hibernate on Java 9+) -->
-            <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${jaxb-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
-                <version>${jaxb-runtime.version}</version>
-            </dependency>
-
-            <!-- WebJars -->
-            <dependency>
-                <groupId>org.webjars</groupId>
-                <artifactId>tinymce-jquery</artifactId>
-                <version>3.4.9</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars</groupId>
-                <artifactId>bootstrap</artifactId>
-                <version>3.0.0</version>
             </dependency>
 
             <!-- JSON processing (test only) -->
@@ -331,12 +277,6 @@ the specific language governing permissions and limitations under the License. -
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>${maven-deploy-plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-maven-plugin</artifactId>
-                    <version>${jetty.version}</version>
                 </plugin>
 
                 <plugin>

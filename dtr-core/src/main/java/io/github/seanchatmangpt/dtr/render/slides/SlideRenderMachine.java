@@ -26,14 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hc.client5.http.cookie.Cookie;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-import org.hamcrest.Matcher;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +49,6 @@ public final class SlideRenderMachine extends RenderMachine {
     private String currentTitle = "";
     private List<String> currentBullets = new ArrayList<>();
     private String currentSpeakerNote = "";
-    private TestBrowser testBrowser;
 
     /**
      * Create a slide render machine with the given template.
@@ -64,11 +57,6 @@ public final class SlideRenderMachine extends RenderMachine {
      */
     public SlideRenderMachine(SlideTemplate template) {
         this.template = template;
-    }
-
-    @Override
-    public void setTestBrowser(TestBrowser testBrowser) {
-        this.testBrowser = testBrowser;
     }
 
     @Override
@@ -255,41 +243,6 @@ public final class SlideRenderMachine extends RenderMachine {
         if (text != null && !text.isEmpty()) {
             currentSpeakerNote = text;
         }
-    }
-
-    @Override
-    public List<Cookie> sayAndGetCookies() {
-        List<Cookie> cookies = testBrowser.getCookies();
-        for (Cookie c : cookies) {
-            currentBullets.add(c.getName() + " = " + c.getValue());
-        }
-        return cookies;
-    }
-
-    @Override
-    public Cookie sayAndGetCookieWithName(String name) {
-        return testBrowser.getCookieWithName(name);
-    }
-
-    @Override
-    public Response sayAndMakeRequest(Request httpRequest) {
-        Response response = testBrowser.makeRequest(httpRequest);
-        flushCurrentSlide();
-        currentTitle = "Request/Response";
-        currentBullets.add(httpRequest.httpRequestType + " " + httpRequest.uri);
-        currentBullets.add("Status: " + response.httpStatus);
-        return response;
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher) {
-        boolean matches = matcher.matches(actual);
-        currentBullets.add("✓ " + message + (matches ? " PASS" : " FAIL"));
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
-        sayAndAssertThat(message, "", actual, matcher);
     }
 
     @Override

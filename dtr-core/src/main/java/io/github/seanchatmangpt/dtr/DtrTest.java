@@ -331,30 +331,6 @@ public abstract class DtrTest implements RenderMachineCommands {
     }
 
     /**
-     * Convenience method that allows you to write tests with the testbrowser in
-     * a fluent way.
-     *
-     * <code>
-     *
-     * sayAndMakeRequest(
-     *           Request
-     *               .GET()
-     *               .url(testServerUrl().path("search").addQueryParameter("q", "toys")));
-     * </code>
-     *
-     *
-     * @return a valid host name of your test server (eg http://localhost:8127).
-     * This will be used in the testServerUrl() method.
-     */
-    public Url testServerUrl() {
-
-        final String errorText = "If you want to use the TestBrowser you have to override getTestServerUrl().";
-        logger.error(errorText);
-
-        throw new IllegalStateException(errorText);
-    }
-
-    /**
      * Alternative way to set the output file name. This can be handy when
      * DTR is not part of JUnit lifecycle.
      *
