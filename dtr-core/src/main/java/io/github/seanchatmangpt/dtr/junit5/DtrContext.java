@@ -17,16 +17,21 @@ package io.github.seanchatmangpt.dtr.junit5;
 
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.hamcrest.Matcher;
+import io.github.seanchatmangpt.dtr.coverage.CoverageRow;
+import io.github.seanchatmangpt.dtr.coverage.DocCoverageAnalyzer;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
 import io.github.seanchatmangpt.dtr.testbrowser.Request;
 import io.github.seanchatmangpt.dtr.testbrowser.Response;
 import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
 import io.github.seanchatmangpt.dtr.testbrowser.Url;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Context object for JUnit 5 DTR tests.
@@ -56,6 +61,9 @@ public class DtrContext implements RenderMachineCommands {
     private final TestBrowser testBrowser;
     private String testServerUrl;
 
+    /** Tracks which method names were documented during this test for sayDocCoverage(). */
+    private final Set<String> documentedMethodNames = new HashSet<>();
+
     /**
      * Creates a new DtrContext.
      *
@@ -75,11 +83,13 @@ public class DtrContext implements RenderMachineCommands {
 
     @Override
     public void say(String text) {
+        documentedMethodNames.add("say");
         renderMachine.say(text);
     }
 
     @Override
     public void sayNextSection(String headline) {
+        documentedMethodNames.add("sayNextSection");
         renderMachine.sayNextSection(headline);
     }
 
@@ -115,11 +125,13 @@ public class DtrContext implements RenderMachineCommands {
 
     @Override
     public void sayTable(String[][] data) {
+        documentedMethodNames.add("sayTable");
         renderMachine.sayTable(data);
     }
 
     @Override
     public void sayCode(String code, String language) {
+        documentedMethodNames.add("sayCode");
         renderMachine.sayCode(code, language);
     }
 
@@ -293,6 +305,84 @@ public class DtrContext implements RenderMachineCommands {
     @Override
     public void sayReflectiveDiff(Object before, Object after) {
         renderMachine.sayReflectiveDiff(before, after);
+    }
+
+    // ========================================================================
+    // Java 26 Code Reflection + Blue Ocean innovations
+    // ========================================================================
+
+    @Override
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {
+        renderMachine.sayControlFlowGraph(method);
+    }
+
+    @Override
+    public void sayCallGraph(Class<?> clazz) {
+        renderMachine.sayCallGraph(clazz);
+    }
+
+    @Override
+    public void sayOpProfile(java.lang.reflect.Method method) {
+        renderMachine.sayOpProfile(method);
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task) {
+        renderMachine.sayBenchmark(label, task);
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        renderMachine.sayBenchmark(label, task, warmupRounds, measureRounds);
+    }
+
+    @Override
+    public void sayMermaid(String diagramDsl) {
+        renderMachine.sayMermaid(diagramDsl);
+    }
+
+    @Override
+    public void sayClassDiagram(Class<?>... classes) {
+        renderMachine.sayClassDiagram(classes);
+    }
+
+    /**
+     * Renders a documentation coverage report for the given classes, using the
+     * set of method names tracked during this test via say* calls.
+     *
+     * @param classes the classes whose public API to check for coverage
+     */
+    @Override
+    public void sayDocCoverage(Class<?>... classes) {
+        if (classes == null || classes.length == 0) return;
+        if (renderMachine instanceof RenderMachineImpl impl) {
+            for (Class<?> clazz : classes) {
+                List<CoverageRow> rows = DocCoverageAnalyzer.analyze(clazz, documentedMethodNames);
+                impl.sayDocCoverage(clazz, rows);
+            }
+        } else {
+            renderMachine.sayDocCoverage(classes);
+        }
+    }
+
+    @Override
+    public void sayEnvProfile() {
+        renderMachine.sayEnvProfile();
+    }
+
+    @Override
+    public void sayRecordComponents(Class<? extends Record> recordClass) {
+        renderMachine.sayRecordComponents(recordClass);
+    }
+
+    @Override
+    public void sayException(Throwable t) {
+        renderMachine.sayException(t);
+    }
+
+    @Override
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        renderMachine.sayAsciiChart(label, values, xLabels);
     }
 
     // ========================================================================

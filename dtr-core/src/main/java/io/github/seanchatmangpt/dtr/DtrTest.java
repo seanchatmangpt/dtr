@@ -599,4 +599,64 @@ public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
     public final void sayReflectiveDiff(Object before, Object after) {
         renderMachine.sayReflectiveDiff(before, after);
     }
+
+    /** Renders a control flow graph via Java 26 Code Reflection (JEP 516). */
+    public final void sayControlFlowGraph(java.lang.reflect.Method method) {
+        renderMachine.sayControlFlowGraph(method);
+    }
+
+    /** Renders a call graph via Java 26 Code Reflection InvokeOp traversal. */
+    public final void sayCallGraph(Class<?> clazz) {
+        renderMachine.sayCallGraph(clazz);
+    }
+
+    /** Renders an op-profile table via Java 26 Code Reflection. */
+    public final void sayOpProfile(java.lang.reflect.Method method) {
+        renderMachine.sayOpProfile(method);
+    }
+
+    /** Benchmarks and documents a task with real nanoTime measurements. */
+    public final void sayBenchmark(String label, Runnable task) {
+        renderMachine.sayBenchmark(label, task);
+    }
+
+    /** Benchmarks with explicit warmup/measure rounds. */
+    public final void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        renderMachine.sayBenchmark(label, task, warmupRounds, measureRounds);
+    }
+
+    /** Renders a raw Mermaid diagram as a fenced code block. */
+    public final void sayMermaid(String diagramDsl) {
+        renderMachine.sayMermaid(diagramDsl);
+    }
+
+    /** Auto-generates a Mermaid classDiagram from reflection. */
+    public final void sayClassDiagram(Class<?>... classes) {
+        renderMachine.sayClassDiagram(classes);
+    }
+
+    /** Renders an environment snapshot (Java, OS, heap, etc.). */
+    public final void sayEnvProfile() {
+        renderMachine.sayEnvProfile();
+    }
+
+    /** Renders a Java record's component schema table. */
+    public final void sayRecordComponents(Class<? extends Record> recordClass) {
+        renderMachine.sayRecordComponents(recordClass);
+    }
+
+    /** Documents an exception chain in a structured table. */
+    public final void sayException(Throwable t) {
+        renderMachine.sayException(t);
+    }
+
+    /** Renders an ASCII horizontal bar chart for numeric data. */
+    public final void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        renderMachine.sayAsciiChart(label, values, xLabels);
+    }
+
+    /** Renders a documentation coverage report for the given classes. */
+    public final void sayDocCoverage(Class<?>... classes) {
+        renderMachine.sayDocCoverage(classes);
+    }
 }
