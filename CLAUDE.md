@@ -4,6 +4,66 @@
 
 ---
 
+## VERSION SCHEME: YYYY.MINOR.PATCH (CalVer)
+
+**Full year. Not short year. 2026.3.1 not 26.3.1.**
+
+| Component | Meaning | Rule |
+|-----------|---------|------|
+| `2026` | Year of release | Calendar year. Year boundary resets MINOR to 1. |
+| `.3` | Feature iteration within year | Starts at 1 on first release of each year. |
+| `.1` | Fix counter within MINOR | Resets to 0 on every MINOR bump. |
+
+**`release-major` does not exist.** The year is the major. The calendar owns that decision.
+
+Breaking changes use `@Deprecated` with a minimum one-year removal window.
+A method deprecated in `2026.3.0` is removed no earlier than `2027.1.0`.
+The year boundary is the breaking change window — it tells you *when*, not just *that*.
+
+### What the components communicate
+
+- `2026` — this was the truth in 2026. If you depend on `dtr:2026.3.1` in 2028, you know it is two years old. No lookup required. The version is a timestamp.
+- `3` — seven means seven capability expansions in 2026. Communicates release velocity.
+- `1` — the third feature release needed one fix. A patch number above 3 is a quality signal.
+
+### Year boundary rules
+
+- `make release-minor` in a new calendar year → automatically produces `YYYY.1.0`
+- `make release-year` → explicit year boundary if you need it before any minor bump
+- Year reset from `2026.x.x` to `2027.1.0` is **not** a breaking change signal
+
+### Downstream consumer contract (README, stated once)
+
+```
+DTR uses Calendar Versioning (YYYY.MINOR.PATCH). The year component resets
+the minor counter — 2026.7.0 to 2027.1.0 is not a breaking change. Breaking
+changes are signaled by @Deprecated annotations with a minimum one-year removal
+window. Use year-bounded Maven ranges: [2026.1.0,2027).
+```
+
+### Maven version ranges
+
+```xml
+<!-- Locked to 2026 releases only (recommended for libraries) -->
+<version>[2026.1.0,2027)</version>
+
+<!-- From 2026.3.0 onward within 2026 -->
+<version>[2026.3.0,2027)</version>
+```
+
+### RC builds
+
+```
+2026.3.0-rc.1    candidate → GitHub Packages only
+2026.3.0-rc.2    second candidate if needed
+2026.3.0         final → Maven Central
+```
+
+`make release-rc-minor` → tags `rc.1`, pushes to GitHub Packages.
+`make release-minor` when current version is RC → promotes to final, pushes to Maven Central.
+
+---
+
 ## THE PIPELINE IS THE SPECIFICATION
 
 This is the most important section. Read it before writing any code.
@@ -88,7 +148,8 @@ That question has a finite, enumerable answer:
 4. `CENTRAL_USERNAME` and `CENTRAL_TOKEN` secrets are set
 5. The `release` Maven profile signs, packages, and publishes via
    `central-publishing-maven-plugin`
-6. GitHub Release is created with `gh release create`
+6. `docs/CHANGELOG.md` and `docs/releases/VERSION.md` are generated and committed
+7. GitHub Release is created from `docs/releases/VERSION.md`
 
 If those six things are true, the release succeeds. That is the scope.
 
@@ -263,9 +324,12 @@ make check                     # Verify entire toolchain
 ## 📚 FILES YOU NEED
 
 - `Makefile` — **start here**: `make help` shows all targets
-- `scripts/current-version.sh` — reads version from pom.xml (no Maven plugin)
-- `scripts/bump-version.sh` — updates all pom.xml files, owns the arithmetic
-- `scripts/release.sh` — commits, tags, pushes; fires the pipeline
+- `scripts/current-version.sh` — reads version from pom.xml (Python, no network)
+- `scripts/bump.sh` — CalVer arithmetic, year-reset rules, writes `.release-version`
+- `scripts/set-version.sh` — direct version set, used by bump.sh and hotfix
+- `scripts/release.sh` — calls changelog.sh, commits, tags, pushes; fires pipeline
+- `scripts/release-rc.sh` — RC variant: commits, tags rc.N, pushes to Packages
+- `scripts/changelog.sh` — git log → `docs/releases/VERSION.md` + `docs/CHANGELOG.md`
 - `.github/workflows/publish.yml` — tag-triggered release to Maven Central
 - `.github/workflows/ci.yml` — `mvnd verify` gate for every push/PR
 - `maven-proxy-auth.py` — local dev proxy (not used in CI)
@@ -278,4 +342,5 @@ make check                     # Verify entire toolchain
 
 **Last Updated:** March 14, 2026
 **Branch:** claude/setup-makefile-github-actions-M0Kiz
-**Invariant:** The human decides the change type. The script derives the number. The tag is the trigger. The pipeline is the specification. mvnd verify is the gate.
+**Version scheme:** `YYYY.MINOR.PATCH` — year is major, calendar owns it, no `release-major`.
+**Invariant:** The human decides the change type. The script derives the number. The tag is the trigger. The pipeline is the specification. `mvnd verify` is the gate.

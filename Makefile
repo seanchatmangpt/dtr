@@ -1,44 +1,56 @@
 # DTR — Documentation Testing Runtime
 #
-# The human decides the type of change. The number is derived.
+# The human decides the type of change. The calendar owns the year.
+# The script derives the version number. No human types a version number.
 #
-#   make release-patch   → bug fix, no API change
-#   make release-minor   → new say* methods, backward compatible
-#   make release-major   → breaking API change
+# Release decisions:
+#   make release-minor     new say* methods, new capabilities, additive changes
+#   make release-patch     bug fixes, documentation corrections, dependency updates
+#   make release-year      explicit year boundary (if Jan 1 hasn't triggered it)
 #
-# That is the only decision a human needs to make.
-# scripts/bump-version.sh owns the arithmetic.
-# scripts/release.sh owns the tag and push.
-# GitHub Actions owns the signing and Maven Central publish.
+#   make release-rc-minor  bump minor, tag as rc.1, push to GitHub Packages
+#   make release-rc-patch  bump patch, tag as rc.1, push to GitHub Packages
+#   (then: make release-minor or release-patch to promote RC → final)
+#
+# release-major does not exist. The year is the major version.
+# The calendar owns that decision.
 
 MVND           := /opt/mvnd/bin/mvnd
 CURRENT_VERSION := $(shell scripts/current-version.sh)
 
 .DEFAULT_GOAL := help
 .PHONY: help compile test verify clean install package \
-        release-major release-minor release-patch \
+        release-minor release-patch release-year \
+        release-rc-minor release-rc-patch \
         publish version check
 
 help:
 	@echo ""
-	@echo "DTR build targets:"
+	@echo "DTR $(CURRENT_VERSION) — build targets:"
 	@echo ""
-	@echo "  compile          compile all modules"
-	@echo "  test             run unit tests"
-	@echo "  verify           compile + test + checks (CI gate)"
-	@echo "  clean            remove build artifacts"
-	@echo "  install          install to local Maven repo (skip tests)"
-	@echo "  package          package JARs (skip tests)"
+	@echo "  compile            compile all modules"
+	@echo "  test               run unit tests"
+	@echo "  verify             compile + test + checks (CI gate)"
+	@echo "  clean              remove build artifacts"
+	@echo "  install            install to local Maven repo (skip tests)"
+	@echo "  package            package JARs (skip tests)"
 	@echo ""
-	@echo "Release — decide the change type, the version is derived:"
+	@echo "Release — decide the type of change, version is derived:"
 	@echo ""
-	@echo "  release-patch    bug fix, no API change     ($(CURRENT_VERSION) → next patch)"
-	@echo "  release-minor    new features, compatible   ($(CURRENT_VERSION) → next minor)"
-	@echo "  release-major    breaking API change        ($(CURRENT_VERSION) → next major)"
+	@echo "  release-minor      additive: new capabilities   → next minor"
+	@echo "  release-patch      corrective: fixes, deps      → next patch"
+	@echo "  release-year       year boundary (explicit)     → YYYY.1.0"
 	@echo ""
-	@echo "  publish          deploy to Maven Central locally (needs creds)"
-	@echo "  version          print current project version"
-	@echo "  check            verify toolchain (Java, Maven, GPG, Git)"
+	@echo "  release-rc-minor   RC: bump minor, push to GitHub Packages"
+	@echo "  release-rc-patch   RC: bump patch, push to GitHub Packages"
+	@echo "  (promote RC → final with: make release-minor or release-patch)"
+	@echo ""
+	@echo "  publish            deploy locally (needs GPG + Central creds)"
+	@echo "  version            print current project version"
+	@echo "  check              verify toolchain (Java, Maven, GPG, Git)"
+	@echo ""
+	@echo "Breaking changes: use @Deprecated with min 1-year removal window."
+	@echo "The year boundary is the breaking change window, not a major bump."
 	@echo ""
 
 compile:
@@ -59,20 +71,30 @@ install:
 package:
 	$(MVND) package -DskipTests
 
-release-major:
-	scripts/bump-version.sh major $(CURRENT_VERSION)
-	scripts/release.sh
-
+# Final releases — bump, changelog, commit, tag, push → GitHub Actions publishes
 release-minor:
-	scripts/bump-version.sh minor $(CURRENT_VERSION)
+	scripts/bump.sh minor
 	scripts/release.sh
 
 release-patch:
-	scripts/bump-version.sh patch $(CURRENT_VERSION)
+	scripts/bump.sh patch
 	scripts/release.sh
 
-# Local deploy — for developers who have GPG + Central credentials configured.
-# In CI, the tag push triggers publish.yml which does this automatically.
+release-year:
+	scripts/bump.sh year
+	scripts/release.sh
+
+# Release candidates — bump, commit, tag, push → GitHub Actions publishes to Packages
+release-rc-minor:
+	scripts/bump.sh minor rc
+	scripts/release-rc.sh
+
+release-rc-patch:
+	scripts/bump.sh patch rc
+	scripts/release-rc.sh
+
+# Local deploy — requires GPG key and Central credentials in ~/.m2/settings.xml.
+# In CI the tag push triggers publish.yml which does this automatically.
 publish:
 	$(MVND) clean deploy -Prelease -DskipTests
 

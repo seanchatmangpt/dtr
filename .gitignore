@@ -14,7 +14,9 @@ nb-configuration.xml
 *~
 *.h2.db
 
-# Generated Markdown documentation from DocTester runs
-# DocTester outputs to docs/test/ directory during test execution
-docs/
+# Generated test output from DocTester runs (not versioned artifacts)
+docs/test/
 doctester-core/docs/
+
+# Temp file written by scripts/bump.sh, consumed by scripts/release.sh
+.release-version

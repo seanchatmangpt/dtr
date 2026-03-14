@@ -1,15 +1,21 @@
-name: Publish to Maven Central
+name: Publish
 
-# Triggered by pushing a version tag created by: make tag VERSION=x.y.z
-# followed by: git push origin v<VERSION>
+# Final release (v2026.3.0)    → verify → Maven Central → GitHub Release
+# Release candidate (v2026.3.0-rc.1) → verify → GitHub Packages only
+#
+# Triggered by: scripts/release.sh or scripts/release-rc.sh via the Makefile.
+# The human runs: make release-minor  (or patch / year / rc-*)
+# The script tags and pushes. This workflow fires on the tag.
+
 on:
   push:
     tags:
-      - 'v*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'          # final:  v2026.3.0
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+' # RC:     v2026.3.0-rc.1
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run — build and sign but skip deploy'
+        description: 'Dry run — build and sign but skip all publishing'
         type: boolean
         default: false
 
@@ -22,9 +28,34 @@ env:
     -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
 
 jobs:
-  # ── 1. Verify the build passes before touching Maven Central ──────────────
+  # ── Classify the tag ──────────────────────────────────────────────────────
+  classify:
+    name: Classify Tag
+    runs-on: ubuntu-latest
+    outputs:
+      is_final: ${{ steps.classify.outputs.is_final }}
+      is_rc: ${{ steps.classify.outputs.is_rc }}
+      version: ${{ steps.classify.outputs.version }}
+    steps:
+      - name: Classify
+        id: classify
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          if echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$'; then
+            echo "is_final=false" >> "$GITHUB_OUTPUT"
+            echo "is_rc=true"    >> "$GITHUB_OUTPUT"
+          else
+            echo "is_final=true"  >> "$GITHUB_OUTPUT"
+            echo "is_rc=false"    >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Tag: $TAG  Final: $(grep is_final $GITHUB_OUTPUT | cut -d= -f2)  RC: $(grep is_rc $GITHUB_OUTPUT | cut -d= -f2)"
+
+  # ── Gate: verify must pass before any publish ─────────────────────────────
   build:
     name: Build & Test
+    needs: classify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,15 +76,14 @@ jobs:
           name: test-results
           path: '**/target/surefire-reports/'
 
-  # ── 2. Sign and deploy to Maven Central ───────────────────────────────────
-  publish:
-    name: Publish
-    needs: build
+  # ── Publish final release to Maven Central ────────────────────────────────
+  publish-central:
+    name: Publish to Maven Central
+    needs: [classify, build]
     runs-on: ubuntu-latest
-    # Only publish on a real tag push, or manual dispatch with dry_run=false
     if: |
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-      (github.event_name == 'workflow_dispatch' && inputs.dry_run == false)
+      needs.classify.outputs.is_final == 'true' &&
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.dry_run == false))
     environment: production
 
     steps:
@@ -71,7 +101,6 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
-          # Allow the gpg-agent to use loopback for non-interactive signing
           mkdir -p ~/.gnupg
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           gpgconf --kill gpg-agent
@@ -110,12 +139,57 @@ jobs:
       - name: Deploy to Maven Central
         run: ./mvnw clean deploy -Prelease -DskipTests -T1C
 
-  # ── 3. Create GitHub Release after successful publish ─────────────────────
-  release:
-    name: GitHub Release
-    needs: publish
+  # ── Publish RC to GitHub Packages ────────────────────────────────────────
+  publish-rc:
+    name: Publish RC to GitHub Packages
+    needs: [classify, build]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: |
+      needs.classify.outputs.is_rc == 'true' &&
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.dry_run == false))
+    permissions:
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Configure Maven settings for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << EOF
+          <settings>
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${GITHUB_ACTOR}</username>
+                <password>${GITHUB_TOKEN}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy RC to GitHub Packages
+        run: |
+          ./mvnw deploy \
+            -DaltDeploymentRepository=github::https://maven.pkg.github.com/${{ github.repository }} \
+            -DskipTests -T1C
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Create GitHub Release (final only) ───────────────────────────────────
+  github-release:
+    name: GitHub Release
+    needs: [classify, publish-central]
+    runs-on: ubuntu-latest
+    if: needs.classify.outputs.is_final == 'true' && github.event_name == 'push'
     permissions:
       contents: write
 
@@ -125,22 +199,18 @@ jobs:
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.classify.outputs.version }}
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          gh release create "$GITHUB_REF_NAME" \
-            --title "DTR $GITHUB_REF_NAME" \
-            --verify-tag \
-            --notes "## DTR $GITHUB_REF_NAME
-
-          Published to [Maven Central](https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/$VERSION).
-
-          ### Add to your project
-
-          **Maven:**
-          \`\`\`xml
-          <dependency>
-            <groupId>io.github.seanchatmangpt.dtr</groupId>
-            <artifactId>dtr-core</artifactId>
-            <version>$VERSION</version>
-          </dependency>
-          \`\`\`"
+          # Use per-release notes from docs/ if they exist (committed in the release commit)
+          NOTES_FILE="docs/releases/${VERSION}.md"
+          if [ -f "$NOTES_FILE" ]; then
+            gh release create "v${VERSION}" \
+              --title "DTR ${VERSION}" \
+              --notes-file "$NOTES_FILE" \
+              --verify-tag
+          else
+            gh release create "v${VERSION}" \
+              --title "DTR ${VERSION}" \
+              --notes "Published to [Maven Central](https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/${VERSION})." \
+              --verify-tag
+          fi
