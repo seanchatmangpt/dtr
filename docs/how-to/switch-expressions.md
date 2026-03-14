@@ -2,6 +2,8 @@
 
 Use Java 25 switch expressions to replace `if/else` chains with exhaustive, type-safe pattern matching. Switch expressions return values, enable guarded patterns, and force completeness at compile time.
 
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
+
 ---
 
 ## Traditional Switch Statements (Old)
@@ -25,11 +27,7 @@ switch (status) {
 }
 ```
 
-Drawbacks:
-- Requires `break` statements (easy to forget)
-- No type safety
-- `default` can silently catch new cases
-- Verbose
+Drawbacks: requires `break`, no type safety, `default` silently catches new cases, verbose.
 
 ---
 
@@ -45,12 +43,6 @@ String message = switch (httpCode) {
     default -> "Unknown";
 };
 ```
-
-**Benefits:**
-- Returns a value (can assign to variable)
-- No `break` needed
-- More concise
-- Type-safe
 
 ---
 
@@ -79,6 +71,51 @@ If you add a fourth case to the sealed interface, the compiler forces all switch
 
 ---
 
+## Document Switch Logic in DTR Tests
+
+```java
+@ExtendWith(DtrExtension.class)
+class SwitchExpressionDocTest {
+
+    sealed interface ServiceResult {
+        record Created(long id) implements ServiceResult {}
+        record Updated(long id, int version) implements ServiceResult {}
+        record Deleted(long id) implements ServiceResult {}
+        record Conflict(String reason) implements ServiceResult {}
+    }
+
+    @Test
+    void documentResultHandling(DtrContext ctx) {
+        ctx.sayNextSection("ServiceResult Switch Expression");
+        ctx.say("The ServiceResult sealed type is handled with an exhaustive switch expression:");
+
+        ctx.sayClassDiagram(
+            ServiceResult.class,
+            ServiceResult.Created.class,
+            ServiceResult.Updated.class,
+            ServiceResult.Deleted.class,
+            ServiceResult.Conflict.class
+        );
+
+        ctx.sayCode("""
+            int statusCode(ServiceResult result) {
+                return switch (result) {
+                    case ServiceResult.Created(long id) -> 201;
+                    case ServiceResult.Updated(long id, int v) -> 200;
+                    case ServiceResult.Deleted(long id) -> 204;
+                    case ServiceResult.Conflict(String reason) -> 409;
+                };
+            }
+            """, "java");
+
+        ctx.sayNote("Adding a new ServiceResult variant requires updating every switch — " +
+                    "the compiler enforces this.");
+    }
+}
+```
+
+---
+
 ## Multi-line Expressions
 
 Use curly braces `{}` for multiple statements:
@@ -94,7 +131,6 @@ String description = switch (result) {
         yield "Not found";
     }
     case HttpResult.Error(Exception e) -> {
-        System.out.println("Request failed");
         e.printStackTrace();
         yield "Error: " + e.getMessage();
     }
@@ -125,8 +161,6 @@ String category = switch (num) {
 };
 ```
 
-The `when` guard refines the pattern — the case only matches if both the pattern and condition are true.
-
 ---
 
 ## Combined Pattern Matching and Guards
@@ -153,36 +187,6 @@ String outcome = switch (req) {
 
 ---
 
-## Pattern Matching in Switch vs. If
-
-**Old if/else:**
-```java
-Object obj = "hello";
-
-if (obj instanceof String s) {
-    System.out.println("String: " + s);
-} else if (obj instanceof Integer i) {
-    System.out.println("Integer: " + i);
-} else {
-    System.out.println("Unknown");
-}
-```
-
-**Switch expression:**
-```java
-Object obj = "hello";
-
-String result = switch (obj) {
-    case String s -> "String: " + s;
-    case Integer i -> "Integer: " + i;
-    default -> "Unknown";
-};
-```
-
-The switch is more readable and exhaustive checking applies automatically.
-
----
-
 ## Unnamed Patterns in Switch
 
 Ignore fields you don't care about:
@@ -197,20 +201,6 @@ String message = switch (resp) {
     case ApiResponse(int status, _, _) -> "Status: " + status;
 };
 ```
-
-Use `_` for destructured fields you don't need.
-
----
-
-## Comparison: If vs. Switch
-
-| Feature | If/Else | Switch |
-|---------|---------|--------|
-| Return value | Assign to variable | Direct return |
-| Type safety | Manual cast needed | Pattern matching |
-| Completeness | No compiler check | Enforced on sealed types |
-| Readability | Multiple conditions | Single expression |
-| Exhaustiveness | Runtime bugs possible | Compile-time guarantee |
 
 ---
 
@@ -227,23 +217,18 @@ sealed interface ApiResponse {
 
 int handleResponse(ApiResponse response) {
     return switch (response) {
-        // Success case
         case ApiResponse.Ok(String data) when !data.isEmpty() -> {
             System.out.println("Response: " + data);
             yield 200;
         }
         case ApiResponse.Ok(_) -> {
             System.out.println("Empty response");
-            yield 204; // No content
+            yield 204;
         }
-
-        // Redirect
         case ApiResponse.Redirect(String location) -> {
             System.out.println("Redirecting to " + location);
             yield 301;
         }
-
-        // Client errors
         case ApiResponse.BadRequest(String field, String reason) -> {
             System.out.println("Validation failed: " + field + " — " + reason);
             yield 400;
@@ -252,8 +237,6 @@ int handleResponse(ApiResponse response) {
             System.out.println("Authentication required");
             yield 401;
         }
-
-        // Server error
         case ApiResponse.ServerError(String message) -> {
             System.out.println("Server error: " + message);
             yield 500;
@@ -266,23 +249,20 @@ int handleResponse(ApiResponse response) {
 
 ## Best Practices
 
-✅ **DO:**
-- Use switch expressions instead of `if/else` chains
-- Define sealed interfaces for type-safe case handling
-- Use guards (`when`) to refine patterns
-- Let the compiler enforce exhaustiveness
-- Use `_` for ignored fields
+**Use switch expressions instead of `if/else` chains.** They are more readable and the compiler enforces exhaustiveness on sealed types.
 
-❌ **DON'T:**
-- Use `default` in exhaustive switches on sealed types
-- Forget guards when conditions matter
-- Mix sealed and non-sealed in the same hierarchy
-- Create deep nesting with multi-line cases
+**Define sealed interfaces for type-safe case handling.** The compiler catches missing cases and forces updates when new variants are added.
+
+**Use guards (`when`) to refine patterns.** They let you split a single type into multiple behavioral cases.
+
+**Never use `default` in exhaustive switches on sealed types.** A `default` case defeats the compiler's exhaustiveness check — new sealed variants go silently unhandled.
+
+**Document with sayClassDiagram.** Readers need to understand the type hierarchy before they can understand the switch logic.
 
 ---
 
 ## See Also
 
-- [Tutorial: Records and Sealed Classes](../tutorials/records-sealed-classes.md)
-- [How-to: Pattern Matching with Sealed Records](pattern-matching.md)
-- [Reference: Java 25 Language Features](../reference/java25-features-reference.md)
+- [Pattern Matching with Sealed Records](pattern-matching.md) — instanceof pattern matching
+- [Generate Class Diagrams](websockets-broadcast.md) — sayClassDiagram for sealed hierarchies
+- [Document Exception Handling](test-xml-endpoints.md) — Sealed result types vs. exceptions

@@ -1,6 +1,8 @@
 # How-to: Text Blocks for Multiline Strings
 
-Use Java 25 text blocks to write multiline strings naturally — perfect for HTML templates, SQL, JSON, and documentation. No escape sequences needed; indentation is automatically managed.
+Use Java 25 text blocks to write multiline strings naturally — perfect for JSON, SQL, HTML, Mermaid DSL, and documentation content. No escape sequences needed; indentation is automatically managed.
+
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
@@ -10,17 +12,14 @@ Text blocks are delimited by triple quotes:
 
 ```java
 // Old way: concatenation and escape sequences
-String html = "<div>\n" +
-    "  <h1>Welcome</h1>\n" +
-    "  <p>This is hard to read</p>\n" +
-    "</div>";
+String json = "{\"name\": \"alice\", \"email\": \"alice@example.com\"}";
 
 // New way: text block
-String html = """
-    <div>
-      <h1>Welcome</h1>
-      <p>Much cleaner</p>
-    </div>
+String json = """
+    {
+        "name": "alice",
+        "email": "alice@example.com"
+    }
     """;
 ```
 
@@ -28,59 +27,46 @@ Indentation at the start of the block is stripped automatically. The result is e
 
 ---
 
-## Escape Sequences in Text Blocks
+## Text Blocks in DTR Tests
 
-Use `\` at the end of a line to continue without a newline:
+Text blocks are essential for writing `sayCode`, `sayMermaid`, and `sayJson` content cleanly:
 
 ```java
-// Text block with line continuation
-String oneLine = """
-    This is a very long line that I want to split \
-    across multiple lines in the source code, \
-    but keep as a single line in the result.
-    """;
-// Result: "This is a very long line that I want to split across multiple lines..."
+@ExtendWith(DtrExtension.class)
+class TextBlockDocTest {
 
-// Use \n for explicit newlines
-String withNewlines = """
-    Line 1
-    Line 2\n\
-    Line 3 (forced newline before this)
-    """;
+    @Test
+    void documentWithTextBlocks(DtrContext ctx) {
+        ctx.sayNextSection("Text Block Examples");
+
+        // Use text blocks for code examples
+        ctx.sayCode("""
+            record User(long id, String name, String email) {}
+
+            // Pattern matching on the record
+            if (obj instanceof User(long id, String name, String email)) {
+                System.out.println(name + " <" + email + ">");
+            }
+            """, "java");
+
+        // Use text blocks for Mermaid diagrams
+        ctx.sayMermaid("""
+            sequenceDiagram
+                Client->>Server: GET /api/users
+                Server-->>Client: 200 OK [{...}]
+            """);
+    }
+}
 ```
 
 ---
 
-## HTML Templates
-
-Write HTML without escape sequences:
-
-```java
-String template = """
-    <html>
-    <head>
-        <title>API Documentation</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        <h1>REST API</h1>
-        <div class="endpoint">
-            <h2>GET /api/users</h2>
-            <p>Retrieve all users</p>
-        </div>
-    </body>
-    </html>
-    """;
-```
-
----
-
-## JSON Strings
+## JSON with Text Blocks
 
 Natural JSON syntax without escape sequences:
 
 ```java
-String jsonRequest = """
+String requestBody = """
     {
         "name": "alice",
         "email": "alice@example.com",
@@ -89,12 +75,12 @@ String jsonRequest = """
     }
     """;
 
-String jsonResponse = """
+String responseBody = """
     {
         "id": 42,
         "name": "alice",
         "email": "alice@example.com",
-        "createdAt": "2025-01-15T10:30:00Z"
+        "createdAt": "2026-03-14T10:00:00Z"
     }
     """;
 ```
@@ -106,57 +92,72 @@ String jsonResponse = """
 Write readable SQL without concatenation:
 
 ```java
-String selectQuery = """
-    SELECT user.id, user.name, user.email, COUNT(orders.id) as order_count
-    FROM users AS user
-    LEFT JOIN orders ON user.id = orders.user_id
-    WHERE user.active = true
-    GROUP BY user.id
+String query = """
+    SELECT u.id, u.name, u.email, COUNT(o.id) AS order_count
+    FROM users AS u
+    LEFT JOIN orders AS o ON u.id = o.user_id
+    WHERE u.active = true
+    GROUP BY u.id
     ORDER BY order_count DESC
-    LIMIT 10
+    LIMIT 20
     """;
+```
 
-String insertQuery = """
-    INSERT INTO users (name, email, created_at)
-    VALUES (?, ?, NOW())
-    """;
+---
+
+## HTTP Request Documentation
+
+Use text blocks for HTTP request/response examples in `sayCode`:
+
+```java
+ctx.sayCode("""
+    POST /api/users HTTP/1.1
+    Host: api.example.com
+    Content-Type: application/json
+    Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
+
+    {
+        "name": "charlie",
+        "email": "charlie@example.com"
+    }
+    """, "http");
+
+ctx.sayCode("""
+    HTTP/1.1 201 Created
+    Location: /api/users/43
+    Content-Type: application/json
+
+    {"id": 43, "name": "charlie", "email": "charlie@example.com"}
+    """, "http");
 ```
 
 ---
 
 ## String Interpolation with `formatted()`
 
-Combine text blocks with `String.formatted()` (replaces `String.format()`):
+Combine text blocks with `String.formatted()`:
 
 ```java
 String name = "alice";
 int age = 30;
 
-// Old way
-String old = String.format("User: %s, Age: %d", name, age);
-
-// Java 25 way: text block + formatted()
 String message = """
     Welcome, %s!
     Your age is %d years.
     """.formatted(name, age);
-// Result:
-// Welcome, alice!
-// Your age is 30 years.
 ```
 
 ---
 
-## Template Literals with Variables
+## Escape Sequences in Text Blocks
 
-Embed expressions directly (Java 21+ with preview):
+Use `\` at the end of a line to continue without a newline:
 
 ```java
-// Requires --enable-preview
-String name = "alice";
-String greeting = """
-    Hello, \{name}!
-    Today is \{java.time.LocalDate.now()}
+String oneLine = """
+    This is a very long line that I want to split \
+    across multiple lines in source, \
+    but keep as a single line in the result.
     """;
 ```
 
@@ -167,86 +168,72 @@ String greeting = """
 Leading whitespace is preserved relative to the closing `"""`:
 
 ```java
-// Closing """ on the same line (unusual)
-String compact = """This is a text block""";
-
-// Closing """ on its own line (standard)
+// Standard: closing """ on its own line determines indentation
 String standard = """
     Line 1
     Line 2
-    """; // Closing """ determines indentation
+    """;
 
-// Extra indentation is preserved
+// Extra indentation preserved relative to closing """
 String indented = """
         Indented line
         Another indented line
     Less indented line
-    """; // Result preserves relative indentation
+    """;
 ```
 
 ---
 
-## Multiline Documentation Strings
+## Mermaid DSL with Text Blocks
 
-Perfect for documentation in test methods:
+Text blocks make Mermaid diagrams readable:
 
 ```java
-void documentComplexScenario() {
-    String testDescription = """
-        ## Complex Scenario: User Registration with Email Verification
-
-        This test covers:
-        - User registration via POST /api/auth/register
-        - Email verification token generation
-        - Token expiration after 24 hours
-        - Re-sending verification emails
-
-        Expected behavior:
-        1. POST with valid email → 201 Created
-        2. Email sent to user
-        3. Verification link valid for 24 hours
-        4. After 24 hours, link expires → 410 Gone
-        """;
-
-    System.out.println(testDescription);
-}
+ctx.sayMermaid("""
+    flowchart LR
+        A[Request] --> B{Auth check}
+        B -->|Authenticated| C[Process]
+        B -->|Unauthenticated| D[401 Unauthorized]
+        C --> E[Response]
+    """);
 ```
+
+Without text blocks:
+```java
+ctx.sayMermaid("flowchart LR\n    A[Request] --> B{Auth check}\n    B -->|Authenticated| C[Process]\n    B -->|Unauthenticated| D[401 Unauthorized]\n    C --> E[Response]");
+```
+
+The text block version is clearly superior for readability and maintenance.
 
 ---
 
-## Comparison: Old vs. New
+## Comparison Table
 
 | Scenario | Old Way | Java 25 Way |
 |----------|---------|------------|
-| Single-line string | `"text"` | `"""text"""` |
 | Multiline string | `"line1\nline2\n..."` | `"""\nline1\nline2\n"""` |
 | Embedded quotes | `\"quoted\"` | `"quoted"` (no escape) |
-| HTML/SQL blocks | Concatenation + escape | Text block (native syntax) |
+| JSON blocks | Concatenation + escapes | Text block (native syntax) |
+| SQL | Concatenation | Text block |
+| Mermaid DSL | Concatenation + `\n` | Text block |
 | String formatting | `String.format(...)` | `.formatted(...)` |
-| Indentation | Manual alignment | Automatic stripping |
 
 ---
 
 ## Best Practices
 
-✅ **DO:**
-- Use text blocks for HTML, SQL, JSON, XML
-- Use `formatted()` instead of `String.format()`
-- Let indentation be automatic; place closing `"""` at the dedented level
-- Use `\` for line continuation when needed
-- Combine with other Java 25 features (records, sealed classes)
+**Use text blocks for HTML, SQL, JSON, and Mermaid DSL.** These formats benefit most from natural indentation and no escaping.
 
-❌ **DON'T:**
-- Mix traditional strings and text blocks for the same concept
-- Manually escape quotes in text blocks (not needed)
-- Indent the closing `"""` unless you want that indentation included
-- Use text blocks for single-line strings (less readable than `"..."`)
+**Use `.formatted()` instead of `String.format()`.** It chains naturally off text blocks: `""" ... """.formatted(name)`.
+
+**Let closing `"""` determine indentation.** Place the closing `"""` at the dedented level you want as the baseline.
+
+**Combine with DTR `say*` methods.** `sayCode`, `sayMermaid`, and `sayJson` all accept strings — text blocks make those strings readable.
 
 ---
 
 ## See Also
 
-- [Tutorial: Virtual Threads](../tutorials/virtual-threads-lightweight-concurrency.md)
-- [Tutorial: Records and Sealed Classes](../tutorials/records-sealed-classes.md)
-- [How-to: Use Virtual Threads](use-virtual-threads.md)
-- [Reference: Java 25 Language Features](../reference/java25-features-reference.md)
+- [Generate Mermaid Diagrams](websockets-connection.md) — sayMermaid with text block DSL
+- [Document JSON Payloads](test-json-endpoints.md) — sayJson with structured content
+- [Control What Gets Documented](control-documentation.md) — Using say* with text block content
