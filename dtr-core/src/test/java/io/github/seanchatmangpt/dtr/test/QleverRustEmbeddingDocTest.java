@@ -91,6 +91,16 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
         });
         sayNote("Two-orders-of-magnitude performance gap makes QLever FFI worth the integration complexity for large codebases.");
 
+        sayNextSection("Pipeline Overview: Source → SPARQL → LSP");
+        sayMermaid("""
+            graph LR
+              A[Source File] -->|incremental parse| B[tree-sitter CST]
+              B -->|CRG walker| C[Turtle RDF triples]
+              C -->|buildIndex| D[QLever permutation index]
+              D -->|SPARQL SELECT| E[JSON result set]
+              E -->|JSON-RPC| F[LSP response]
+            """);
+
         testCount++;
     }
 
@@ -249,9 +259,11 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
 
             pub struct Qlever(*mut QleverHandle);
 
-            // SAFETY: QLever's embedded engine is thread-safe for concurrent reads.
+            // SAFETY: Send is enabled because each Qlever handle is owned by one thread.
+            // Sync (shared &self across threads) requires verifying QLever's internal
+            // locking — audit QLever's threading docs before uncommenting Sync.
             unsafe impl Send for Qlever {}
-            unsafe impl Sync for Qlever {}
+            // unsafe impl Sync for Qlever {}  // enable only after thread-safety audit
 
             impl Qlever {
                 pub fn new(index_dir: &Path) -> Option<Self> {
@@ -397,7 +409,7 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
             {"Intersection",                        "Novelty", "Key Gap Filled"},
             {"tree-sitter CST → RDF serialization", "Highest", "200+ grammar coverage; CST richer than AST"},
             {"SPARQL-backed LSP for code nav",      "Highest", "No implementation exists anywhere"},
-            {"Java 26 Babylon → RDF triples",       "High",    "SSA code models as build artifacts"},
+            {"Project Babylon (Java 25+ preview) → RDF triples", "High", "SSA code models as build artifacts"},
             {"Streaming delta updates via tree-sitter","Medium","File-change → delta triples → QLever Update"},
             {"Code graph → ML/LLM SPARQL CONSTRUCT","Medium",  "GNN training data via query"},
         });
@@ -480,6 +492,19 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
         }
         sayTable(layerTable);
 
+        sayNextSection("ArchLayer Sealed Hierarchy — Record Components");
+        say("Each pipeline layer is a Java record — immutable, introspectable at runtime. " +
+            "The following component schemas are extracted live from bytecode:");
+        sayRecordComponents(ParseLayer.class);
+        sayRecordComponents(SerializeLayer.class);
+        sayRecordComponents(IndexLayer.class);
+        sayRecordComponents(QueryLayer.class);
+        sayRecordComponents(LspLayer.class);
+
+        sayNextSection("ArchLayer Class Diagram");
+        sayClassDiagram(ParseLayer.class, SerializeLayer.class, IndexLayer.class,
+                        QueryLayer.class, LspLayer.class);
+
         sayNextSection("RDF Vocabulary for Code Graphs");
         sayCode("""
             @prefix code: <http://example.org/code/> .
@@ -516,7 +541,7 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
         sayNextSection("LSP Request → SPARQL Translation");
         sayTable(new String[][] {
             {"LSP Request",              "SPARQL Pattern",                              "Example"},
-            {"textDocument/definition",  "?def code:name <id> ; code:loc/file ?f ; code:loc/line ?l",
+            {"textDocument/definition",  "?def a code:Function ; code:name \"greet\" ; code:loc/file ?f ; code:loc/line ?l",
                 "Go to definition of fn_greet"},
             {"textDocument/references",  "?call code:callee <def> ; code:loc/file ?f ; code:loc/line ?l",
                 "Find all callers"},
@@ -526,17 +551,30 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
                 "Hover documentation"},
         });
 
-        sayNextSection("Single-Process Latency Budget (estimated)");
-        sayTable(new String[][] {
-            {"Stage",                   "Estimated Latency",  "Notes"},
-            {"tree-sitter incremental parse", "< 1 ms",      "Only changed regions re-parsed"},
-            {"Delta RDF serialization", "1–5 ms",            "Changed nodes only"},
-            {"QLever SPARQL Update",    "~10 ms",            "Per qaecy production data"},
-            {"SPARQL SELECT query",     "< 100 ms",          "On < 10M triple code graph"},
-            {"LSP response roundtrip",  "< 120 ms",          "Well within 400ms LSP budget"},
-        });
-        sayNote("All latency figures are estimates based on extrapolation from QLever production data " +
-            "and tree-sitter benchmarks. Real measurements require a working qlever-rs prototype.");
+        sayNextSection("Single-Process Latency Budget (Projected)");
+        sayAsciiChart("Projected qlever-rs LSP latency budget per layer (ms)",
+            new double[]{1.0, 3.0, 10.0, 50.0, 10.0},
+            new String[]{"ts-parse", "RDF-serial", "SPARQL-update", "SPARQL-query", "LSP-rpc"});
+        sayNote("Projections extrapolated from QLever production benchmarks (qaecy, DBLP dataset) " +
+            "and tree-sitter incremental parse measurements. Total: ~74 ms projected — well within " +
+            "the 400 ms LSP response budget. Real end-to-end numbers require a working qlever-rs " +
+            "prototype. The RDF serialization layer is the only stage measurable today — see below.");
+
+        sayNextSection("Measured: Turtle RDF Serialization Throughput");
+        say("The RDF serialization layer (tree-sitter CST → Turtle triples) is the only " +
+            "pipeline stage fully implementable in the JVM today. This benchmark measures " +
+            "the actual cost of generating Turtle triple strings on the current runtime:");
+        sayBenchmark("Turtle triple serialization — 1 000 code:Function triples", () -> {
+            var sb = new StringBuilder(65_536);
+            for (int k = 0; k < 1_000; k++) {
+                sb.append("<file://src/main.rs#fn_").append(k)
+                  .append("> rdf:type code:Function ; code:name \"fn_").append(k)
+                  .append("\" ; code:loc/line ").append(k).append(" .\n");
+            }
+        }, 20, 200);
+        sayNote("Pure Java StringBuilder baseline on Java " + System.getProperty("java.version") +
+            ". A Rust implementation writing to a pre-allocated Vec<u8> will be faster. " +
+            "All numbers are real System.nanoTime() measurements — no simulation.");
 
         testCount++;
     }
@@ -727,6 +765,9 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
         say("Survey complete. The qlever-rs architecture represents a genuine blue-ocean opportunity: " +
             "trillion-triple SPARQL performance applied to code intelligence, with no existing " +
             "implementation anywhere in the open-source ecosystem as of March 2026.");
+
+        sayNextSection("Execution Environment");
+        sayEnvProfile();
     }
 
     @AfterAll

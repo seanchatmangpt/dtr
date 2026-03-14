@@ -4,6 +4,7 @@
 
 - [QLever as an Embedded Code-Graph Engine](#qleverasanembeddedcodegraphengine)
 - [Why QLever for Code Graphs](#whyqleverforcodegraphs)
+- [Pipeline Overview: Source → SPARQL → LSP](#pipelineoverviewsourcesparqllsp)
 - [libqlever Embedded API](#libqleverembeddedapi)
 - [Core libqlever Operations](#corelibqleveroperations)
 - [Minimal C++ Usage](#minimalcusage)
@@ -25,10 +26,13 @@
 - [tree-sitter-graph: The Missing Bridge](#treesittergraphthemissingbridge)
 - [SPARQL Queries Impossible in Current IDEs](#sparqlqueriesimpossibleincurrentides)
 - [Complete qlever-rs Pipeline Architecture](#completeqleverrspipelinearchitecture)
+- [ArchLayer Sealed Hierarchy — Record Components](#archlayersealedhierarchyrecordcomponents)
+- [ArchLayer Class Diagram](#archlayerclassdiagram)
 - [RDF Vocabulary for Code Graphs](#rdfvocabularyforcodegraphs)
 - [Incremental Update Flow](#incrementalupdateflow)
 - [LSP Request → SPARQL Translation](#lsprequestsparqltranslation)
-- [Single-Process Latency Budget (estimated)](#singleprocesslatencybudgetestimated)
+- [Single-Process Latency Budget (Projected)](#singleprocesslatencybudgetprojected)
+- [Measured: Turtle RDF Serialization Throughput](#measuredturtlerdfserializationthroughput)
 - [QLever Build System and Dependencies](#qleverbuildsystemanddependencies)
 - [Required Dependencies](#requireddependencies)
 - [Build From Source](#buildfromsource)
@@ -40,6 +44,7 @@
 - [qlever: Public Safe API Surface](#qleverpublicsafeapisurface)
 - [Novelty Assessment: No Existing Rust Bindings](#noveltyassessmentnoexistingrustbindings)
 - [Architecture Layer Verification (Sealed Hierarchy)](#architecturelayerverificationsealedhierarchy)
+- [Execution Environment](#executionenvironment)
 
 
 ## QLever as an Embedded Code-Graph Engine
@@ -65,6 +70,17 @@ QLever (Albert-Ludwigs-Universität Freiburg) is the fastest open-source SPARQL 
 
 > [!NOTE]
 > Two-orders-of-magnitude performance gap makes QLever FFI worth the integration complexity for large codebases.
+
+## Pipeline Overview: Source → SPARQL → LSP
+
+```mermaid
+graph LR
+  A[Source File] -->|incremental parse| B[tree-sitter CST]
+  B -->|CRG walker| C[Turtle RDF triples]
+  C -->|buildIndex| D[QLever permutation index]
+  D -->|SPARQL SELECT| E[JSON result set]
+  E -->|JSON-RPC| F[LSP response]
+```
 
 ## libqlever Embedded API
 
@@ -219,9 +235,11 @@ use std::path::Path;
 
 pub struct Qlever(*mut QleverHandle);
 
-// SAFETY: QLever's embedded engine is thread-safe for concurrent reads.
+// SAFETY: Send is enabled because each Qlever handle is owned by one thread.
+// Sync (shared &self across threads) requires verifying QLever's internal
+// locking — audit QLever's threading docs before uncommenting Sync.
 unsafe impl Send for Qlever {}
-unsafe impl Sync for Qlever {}
+// unsafe impl Sync for Qlever {}  // enable only after thread-safety audit
 
 impl Qlever {
     pub fn new(index_dir: &Path) -> Option<Self> {
@@ -358,7 +376,7 @@ Five research projects and tools have explored the code-as-RDF space. None combi
 | --- | --- | --- |
 | tree-sitter CST → RDF serialization | Highest | 200+ grammar coverage; CST richer than AST |
 | SPARQL-backed LSP for code nav | Highest | No implementation exists anywhere |
-| Java 26 Babylon → RDF triples | High | SSA code models as build artifacts |
+| Project Babylon (Java 25+ preview) → RDF triples | High | SSA code models as build artifacts |
 | Streaming delta updates via tree-sitter | Medium | File-change → delta triples → QLever Update |
 | Code graph → ML/LLM SPARQL CONSTRUCT | Medium | GNN training data via query |
 
@@ -416,6 +434,98 @@ The five pipeline layers map to the sealed ArchLayer hierarchy. Each layer is im
 | QueryLayer | qlever-sys / qlever Rust crate | SPARQL SELECT/ASK | JSON result set |
 | LspLayer | tower-lsp (Rust) | LSP JSON-RPC request | LSP JSON-RPC response |
 
+## ArchLayer Sealed Hierarchy — Record Components
+
+Each pipeline layer is a Java record — immutable, introspectable at runtime. The following component schemas are extracted live from bytecode:
+
+### Record Schema: `ParseLayer`
+
+| Component | Type | Generic Type | Annotations |
+| --- | --- | --- | --- |
+| `name` | `String` | — | — |
+| `technology` | `String` | — | — |
+
+### Record Schema: `SerializeLayer`
+
+| Component | Type | Generic Type | Annotations |
+| --- | --- | --- | --- |
+| `name` | `String` | — | — |
+| `technology` | `String` | — | — |
+
+### Record Schema: `IndexLayer`
+
+| Component | Type | Generic Type | Annotations |
+| --- | --- | --- | --- |
+| `name` | `String` | — | — |
+| `technology` | `String` | — | — |
+
+### Record Schema: `QueryLayer`
+
+| Component | Type | Generic Type | Annotations |
+| --- | --- | --- | --- |
+| `name` | `String` | — | — |
+| `technology` | `String` | — | — |
+
+### Record Schema: `LspLayer`
+
+| Component | Type | Generic Type | Annotations |
+| --- | --- | --- | --- |
+| `name` | `String` | — | — |
+| `technology` | `String` | — | — |
+
+## ArchLayer Class Diagram
+
+### Class Diagram: ParseLayer, SerializeLayer, IndexLayer, QueryLayer, LspLayer
+
+```mermaid
+classDiagram
+    Record <|-- ParseLayer
+    ArchLayer <|.. ParseLayer
+    Record <|-- SerializeLayer
+    ArchLayer <|.. SerializeLayer
+    Record <|-- IndexLayer
+    ArchLayer <|.. IndexLayer
+    Record <|-- QueryLayer
+    ArchLayer <|.. QueryLayer
+    Record <|-- LspLayer
+    ArchLayer <|.. LspLayer
+    class ParseLayer {
+        +equals(Object)
+        +hashCode()
+        +name()
+        +technology()
+        +toString()
+    }
+    class SerializeLayer {
+        +equals(Object)
+        +hashCode()
+        +name()
+        +technology()
+        +toString()
+    }
+    class IndexLayer {
+        +equals(Object)
+        +hashCode()
+        +name()
+        +technology()
+        +toString()
+    }
+    class QueryLayer {
+        +equals(Object)
+        +hashCode()
+        +name()
+        +technology()
+        +toString()
+    }
+    class LspLayer {
+        +equals(Object)
+        +hashCode()
+        +name()
+        +technology()
+        +toString()
+    }
+```
+
 ## RDF Vocabulary for Code Graphs
 
 ```turtle
@@ -453,23 +563,45 @@ The five pipeline layers map to the sealed ArchLayer hierarchy. Each layer is im
 
 | LSP Request | SPARQL Pattern | Example |
 | --- | --- | --- |
-| textDocument/definition | ?def code:name <id> ; code:loc/file ?f ; code:loc/line ?l | Go to definition of fn_greet |
+| textDocument/definition | ?def a code:Function ; code:name "greet" ; code:loc/file ?f ; code:loc/line ?l | Go to definition of fn_greet |
 | textDocument/references | ?call code:callee <def> ; code:loc/file ?f ; code:loc/line ?l | Find all callers |
 | workspace/symbol | ?sym rdf:type code:Function ; code:name ?n FILTER CONTAINS(?n, query) | Fuzzy symbol search |
 | textDocument/hover | ?def code:docComment ?doc FILTER (?def = <id>) | Hover documentation |
 
-## Single-Process Latency Budget (estimated)
+## Single-Process Latency Budget (Projected)
 
-| Stage | Estimated Latency | Notes |
-| --- | --- | --- |
-| tree-sitter incremental parse | < 1 ms | Only changed regions re-parsed |
-| Delta RDF serialization | 1–5 ms | Changed nodes only |
-| QLever SPARQL Update | ~10 ms | Per qaecy production data |
-| SPARQL SELECT query | < 100 ms | On < 10M triple code graph |
-| LSP response roundtrip | < 120 ms | Well within 400ms LSP budget |
+### Chart: Projected qlever-rs LSP latency budget per layer (ms)
+
+```
+ts-parse ░░░░░░░░░░░░░░░░░░░░  1
+RDF-serial █░░░░░░░░░░░░░░░░░░░  3
+SPARQL-update ████░░░░░░░░░░░░░░░░  10
+SPARQL-query ████████████████████  50
+LSP-rpc ████░░░░░░░░░░░░░░░░  10
+```
 
 > [!NOTE]
-> All latency figures are estimates based on extrapolation from QLever production data and tree-sitter benchmarks. Real measurements require a working qlever-rs prototype.
+> Projections extrapolated from QLever production benchmarks (qaecy, DBLP dataset) and tree-sitter incremental parse measurements. Total: ~74 ms projected — well within the 400 ms LSP response budget. Real end-to-end numbers require a working qlever-rs prototype. The RDF serialization layer is the only stage measurable today — see below.
+
+## Measured: Turtle RDF Serialization Throughput
+
+The RDF serialization layer (tree-sitter CST → Turtle triples) is the only pipeline stage fully implementable in the JVM today. This benchmark measures the actual cost of generating Turtle triple strings on the current runtime:
+
+### Benchmark: Turtle triple serialization — 1 000 code:Function triples
+
+| Metric | Result |
+| --- | --- |
+| Avg | `156338 ns` |
+| Min | `115588 ns` |
+| Max | `604000 ns` |
+| p99 | `456936 ns` |
+| Ops/sec | `6,396` |
+| Warmup rounds | `20` |
+| Measure rounds | `200` |
+| Java | `25.0.2` |
+
+> [!NOTE]
+> Pure Java StringBuilder baseline on Java 25.0.2. A Rust implementation writing to a pre-allocated Vec<u8> will be faster. All numbers are real System.nanoTime() measurements — no simulation.
 
 ## QLever Build System and Dependencies
 
@@ -632,6 +764,21 @@ Searches across crates.io, GitHub, and the QLever issue tracker (March 2026) con
 > All 5 pipeline layers verified via exhaustive sealed pattern matching — no default case needed.
 
 Survey complete. The qlever-rs architecture represents a genuine blue-ocean opportunity: trillion-triple SPARQL performance applied to code intelligence, with no existing implementation anywhere in the open-source ecosystem as of March 2026.
+
+## Execution Environment
+
+### Environment Profile
+
+| Property | Value |
+| --- | --- |
+| Java Version | `25.0.2` |
+| Java Vendor | `Ubuntu` |
+| OS | `Linux amd64` |
+| Processors | `4` |
+| Max Heap | `4022 MB` |
+| Timezone | `Etc/UTC` |
+| DTR Version | `2.6.0` |
+| Timestamp | `2026-03-14T19:14:37.878786129Z` |
 
 ---
 *Generated by [DTR](http://www.dtr.org)*
