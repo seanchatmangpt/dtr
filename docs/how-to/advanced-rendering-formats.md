@@ -1,419 +1,245 @@
 # How-To: Advanced Rendering Formats
 
-Generate documentation in multiple formats beyond Markdown: PDF, LaTeX, Blog posts, OpenAPI specifications, and HTML presentations.
+Generate documentation in multiple formats beyond Markdown: LaTeX, blog posts, HTML presentations, and OpenAPI specifications — all from a single DTR test.
 
-**Goal:** Create publication-ready documentation automatically from your tests.
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
 ## Overview
 
-DTR supports multiple output formats from a single test:
+DTR's `MultiRenderMachine` routes each `say*` call to multiple output engines simultaneously:
 
 | Format | Template | Best For | Output |
 |--------|----------|----------|--------|
 | **Markdown** | Built-in | Version control, websites | `.md` |
-| **PDF** | LaTeX | Academic papers, conferences | `.pdf` |
-| **LaTeX** | ACM/arXiv/IEEE/Nature | Publication submission | `.tex` |
-| **Blog posts** | Dev.to, Medium | Community outreach | `.md` + metadata |
-| **OpenAPI** | OpenAPI 3.0 | Automated API clients | `.json` or `.yaml` |
+| **LaTeX** | ACM/arXiv/IEEE/Nature | Academic papers | `.tex` |
+| **Blog posts** | Dev.to, Medium | Community outreach | `.md` + frontmatter |
+| **OpenAPI** | OpenAPI 3.0 | API client generation | `.json` / `.yaml` |
 | **HTML Slides** | Reveal.js | Live presentations | `.html` |
 
 ---
 
-## 1. LaTeX & PDF Output
+## 1. LaTeX and PDF Output
 
 ### Supported Templates
-
-DTR includes academic templates:
 
 - **ACM Conference** — ACM SIGPLAN/SIGOPS conferences
 - **arXiv** — Computer Science preprints
 - **IEEE** — IEEE journal format
 - **Nature** — Nature magazine style
 
-### Basic PDF Generation
+### Basic LaTeX Generation
 
 ```java
-@Test
-public void documentAsAcmPaper() {
-    ctx.sayNextSection("Abstract");
-    ctx.say("This paper presents...");
+@ExtendWith(DtrExtension.class)
+class ResearchDocTest {
 
-    ctx.sayNextSection("Introduction");
-    ctx.say("Background and motivation...");
+    @Test
+    void documentAsAcmPaper(DtrContext ctx) {
+        ctx.sayNextSection("Abstract");
+        ctx.say("This paper presents DTR 2.6.0, a documentation testing runtime " +
+                "for Java 25 that generates publication-ready output from JUnit 5 tests.");
 
-    // Automatically renders as PDF in addition to Markdown
-    Response response = ctx.sayAndMakeRequest(
-        Request.GET().url(testServerUrl().path("/api/data"))
-    );
+        ctx.sayNextSection("Introduction");
+        ctx.say("Background: API documentation drifts from implementation over time. " +
+                "DTR solves this by generating documentation directly from executed tests.");
 
-    ctx.say("The API returns structured data as shown above.");
+        ctx.sayNextSection("Methodology");
+        ctx.say("We evaluated performance using sayBenchmark on Java 25.0.2:");
+
+        ctx.sayBenchmark("Record serialization (10k iterations)", () -> {
+            record Point(double x, double y) {}
+            new Point(1.0, 2.0).toString();
+        }, 5, 50);
+
+        ctx.sayEnvProfile();
+    }
 }
 ```
 
 ### Configure LaTeX Template
 
-In your test class:
-
-```java
-@ExtendWith(DTRExtension.class)
-public class ApiDocTest {
-
-    @Test
-    void testWithLatex(DTRContext ctx) {
-        // DTR automatically uses RenderMachine with LaTeX configuration
-
-        ctx.sayNextSection("Research Methodology");
-        ctx.say("We tested the API by...");
-        ctx.sayCode(
-            "curl http://localhost:8080/api/test",
-            "bash"
-        );
-    }
-
-    // Configure template in setup if needed
-    @BeforeEach
-    void setupLatexTemplate(DTRContext ctx) {
-        // Set template preference
-        // ctx.setLatexTemplate(LatexTemplate.ARXIV);
-    }
-}
-```
-
-### LaTeX Template Options
-
-```java
-// ACM Conference (two-column)
-// - Page layout: two-column
-// - Citation style: ACM
-// - Font: Computer Modern (default)
-
-// arXiv (single-column)
-// - Page layout: single-column
-// - Citation style: Plain
-// - Font: Times New Roman
-
-// IEEE (two-column journal)
-// - Page layout: two-column
-// - Citation style: IEEE
-// - Font: Times New Roman
-
-// Nature (magazine style)
-// - Page layout: single-column, narrow margins
-// - Citation style: Nature (superscript)
-// - Font: Minion Pro (optional)
-```
-
-### Custom LaTeX Configuration
-
-For advanced customization, add to `pom.xml`:
-
 ```xml
+<!-- In pom.xml properties -->
 <properties>
     <dtr.latex.template>arxiv</dtr.latex.template>
-    <dtr.latex.title>My Research Paper</dtr.latex.title>
-    <dtr.latex.authors>Alice, Bob, Charlie</dtr.latex.authors>
-    <dtr.latex.abstract>This research demonstrates...</dtr.latex.abstract>
+    <dtr.latex.title>DTR: Documentation Testing Runtime for Java 25</dtr.latex.title>
+    <dtr.latex.authors>Alice Smith, Bob Jones</dtr.latex.authors>
+    <dtr.latex.abstract>This paper presents...</dtr.latex.abstract>
 </properties>
 ```
 
-### Verify PDF Output
+### Verify LaTeX Output
 
 ```bash
-# Check LaTeX files generated
 ls -la target/docs/test-results/*.tex
-
-# Check PDF files
 ls -la target/docs/test-results/*.pdf
 
-# Open PDF to verify
-open target/docs/test-results/ApiDocTest.pdf
+# Install LaTeX if needed
+sudo apt-get install texlive-latex-base texlive-latex-extra
+
+# Compile manually
+pdflatex target/docs/test-results/ResearchDocTest.tex
 ```
 
 ---
 
 ## 2. Blog Export
 
-### Supported Platforms
-
-- **Dev.to** — Developer Community
-- **Medium** — Long-form articles
-- **Hashnode** — Developer blogging
-- **Custom Markdown** — Any blogging platform accepting Markdown
-
-### Generate Blog Post
+### Generate a Blog Post
 
 ```java
 @Test
-public void generateBlogPost() {
-    ctx.sayNextSection("Building a REST API with Java");
+void generateBlogPost(DtrContext ctx) {
+    ctx.sayNextSection("Building Resilient APIs with Java 25");
 
-    ctx.say("In this article, we'll build a simple REST API and document it " +
-            "using DTR.");
+    ctx.say("In this article, we'll document a REST API using DTR 2.6.0 — " +
+            "a testing framework that generates documentation directly from executed tests.");
 
     ctx.sayNextSection("Setup");
-    ctx.say("First, create a Maven project with DTR as a dependency.");
+    ctx.say("Add DTR to your Maven project:");
 
-    Response response = ctx.sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/articles"))
-            .contentTypeApplicationJson()
-            .payload(new Article("My Blog Post", "Article body..."))
-    );
+    ctx.sayCode("""
+        <dependency>
+            <groupId>io.github.seanchatmangpt.dtr</groupId>
+            <artifactId>dtr-core</artifactId>
+            <version>2.6.0</version>
+            <scope>test</scope>
+        </dependency>
+        """, "xml");
 
-    ctx.say("As you can see, the API is simple and intuitive.");
+    ctx.sayNextSection("Your First Documentation Test");
+    ctx.say("Every DTR test injects a DtrContext parameter:");
+
+    ctx.sayCode("""
+        @ExtendWith(DtrExtension.class)
+        class ApiDocTest {
+            @Test
+            void documentApi(DtrContext ctx) {
+                ctx.sayNextSection("User API");
+                ctx.sayEnvProfile();
+            }
+        }
+        """, "java");
 }
 ```
 
-### Blog Metadata
-
-Add metadata for blog platforms:
-
-```java
-@Test
-@BlogMetadata(
-    title = "Testing APIs with DTR",
-    slug = "testing-apis-dtr",
-    tags = {"api", "testing", "java", "documentation"},
-    canonicalUrl = "https://mysite.com/api-testing"
-)
-public void testApiAndPublish() {
-    // Test content...
-}
-```
-
-### Output Locations
+### Output Location
 
 ```bash
-# Generated blog files
 target/blog/
-├── Testing-APIs-with-DTR.md        # Markdown for platforms
-├── meta.yaml                         # Metadata (title, tags, etc.)
-├── cover-image.png                  # Featured image (if provided)
-└── frontmatter.yml                  # YAML frontmatter for Jekyll
-```
-
-### Publish to Dev.to
-
-```bash
-# 1. Generate blog markdown
-mvnd test -Dtest=YourTest
-
-# 2. Manually publish to Dev.to
-# - Create account at dev.to
-# - Post the generated Markdown
-# - Or use Dev.to API:
-curl -X POST https://dev.to/api/articles \
-  -H "api-key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d @target/blog/meta.yaml
+├── Building-Resilient-APIs-with-Java-25.md
+├── meta.yaml
+└── frontmatter.yml
 ```
 
 ---
 
 ## 3. OpenAPI Documentation
 
-### Auto-Generate OpenAPI from Tests
+### Document API Interactions
+
+Since DTR 2.6.0 does not include a built-in HTTP client, document API interactions manually using `sayJson` and `sayCode`:
 
 ```java
 @Test
-public void documentRestApiAsOpenApi() {
+void documentRestApi(DtrContext ctx) throws Exception {
     ctx.sayNextSection("User Management API");
+    ctx.say("Base URL: `https://api.example.com/v1`");
 
-    ctx.say("Get all users:");
-    Response getAllUsers = ctx.sayAndMakeRequest(
-        Request.GET().url(testServerUrl().path("/api/users"))
-    );
+    ctx.sayNextSection("GET /users");
+    ctx.say("Returns a paginated list of users.");
 
-    ctx.say("Get a specific user:");
-    Response getUser = ctx.sayAndMakeRequest(
-        Request.GET().url(testServerUrl().path("/api/users/123"))
-    );
+    ctx.sayCode("""
+        GET /users?page=1&size=20
+        Authorization: Bearer <token>
+        """, "http");
 
-    ctx.say("Create a new user:");
-    Response createUser = ctx.sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/users"))
-            .contentTypeApplicationJson()
-            .payload(new User("alice", "alice@example.com"))
-    );
+    ctx.sayJson(java.util.Map.of(
+        "users", java.util.List.of(
+            java.util.Map.of("id", 1, "name", "Alice", "email", "alice@example.com"),
+            java.util.Map.of("id", 2, "name", "Bob", "email", "bob@example.com")
+        ),
+        "total", 2,
+        "page", 1,
+        "size", 20
+    ));
 
-    ctx.say("Update a user:");
-    Response updateUser = ctx.sayAndMakeRequest(
-        Request.PUT()
-            .url(testServerUrl().path("/api/users/123"))
-            .contentTypeApplicationJson()
-            .payload(new User("alice2", "alice2@example.com"))
-    );
+    ctx.sayNextSection("POST /users");
+    ctx.say("Creates a new user. Returns 201 Created with the new user's ID.");
 
-    ctx.say("Delete a user:");
-    Response deleteUser = ctx.sayAndMakeRequest(
-        Request.DELETE().url(testServerUrl().path("/api/users/123"))
-    );
+    ctx.sayCode("""
+        POST /users
+        Content-Type: application/json
+        Authorization: Bearer <token>
 
-    // DTR automatically collects OpenAPI spec from requests/responses
+        {"name": "Charlie", "email": "charlie@example.com"}
+        """, "http");
+
+    ctx.sayJson(java.util.Map.of("id", 3, "name", "Charlie", "email", "charlie@example.com"));
 }
 ```
 
-### OpenAPI Output Format
+### Generated OpenAPI File
 
 ```bash
-# Check generated OpenAPI spec
 cat target/docs/openapi.json
-
-# Or in YAML format
 cat target/docs/openapi.yaml
-```
-
-### Example Generated OpenAPI
-
-```json
-{
-  "openapi": "3.0.0",
-  "info": {
-    "title": "User Management API",
-    "version": "1.0.0"
-  },
-  "paths": {
-    "/api/users": {
-      "get": {
-        "summary": "Get all users",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new user",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "name": {"type": "string"},
-          "email": {"type": "string"}
-        }
-      }
-    }
-  }
-}
-```
-
-### Customize OpenAPI Spec
-
-Add descriptions and other metadata:
-
-```java
-@Test
-@OpenApiInfo(
-    title = "User Management API",
-    version = "1.0.0",
-    description = "Complete API for managing users",
-    contact = @Contact(
-        name = "API Support",
-        email = "api@example.com"
-    )
-)
-public void documentApi() {
-    ctx.sayNextSection("Overview");
-    ctx.say("This API provides user management operations.");
-    // test requests...
-}
-```
-
-### Verify with Swagger UI
-
-```bash
-# 1. Use Swagger Editor online
-# - Go to https://editor.swagger.io/
-# - Copy-paste content of target/docs/openapi.json
-# - Interactive API documentation displays
-
-# Or 2. Run locally
-docker run -p 8080:8080 -v $(pwd)/target/docs:/api \
-  swaggerapi/swagger-ui
-# - Visit http://localhost:8080
-# - Specify URL: file:///api/openapi.json
 ```
 
 ---
 
 ## 4. HTML Presentations (Reveal.js)
 
-### Generate Slides from Tests
+### Generate Slides
 
 ```java
 @Test
-@SlideFormat  // Generate as Reveal.js presentation
-public void presentApiDocumentation() {
-    ctx.sayNextSection("REST API Documentation");
-    ctx.say("Presenting the User Management API");
+void presentApiDocumentation(DtrContext ctx) {
+    ctx.sayNextSection("DTR 2.6.0: Documentation from Tests");
+    ctx.say("Generate Markdown, LaTeX, blog posts, and slides from a single JUnit 5 test.");
 
-    // First slide
-    ctx.slideBreak();
-    ctx.sayNextSection("Endpoints");
-    ctx.say("GET /api/users — List all users");
-    ctx.say("POST /api/users — Create user");
-    ctx.say("PUT /api/users/{id} — Update user");
-    ctx.say("DELETE /api/users/{id} — Delete user");
+    ctx.sayNextSection("New in 2.6.0");
+    ctx.sayUnorderedList(java.util.List.of(
+        "sayBenchmark — inline microbenchmarks",
+        "sayMermaid — Mermaid diagram DSL",
+        "sayClassDiagram — auto class diagrams via reflection",
+        "sayEnvProfile — environment snapshot",
+        "sayRecordComponents — record schema tables",
+        "sayException — structured exception docs",
+        "sayAsciiChart — Unicode bar charts",
+        "sayContractVerification — interface coverage",
+        "sayEvolutionTimeline — git log timeline"
+    ));
 
-    // Show request/response example
-    ctx.slideBreak();
-    ctx.sayNextSection("Example Request");
-    Response response = ctx.sayAndMakeRequest(
-        Request.POST()
-            .url(testServerUrl().path("/api/users"))
-            .contentTypeApplicationJson()
-            .payload(new User("alice", "alice@example.com"))
-    );
+    ctx.sayNextSection("Example: sayBenchmark");
+    ctx.sayCode("""
+        ctx.sayBenchmark("StringBuilder (1000 appends)", () -> {
+            var sb = new StringBuilder();
+            for (int i = 0; i < 1000; i++) sb.append(i);
+        });
+        """, "java");
 
-    // Final slide
-    ctx.slideBreak();
-    ctx.sayNextSection("Questions?");
-    ctx.say("Thank you for reviewing our API documentation!");
+    ctx.sayNextSection("Thank You");
+    ctx.say("DTR 2.6.0 — March 2026 | Java 25 | Maven Central");
 }
 ```
 
 ### Output
 
 ```bash
-# Generated presentation
-target/slides/ApiDocumentation.html
-
-# Open in browser
-open target/slides/ApiDocumentation.html
+target/slides/PresentApiDocumentation.html
 ```
+
+Open in a browser; use arrow keys to navigate slides.
 
 ### Customize Presentation Theme
 
 ```xml
 <properties>
-    <reveal.theme>black</reveal.theme>  <!-- white, black, league, sky, beige, simple, serif, blood, night, moon, solarized -->
-    <reveal.transition>slide</reveal.transition>  <!-- fade, slide, convex, concave, zoom -->
+    <reveal.theme>black</reveal.theme>
+    <reveal.transition>slide</reveal.transition>
 </properties>
 ```
 
@@ -423,83 +249,45 @@ open target/slides/ApiDocumentation.html
 
 ### Generate All Formats Simultaneously
 
-```java
-@Test
-public void generateAllFormats() {
-    ctx.sayNextSection("Comprehensive API Documentation");
-
-    ctx.say("This test generates documentation in multiple formats:");
-    ctx.sayUnorderedList(Arrays.asList(
-        "Markdown (GitHub, websites)",
-        "PDF (academic papers)",
-        "Blog post (Dev.to, Medium)",
-        "OpenAPI spec (Swagger UI)",
-        "HTML slides (presentations)"
-    ));
-
-    Response response = ctx.sayAndMakeRequest(
-        Request.GET().url(testServerUrl().path("/api/data"))
-    );
-
-    ctx.say("All formats are generated automatically!");
-}
-```
-
-### Output Directory Structure
+A single `mvnd test` run produces all formats at once:
 
 ```
 target/
 ├── docs/
 │   ├── test-results/
-│   │   ├── ApiDocTest.md           # Markdown
-│   │   ├── ApiDocTest.tex          # LaTeX source
-│   │   ├── ApiDocTest.pdf          # PDF (if LaTeX installed)
-│   │   └── ...other formats
-│   ├── openapi.json                 # OpenAPI specification
+│   │   ├── MyDocTest.md
+│   │   ├── MyDocTest.tex
+│   │   ├── MyDocTest.pdf
+│   │   └── MyDocTest.html
+│   ├── openapi.json
 │   └── openapi.yaml
 ├── blog/
-│   ├── Comprehensive-Api-Docs.md   # Blog-ready Markdown
-│   └── meta.yaml
+│   └── My-Doc-Test.md
 └── slides/
-    └── ApiDocTest.html             # Reveal.js presentation
+    └── MyDocTest.html
 ```
 
 ---
 
-## 6. Custom Rendering
+## 6. Using MultiRenderMachine with Virtual Threads
 
-### Create Custom Output Format
-
-For specialized formats (custom HTML, restructuredText, etc.):
-
-```java
-public interface CustomRenderer {
-    void startSection(String title);
-    void addParagraph(String text);
-    void addCode(String code, String language);
-    void addTable(String[][] data);
-    String getOutput();
-}
-
-public class MyCustomRenderer implements CustomRenderer {
-    // Implement rendering logic
-}
-```
-
-### Integrate Custom Renderer
+For large documentation suites, use virtual threads to dispatch to render engines concurrently:
 
 ```java
 @Test
-public void renderCustomFormat() {
-    CustomRenderer renderer = new MyCustomRenderer();
+void generateAllFormats(DtrContext ctx) {
+    ctx.sayNextSection("Multi-Format Output Demo");
+    ctx.sayEnvProfile();
 
-    ctx.sayNextSection("Custom Format Test");
-    // DTR captures all say* calls
-    // Post-process with custom renderer if needed
+    ctx.say("The MultiRenderMachine dispatches to all output engines in parallel " +
+            "using virtual threads for minimal overhead.");
 
-    Response response = ctx.sayAndMakeRequest(
-        Request.GET().url(testServerUrl().path("/api/data"))
-    );
+    ctx.sayBenchmark("MultiRenderMachine dispatch overhead", () -> {
+        ctx.say("Benchmark content");
+    }, 5, 20);
+
+    ctx.sayNote("LaTeX compilation requires pdflatex installed. " +
+                "Other formats always succeed regardless of system tools.");
 }
 ```
 
@@ -511,106 +299,60 @@ public void renderCustomFormat() {
 
 **Error:** `pdflatex not found`
 
-**Solution:**
 ```bash
-# Install LaTeX
 sudo apt-get install texlive-latex-base texlive-latex-extra
-
-# Or macOS
-brew install mactex
-
-# Retry build
 mvnd clean test
 ```
 
-### OpenAPI Spec is Incomplete
-
-**Issue:** Some endpoints missing or schema is wrong
-
-**Solution:**
-1. Ensure all important fields are present in test payloads
-2. Document edge cases in test comments
-3. Manually refine generated spec if needed:
-   ```bash
-   edit target/docs/openapi.json
-   ```
-
 ### Blog Metadata Not Publishing
 
-**Issue:** Tags or title not working on platform
+Check the platform's supported frontmatter fields and update `meta.yaml` manually:
 
-**Solution:**
-1. Check platform's supported metadata fields
-2. Use standard Markdown frontmatter:
-   ```yaml
-   ---
-   title: My Article
-   tags: [api, testing, java]
-   published: true
-   ---
-   ```
+```yaml
+---
+title: My Article
+tags: [java, testing, documentation]
+published: true
+---
+```
 
 ---
 
 ## Best Practices
 
-### 1. One Test = One Document
-
-Keep tests focused on one aspect:
+### One test = one focused document
 
 ```java
-// ✅ GOOD: One test, one focused document
-@Test
-public void documentUserApiCreate() { ... }
+// GOOD: focused
+@Test void documentUserApiCreate(DtrContext ctx) { ... }
 
-@Test
-public void documentUserApiRead() { ... }
+@Test void documentUserApiRead(DtrContext ctx) { ... }
 
-// ❌ BAD: One test, too many concerns
-@Test
-public void documentWholeApi() { ... }
+// BAD: too broad
+@Test void documentWholeApi(DtrContext ctx) { ... }
 ```
 
-### 2. Include Descriptive Text
+### Include descriptive text
 
-LaTeX/PDF output quality depends on content:
+LaTeX/PDF quality depends on prose content:
 
 ```java
 ctx.say("The user creation endpoint accepts POST requests with a JSON body " +
-        "containing name and email fields. Successful requests return 201 Created " +
-        "with the new user's ID.");
+        "containing name and email. Successful requests return 201 Created " +
+        "with the new user's ID assigned by the server.");
 ```
 
-### 3. Use Meaningful Section Titles
-
-These become document structure:
+### Use meaningful section titles
 
 ```java
-ctx.sayNextSection("User Management API"); // Good
+ctx.sayNextSection("User Management API");  // Good
 ctx.sayNextSection("Test 1");               // Bad
-```
-
-### 4. Document Examples
-
-Include realistic examples for each operation:
-
-```java
-ctx.say("Example request:");
-ctx.sayCode("""
-    {
-      "name": "Alice",
-      "email": "alice@example.com"
-    }
-    """, "json");
-
-ctx.say("Example response:");
-Response response = ctx.sayAndMakeRequest(...);
 ```
 
 ---
 
 ## Next Steps
 
-- See [Benchmarking](benchmarking.md) to measure output generation performance
-- See [Customize HTML Output](customize-html-output.md) for HTML styling
+- See [Benchmarking](benchmarking.md) to measure rendering performance
+- See [Configure Multi-Format Output](customize-html-output.md) for MultiRenderMachine setup
 - See [Reference: RenderMachine API](../reference/rendermachine-api.md) for all rendering methods

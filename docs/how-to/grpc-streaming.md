@@ -1,220 +1,108 @@
-# How-to: Handle gRPC Streaming
+# How-To: Document Call Graphs with sayCallGraph
 
-Test server streaming, client streaming, and bidirectional streaming.
+Visualize the internal call structure of a class using DTR 2.6.0's `sayCallGraph` method, which generates a Mermaid flowchart from reflection.
+
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
-## Server Streaming
+## What sayCallGraph Does
+
+`sayCallGraph(Class<?>)` analyzes the given class via reflection and Code Reflection IR (Java 25 preview) to produce a Mermaid `flowchart` diagram showing which methods call which other methods within the class. The diagram is embedded as a fenced Mermaid block in the output.
+
+---
+
+## Basic Usage
 
 ```java
-// Blocking iterator
-Iterator<UserResponse> responses = stub.listUsers(request);
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-List<UserResponse> all = new ArrayList<>();
-while (responses.hasNext()) {
-    all.add(responses.next());
+@ExtendWith(DtrExtension.class)
+class OrderServiceCallGraphDocTest {
+
+    @Test
+    void documentOrderServiceCallGraph(DtrContext ctx) {
+        ctx.sayNextSection("OrderService Internal Call Graph");
+        ctx.say("The following diagram shows which methods call which others " +
+                "inside OrderService. Use this to understand the execution flow " +
+                "before refactoring.");
+
+        ctx.sayCallGraph(OrderService.class);
+
+        ctx.sayNote("Edges point from caller → callee. " +
+                    "Isolated nodes are leaf methods (no internal calls).");
+    }
 }
-
-System.out.println("Received " + all.size() + " users");
 ```
 
 ---
 
-## Server Streaming with Timeout
+## Combine Call Graph with Contract Verification
+
+Document both what the service does (call graph) and how completely it implements its contract (contract verification):
 
 ```java
-Iterator<UserResponse> responses = stub
-    .withDeadlineAfter(10, TimeUnit.SECONDS)
-    .listUsers(request);
+@Test
+void documentPaymentService(DtrContext ctx) {
+    ctx.sayNextSection("PaymentService: Call Graph and Contract Coverage");
 
-while (responses.hasNext()) {
-    UserResponse user = responses.next();
-    System.out.println(user.getName());
+    ctx.say("**Call Graph** — internal method dependencies:");
+    ctx.sayCallGraph(PaymentServiceImpl.class);
+
+    ctx.say("**Contract Coverage** — interface implementation status:");
+    ctx.sayContractVerification(PaymentService.class, PaymentServiceImpl.class);
 }
 ```
 
 ---
 
-## Client Streaming
+## Document a Pipeline Class
+
+Call graphs are especially useful for pipeline-style classes where one public method chains through many private helpers:
 
 ```java
-StreamObserver<CreateResponse> responseObserver =
-    new StreamObserver<CreateResponse>() {
-        @Override
-        public void onNext(CreateResponse response) {
-            System.out.println("Response: " + response.getCreatedCount());
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            System.err.println("Error: " + t.getMessage());
-        }
-
-        @Override
-        public void onCompleted() {
-            System.out.println("Server finished processing stream");
-        }
-    };
-
-StreamObserver<UserRequest> requestObserver = stub.createUsers(responseObserver);
-
-// Send multiple requests
-for (int i = 1; i <= 100; i++) {
-    UserRequest req = UserRequest.newBuilder()
-        .setName("user" + i)
-        .setEmail("user" + i + "@example.com")
-        .build();
-
-    requestObserver.onNext(req);
-}
-
-// Signal completion
-requestObserver.onCompleted();
-```
-
----
-
-## Bidirectional Streaming
-
-```java
-List<String> serverMessages = Collections.synchronizedList(new ArrayList<>());
-CountDownLatch completeLatch = new CountDownLatch(1);
-
-StreamObserver<MessageResponse> responseObserver =
-    new StreamObserver<MessageResponse>() {
-        @Override
-        public void onNext(MessageResponse message) {
-            serverMessages.add(message.getContent());
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            System.err.println("Error: " + t.getMessage());
-            completeLatch.countDown();
-        }
-
-        @Override
-        public void onCompleted() {
-            System.out.println("Server closed stream");
-            completeLatch.countDown();
-        }
-    };
-
-StreamObserver<MessageRequest> requestObserver = stub.chat(responseObserver);
-
-// Send messages
-for (String msg : messages) {
-    requestObserver.onNext(
-        MessageRequest.newBuilder().setContent(msg).build());
-    Thread.sleep(100); // Simulate delay
-}
-
-requestObserver.onCompleted();
-
-// Wait for server
-boolean done = completeLatch.await(10, TimeUnit.SECONDS);
-System.out.println("Received " + serverMessages.size() + " messages");
-```
-
----
-
-## Handle Streaming Errors
-
-```java
-StreamObserver<Response> observer = new StreamObserver<Response>() {
-    @Override
-    public void onNext(Response response) {
-        // Process message
+class DocumentationPipeline {
+    public String render(String input) {
+        String parsed = parse(input);
+        String validated = validate(parsed);
+        String formatted = format(validated);
+        return output(formatted);
     }
 
-    @Override
-    public void onError(Throwable t) {
-        if (t instanceof StatusRuntimeException) {
-            StatusRuntimeException e = (StatusRuntimeException) t;
-            System.out.println("gRPC error: " + e.getStatus().getCode());
-        } else {
-            System.out.println("Other error: " + t.getMessage());
-        }
-    }
-
-    @Override
-    public void onCompleted() {
-        // Stream done
-    }
-};
-
-// Use observer...
-```
-
----
-
-## Collect All Streamed Results
-
-```java
-// Collect server stream into list
-Iterator<Response> stream = stub.listItems(request);
-List<Response> allItems = new ArrayList<>();
-
-while (stream.hasNext()) {
-    allItems.add(stream.next());
+    private String parse(String raw) { return raw.strip(); }
+    private String validate(String parsed) { return parsed.isEmpty() ? "EMPTY" : parsed; }
+    private String format(String valid) { return valid.toUpperCase(); }
+    private String output(String formatted) { return "[" + formatted + "]"; }
 }
 
-System.out.println("Got " + allItems.size() + " items");
+@Test
+void documentPipelineCallGraph(DtrContext ctx) {
+    ctx.sayNextSection("DocumentationPipeline Call Structure");
+    ctx.say("The render() method delegates through a chain of private helpers:");
+    ctx.sayCallGraph(DocumentationPipeline.class);
+}
 ```
 
 ---
 
-## Concurrent Bidirectional Streams
+## Combine with Control Flow Graph
+
+For detailed analysis of a specific method's branching, pair `sayCallGraph` with `sayControlFlowGraph`:
 
 ```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    List<Future<List<String>>> futures = new ArrayList<>();
+@Test
+void documentMethodDetail(DtrContext ctx) throws NoSuchMethodException {
+    ctx.sayNextSection("Order Processing: Call Graph and Control Flow");
 
-    for (int clientId = 1; clientId <= 10; clientId++) {
-        final int id = clientId;
-        futures.add(executor.submit(() -> {
-            List<String> messages = Collections.synchronizedList(new ArrayList<>());
-            CountDownLatch latch = new CountDownLatch(1);
+    ctx.say("Class-level call graph:");
+    ctx.sayCallGraph(OrderProcessor.class);
 
-            StreamObserver<MessageResponse> responses =
-                new StreamObserver<MessageResponse>() {
-                    @Override
-                    public void onNext(MessageResponse msg) {
-                        messages.add(msg.getContent());
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        latch.countDown();
-                    }
-
-                    @Override
-                    public void onCompleted() {
-                        latch.countDown();
-                    }
-                };
-
-            StreamObserver<MessageRequest> requests = stub.chat(responses);
-
-            // Send messages
-            for (int i = 0; i < 5; i++) {
-                requests.onNext(
-                    MessageRequest.newBuilder()
-                        .setContent("Client " + id + " msg " + i)
-                        .build());
-            }
-
-            requests.onCompleted();
-            latch.await(5, TimeUnit.SECONDS);
-            return messages;
-        }));
-    }
-
-    // Collect results from all streams
-    for (Future<List<String>> future : futures) {
-        List<String> messages = future.get();
-        System.out.println("Stream got " + messages.size() + " responses");
-    }
+    ctx.say("Control flow inside processOrder():");
+    var method = OrderProcessor.class.getDeclaredMethod("processOrder", long.class);
+    ctx.sayControlFlowGraph(method);
 }
 ```
 
@@ -222,21 +110,18 @@ try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 ## Best Practices
 
-✅ **DO:**
-- Wait for `onCompleted()` before assuming stream is done
-- Handle all three callbacks (@OnNext, @OnError, @OnCompleted)
-- Use `CountDownLatch` to synchronize async streams
-- Test with actual server (streams are stateful)
+**Focus on one class at a time.** Call graphs become unreadable for very large classes. If a class has more than 20 methods, consider splitting it first.
 
-❌ **DON'T:**
-- Assume immediate message arrival
-- Forget to call `onCompleted()` (signals end to server)
-- Leave streams open
+**Combine with sayDocCoverage.** A call graph shows structure; `sayDocCoverage` shows which public methods are documented. Use both together for maintainability reviews.
+
+**Generate before refactoring.** Capture the current call graph, then capture it again after refactoring, to demonstrate the structural simplification.
+
+**Use with sealed result types.** Classes that return sealed types often have complex branching. The call graph and control flow graph together tell the full story.
 
 ---
 
 ## See Also
 
-- [How-to: Make Unary RPC Calls](grpc-unary.md)
-- [How-to: Test gRPC Error Codes](grpc-error-handling.md)
-- [Tutorial: gRPC Streaming](../tutorials/grpc-streaming.md)
+- [Verify Interface Contracts](grpc-unary.md) — sayContractVerification
+- [Document Coverage Matrix](grpc-error-handling.md) — sayDocCoverage
+- [Generate Mermaid Diagrams](websockets-connection.md) — sayMermaid for custom diagrams

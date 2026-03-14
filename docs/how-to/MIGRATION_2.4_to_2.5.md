@@ -1,17 +1,19 @@
-# DTR 2.4.0 to 2.5.0 Migration Guide
+# DTR Migration Guide: 2.4.x → 2.5.x → 2.6.0
 
-**Version:** 2.5.0
-**Release Date:** March 12, 2026
-**Java Requirement:** Java 26 LTS with `--enable-preview`
-**Maven:** `io.github.seanchatmangpt.dtr:dtr-core:2.5.0`
+**Last Updated:** March 14, 2026
 
 ---
 
 ## Overview
 
-DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 26 support and transitions the `RenderMachine` from a sealed class to an abstract base class. This change enables RenderMachine implementations to be distributed across multiple packages without violating Java 26's sealed class constraints.
+This guide covers two migrations:
 
-**Good News:** Most users see **no code changes**. The public API remains 100% identical to 2.4.0.
+1. [Migrating 2.4.x → 2.5.x](#migrating-24x--25x) — RenderMachine and Maven Central
+2. [Migrating 2.5.x → 2.6.0](#migrating-25x--260) — HTTP stack removal and new say* methods
+
+---
+
+## Migrating 2.4.x → 2.5.x
 
 ### Key Changes at a Glance
 
@@ -19,24 +21,19 @@ DTR 2.5.0 is the **Maven Central Ready** release that stabilizes Java 26 support
 |--------|-------|-------|-----------|
 | RenderMachine | Sealed class | Abstract base class | No* |
 | Maven Central | Not available | Published via Sonatype | No (additive) |
-| Java Version | Java 26 LTS | Java 26.0.2+ | No (same) |
+| Java Version | Java 25 | Java 25+ | No (same) |
 | Preview Flags | Required | Enforced | No (same) |
 | Introspection Methods | All supported | All supported + cached | No (improvement) |
-| Dependencies | Jackson 2.21.0 | Jackson 2.21.1 | No (patch) |
 
 *Only custom RenderMachine implementations require changes (rare)
 
----
+### Breaking Changes in 2.5.0
 
-## Breaking Changes
-
-### 1. RenderMachine is No Longer Sealed
+#### RenderMachine is No Longer Sealed
 
 **Impact Level:** Low (most users unaffected)
 
-**What Changed:**
-- `RenderMachine` transitioned from `sealed class` to `abstract class`
-- This enables implementations across multiple packages (io.github.seanchatmangpt.dtr.rendermachine, rendermachine.latex, render.blog, render.slides)
+**What Changed:** `RenderMachine` transitioned from `sealed class` to `abstract class`. This enables implementations across multiple packages.
 
 **What Still Works (No Changes Needed):**
 ```java
@@ -45,10 +42,6 @@ RenderMachine machine = ctx.getRenderMachine();  // ✓
 machine.say("content");                          // ✓
 machine.sayJson(data);                           // ✓
 machine.finishAndWriteOut();                     // ✓
-
-// Application code completely unaffected
-Response response = sayAndMakeRequest(request);
-sayAndAssertThat("Status", actual, is(200));
 ```
 
 **What Breaks (Rare Edge Case):**
@@ -57,115 +50,39 @@ sayAndAssertThat("Status", actual, is(200));
 boolean isValidRenderer = renderer instanceof RenderMachineImpl
     || renderer instanceof RenderMachineLatex;
 
-// New approach: Use composition or interface checks instead
+// New approach: use interface checks instead
 ```
 
-**Who Is Affected?**
-- Only if you created custom `RenderMachine` implementations in v2.4.0
-- Only if your code explicitly checked sealed class permits with `instanceof`
-- Regular test authors using DTR public API: **Not affected**
+### Step-by-Step Migration (2.4.x → 2.5.x)
 
-### 2. Java 26.0.2+ Required (Stricter Enforcement)
-
-**Impact Level:** Minimal (already documented in v2.4.0)
-
-**Solution:**
-```bash
-# Verify your Java installation
-java -version  # Must show "openjdk version \"26.0.0\" or later"
-
-# If Java 25 or earlier
-export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
-```
-
-**For Java 24 Projects:** Continue using DTR 2.4.0
-
----
-
-## New Features in 2.5.0
-
-### 1. Maven Central Publishing Support
-
-DTR 2.5.0 is published to Maven Central (no mirror required)
-
+**Step 1:** Update `pom.xml`:
 ```xml
-<!-- Update your pom.xml -->
-<dependency>
-  <groupId>io.github.seanchatmangpt.dtr</groupId>
-  <artifactId>dtr-core</artifactId>
-  <version>2.5.0</version>
-</dependency>
-```
-
-### 2. Metadata Caching Optimization
-
-Introspection methods now cache reflection results (3000x faster on cache hits):
-
-```
-First call:      ~150µs
-Subsequent calls: ~50ns ← 3000x faster!
-```
-
-**Affected Methods:**
-- `sayCallSite()`, `sayAnnotationProfile()`, `sayClassHierarchy()`, `sayStringProfile()`, `sayReflectiveDiff()`
-
-### 3. Dependency Updates for Java 26
-
-All updates are backward-compatible patch/minor versions.
-
----
-
-## Step-by-Step Migration
-
-### Step 1: Update `pom.xml`
-
-```xml
-<!-- CHANGE FROM: -->
-<version>2.4.0</version>
-
-<!-- CHANGE TO: -->
 <version>2.5.0</version>
 ```
 
-### Step 2: Verify Java 26
-
+**Step 2:** Verify Java 25:
 ```bash
-java -version
-# Must show: openjdk version "26.0.0" or higher
+java -version  # Must show openjdk 25 or higher
 ```
 
-### Step 3: Verify Maven
-
-```bash
-mvnd --version
-# Must show: Maven 4.0.0-rc-5 or higher
-```
-
-### Step 4: Run Clean Build
-
+**Step 3:** Run clean build:
 ```bash
 mvnd clean test
 ```
 
-### Step 5: (Optional) Refactor Custom RenderMachine
+**Step 4 (optional):** If you have a custom RenderMachine, refactor from `sealed` to `extends`:
 
-**ONLY if you created custom RenderMachine implementations:**
-
-**Before (DTR 2.4.0):**
+Before (2.4.0):
 ```java
-public sealed class MyCustomRenderer implements RenderMachine
-    permits ... {
+public sealed class MyCustomRenderer implements RenderMachine permits ... {
     @Override
     public void say(String text) { ... }
 }
 ```
 
-**After (DTR 2.5.0):**
+After (2.5.0):
 ```java
 public final class MyCustomRenderer extends RenderMachine {
-    @Override
-    public void setTestBrowser(TestBrowser testBrowser) { ... }
-
     @Override
     public void setFileName(String fileName) { ... }
 
@@ -179,112 +96,185 @@ public final class MyCustomRenderer extends RenderMachine {
 
 ---
 
-## Troubleshooting
+## Migrating 2.5.x → 2.6.0
 
-### "Java 26 not found"
+### Summary
+
+DTR 2.6.0 is a **breaking release** for projects that used the built-in HTTP stack. The entire HTTP client layer has been removed. All tests must use `java.net.http.HttpClient` for HTTP calls, and standard AssertJ/Hamcrest for assertions.
+
+In exchange, 14 powerful new `say*` methods are added for diagrams, benchmarks, coverage, and more.
+
+### What Was Removed
+
+The following APIs are **completely gone** in 2.6.0:
+
+| Removed | Replacement |
+|---------|-------------|
+| `sayAndMakeRequest(Request)` | `java.net.http.HttpClient` + `ctx.sayJson(response)` |
+| `sayAndAssertThat(String, T, Matcher)` | `assertThat(...)` from AssertJ or Hamcrest |
+| `makeRequest(Request)` | `HttpClient.send(...)` |
+| `Request.GET()`, `Request.POST()`, `Request.PUT()`, `Request.DELETE()` | `HttpRequest.newBuilder()` |
+| `Response`, `response.httpStatus()`, `response.payloadAs()` | `HttpResponse<String>` |
+| `testServerUrl()`, `TestBrowser`, `TestBrowserImpl` | No replacement (start servers independently) |
+| `WebSocketClient`, `WebSocketSession` | `java.net.http.WebSocket` |
+| `ServerSentEventsClient` | Standard SSE parsing |
+| `BearerTokenAuth`, `ApiKeyAuth`, `BasicAuth` | Standard `Authorization` header |
+| `getCookies()`, `getCookieWithName()`, `sayAndGetCookies()` | `java.net.CookieManager` |
+
+### What Was Added
+
+| New Method | Purpose |
+|-----------|---------|
+| `sayBenchmark(String, Runnable)` | Inline microbenchmark with System.nanoTime() |
+| `sayBenchmark(String, Runnable, int, int)` | Configurable warmup and measure rounds |
+| `sayMermaid(String)` | Raw Mermaid DSL fenced block |
+| `sayClassDiagram(Class<?>...)` | Auto Mermaid classDiagram via reflection |
+| `sayControlFlowGraph(Method)` | Mermaid CFG from Code Reflection IR |
+| `sayCallGraph(Class<?>)` | Mermaid call graph |
+| `sayOpProfile(Method)` | Operation count table |
+| `sayDocCoverage(Class<?>...)` | Documentation coverage matrix |
+| `sayEnvProfile()` | Environment snapshot (Java, OS, heap, DTR) |
+| `sayRecordComponents(Class<? extends Record>)` | Record schema table |
+| `sayException(Throwable)` | Structured exception documentation |
+| `sayAsciiChart(String, double[], String[])` | Unicode bar chart |
+| `sayContractVerification(Class<?>, Class<?>...)` | Interface contract coverage |
+| `sayEvolutionTimeline(Class<?>, int)` | Git log timeline for a class |
+
+### Step-by-Step Migration (2.5.x → 2.6.0)
+
+#### Step 1: Update the version
+
+```xml
+<version>2.6.0</version>
+```
+
+#### Step 2: Switch to JUnit 5
+
+DTR 2.6.0 requires JUnit 5. Replace JUnit 4 with JUnit 5 Jupiter in your `pom.xml`:
+
+```xml
+<!-- Remove this -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.x</version>
+    <scope>test</scope>
+</dependency>
+
+<!-- Add this -->
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.11.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+#### Step 3: Update test class structure
+
+Before (2.5.x, JUnit 4):
+```java
+public class MyApiDocTest extends DTR {
+
+    @Override
+    public Url testServerUrl() {
+        return Url.host("http://localhost:8080");
+    }
+
+    @Test
+    public void testGetUsers() {
+        sayNextSection("List Users");
+        Response response = sayAndMakeRequest(Request.GET()
+            .url(testServerUrl().path("/api/users")));
+        sayAndAssertThat("Status is 200", 200, equalTo(response.httpStatus()));
+    }
+}
+```
+
+After (2.6.0, JUnit 5):
+```java
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(DtrExtension.class)
+class MyApiDocTest {
+
+    @Test
+    void testGetUsers(DtrContext ctx) throws Exception {
+        ctx.sayNextSection("List Users");
+
+        var client = HttpClient.newHttpClient();
+        var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:8080/api/users"))
+            .GET()
+            .build();
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        ctx.say("Response status: " + response.statusCode());
+        ctx.sayJson(response.body());
+    }
+}
+```
+
+#### Step 4: Replace sayAndAssertThat
+
+Before:
+```java
+sayAndAssertThat("Status is 200", response.httpStatus(), equalTo(200));
+```
+
+After (use standard AssertJ):
+```java
+assertThat(response.statusCode()).isEqualTo(200);
+ctx.say("Status: " + response.statusCode()); // document separately if needed
+```
+
+#### Step 5: Run the build
 
 ```bash
-# 1. Install Java 26
-sudo apt install openjdk-26-jdk
-
-# 2. Set JAVA_HOME
-export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
-
-# 3. Rebuild
 mvnd clean test
 ```
 
-### "Preview flags not enabled"
+Fix any remaining compilation errors from removed APIs. The compiler will list all references to removed classes.
+
+### Find All Removed API References
+
+Run this to find all files that reference removed APIs:
 
 ```bash
-# Check .mvn/maven.config contains --enable-preview
-cat .mvn/maven.config
-
-# Add if missing
-echo "--enable-preview" >> .mvn/maven.config
+grep -rn "sayAndMakeRequest\|sayAndAssertThat\|Request\.GET\|Request\.POST\|testServerUrl\|TestBrowser\|WebSocketClient\|ServerSentEventsClient\|BearerTokenAuth\|ApiKeyAuth\|BasicAuth" src/test/
 ```
-
-### "No documentation output generated"
-
-```bash
-# Verify tests actually ran
-mvnd test -v
-
-# Ensure output directory exists
-mkdir -p target/docs/test-results
-mvnd clean test
-```
-
-### RenderMachine sealed class error
-
-**This means you have a custom RenderMachine implementation.**
-
-See [Step 5](#step-5-optional-refactor-custom-rendermachine) above for migration code.
 
 ---
 
 ## Validation Checklist
 
-After upgrading, verify:
+After upgrading to 2.6.0, verify:
 
-- [ ] Updated `pom.xml` to version 2.5.0
-- [ ] Java 26 installed: `java -version` shows 26.x.x
-- [ ] Maven: `mvnd --version` shows 2.0.0+
-- [ ] `.mvn/maven.config` contains `--enable-preview`
+- [ ] `pom.xml` version is `2.6.0`
+- [ ] JUnit 5 Jupiter dependency added, JUnit 4 removed
+- [ ] All test classes use `@ExtendWith(DtrExtension.class)` (not `extends DTR`)
+- [ ] All `@Test` methods accept `DtrContext ctx` parameter
+- [ ] No references to `sayAndMakeRequest`, `sayAndAssertThat`, `Request`, `Response`, `testServerUrl()`
+- [ ] HTTP calls use `java.net.http.HttpClient`
+- [ ] Assertions use AssertJ `assertThat(...)` or Hamcrest `assertThat(...)`
 - [ ] `mvnd clean test` completes successfully
 - [ ] Output appears in `target/docs/test-results/`
-- [ ] (Optional) Custom RenderMachine refactored if you have one
-
----
-
-## Performance Improvements You Get Automatically
-
-DTR 2.5.0 includes metadata caching that kicks in automatically:
-
-```java
-// Your code (unchanged)
-ctx.sayAnnotationProfile(String.class);
-ctx.sayAnnotationProfile(String.class);  // 3000x faster (cached!)
-```
-
-No configuration needed. You benefit automatically on repeated introspection operations.
-
----
-
-## What's NOT Changing
-
-- ✅ All public `say*()` methods work identically
-- ✅ `makeRequest()` and `sayAndMakeRequest()` unchanged
-- ✅ Output location (`target/docs/test-results/`) unchanged
-- ✅ All 5 introspection methods (v2.4.0) still supported
 
 ---
 
 ## Getting Help
 
-**If you encounter issues:**
+If you encounter issues:
 
-1. Check this guide — Most issues covered in Troubleshooting section
-2. Check [RELEASE_NOTES_2.5.0.md](../../RELEASE_NOTES_2.5.0.md)
-3. Report issues — https://github.com/seanchatmangpt/dtr/issues
-
----
-
-## Summary
-
-**DTR 2.5.0 Migration is straightforward:**
-
-| Step | Action | Time |
-|------|--------|------|
-| 1 | Update `pom.xml` | 1 min |
-| 2 | Verify Java 26 | 1 min |
-| 3 | Run `mvnd clean test` | 2-5 min |
-| 4 | (Optional) Refactor custom RenderMachine | 5-10 min |
-| **Total** | | **5-20 min** |
-
-**For 99% of users: Just update the version number. Done.**
-
----
-
-**DTR 2.5.0 — March 12, 2026**
-*Java 26 Support and Maven Central Ready*
+1. Check compilation errors — the compiler lists all removed API references
+2. See [add-to-maven.md](add-to-maven.md) for the correct 2.6.0 pom.xml structure
+3. Report issues at https://github.com/seanchatmangpt/dtr/issues

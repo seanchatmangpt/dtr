@@ -1,490 +1,320 @@
-# Tutorial: Server-Sent Events for One-Way Real-Time Streams
+# Tutorial: Contract Verification with sayContractVerification
 
-Learn how to test Server-Sent Events (SSE) with DTR. SSE is a simple HTTP-based protocol for pushing real-time data from server to client — perfect for notifications, live updates, and dashboards.
+Learn how DTR 2.6.0's `sayContractVerification` method proves that your concrete classes fully implement an interface contract and documents the coverage matrix in your living documentation.
 
-**Time:** ~35 minutes
-**Prerequisites:** Java 25, understanding of HTTP and event streams
-**What you'll learn:** How to subscribe to SSE, parse events, handle reconnection, and test push notifications
-
----
-
-## What Are Server-Sent Events?
-
-Server-Sent Events use regular HTTP to maintain a persistent connection, with the server pushing messages to the client:
-
-```
-Client                          Server
-  |                               |
-  |---- GET /events (upgrade) --->|
-  |<----- 200 OK (keep-alive) ----|
-  |                               |
-  |<------ event: message1 -------|
-  |<------ event: message2 -------|
-  |<------ event: message3 -------|
-  |                               |
-  |--------- (persistent) --------|
-```
-
-**Key characteristics:**
-- ✅ One-way communication (server → client)
-- ✅ Standard HTTP (works through proxies, firewalls)
-- ✅ Automatic reconnection
-- ✅ Event types and data
-- ✅ Lower overhead than polling
-
-**When to use SSE vs. WebSocket:**
-- **SSE:** Notifications, live updates, dashboards (one-way)
-- **WebSocket:** Chat, real-time collaboration (bidirectional)
+**Time:** ~25 minutes
+**Prerequisites:** Java 25, DTR 2.6.0, completion of [Your First DocTest](your-first-doctest.md)
+**What you'll learn:** How to define interface contracts, verify multiple implementations in one call, and read the coverage table DTR generates
 
 ---
 
-## Step 1 — Subscribe to an Event Stream
+## What Is sayContractVerification?
 
-Connect to an SSE endpoint:
+`sayContractVerification(Class<?> contract, Class<?>... impls)` inspects the given interface and implementation classes via reflection and emits a Mermaid-style coverage matrix that shows:
+
+- Every method declared in the interface
+- Whether each implementation provides a non-default override
+- A pass/fail indicator per cell
+
+This makes gaps visible at a glance, and because it runs as a JUnit 5 test, the documentation is always up to date with the code.
+
+```java
+ctx.sayContractVerification(Renderer.class, HtmlRenderer.class, MarkdownRenderer.class);
+```
+
+---
+
+## Step 1 — Define an Interface Contract
+
+Create `src/test/java/com/example/contract/Renderer.java`:
+
+```java
+package com.example.contract;
+
+/**
+ * Contract for all document renderers in the DTR output pipeline.
+ */
+public interface Renderer {
+
+    /** Begin a new document with the given title. */
+    void beginDocument(String title);
+
+    /** Emit a top-level section heading. */
+    void renderHeading(String text, int level);
+
+    /** Emit a paragraph of body text. */
+    void renderParagraph(String text);
+
+    /** Emit a fenced code block with the given language. */
+    void renderCode(String code, String language);
+
+    /** Emit a tabular result set. */
+    void renderTable(String[][] rows);
+
+    /** Finalize and flush the document. */
+    String endDocument();
+}
+```
+
+---
+
+## Step 2 — Write Two Implementations
+
+Create `src/test/java/com/example/contract/HtmlRenderer.java`:
+
+```java
+package com.example.contract;
+
+public class HtmlRenderer implements Renderer {
+
+    private final StringBuilder buf = new StringBuilder();
+
+    @Override
+    public void beginDocument(String title) {
+        buf.append("<!DOCTYPE html><html><head><title>")
+           .append(title).append("</title></head><body>\n");
+    }
+
+    @Override
+    public void renderHeading(String text, int level) {
+        buf.append("<h").append(level).append(">")
+           .append(text)
+           .append("</h").append(level).append(">\n");
+    }
+
+    @Override
+    public void renderParagraph(String text) {
+        buf.append("<p>").append(text).append("</p>\n");
+    }
+
+    @Override
+    public void renderCode(String code, String language) {
+        buf.append("<pre><code class=\"language-").append(language).append("\">")
+           .append(code).append("</code></pre>\n");
+    }
+
+    @Override
+    public void renderTable(String[][] rows) {
+        buf.append("<table>\n");
+        for (String[] row : rows) {
+            buf.append("<tr>");
+            for (String cell : row) buf.append("<td>").append(cell).append("</td>");
+            buf.append("</tr>\n");
+        }
+        buf.append("</table>\n");
+    }
+
+    @Override
+    public String endDocument() {
+        buf.append("</body></html>");
+        return buf.toString();
+    }
+}
+```
+
+Create `src/test/java/com/example/contract/MarkdownRenderer.java`:
+
+```java
+package com.example.contract;
+
+public class MarkdownRenderer implements Renderer {
+
+    private final StringBuilder buf = new StringBuilder();
+
+    @Override
+    public void beginDocument(String title) {
+        buf.append("# ").append(title).append("\n\n");
+    }
+
+    @Override
+    public void renderHeading(String text, int level) {
+        buf.append("#".repeat(level)).append(" ").append(text).append("\n\n");
+    }
+
+    @Override
+    public void renderParagraph(String text) {
+        buf.append(text).append("\n\n");
+    }
+
+    @Override
+    public void renderCode(String code, String language) {
+        buf.append("```").append(language).append("\n")
+           .append(code).append("\n```\n\n");
+    }
+
+    @Override
+    public void renderTable(String[][] rows) {
+        // Header row
+        buf.append("| ").append(String.join(" | ", rows[0])).append(" |\n");
+        buf.append("| ").append("--- | ".repeat(rows[0].length)).append("\n");
+        // Data rows
+        for (int i = 1; i < rows.length; i++) {
+            buf.append("| ").append(String.join(" | ", rows[i])).append(" |\n");
+        }
+        buf.append("\n");
+    }
+
+    @Override
+    public String endDocument() {
+        return buf.toString();
+    }
+}
+```
+
+---
+
+## Step 3 — Write the Contract Verification Test
+
+Create `src/test/java/com/example/RendererContractDocTest.java`:
 
 ```java
 package com.example;
 
-import org.junit.Test;
-import io.github.seanchatmangpt.dtr.dtr.DTR;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Url;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.dtr.testbrowser.Response;
+import com.example.contract.HtmlRenderer;
+import com.example.contract.MarkdownRenderer;
+import com.example.contract.Renderer;
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class ServerSentEventsDocTest extends DTR {
+@ExtendWith(DtrExtension.class)
+class RendererContractDocTest {
 
     @Test
-    public void subscribeToEventStream() throws Exception {
+    void verifyRendererContract(DtrContext ctx) {
 
-        sayNextSection("Subscribe to Event Stream");
+        ctx.sayNextSection("Renderer Contract Coverage");
 
-        say("Server-Sent Events (SSE) allow a server to push real-time data over HTTP. "
-            + "The connection stays open, and events stream as they occur.");
+        ctx.say("The `Renderer` interface defines six methods that all renderer "
+            + "implementations must provide. "
+            + "DTR's `sayContractVerification` checks and documents compliance:");
 
-        say("Connecting to SSE endpoint: GET /events");
+        ctx.sayContractVerification(
+            Renderer.class,
+            HtmlRenderer.class,
+            MarkdownRenderer.class
+        );
 
-        // Make HTTP request that expects streaming response
-        Response response = makeRequest(
-            Request.GET()
-                .url(testServerUrl().path("/events")));
-
-        say("Connected. Server sent: " + response.httpStatus());
-
-        sayAndAssertThat(
-            "SSE stream opened",
-            200,
-            org.hamcrest.CoreMatchers.equalTo(response.httpStatus()));
-
-        say("Connection established. Listening for events...");
-    }
-
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
+        ctx.say("Every cell in the matrix above is a pass/fail indicator. "
+            + "A failing cell means the implementation inherits the default "
+            + "or does not override the method — which may be intentional or a gap.");
     }
 }
 ```
 
+Run the test:
+
+```bash
+mvnd test -Dtest=RendererContractDocTest
+cat target/docs/test-results/RendererContractDocTest.md
+```
+
+The output will contain a coverage matrix with a row per interface method and a column per implementation.
+
 ---
 
-## Step 2 — Parse Event Stream Data
+## Step 4 — Document a Partial Implementation
 
-Read and parse SSE events:
+A common pattern is having an abstract base that provides default behavior, with subclasses specializing only some methods. Document this explicitly:
 
 ```java
-@Test
-public void parseEventStreamData() throws Exception {
-
-    sayNextSection("Parse Event Data");
-
-    say("SSE events have a simple text format: field: value, separated by blank lines.");
-
-    // Mock SSE stream for demonstration
-    String sseStream = """
-        event: userJoined
-        data: alice joined at 2025-03-11T10:00:00Z
-        id: 1
-
-        event: message
-        data: {"from":"alice","text":"Hello everyone!"}
-        id: 2
-
-        event: userLeft
-        data: alice left at 2025-03-11T10:05:00Z
-        id: 3
-        """;
-
-    say("Example SSE stream:");
-    say("```\n" + sseStream + "\n```");
-
-    // Parse events (in real code, read from HTTP stream)
-    List<SseEvent> events = parseSseStream(sseStream);
-
-    say("Parsed " + events.size() + " events from stream");
-
-    for (SseEvent event : events) {
-        say("Event [" + event.type + "]: " + event.data);
+    abstract static class BaseRenderer implements Renderer {
+        // Provides default no-op implementations for optional methods
+        @Override public void renderTable(String[][] rows) { /* no-op */ }
     }
 
-    sayAndAssertThat(
-        "Correct number of events parsed",
-        3,
-        org.hamcrest.CoreMatchers.equalTo(events.size()));
+    static class MinimalRenderer extends BaseRenderer {
+        private final StringBuilder buf = new StringBuilder();
 
-    sayAndAssertThat(
-        "First event is userJoined",
-        "userJoined",
-        org.hamcrest.CoreMatchers.equalTo(events.get(0).type));
-}
-
-static record SseEvent(String type, String data, String id) {}
-
-static List<SseEvent> parseSseStream(String stream) {
-    List<SseEvent> events = new ArrayList<>();
-    String[] lines = stream.split("\n");
-
-    String currentType = null;
-    String currentData = null;
-    String currentId = null;
-
-    for (String line : lines) {
-        if (line.isEmpty()) {
-            if (currentType != null) {
-                events.add(new SseEvent(currentType, currentData, currentId));
-            }
-            currentType = null;
-            currentData = null;
-            currentId = null;
-        } else if (line.startsWith("event: ")) {
-            currentType = line.substring(7);
-        } else if (line.startsWith("data: ")) {
-            currentData = line.substring(6);
-        } else if (line.startsWith("id: ")) {
-            currentId = line.substring(4);
-        }
+        @Override public void beginDocument(String title) { buf.append("=== ").append(title).append(" ===\n"); }
+        @Override public void renderHeading(String text, int level) { buf.append(text).append("\n"); }
+        @Override public void renderParagraph(String text) { buf.append(text).append("\n"); }
+        @Override public void renderCode(String code, String language) { buf.append(code).append("\n"); }
+        @Override public String endDocument() { return buf.toString(); }
     }
 
-    if (currentType != null) {
-        events.add(new SseEvent(currentType, currentData, currentId));
-    }
+    @Test
+    void verifyPartialImplementation(DtrContext ctx) {
 
-    return events;
-}
+        ctx.sayNextSection("Partial Implementation Coverage");
+
+        ctx.say("Some implementations cover only the core methods and leave "
+            + "optional methods to a base class. "
+            + "The coverage matrix makes these gaps explicit:");
+
+        ctx.sayContractVerification(
+            Renderer.class,
+            HtmlRenderer.class,
+            MarkdownRenderer.class,
+            MinimalRenderer.class
+        );
+
+        ctx.sayNote("`MinimalRenderer` inherits `renderTable` from `BaseRenderer`. "
+            + "This is deliberate — minimal output targets do not need tables. "
+            + "Document the decision here so reviewers understand it is intentional.");
+    }
 ```
 
 ---
 
-## Step 3 — Listen for Real-Time Events
+## Step 5 — Assert Coverage Programmatically
 
-Stream events and validate them in real-time:
+You can also validate coverage in code and document the result:
 
 ```java
-@Test
-public void listenForRealtimeEvents() throws Exception {
+    @Test
+    void assertFullCoverage(DtrContext ctx) throws Exception {
 
-    sayNextSection("Real-Time Event Listening");
+        ctx.sayNextSection("Programmatic Coverage Assertion");
 
-    say("Open an SSE connection and listen for events as they arrive. "
-        + "This simulates live notifications or updates.");
+        ctx.say("Combine AssertJ with `sayContractVerification` to make coverage "
+            + "a hard test failure, not just a visual indicator:");
 
-    // In real code, this would be an HTTP stream from your server
-    // For testing, we'll use a background thread to simulate the server
-    List<SseEvent> receivedEvents = Collections.synchronizedList(new ArrayList<>());
-    CountDownLatch eventLatch = new CountDownLatch(3);
+        var contractMethods = Renderer.class.getDeclaredMethods();
+        var htmlMethods     = java.util.Arrays.stream(HtmlRenderer.class.getDeclaredMethods())
+            .map(m -> m.getName())
+            .collect(java.util.stream.Collectors.toSet());
 
-    // Simulate server sending events
-    Thread serverSimulator = new Thread(() -> {
-        try {
-            Thread.sleep(100);
-            receivedEvents.add(new SseEvent("notification", "Order #123 shipped", "1"));
-            eventLatch.countDown();
-
-            Thread.sleep(100);
-            receivedEvents.add(new SseEvent("notification", "Delivery expected tomorrow", "2"));
-            eventLatch.countDown();
-
-            Thread.sleep(100);
-            receivedEvents.add(new SseEvent("notification", "Package arrived", "3"));
-            eventLatch.countDown();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        for (var method : contractMethods) {
+            assertThat(htmlMethods)
+                .as("HtmlRenderer must implement " + method.getName())
+                .contains(method.getName());
         }
-    });
 
-    serverSimulator.start();
+        ctx.sayContractVerification(Renderer.class, HtmlRenderer.class);
 
-    say("Waiting for events from server...");
-
-    boolean allReceived = eventLatch.await(5, java.util.concurrent.TimeUnit.SECONDS);
-
-    for (SseEvent event : receivedEvents) {
-        say("Received: " + event.data);
+        ctx.say("If `HtmlRenderer` is missing any contract method, the assertion above "
+            + "fails the test before DTR even writes to the output file.");
     }
-
-    sayAndAssertThat(
-        "All real-time events received",
-        true,
-        org.hamcrest.CoreMatchers.is(allReceived));
-
-    say("Received " + receivedEvents.size() + " events in real-time");
-}
 ```
 
 ---
 
-## Step 4 — Test Different Event Types
+## When to Use sayContractVerification
 
-Validate specific event types:
-
-```java
-@Test
-public void testDifferentEventTypes() throws Exception {
-
-    sayNextSection("Event Type Handling");
-
-    say("SSE can carry different event types. The client processes them differently.");
-
-    String multiTypeStream = """
-        event: login
-        data: alice logged in
-        id: 1
-
-        event: alert
-        data: {"severity":"high","message":"Unusual activity"}
-        id: 2
-
-        event: data
-        data: 42
-        id: 3
-
-        event: logout
-        data: alice logged out
-        id: 4
-        """;
-
-    List<SseEvent> events = parseSseStream(multiTypeStream);
-
-    sealed interface EventHandler {
-        record Login(String user) implements EventHandler {}
-        record Alert(String message) implements EventHandler {}
-        record Data(String value) implements EventHandler {}
-        record Logout(String user) implements EventHandler {}
-    }
-
-    // Handle different event types
-    List<EventHandler> handled = new ArrayList<>();
-    for (SseEvent event : events) {
-        switch (event.type) {
-            case "login" -> {
-                handled.add(new EventHandler.Login(event.data));
-                say("User logged in: " + event.data);
-            }
-            case "alert" -> {
-                handled.add(new EventHandler.Alert(event.data));
-                say("Alert: " + event.data);
-            }
-            case "data" -> {
-                handled.add(new EventHandler.Data(event.data));
-                say("Data: " + event.data);
-            }
-            case "logout" -> {
-                handled.add(new EventHandler.Logout(event.data));
-                say("User logged out: " + event.data);
-            }
-        }
-    }
-
-    sayAndAssertThat(
-        "All event types handled",
-        4,
-        org.hamcrest.CoreMatchers.equalTo(handled.size()));
-}
-```
+| Situation | Value |
+|-----------|-------|
+| Multiple implementations of one interface | Verify none are accidentally missing an override |
+| Plugin/extension point | Document which plugins implement which hooks |
+| Versioned API contract | Show compliance across versions |
+| Team code review | Reviewers see coverage at a glance without reading every class |
 
 ---
 
-## Step 5 — Handle Connection Loss and Reconnection
+## What You Learned
 
-Test automatic reconnection:
-
-```java
-@Test
-public void handleReconnection() throws Exception {
-
-    sayNextSection("Automatic Reconnection");
-
-    say("SSE clients should automatically reconnect if the connection drops. "
-        + "The server can send a 'retry' field to control reconnection delay.");
-
-    String sseWithRetry = """
-        retry: 1000
-
-        event: status
-        data: Server is online
-        id: 1
-
-        event: status
-        data: Server going down for maintenance
-        id: 2
-        """;
-
-    say("SSE stream with reconnection parameters:");
-    say("```\n" + sseWithRetry + "\n```");
-
-    say("The 'retry: 1000' tells the client to wait 1000ms before reconnecting");
-
-    // Extract retry value (in production, the HTTP client handles this)
-    String[] lines = sseWithRetry.split("\n");
-    long retryMs = 0;
-
-    for (String line : lines) {
-        if (line.startsWith("retry: ")) {
-            retryMs = Long.parseLong(line.substring(7));
-        }
-    }
-
-    say("Reconnection delay: " + retryMs + "ms");
-
-    sayAndAssertThat(
-        "Reconnection delay parsed correctly",
-        1000L,
-        org.hamcrest.CoreMatchers.equalTo(retryMs));
-
-    say("Client will reconnect automatically if server closes the connection");
-}
-```
-
----
-
-## Step 6 — Test a Live Dashboard with SSE
-
-Combine patterns to test a real dashboard that updates in real-time:
-
-```java
-@Test
-public void testLiveDashboard() throws Exception {
-
-    sayNextSection("Live Dashboard Updates");
-
-    say("A dashboard receives real-time metrics via SSE: active users, "
-        + "server status, alerts, and performance data.");
-
-    List<DashboardMetric> metrics = Collections.synchronizedList(new ArrayList<>());
-
-    // Simulate SSE stream with metrics
-    String dashboardStream = """
-        event: users
-        data: {"active":42,"peak":100}
-        id: 1
-
-        event: cpu
-        data: 65
-        id: 2
-
-        event: memory
-        data: 4096
-        id: 3
-
-        event: alert
-        data: {"level":"warning","message":"CPU > 80%"}
-        id: 4
-        """;
-
-    List<SseEvent> events = parseSseStream(dashboardStream);
-
-    say("Incoming dashboard metrics:");
-
-    for (SseEvent event : events) {
-        switch (event.type) {
-            case "users" -> {
-                say("👥 Active users: " + event.data);
-                metrics.add(new DashboardMetric("users", event.data));
-            }
-            case "cpu" -> {
-                say("💻 CPU: " + event.data + "%");
-                metrics.add(new DashboardMetric("cpu", event.data));
-            }
-            case "memory" -> {
-                say("🧠 Memory: " + event.data + " MB");
-                metrics.add(new DashboardMetric("memory", event.data));
-            }
-            case "alert" -> {
-                say("⚠️  Alert: " + event.data);
-                metrics.add(new DashboardMetric("alert", event.data));
-            }
-        }
-    }
-
-    sayAndAssertThat(
-        "Dashboard received all metrics",
-        4,
-        org.hamcrest.CoreMatchers.equalTo(metrics.size()));
-
-    say("Dashboard updated with " + metrics.size() + " real-time metrics");
-}
-
-static record DashboardMetric(String type, String value) {}
-```
-
----
-
-## Key Takeaways
-
-| Concept | Explanation |
-|---------|-------------|
-| **SSE** | Server-Sent Events; one-way HTTP stream |
-| **event: type** | Named event type |
-| **data:** | Event payload (single line or multi-line) |
-| **id:** | Event ID (for reconnection) |
-| **retry:** | Reconnection delay in milliseconds |
-| **Blank line** | Marks end of event |
-| **Auto-reconnect** | Built-in to SSE protocol |
-| **One-way** | Server → client only (WebSockets are bidirectional) |
-
----
-
-## Best Practices
-
-✅ **DO:**
-- Use SSE for one-way server-to-client updates
-- Include event IDs for reliable delivery
-- Handle reconnection automatically
-- Test with actual server (streams are stateful)
-- Use `event` type to distinguish message kinds
-- Validate event data before processing
-
-❌ **DON'T:**
-- Confuse SSE with WebSockets (different purposes)
-- Assume events arrive in order (they do, but test it)
-- Leave connections open indefinitely (implement idle timeout)
-- Poll repeatedly when SSE is available
-- Ignore the `retry` field (affects reconnection)
-
----
-
-## SSE vs. WebSocket vs. gRPC
-
-| Feature | SSE | WebSocket | gRPC |
-|---------|-----|-----------|------|
-| Direction | One-way (↓) | Bidirectional | Bidirectional |
-| Transport | HTTP/1.1 | HTTP/1.1 upgrade | HTTP/2 |
-| Auto-reconnect | Yes | No (app must handle) | No (app must handle) |
-| Data format | Text/JSON | Binary or text | Protobuf (binary) |
-| Firewall friendly | Yes | Requires upgrade | Yes (HTTP/2) |
-| Use case | Notifications, updates | Chat, collaboration | Microservices, RPC |
+- `sayContractVerification(contract, impl...)` — emits a coverage matrix for an interface and its implementations
+- How to define a clean interface contract and verify it in a JUnit 5 test
+- How to document intentional partial implementations alongside full ones
+- How to combine AssertJ assertions with `sayContractVerification` for hard test failures on coverage gaps
 
 ---
 
 ## Next Steps
 
-- [How-to: Subscribe to SSE Streams](../how-to/sse-subscription.md)
-- [How-to: Parse SSE Events](../how-to/sse-parsing.md)
-- [How-to: Handle SSE Reconnection](../how-to/sse-reconnection.md)
-- [Tutorial: WebSockets](websockets-realtime.md)
-- [Tutorial: gRPC Streaming](grpc-streaming.md)
-- [Reference: SSE Testing API](../reference/sse-reference.md)
+- [Tutorial: Visualizing Code with sayMermaid](websockets-realtime.md) — diagram the relationship between interface and implementations
+- [Tutorial: Code Evolution with sayEvolutionTimeline](grpc-streaming.md) — track how the interface changed over time
+- [Tutorial: Records and Sealed Classes](records-sealed-classes.md) — use sealed interfaces for exhaustive type hierarchies

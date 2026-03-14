@@ -1,314 +1,236 @@
 # How-To: Benchmarking with DTR
 
-Measure real performance of your API tests using Java Microbenchmark Harness (JMH) and DTR's RenderMachine.
+Measure real performance using DTR 2.6.0's built-in `sayBenchmark` method and `System.nanoTime()`.
 
-**Goal:** Understand DTR's performance impact and optimize your documentation tests.
+**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
 ---
 
 ## Core Principle: Real Measurements Only
 
-From CLAUDE.md:
-> ❌ NO simulation, NO fakes, NO hard-coded numbers
-> ✅ Measure with System.nanoTime() on real execution
-> ✅ Report: metric + units + Java version + iterations + environment
-
-Never report relative speedup ("6667x faster"). Always report:
-- **Metric**: nanoseconds, milliseconds, operations/sec
-- **Units**: ns, ms, ops/sec
-- **Context**: Java version, iterations, environment (cores, RAM)
-- **Example**: "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)"
+- No simulation, no fakes, no hard-coded numbers
+- Measure with `sayBenchmark` or `System.nanoTime()` on real execution
+- Report: metric + units + Java version + iterations + environment
+- Example: `"String concat: 78ns avg (10M iterations, Java 25.0.2, 8 cores)"`
 
 ---
 
-## Quick Start: Using DTR's Benchmark Module
+## Quick Start: sayBenchmark
 
-### 1. Run Existing Benchmarks
-
-DTR includes a `dtr-benchmarks` module with JMH benchmarks:
-
-```bash
-# Run all benchmarks
-mvnd clean test -pl dtr-benchmarks
-
-# Run specific benchmark
-mvnd clean test -pl dtr-benchmarks -Dtest=RenderMachineBenchmark
-
-# Run with custom settings
-mvnd clean test -pl dtr-benchmarks \
-  -Dbenchmarks.warmupIterations=5 \
-  -Dbenchmarks.forks=3
-```
-
-### 2. Examine Results
-
-Benchmark results appear in:
-```bash
-cat target/benchmarks-results/jmh-results.json
-# or
-ls target/benchmark-reports/
-```
-
----
-
-## Understanding JMH Results
-
-### Typical Output
-
-```
-Benchmark                              Mode  Cnt    Score   Error  Units
-RenderMachineBenchmark.renderMarkdown  avgt   10   234.523 ± 12.3   ns/op
-RenderMachineBenchmark.renderHtml      avgt   10   456.234 ± 25.6   ns/op
-```
-
-**Explanation:**
-- **Mode**: `avgt` = average time per operation
-- **Cnt**: Number of measurement iterations (10 here)
-- **Score**: Average nanoseconds per operation
-- **Error**: Standard deviation (±)
-- **Units**: `ns/op` = nanoseconds per operation
-
----
-
-## Measuring DTR Test Overhead
-
-### Method 1: Direct Measurement with System.nanoTime()
+`sayBenchmark(String label, Runnable task)` is the primary benchmarking method in DTR 2.6.0. It runs the task with configurable warmup and measurement rounds, then documents the results automatically.
 
 ```java
-@Test
-public void testRequestOverhead() {
-    // Baseline: execute HTTP request without DTR
-    long startBaseline = System.nanoTime();
-    Response response = makeRequest(Request.GET().url(testServerUrl().path("/api/users")));
-    long endBaseline = System.nanoTime();
-    long baselineNs = endBaseline - startBaseline;
+@ExtendWith(DtrExtension.class)
+class StringBenchmarkDocTest {
 
-    // With DTR documentation
-    long startWithDtr = System.nanoTime();
-    Response response2 = sayAndMakeRequest(Request.GET().url(testServerUrl().path("/api/users")));
-    long endWithDtr = System.nanoTime();
-    long dtrNs = endWithDtr - startWithDtr;
+    @Test
+    void benchmarkStringOps(DtrContext ctx) {
+        ctx.sayNextSection("String Performance");
+        ctx.sayEnvProfile();
 
-    // Report overhead
-    long overhead = dtrNs - baselineNs;
-    say("Request without DTR: " + baselineNs + " ns");
-    say("Request with DTR: " + dtrNs + " ns");
-    say("DTR overhead: " + overhead + " ns (" + (100.0 * overhead / baselineNs) + "%)");
-}
-```
+        ctx.sayBenchmark("String concatenation (1000 appends)", () -> {
+            String s = "";
+            for (int i = 0; i < 1000; i++) s += i;
+        });
 
-**Output:**
-```
-Request without DTR: 45230 ns
-Request with DTR: 50890 ns
-DTR overhead: 5660 ns (12.5%)
-```
+        ctx.sayBenchmark("StringBuilder (1000 appends)", () -> {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 1000; i++) sb.append(i);
+            sb.toString();
+        });
 
----
-
-### Method 2: JMH Microbenchmark
-
-For more accurate measurements, use JMH:
-
-```java
-package io.github.seanchatmangpt.dtr.benchmark;
-
-import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
-
-import java.util.concurrent.TimeUnit;
-
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
-@State(Scope.Thread)
-@Fork(value = 3, warmupIterations = 5)
-@Warmup(iterations = 5, time = 1)
-@Measurement(iterations = 10, time = 1)
-public class DocumentationRenderingBenchmark {
-
-    private RenderMachine renderMachine;
-
-    @Setup(Level.Trial)
-    public void setup() {
-        renderMachine = new RenderMachine();
-    }
-
-    @Benchmark
-    public void renderMarkdownSection() {
-        renderMachine.sayNextSection("Performance Test");
-        renderMachine.say("This is a test paragraph.");
-    }
-
-    @Benchmark
-    public void renderCodeBlock() {
-        renderMachine.sayCode("System.out.println(\"hello\");", "java");
-    }
-
-    @Benchmark
-    public void renderTable() {
-        renderMachine.sayTable(new String[][] {
-            {"Header1", "Header2"},
-            {"Value1", "Value2"}
+        ctx.sayBenchmark("String.join (1000 elements)", () -> {
+            String.join("", java.util.Collections.nCopies(1000, "x"));
         });
     }
-
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-            .include(DocumentationRenderingBenchmark.class.getSimpleName())
-            .build();
-
-        new Runner(opt).run();
-    }
 }
 ```
 
-Run the benchmark:
-```bash
-mvnd clean test -pl dtr-benchmarks \
-  -Dtest=DocumentationRenderingBenchmark
+`sayBenchmark` outputs a timing table to the documentation showing average, min, max, and standard deviation across measurement rounds.
+
+---
+
+## Configurable Warmup and Measurement Rounds
+
+For more precise measurements, use the four-argument overload:
+
+```java
+@Test
+void precisionBenchmark(DtrContext ctx) {
+    ctx.sayNextSection("Precision Benchmark");
+
+    // sayBenchmark(label, task, warmupRounds, measureRounds)
+    ctx.sayBenchmark("ArrayList add (1000 elements)", () -> {
+        var list = new java.util.ArrayList<Integer>();
+        for (int i = 0; i < 1000; i++) list.add(i);
+    }, 10, 100);
+
+    ctx.sayBenchmark("LinkedList add (1000 elements)", () -> {
+        var list = new java.util.LinkedList<Integer>();
+        for (int i = 0; i < 1000; i++) list.add(i);
+    }, 10, 100);
+}
 ```
 
 ---
 
-## Benchmarking Real-World Scenarios
+## Manual Measurement with System.nanoTime()
 
-### Scenario: REST API Test Performance
+For custom statistics or multi-step measurements, use `System.nanoTime()` directly:
 
 ```java
 @Test
-@BenchmarkTest  // Custom annotation
-public void benchmarkRestApiTest(DTRContext ctx) throws Exception {
-    ctx.sayNextSection("Benchmark: REST API Testing");
+void manualBenchmark(DtrContext ctx) {
+    ctx.sayNextSection("Manual Timing");
 
-    final int iterations = 100;
+    final int iterations = 1000;
     long[] measurements = new long[iterations];
 
+    // Warmup
+    for (int i = 0; i < 100; i++) {
+        String.valueOf(i);
+    }
+
+    // Measure
     for (int i = 0; i < iterations; i++) {
         long start = System.nanoTime();
-
-        Response response = ctx.sayAndMakeRequest(
-            Request.POST()
-                .url(testServerUrl().path("/api/users"))
-                .contentTypeApplicationJson()
-                .payload(new User("TestUser" + i))
-        );
-
-        long end = System.nanoTime();
-        measurements[i] = end - start;
+        String.valueOf(i);
+        measurements[i] = System.nanoTime() - start;
     }
 
     // Calculate statistics
-    Arrays.sort(measurements);
-    long avg = Arrays.stream(measurements).sum() / measurements.length;
+    java.util.Arrays.sort(measurements);
+    long avg = java.util.Arrays.stream(measurements).sum() / measurements.length;
     long min = measurements[0];
     long max = measurements[measurements.length - 1];
     long p95 = measurements[(int)(measurements.length * 0.95)];
+    double mean = avg;
+    double variance = java.util.Arrays.stream(measurements)
+        .mapToDouble(x -> Math.pow(x - mean, 2)).average().orElse(0);
+    double stdDev = Math.sqrt(variance);
 
-    ctx.say("POST /api/users Performance:");
-    ctx.sayKeyValue(Map.of(
+    ctx.sayKeyValue(java.util.Map.of(
+        "Operation", "String.valueOf(int)",
+        "Iterations", String.valueOf(iterations),
         "Average", avg + " ns",
         "Min", min + " ns",
         "Max", max + " ns",
         "P95", p95 + " ns",
-        "Iterations", iterations + "",
+        "Std Dev", String.format("%.1f ns", stdDev),
         "Java Version", System.getProperty("java.version")
     ));
 }
 ```
 
-**Output Documentation:**
-```
-POST /api/users Performance:
-Average: 234523 ns
-Min: 198234 ns
-Max: 567890 ns
-P95: 345678 ns
-Iterations: 100
-Java Version: 25.0.2
-```
-
 ---
 
-### Scenario: Real-Time Protocol Performance
+## Benchmarking Virtual Thread Throughput
 
 ```java
 @Test
-public void benchmarkWebSocketMessaging(DTRContext ctx) throws Exception {
-    ctx.sayNextSection("WebSocket Message Throughput");
-
-    final int messageCount = 1000;
-    long startConnection = System.nanoTime();
-
-    var wsConnection = ctx.sayAndConnectWebSocket(
-        WebSocket.connect()
-            .url("ws://localhost:8080/api/events")
-    );
-
-    long connectionNs = System.nanoTime() - startConnection;
-    ctx.say("Connection established: " + connectionNs + " ns");
-
-    // Measure message sending
-    long startMessaging = System.nanoTime();
-    for (int i = 0; i < messageCount; i++) {
-        ctx.sayAndSendMessage(wsConnection, "Message " + i);
-    }
-    long totalMessagingNs = System.nanoTime() - startMessaging;
-
-    long avgPerMessage = totalMessagingNs / messageCount;
-    ctx.say("Messages sent: " + messageCount);
-    ctx.say("Total time: " + totalMessagingNs + " ns");
-    ctx.say("Average per message: " + avgPerMessage + " ns");
-    ctx.say("Throughput: " + (1_000_000_000.0 / avgPerMessage) + " messages/sec");
-}
-```
-
----
-
-## Virtual Thread Performance
-
-### Measuring Virtual Thread Overhead
-
-```java
-@Test
-public void benchmarkVirtualThreads(DTRContext ctx) throws Exception {
-    ctx.sayNextSection("Virtual Thread Performance");
+void benchmarkVirtualThreads(DtrContext ctx) throws Exception {
+    ctx.sayNextSection("Virtual Thread Throughput");
+    ctx.sayEnvProfile();
 
     final int taskCount = 1000;
 
     // Platform threads
     long startPlatform = System.nanoTime();
-    try (var executor = Executors.newFixedThreadPool(10)) {
+    try (var executor = java.util.concurrent.Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors())) {
+        var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
         for (int i = 0; i < taskCount; i++) {
-            executor.submit(() -> makeApiCall());
+            futures.add(executor.submit(() -> {
+                Thread.sleep(1);
+                return null;
+            }));
         }
-        executor.shutdown();
-        executor.awaitTermination(30, TimeUnit.SECONDS);
+        for (var f : futures) f.get();
     }
     long platformNs = System.nanoTime() - startPlatform;
 
     // Virtual threads
     long startVirtual = System.nanoTime();
-    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+        var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
         for (int i = 0; i < taskCount; i++) {
-            executor.submit(() -> makeApiCall());
+            futures.add(executor.submit(() -> {
+                Thread.sleep(1);
+                return null;
+            }));
         }
-        executor.shutdown();
-        executor.awaitTermination(30, TimeUnit.SECONDS);
+        for (var f : futures) f.get();
     }
     long virtualNs = System.nanoTime() - startVirtual;
 
     ctx.sayTable(new String[][] {
-        {"Metric", "Platform Threads", "Virtual Threads"},
-        {"Total Time", platformNs + " ns", virtualNs + " ns"},
-        {"Per Task", (platformNs / taskCount) + " ns", (virtualNs / taskCount) + " ns"},
-        {"Speed Ratio", "1.0x", String.format("%.2fx", (double)platformNs / virtualNs)}
+        {"Executor", "Total Time", "Per Task", "Tasks"},
+        {"Platform threads", platformNs / 1_000_000 + " ms",
+            platformNs / taskCount + " ns", String.valueOf(taskCount)},
+        {"Virtual threads", virtualNs / 1_000_000 + " ms",
+            virtualNs / taskCount + " ns", String.valueOf(taskCount)}
     });
 
-    ctx.say("Environment: Java " + System.getProperty("java.version") +
-            ", Cores: " + Runtime.getRuntime().availableProcessors());
+    ctx.say("Java " + System.getProperty("java.version") +
+            " | Cores: " + Runtime.getRuntime().availableProcessors());
+}
+```
+
+---
+
+## Benchmark Documentation Coverage
+
+Combine `sayBenchmark` with `sayDocCoverage` to document both performance and coverage:
+
+```java
+@Test
+void benchmarkAndCover(DtrContext ctx) {
+    ctx.sayNextSection("Record Serialization Performance");
+
+    record Point(double x, double y, double z) {}
+
+    ctx.sayRecordComponents(Point.class);
+
+    ctx.sayBenchmark("Point toString (10000 calls)", () -> {
+        var p = new Point(1.0, 2.0, 3.0);
+        for (int i = 0; i < 10000; i++) p.toString();
+    });
+
+    ctx.sayDocCoverage(Point.class);
+}
+```
+
+---
+
+## ASCII Chart of Benchmark Results
+
+Visualize benchmark results as a bar chart:
+
+```java
+@Test
+void chartBenchmarkResults(DtrContext ctx) {
+    ctx.sayNextSection("Collection Performance Chart");
+
+    String[] labels = {"ArrayList", "LinkedList", "ArrayDeque", "TreeSet"};
+    double[] timesNs = new double[labels.length];
+
+    // Measure each
+    for (int c = 0; c < labels.length; c++) {
+        long start = System.nanoTime();
+        for (int i = 0; i < 10_000; i++) {
+            switch (c) {
+                case 0 -> new java.util.ArrayList<>().add(i);
+                case 1 -> new java.util.LinkedList<>().add(i);
+                case 2 -> new java.util.ArrayDeque<>().add(i);
+                case 3 -> new java.util.TreeSet<>().add(i);
+            }
+        }
+        timesNs[c] = (double)(System.nanoTime() - start) / 10_000;
+    }
+
+    ctx.sayAsciiChart("Add operation latency (ns/op, lower is better)", timesNs, labels);
+    ctx.say("Measured on Java " + System.getProperty("java.version") +
+            ", " + Runtime.getRuntime().availableProcessors() + " cores");
 }
 ```
 
@@ -316,148 +238,58 @@ public void benchmarkVirtualThreads(DTRContext ctx) throws Exception {
 
 ## Best Practices
 
-### 1. Always Include Context
+### Always warm up the JVM
 
-Document your measurements with full context:
-
-```java
-say("String concatenation: " + avgNs + " ns " +
-    "(100 iterations, Java " + System.getProperty("java.version") +
-    ", " + Runtime.getRuntime().availableProcessors() + " cores)");
-```
-
-### 2. Warm Up the JVM
-
-JIT compilation affects measurements. Always warm up:
+JIT compilation changes timings significantly. Always run warmup iterations:
 
 ```java
-// Warm up
+// Warmup (not measured)
 for (int i = 0; i < 1000; i++) {
-    makeApiCall();  // Let JIT compile this
+    yourOperation();
 }
 
-// Now measure
-long start = System.nanoTime();
-for (int i = 0; i < iterations; i++) {
-    makeApiCall();
-}
-long total = System.nanoTime() - start;
+// Then measure
+ctx.sayBenchmark("Your operation", () -> yourOperation());
 ```
 
-### 3. Use Repeatable Tests
-
-Run benchmarks multiple times to account for variance:
+### Report environment context
 
 ```java
-long[] runs = new long[10];
-for (int run = 0; run < 10; run++) {
-    long start = System.nanoTime();
-    // benchmark code
-    runs[run] = System.nanoTime() - start;
-}
-
-Arrays.sort(runs);
-long median = runs[5];
-say("Median: " + median + " ns");
+ctx.sayEnvProfile(); // Always call this before benchmarks
 ```
 
-### 4. Report Standard Deviation
+### Use sayBenchmark for standard cases
 
-Don't just report average:
+`sayBenchmark` handles warmup, measurement, and statistics automatically. Only drop to `System.nanoTime()` when you need custom multi-step control.
+
+### Do not hard-code results
 
 ```java
-double mean = Arrays.stream(measurements).average().orElse(0);
-double variance = Arrays.stream(measurements)
-    .map(x -> Math.pow(x - mean, 2))
-    .average().orElse(0);
-double stdDev = Math.sqrt(variance);
+// WRONG — no real measurement
+ctx.say("Performance: 500 ns");
 
-say("Average: " + mean + " ns ± " + stdDev + " ns");
-```
-
-### 5. Disable Garbage Collection During Measurement
-
-For very precise measurements, disable GC:
-
-```bash
-mvnd test \
-  -Dbenchmarks.jvmArgs="-XX:+UseG1GC -XX:+DisableExplicitGC"
+// CORRECT — real measurement
+ctx.sayBenchmark("Your operation", () -> yourOperation());
 ```
 
 ---
 
 ## Interpreting Results
 
-### Performance Baselines
+Typical `sayBenchmark` output:
 
-Typical DTR performance on modern hardware (Java 25, 8-core CPU):
+| Operation | Avg | Min | Max | Std Dev | Rounds |
+|-----------|-----|-----|-----|---------|--------|
+| StringBuilder append | 234 ns | 198 ns | 567 ns | 45 ns | 100 |
 
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Say text (paragraph) | 500-1000 ns | Minimal overhead |
-| Make HTTP request | 50-200 µs | Dominated by network |
-| Render section heading | 200-500 ns | Very fast |
-| Render code block | 1-5 µs | Syntax highlighting |
-| Render table (10x10) | 10-50 µs | Depends on cell count |
-
----
-
-## Tools & Resources
-
-- **JMH Documentation**: https://github.com/openjdk/jmh
-- **Java Performance Guide**: https://docs.oracle.com/javase/8/docs/technotes/guides/vm/performance-tuning-guide.html
-- **Virtual Threads**: https://openjdk.org/jeps/444
-- **DTR Benchmarks Module**: `dtr-benchmarks/` in project
-
----
-
-## Common Mistakes
-
-### ❌ Don't: Hard-code results
-```java
-say("Performance: 500 ns");  // WRONG - no real measurement
-```
-
-### ✅ Do: Measure in code
-```java
-long start = System.nanoTime();
-// code to measure
-long elapsed = System.nanoTime() - start;
-say("Performance: " + elapsed + " ns");
-```
-
-### ❌ Don't: Report relative speedup
-```java
-say("This is 6667x faster");  // WRONG - no context
-```
-
-### ✅ Do: Report absolute metrics with context
-```java
-say("Average: 150ns per operation (10000 iterations, Java 25.0.2, 8 cores)");
-```
-
-### ❌ Don't: Measure once
-```java
-long start = System.nanoTime();
-makeApiCall();
-say("Time: " + (System.nanoTime() - start) + " ns");  // One measurement
-```
-
-### ✅ Do: Measure many times, calculate statistics
-```java
-long[] measurements = new long[100];
-for (int i = 0; i < 100; i++) {
-    long start = System.nanoTime();
-    makeApiCall();
-    measurements[i] = System.nanoTime() - start;
-}
-long avg = Arrays.stream(measurements).sum() / measurements.length;
-say("Average: " + avg + " ns (100 iterations)");
-```
+- **Avg**: Mean time per invocation across all measurement rounds
+- **Min/Max**: Best and worst single measurement
+- **Std Dev**: Measurement variability — lower is more stable
+- **Rounds**: Number of measurement rounds (after warmup)
 
 ---
 
 See Also:
-- [Performance Tuning](performance-tuning.md)
-- [Known Issues - Performance Characteristics](../reference/KNOWN_ISSUES.md#performance-characteristics)
-- [Virtual Threads Guide](use-virtual-threads.md)
+- [Performance Tuning](performance-tuning.md) — Reduce build time and profiling strategies
+- [Use Virtual Threads](use-virtual-threads.md) — Virtual thread concurrency patterns
+- [sayAsciiChart via Timeline](sse-parsing.md) — ASCII chart documentation

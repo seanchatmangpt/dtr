@@ -1,318 +1,149 @@
 # Explanation: Java 25 Design Philosophy
 
-Java 25 brings together virtual threads, records, sealed classes, and pattern matching into a coherent design philosophy. This document explains how they work together to enable simpler, safer, more scalable code.
+Java 25 brings together virtual threads, records, sealed classes, pattern matching, and preview APIs into a coherent design philosophy. This document explains how they work together and why DTR depends on them — not for syntax convenience, but for capabilities that older Java versions cannot provide.
 
 ---
 
 ## The Core Vision: From Complexity to Clarity
 
-Java's design philosophy has evolved over decades. Java 25 represents a shift toward:
+Java's evolution over the past decade has moved steadily toward a single goal: code that expresses intent clearly while the JVM handles the complexity underneath.
 
-**From:** Complex frameworks + intricate threading + boilerplate
-**To:** Simple code + lightweight concurrency + transparent data models
+**From:** Complex threading models + ceremony-heavy data classes + verbose type dispatch
+**To:** Structured concurrency + transparent immutable records + exhaustive pattern matching
+
+DTR 2.6.0 uses all of these features — not because they are fashionable, but because they solve real problems in a documentation generation library.
 
 ---
 
-## Four Pillars of Java 25
+## Why `--enable-preview` Is Not Optional
 
-### 1. Lightweight Concurrency (Virtual Threads)
+Most documentation about Java 25 features focuses on stable APIs: virtual threads (stable since 21), records (stable since 16), sealed classes (stable since 17), pattern matching (stable since 21). DTR uses all of these but also requires `--enable-preview` for a specific reason.
 
-**Problem:** Platform threads are expensive. Building scalable services requires callbacks, reactive frameworks, and expertise in async patterns.
+### The Code Reflection API (JEP 516, Project Babylon)
 
-**Solution:** Virtual threads allow writing natural blocking code that scales to millions of concurrent tasks.
+`sayCallSite()` uses the Code Reflection API, a preview feature in Java 25. This API allows DTR to capture the exact source location where a documentation call was made — file name, line number, method name — at near-zero runtime cost.
+
+The alternative would be `Thread.currentThread().getStackTrace()`, which works but allocates a stack trace array and costs microseconds per call. The Code Reflection API provides the same information at a fraction of the cost because it is wired into the JVM's internal representation of compiled code, not a runtime introspection mechanism.
+
+Project Babylon is evolving. The Code Reflection API is in preview because its design is still being refined. DTR accepts this dependency because the capability — provenance-tracked documentation — is architecturally central to the library's accuracy guarantees. When JEP 516 graduates from preview, DTR will update to the stable form.
+
+The `--enable-preview` flag is set once in `.mvn/maven.config` and propagates automatically.
+
+---
+
+## Virtual Threads
+
+### The Problem They Solve
+
+Platform threads are expensive. A server handling 1000 concurrent requests on platform threads needs roughly 2GB of memory just for thread stacks. Callbacks and reactive frameworks solve the memory problem but at the cost of code readability — stack traces become useless, error handling scatters across lambdas, and the logic is no longer sequential.
+
+Virtual threads solve this differently: the JVM manages thousands of virtual threads on a small pool of OS threads, unmounting a virtual thread from its carrier when it blocks on I/O and mounting another. To your code, everything looks sequential and blocking. To the OS, only a few threads exist.
+
+### How DTR Uses Virtual Threads
+
+DTR uses virtual threads in two distinct places:
+
+**MultiRenderMachine parallel output.** When `finishAndWriteOut()` is called, `MultiRenderMachine` submits one task per render machine to a `newVirtualThreadPerTaskExecutor()`. Each render machine (Markdown, LaTeX, HTML, JSON) runs concurrently. Disk I/O in one format does not delay another. The total rendering time approaches the cost of the slowest format, not the sum of all formats.
+
+**`sayBenchmark` warmup batches.** `sayBenchmark(Runnable, int iterations)` runs the supplied lambda in virtual thread batches to reduce JIT cold-start bias. Early iterations of a benchmark run cold. Batching in virtual threads allows warmup iterations to complete on a carrier thread while later iterations benefit from JIT-compiled code paths. The result is measurements that reflect steady-state performance, not the cold-start transient.
+
+---
+
+## Records
+
+### What They Are
+
+Records encode a specific assumption: this type is a transparent, immutable data carrier. Its value is its fields; there is no hidden state, no mutable setters, and no meaningful behavior beyond what the fields imply.
 
 ```java
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    // Code reads sequentially; scales like async
-    executor.submit(() -> {
-        Response resp = client.get(url);      // Blocks naturally
-        Data data = parseJson(resp);          // Sequential code
-        db.insert(data);                      // JVM handles scaling
-    });
-}
+record SayEvent.Code(String source, String language) implements SayEvent {}
 ```
 
-**Impact:** Services can handle 10x more concurrent connections with the same memory.
+This one line generates: constructor, accessors (`source()`, `language()`), `equals`, `hashCode`, and `toString`. Everything is derived from the components — there is nothing to get wrong.
+
+### Why DTR Uses Records Throughout
+
+`SayEvent` is a sealed interface whose 13 permitted subtypes are all records. This pairing is not accidental.
+
+Records are shared safely across virtual threads because they are immutable. `MultiRenderMachine` dispatches the same `SayEvent` instance to four render machines running in four virtual threads simultaneously. No synchronization is needed. An object that cannot be mutated cannot be corrupted by concurrent access.
+
+Records also make the structure of events self-documenting. When a `RenderMachine` subclass pattern-matches on a `SayEvent.Benchmark`, it knows exactly what data is available: the label, the mean, the min, the max, the standard deviation. There are no nullable fields, no conditional presence — the record's components are its contract.
 
 ---
 
-### 2. Type-Safe Data Models (Records + Sealed Classes)
+## Sealed Classes
 
-**Problem:** Data carriers require boilerplate. Open class hierarchies lose type safety in pattern matching.
+### The Closed/Open Distinction
 
-**Solution:** Records eliminate boilerplate; sealed classes enforce exhaustiveness.
+Sealed classes make a claim: "The set of permitted subtypes is exhaustive and known at compile time." This is different from saying "No one should extend this class" — it means the hierarchy is complete by design.
+
+DTR uses sealed for `SayEvent` and abstract for `RenderMachine`. This distinction is deliberate and worth understanding.
+
+**`SayEvent` is sealed because the event type set is closed.** Every render machine must handle every event type. If `SayEvent` were open, someone could add a new event type without updating any render machine, and that event would silently produce no output. The sealed constraint makes this a compile-time error: add a new permitted subtype and every switch over `SayEvent` in every render machine will fail to compile until it handles the new type.
+
+**`RenderMachine` is abstract because the render target set is open.** DTR provides Markdown, LaTeX, HTML, and JSON implementations, but users should be able to add their own. A Confluence page renderer, an OpenAPI fragment emitter, a documentation database writer — all of these are valid `RenderMachine` implementations. Sealed would prohibit them. Abstract invites them.
+
+The rule is: seal what must be exhaustive; make abstract what should be extensible.
+
+---
+
+## Pattern Matching
+
+### Beyond Type Checks
+
+Pattern matching in Java 25 lets you destructure a value and bind its components in a single expression. With sealed types, this becomes exhaustive — the compiler verifies every case is handled.
+
+In DTR, every `RenderMachine` implementation contains a switch over `SayEvent`:
 
 ```java
-sealed interface ApiPayload {
-    record Success(String data) implements ApiPayload {}
-    record Error(int code, String message) implements ApiPayload {}
-}
-
-// Compiler guarantees all cases handled
-String describe(ApiPayload payload) {
-    return switch (payload) {
-        case ApiPayload.Success s -> "OK: " + s.data();
-        case ApiPayload.Error e -> e.code() + ": " + e.message();
+// Conceptual render machine pattern
+void dispatch(SayEvent event) {
+    switch (event) {
+        case SayEvent.Text(String text)       -> renderText(text);
+        case SayEvent.Section(String title)   -> renderSection(title);
+        case SayEvent.Code(String src, String lang) -> renderCode(src, lang);
+        case SayEvent.Benchmark(var stats)    -> renderBenchmark(stats);
+        // ... all 13 cases required by the compiler
     };
 }
 ```
 
-**Impact:** Less boilerplate, more type safety, fewer runtime errors.
+If a new `SayEvent` type is added, every switch like this one will fail to compile. The compiler enforces render completeness. This is not a style preference — it is why the architecture works without defensive null checks or silent fallbacks.
 
 ---
 
-### 3. Natural Pattern Matching
+## How the Features Work Together
 
-**Problem:** Casting and `instanceof` checks are verbose and error-prone.
+These features are synergistic. Each one makes the others more useful.
 
-**Solution:** Pattern matching allows destructuring types inline.
+**Records + sealed = self-describing, exhaustive event system.** `SayEvent` records carry their data transparently; `SayEvent` sealed forces render completeness.
 
-```java
-// Old
-if (result instanceof ApiResult) {
-    ApiResult r = (ApiResult) result;
-    String data = r.getData();
-}
+**Records + virtual threads = safe concurrency without synchronization.** Immutable records can be shared across virtual threads freely. `MultiRenderMachine` exploits this.
 
-// Java 25
-if (result instanceof ApiResult(String data)) {
-    System.out.println(data);  // Destructured automatically
-}
+**Sealed + pattern matching = compile-time dispatch correctness.** Every render machine handles every event. No runtime dispatch errors.
 
-// With sealed types: exhaustive matching
-String outcome = switch (result) {
-    case ApiResult.Success(String data) -> "OK: " + data;
-    case ApiResult.Failure(String error) -> "FAIL: " + error;
-};
-```
-
-**Impact:** Code that expresses intent directly, with compiler verification.
-
----
-
-### 4. Immutable-by-Default Data
-
-**Problem:** Mutable data causes concurrency bugs, requires synchronization, complicates reasoning.
-
-**Solution:** Records are immutable; side effects are explicit.
-
-```java
-// Record: immutable by design
-record User(String name, int age) {}
-
-User u1 = new User("alice", 30);
-// u1.name = "bob";  // ❌ Compile error
-
-// Modify via explicit construction
-User u2 = new User("bob", 30);
-
-// Thread-safe: no synchronization needed
-try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    executor.submit(() -> {
-        User u = u1;  // Safe: immutable
-        process(u);
-    });
-}
-```
-
-**Impact:** Thread-safe by default; no hidden side effects.
-
----
-
-## How They Work Together
-
-These four features are **synergistic** — each makes the others more powerful.
-
-### Virtual Threads + Records + Pattern Matching
-
-**Scenario:** Handle many concurrent API requests, returning typed responses.
-
-```java
-sealed interface Request {
-    record GetUser(int id) implements Request {}
-    record CreateUser(String name, String email) implements Request {}
-}
-
-sealed interface Response {
-    record UserFound(String name, String email) implements Response {}
-    record UserNotFound(int id) implements Response {}
-    record Created(int id) implements Response {}
-    record BadRequest(String field, String reason) implements Response {}
-}
-
-// Handle 1000 concurrent requests
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    for (Request req : requests) {
-        executor.submit(() -> {
-            // Natural sequential code
-            Response response = switch (req) {
-                case Request.GetUser(int id) -> {
-                    User user = db.findUser(id);  // Blocks naturally
-                    yield user != null
-                        ? new Response.UserFound(user.name, user.email)
-                        : new Response.UserNotFound(id);
-                }
-                case Request.CreateUser(String name, String email) -> {
-                    int newId = db.insertUser(name, email);  // Blocks naturally
-                    yield new Response.Created(newId);
-                }
-            };
-
-            // Exhaustive matching: if you add a request type, compiler errors
-            sendResponse(response);  // Type-safe response
-        });
-    }
-}
-```
-
-**Benefits:**
-- ✅ Scalable: handles 1000 concurrent requests on a few platform threads
-- ✅ Safe: sealed types guarantee all request/response cases handled
-- ✅ Clear: code reads naturally, doesn't obscure intent with callbacks
-- ✅ Efficient: immutable data, no thread safety overhead
-
----
-
-## Comparison: Old vs. New Approaches
-
-### Old Approach (Pre-Java 25)
-
-```java
-// Callback-based async
-ExecutorService threadPool = Executors.newFixedThreadPool(100);  // Fixed size!
-
-interface ApiRequest {
-    void handle(Consumer<ApiResponse> callback);
-}
-
-class GetUser implements ApiRequest {
-    int id;
-    public void handle(Consumer<ApiResponse> callback) {
-        threadPool.submit(() -> {
-            try {
-                User user = db.findUser(id);
-                callback.accept(new UserResponse(user));
-            } catch (Exception e) {
-                callback.accept(new ErrorResponse(e));
-            }
-        });
-    }
-}
-
-// Callback pyramid
-request.handle(response -> {
-    if (response instanceof UserResponse) {
-        process((UserResponse) response);
-    } else if (response instanceof ErrorResponse) {
-        handleError((ErrorResponse) response);
-    }
-});
-```
-
-**Drawbacks:**
-- ❌ Fixed thread pool size (bottleneck)
-- ❌ Callback nesting (hard to read)
-- ❌ Manual type checks + casts (error-prone)
-- ❌ Exception handling scattered
-- ❌ Stack traces useless (all in callback pool)
-
-### Java 25 Approach
-
-```java
-sealed interface Request permits GetUser, CreateUser { }
-sealed interface Response permits UserFound, UserNotFound, Created { }
-
-// Natural sequential code, automatic scaling
-try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    executor.submit(() -> {
-        Response response = switch (request) {
-            case GetUser(int id) -> {
-                User user = db.findUser(id);  // Blocks naturally
-                yield user != null
-                    ? new UserFound(user.name)
-                    : new UserNotFound(id);
-            }
-            case CreateUser(String name, _) -> new Created(name);
-        };
-        sendResponse(response);
-    });
-}
-```
-
-**Benefits:**
-- ✅ Unlimited concurrency (virtual threads scale)
-- ✅ Sequential code (easy to read)
-- ✅ Type-safe patterns (exhaustive matching)
-- ✅ Structured error handling
-- ✅ Readable stack traces
+**Virtual threads + `--enable-preview` = the full capability set.** `sayBenchmark` uses virtual thread batching; `sayCallSite` uses the Code Reflection API. Together they make DTR's two most novel capabilities possible.
 
 ---
 
 ## Design Trade-offs
 
-### Memory vs. Simplicity
+### Preview APIs
 
-**Virtual Threads:**
-- Trade: Slightly more memory per virtual thread than single async task
-- Gain: Dramatically simpler code, no callback chains
+Using `--enable-preview` means accepting instability in the Code Reflection API's surface. DTR's `sayCallSite` implementation may need updates as Project Babylon evolves. The trade-off is accepted because the capability — zero-cost source provenance — is central to DTR's accuracy guarantees.
 
-### Strict Immutability vs. Flexibility
+### Records' Immutability
 
-**Records:**
-- Trade: Can't mutate; must create new instances
-- Gain: Thread-safe, hashable, predictable equality
+Records cannot be mutated after construction. This is a constraint that occasionally requires constructing a new record to represent a change. In DTR, events are write-once and read-many, so immutability is a benefit, not a limitation.
 
-### Bounded Hierarchies vs. Open Extension
+### Sealed Hierarchies' Closed Extension
 
-**Sealed Classes:**
-- Trade: Can't extend outside the sealed list
-- Gain: Exhaustive pattern matching, compiler verification
-
-These trade-offs are **intentional:** Java 25 prioritizes **safety and clarity over raw flexibility**.
-
----
-
-## When to Use Java 25 Features
-
-| Feature | Use When | Avoid When |
-|---------|----------|-----------|
-| Virtual Threads | I/O-bound workloads at scale | CPU-intensive compute, real-time systems |
-| Records | Data carriers, DTOs, immutable values | Complex objects with mutable state |
-| Sealed Classes | Fixed type hierarchies, pattern matching | Open frameworks, plugin architectures |
-| Pattern Matching | Type-safe case handling | Simple type checks |
-
----
-
-## The Bigger Vision
-
-Java 25 is moving toward a model where:
-
-1. **Concurrency is built-in**, not bolted-on
-2. **Data is transparent and immutable** by default
-3. **Types are verified at compile time**, not runtime
-4. **Code expresses intent clearly**, hiding complexity
-
-This reflects modern understanding:
-- Shared mutable state is the root of many bugs
-- Compiler verification prevents whole classes of errors
-- Scalability doesn't require frameworks
-- Natural, readable code is achievable at scale
-
----
-
-## Ecosystem Impact
-
-As Java 25 features mature:
-- **Frameworks simplify** — no need for complex async machinery
-- **Onboarding improves** — new developers write natural code, not callbacks
-- **Performance scales** — services handle more load with same resources
-- **Reliability increases** — fewer runtime surprises
+`SayEvent` cannot be extended outside the library. If you want a new event type, you must contribute it to DTR — a new permitted subtype requires updating all render machine implementations. This is the cost of compile-time exhaustiveness. For `SayEvent`, the trade-off is worth it. For `RenderMachine`, it is not, which is why `RenderMachine` is abstract.
 
 ---
 
 ## See Also
 
-- [Tutorial: Virtual Threads](../tutorials/virtual-threads-lightweight-concurrency.md)
-- [Tutorial: Records and Sealed Classes](../tutorials/records-sealed-classes.md)
 - [Explanation: Why Virtual Threads Matter](virtual-threads-philosophy.md)
 - [Explanation: Why Records and Sealed Classes](records-sealed-philosophy.md)
+- [Explanation: Architecture](architecture.md)
