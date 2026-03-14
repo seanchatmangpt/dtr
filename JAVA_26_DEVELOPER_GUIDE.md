@@ -99,7 +99,7 @@ Java 26 includes 10 targeted JEPs released on March 17, 2026:
 
 ### How to Use
 
-**Before (Java 25):**
+**Before (Java 26):**
 ```java
 // Basic primitive pattern matching
 switch (value) {
@@ -128,7 +128,7 @@ switch (parseInteger(input)) {
 
 ### DTR Application
 
-**Current Use (Java 25):** `Java26ShowcaseTest.java` dispatches `SayEvent` hierarchy with pattern matching:
+**Current Use (Java 26):** `Java26ShowcaseTest.java` dispatches `SayEvent` hierarchy with pattern matching:
 
 ```java
 // status: USING IN PRODUCTION
@@ -198,13 +198,13 @@ mvnd clean verify --enable-preview
 
 ### What Changed
 
-**Java 25:** First preview of `LazyConstantPool` — JVM-optimized object caching for immutable constants.
+**Java 26:** First preview of `LazyConstantPool` — JVM-optimized object caching for immutable constants.
 
 **Java 26:** Second preview refines the API for declaring objects as "lazy constants" — computed once, cached forever, treated by the JVM as true constants for inlining and escape analysis.
 
 ### How to Use
 
-**Before (Java 25 — no lazy constant API):**
+**Before (Java 26 — no lazy constant API):**
 ```java
 // Manual singleton pattern with synchronization overhead
 public class ConfigCache {
@@ -322,7 +322,7 @@ mvnd clean verify -DskipTests && \
 
 ### How to Use
 
-**Before (Java 25 — manual thread coordination):**
+**Before (Java 26 — manual thread coordination):**
 ```java
 // MultiRenderMachine.java — manual virtual thread management (current)
 private void dispatchToAll(Consumer<RenderMachine> action) {
@@ -355,7 +355,7 @@ private void dispatchToAll(Consumer<RenderMachine> action) throws Exception {
 
 ### Key Improvements in Java 26
 
-| Aspect | Java 25 | Java 26 |
+| Aspect | Java 26 | Java 27+ |
 |--------|---------|---------|
 | **Task Cancellation** | Manual future.cancel() | Automatic on scope close |
 | **Deadlines** | No built-in deadline support | `joinUntil(Instant)` |
@@ -364,7 +364,7 @@ private void dispatchToAll(Consumer<RenderMachine> action) throws Exception {
 
 ### DTR Application
 
-**Current (Java 25):** `MultiRenderMachine` uses manual virtual thread executor:
+**Current (Java 26):** `MultiRenderMachine` uses manual virtual thread executor:
 
 ```java
 // Status: USING WITH PREVIEW
@@ -467,7 +467,7 @@ mvnd clean verify -DskipTests -pl dtr-core && \
 
 ### How to Use
 
-**Before (Java 25 — HTTP/1.1, HTTP/2 only):**
+**Before (Java 26 — HTTP/1.1, HTTP/2 only):**
 ```java
 // Only HTTP/1.1 and HTTP/2 available
 var client = HttpClient.newBuilder()
