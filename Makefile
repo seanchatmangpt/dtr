@@ -78,9 +78,11 @@ install:
 package:
 	$(MVND) package -DskipTests
 
-# Snapshot deploy — no signing, no Central publish
+# Snapshot deploy → GitHub Packages, no signing, no Central publish.
+# Uses release-rc profile for correct distributionManagement (GitHub Packages).
+# Requires GITHUB_TOKEN env var (export GITHUB_TOKEN=<pat> before running).
 snapshot:
-	$(MVND) clean deploy --no-transfer-progress
+	$(MVND) clean deploy -Prelease-rc -Dgpg.skip=true --no-transfer-progress
 
 # ─── Final releases — bump, changelog, commit, tag, push → GitHub Actions ───
 
