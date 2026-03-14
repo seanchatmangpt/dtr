@@ -158,3 +158,29 @@ gen-javadoc-docs: build-dtr-javadoc
 		--output docs/meta/javadoc.json \
 		--docs docs/api \
 		--allow-missing-docs
+
+# ─── H-Guard Enforcement ──────────────────────────────────────────────────────
+
+## Build the dtr-guard-scan binary (H-Guard semantic lie detector)
+build-guard: ## Build dtr-guard-scan binary
+	cd scripts/rust/dtr-guard && cargo build --release
+
+## Scan main Java sources for H-Guard violations (exits 2 on any violation)
+guard-scan: build-guard ## Scan src for semantic lies — exits 2 on violations
+	@echo "==> H-Guard scan: dtr-core/src/main/java"
+	@find dtr-core/src/main/java -name "*.java" | xargs \
+		scripts/rust/dtr-guard/target/release/dtr-guard-scan || \
+		{ echo ""; echo "Run 'make guard-scan-json' for machine-readable receipt."; exit 2; }
+
+## Run H-Guard scan with JSON receipt output
+guard-scan-json: build-guard ## H-Guard scan with JSON receipt
+	@find dtr-core/src/main/java -name "*.java" | xargs \
+		scripts/rust/dtr-guard/target/release/dtr-guard-scan --json
+
+## Run H-Guard unit tests
+guard-test: ## Run Rust unit tests for H-Guard patterns
+	cd scripts/rust/dtr-guard && cargo test
+
+## Clean H-Guard build artifacts
+clean-guard: ## Clean dtr-guard build artifacts
+	cd scripts/rust/dtr-guard && cargo clean
