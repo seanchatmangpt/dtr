@@ -31,7 +31,7 @@ on:
 
 env:
   MAVEN_OPTS: -Djava.awt.headless=true
-  JAVA_VERSION: '25'
+  JAVA_VERSION: '26'
 
 jobs:
   validate-guards:
@@ -47,12 +47,13 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: 25
-          cache: 'maven'
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Validate guard patterns
         id: guards
@@ -103,12 +104,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: 25
-          cache: 'maven'
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Compile with coverage
         id: compile
@@ -166,12 +168,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: 25
-          cache: 'maven'
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Build dependency tree
         run: |
@@ -232,12 +235,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: 25
-          cache: 'maven'
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Run integration tests
         id: integration

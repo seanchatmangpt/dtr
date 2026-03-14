@@ -66,7 +66,7 @@ the specific language governing permissions and limitations under the License. -
     </developers>
 
     <properties>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>26</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -217,7 +217,7 @@ the specific language governing permissions and limitations under the License. -
                 <version>${bouncycastle.version}</version>
             </dependency>
 
-            <!-- Javassist bytecode engineering (upgraded from 3.18.1-GA for Java 25 compatibility) -->
+            <!-- Javassist bytecode engineering (upgraded from 3.18.1-GA for Java 26 compatibility) -->
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
@@ -228,7 +228,7 @@ the specific language governing permissions and limitations under the License. -
 
     <build>
         <plugins>
-            <!-- Enforce Java 25+ and Maven 4+ on every build — inherited by all modules -->
+            <!-- Enforce Java 26+ and Maven 4+ on every build — inherited by all modules -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -242,7 +242,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.0</version>
                     <configuration>
-                        <release>25</release>
+                        <release>26</release>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                         </compilerArgs>
@@ -290,7 +290,7 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.11.2</version>
                     <configuration>
                         <additionalOptions>--enable-preview</additionalOptions>
-                        <release>25</release>
+                        <release>26</release>
                     </configuration>
                 </plugin>
 
@@ -308,8 +308,8 @@ the specific language governing permissions and limitations under the License. -
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[25,)</version>
-                                        <message>Java 25 or higher is required.</message>
+                                        <version>[26,)</version>
+                                        <message>Java 26 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
@@ -397,7 +397,7 @@ the specific language governing permissions and limitations under the License. -
                         <configuration>
                             <doclint>none</doclint>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <release>25</release>
+                            <release>26</release>
                         </configuration>
                         <executions>
                             <execution>
@@ -482,7 +482,7 @@ the specific language governing permissions and limitations under the License. -
                         <configuration>
                             <doclint>none</doclint>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <release>25</release>
+                            <release>26</release>
                         </configuration>
                         <executions>
                             <execution>
