@@ -260,4 +260,170 @@ public interface RenderMachineCommands {
      * @param after  the object representing the "after" state (must be same type as before)
      */
     void sayReflectiveDiff(Object before, Object after);
+
+    // =========================================================================
+    // Java 26 Code Reflection API (JEP 516 / Project Babylon)
+    // =========================================================================
+
+    /**
+     * Documents the control flow graph of a {@code @CodeReflection}-annotated method
+     * using the Java 26 Code Reflection API (JEP 516). Renders a Mermaid
+     * {@code flowchart TD} diagram where each basic block is a node and branch
+     * ops produce directed edges. Falls back to a text note on older runtimes.
+     *
+     * @param method the method whose CFG to render (should be annotated with
+     *               {@code @java.lang.reflect.code.CodeReflection})
+     */
+    void sayControlFlowGraph(java.lang.reflect.Method method);
+
+    /**
+     * Renders a Mermaid {@code graph LR} showing all method-to-method call
+     * relationships in the given class, extracted from InvokeOp nodes in each
+     * method's Java 26 Code Reflection IR. Only methods annotated with
+     * {@code @CodeReflection} contribute edges.
+     *
+     * @param clazz the class whose call graph to render
+     */
+    void sayCallGraph(Class<?> clazz);
+
+    /**
+     * Renders a lightweight operation-count table for a method using the Java 26
+     * Code Reflection API — same IR traversal as {@link #sayCodeModel(java.lang.reflect.Method)}
+     * but without the IR excerpt, for quick performance characterization.
+     *
+     * @param method the method to profile (should be annotated with {@code @CodeReflection})
+     */
+    void sayOpProfile(java.lang.reflect.Method method);
+
+    // =========================================================================
+    // Blue Ocean: Inline Benchmarking
+    // =========================================================================
+
+    /**
+     * Measures the given task using {@code System.nanoTime()} with default warmup
+     * (50 rounds) and measurement (500 rounds) and renders a performance table with
+     * avg/min/max/p99 nanoseconds and throughput ops/sec.
+     *
+     * <p>Uses Java 25 virtual threads for parallel warmup batches to reduce cold-start
+     * bias. All measurements are real — no simulation, no hard-coded numbers.</p>
+     *
+     * @param label a human-readable label for the benchmark
+     * @param task  the code to benchmark
+     */
+    void sayBenchmark(String label, Runnable task);
+
+    /**
+     * Measures the given task with explicit warmup and measurement round counts.
+     *
+     * @param label         a human-readable label for the benchmark
+     * @param task          the code to benchmark
+     * @param warmupRounds  number of warmup iterations (discarded from results)
+     * @param measureRounds number of measured iterations
+     */
+    void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds);
+
+    // =========================================================================
+    // Blue Ocean: Mermaid Diagrams
+    // =========================================================================
+
+    /**
+     * Renders a raw Mermaid diagram as a fenced {@code mermaid} code block.
+     * Mermaid renders natively on GitHub, GitLab, and Obsidian.
+     *
+     * @param diagramDsl the Mermaid DSL string (e.g., "flowchart TD\n    A --> B")
+     */
+    void sayMermaid(String diagramDsl);
+
+    /**
+     * Auto-generates a Mermaid {@code classDiagram} from the given classes using
+     * reflection ({@link Class#getSuperclass()}, {@link Class#getInterfaces()},
+     * {@link Class#getDeclaredMethods()}). Inheritance and implementation
+     * relationships are rendered as directed edges.
+     *
+     * @param classes the classes to include in the diagram
+     */
+    void sayClassDiagram(Class<?>... classes);
+
+    // =========================================================================
+    // Blue Ocean: Documentation Coverage
+    // =========================================================================
+
+    /**
+     * Renders a documentation coverage report for the given classes — which public
+     * methods were documented in this test vs. which were not. Coverage is tracked
+     * automatically as {@code say*} methods are called.
+     *
+     * @param classes the classes whose public API to check for documentation coverage
+     */
+    void sayDocCoverage(Class<?>... classes);
+
+    // =========================================================================
+    // 80/20 Low-Hanging Fruit
+    // =========================================================================
+
+    /**
+     * Renders a zero-parameter environment snapshot: Java version, OS, available
+     * processors, max heap (MB), timezone, and DTR version. Useful as a
+     * "generated with" footer in any documentation section.
+     */
+    void sayEnvProfile();
+
+    /**
+     * Renders a schema table for a Java record class — component names, types, and
+     * any annotations present. Uses {@link Class#getRecordComponents()} (Java 16+).
+     *
+     * @param recordClass the record class to document
+     */
+    void sayRecordComponents(Class<? extends Record> recordClass);
+
+    /**
+     * Documents an exception — type, message, full cause chain, and the top 5
+     * stack frames — in a structured table. Useful in error-handling and resilience
+     * documentation sections.
+     *
+     * @param t the throwable to document (must not be null)
+     */
+    void sayException(Throwable t);
+
+    /**
+     * Renders an inline ASCII horizontal bar chart for numeric data. Bars are drawn
+     * with Unicode block characters ({@code ████}) normalized to the maximum value.
+     * No external dependencies — pure Java string math.
+     *
+     * @param label   the chart title
+     * @param values  the numeric values (one bar per value)
+     * @param xLabels labels for each bar (must have the same length as {@code values})
+     */
+    void sayAsciiChart(String label, double[] values, String[] xLabels);
+
+    // =========================================================================
+    // Bonus: Contract Verification + Git Evolution Timeline
+    // =========================================================================
+
+    /**
+     * Documents interface contract coverage across implementation classes. For each
+     * public method in the contract interface, checks whether each implementation
+     * provides a concrete override (✅ direct), inherits it (↗ inherited), or is
+     * missing it entirely (❌ MISSING). Uses only standard Java reflection.
+     *
+     * <p>If the contract is a sealed interface, permitted subclasses are automatically
+     * detected so the user does not need to enumerate them.</p>
+     *
+     * @param contract        the interface whose methods to verify
+     * @param implementations zero or more implementation classes to check
+     */
+    void sayContractVerification(Class<?> contract, Class<?>... implementations);
+
+    /**
+     * Derives the git commit history for the source file of the given class using
+     * {@code git log --follow} and renders it as a timeline table (commit, date,
+     * author, subject). Falls back gracefully with a note if git is unavailable.
+     *
+     * <p>Follows the same {@code ProcessBuilder} + try/catch + fallback pattern
+     * already used in {@code DocMetadata}.</p>
+     *
+     * @param clazz      the class whose source file history to document
+     * @param maxEntries maximum number of commits to include (most recent first)
+     */
+    void sayEvolutionTimeline(Class<?> clazz, int maxEntries);
 }

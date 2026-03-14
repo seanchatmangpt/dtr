@@ -22,14 +22,26 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+import io.github.seanchatmangpt.dtr.benchmark.BenchmarkRunner;
+import io.github.seanchatmangpt.dtr.contract.ContractVerifier;
+import io.github.seanchatmangpt.dtr.coverage.CoverageRow;
+import io.github.seanchatmangpt.dtr.coverage.DocCoverageAnalyzer;
+import io.github.seanchatmangpt.dtr.diagram.CallGraphBuilder;
+import io.github.seanchatmangpt.dtr.diagram.ClassDiagramGenerator;
+import io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer;
+import io.github.seanchatmangpt.dtr.diagram.ControlFlowGraphBuilder;
+import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.cookie.Cookie;
@@ -791,6 +803,428 @@ public final class RenderMachineImpl extends RenderMachine {
         markdownDocument.add(anyChanged
             ? "> **Objects differ** — changed fields highlighted above."
             : "> **Objects are equal** — no field differences detected.");
+    }
+
+    // =========================================================================
+    // Java 26 Code Reflection API (JEP 516 / Project Babylon)
+    // =========================================================================
+
+    /**
+     * Implements the previously-stub sayCodeModel(Method) using the Java 26
+     * Code Reflection API. Renders an op-count table + IR excerpt when a code model
+     * is available; falls back to method signature rendering on older runtimes.
+     */
+    @Override
+    @SuppressWarnings("preview")
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        if (method == null) return;
+
+        var analysis = CodeModelAnalyzer.analyze(method, 10);
+
+        markdownDocument.add("");
+        markdownDocument.add("### Method Code Model: `" + analysis.methodSig() + "`");
+        markdownDocument.add("");
+
+        if (!analysis.hasModel()) {
+            markdownDocument.add("*(Code model not available — method not annotated with `@CodeReflection` or runtime < Java 25)*");
+            markdownDocument.add("");
+            markdownDocument.add("**Signature:** `" + analysis.methodSig() + "`");
+            return;
+        }
+
+        // Op-count table
+        markdownDocument.add("**Operation Profile (Java 26 Code Reflection / JEP 516):**");
+        markdownDocument.add("");
+        markdownDocument.add("| Op Type | Count |");
+        markdownDocument.add("| --- | --- |");
+        for (var entry : analysis.opCounts().entrySet()) {
+            markdownDocument.add("| `" + entry.getKey() + "` | " + entry.getValue() + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("**Blocks:** " + analysis.blockCount()
+                + "  |  **Total Ops:** " + analysis.totalOps()
+                + "  |  **Java:** " + System.getProperty("java.version"));
+
+        // IR excerpt
+        if (!analysis.irExcerpt().isEmpty()) {
+            markdownDocument.add("");
+            markdownDocument.add("**IR Excerpt (first " + analysis.irExcerpt().size() + " ops):**");
+            markdownDocument.add("");
+            markdownDocument.add("```");
+            for (String line : analysis.irExcerpt()) {
+                markdownDocument.add(line);
+            }
+            markdownDocument.add("```");
+        }
+    }
+
+    @Override
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {
+        if (method == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Control Flow Graph: `" + method.getName() + "`");
+        markdownDocument.add("");
+
+        String dsl = ControlFlowGraphBuilder.build(method);
+        if (dsl.isEmpty()) {
+            markdownDocument.add("*(Control flow graph not available — method requires `@CodeReflection` annotation and Java 25+)*");
+            return;
+        }
+
+        markdownDocument.add("```mermaid");
+        for (String line : dsl.split("\n")) {
+            markdownDocument.add(line);
+        }
+        markdownDocument.add("```");
+    }
+
+    @Override
+    public void sayCallGraph(Class<?> clazz) {
+        if (clazz == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Call Graph: `" + clazz.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        String dsl = CallGraphBuilder.build(clazz);
+        if (dsl.isEmpty()) {
+            markdownDocument.add("*(Call graph not available — methods require `@CodeReflection` annotation and Java 25+)*");
+            return;
+        }
+
+        markdownDocument.add("```mermaid");
+        for (String line : dsl.split("\n")) {
+            markdownDocument.add(line);
+        }
+        markdownDocument.add("```");
+    }
+
+    @Override
+    @SuppressWarnings("preview")
+    public void sayOpProfile(java.lang.reflect.Method method) {
+        if (method == null) return;
+
+        var analysis = CodeModelAnalyzer.analyze(method, 0);
+
+        markdownDocument.add("");
+        markdownDocument.add("### Op Profile: `" + analysis.methodSig() + "`");
+        markdownDocument.add("");
+
+        if (!analysis.hasModel()) {
+            markdownDocument.add("*(Op profile not available — method requires `@CodeReflection` annotation and Java 25+)*");
+            return;
+        }
+
+        markdownDocument.add("| Op Type | Count |");
+        markdownDocument.add("| --- | --- |");
+        for (var entry : analysis.opCounts().entrySet()) {
+            markdownDocument.add("| `" + entry.getKey() + "` | " + entry.getValue() + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("**Blocks:** " + analysis.blockCount()
+                + "  |  **Total Ops:** " + analysis.totalOps());
+    }
+
+    // =========================================================================
+    // Blue Ocean: Inline Benchmarking
+    // =========================================================================
+
+    @Override
+    public void sayBenchmark(String label, Runnable task) {
+        sayBenchmark(label, task, 50, 500);
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        if (label == null || task == null) return;
+
+        var result = BenchmarkRunner.run(task, warmupRounds, measureRounds);
+
+        markdownDocument.add("");
+        markdownDocument.add("### Benchmark: " + label);
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Result |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Avg | `" + result.avgNs() + " ns` |");
+        markdownDocument.add("| Min | `" + result.minNs() + " ns` |");
+        markdownDocument.add("| Max | `" + result.maxNs() + " ns` |");
+        markdownDocument.add("| p99 | `" + result.p99Ns() + " ns` |");
+        markdownDocument.add("| Ops/sec | `" + String.format("%,d", result.opsPerSec()) + "` |");
+        markdownDocument.add("| Warmup rounds | `" + warmupRounds + "` |");
+        markdownDocument.add("| Measure rounds | `" + measureRounds + "` |");
+        markdownDocument.add("| Java | `" + System.getProperty("java.version") + "` |");
+    }
+
+    // =========================================================================
+    // Blue Ocean: Mermaid Diagrams
+    // =========================================================================
+
+    @Override
+    public void sayMermaid(String diagramDsl) {
+        if (diagramDsl == null || diagramDsl.isBlank()) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("```mermaid");
+        for (String line : diagramDsl.split("\n")) {
+            markdownDocument.add(line);
+        }
+        markdownDocument.add("```");
+    }
+
+    @Override
+    public void sayClassDiagram(Class<?>... classes) {
+        if (classes == null || classes.length == 0) return;
+
+        markdownDocument.add("");
+        String title = Arrays.stream(classes)
+                .map(Class::getSimpleName)
+                .collect(Collectors.joining(", "));
+        markdownDocument.add("### Class Diagram: " + title);
+        markdownDocument.add("");
+
+        String dsl = ClassDiagramGenerator.generate(classes);
+        markdownDocument.add("```mermaid");
+        for (String line : dsl.split("\n")) {
+            markdownDocument.add(line);
+        }
+        markdownDocument.add("```");
+    }
+
+    // =========================================================================
+    // Blue Ocean: Documentation Coverage
+    // =========================================================================
+
+    @Override
+    public void sayDocCoverage(Class<?>... classes) {
+        if (classes == null || classes.length == 0) return;
+
+        for (Class<?> clazz : classes) {
+            markdownDocument.add("");
+            markdownDocument.add("### Documentation Coverage: `" + clazz.getSimpleName() + "`");
+            markdownDocument.add("");
+
+            // Note: coverage tracking lives in DtrContext; RenderMachineImpl receives
+            // an already-computed rows list via the overloaded method below.
+            markdownDocument.add("*(Coverage data not available — use DtrContext.sayDocCoverage() in tests)*");
+        }
+    }
+
+    /** Called by DtrContext with pre-computed coverage rows. */
+    public void sayDocCoverage(Class<?> clazz, List<CoverageRow> rows) {
+        if (clazz == null || rows == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Documentation Coverage: `" + clazz.getSimpleName() + "`");
+        markdownDocument.add("");
+        markdownDocument.add("| Method | Status | Via |");
+        markdownDocument.add("| --- | --- | --- |");
+
+        int covered = 0;
+        for (CoverageRow row : rows) {
+            if (row.documented()) covered++;
+            markdownDocument.add("| `" + row.methodSig() + "` | " + (row.documented() ? "✅" : "❌") + " | " + row.via() + " |");
+        }
+
+        markdownDocument.add("");
+        int total = rows.size();
+        double pct = total > 0 ? (covered * 100.0 / total) : 0.0;
+        markdownDocument.add("**Coverage: %.1f%% (%d/%d methods documented)**".formatted(pct, covered, total));
+    }
+
+    // =========================================================================
+    // 80/20 Low-Hanging Fruit
+    // =========================================================================
+
+    @Override
+    public void sayEnvProfile() {
+        markdownDocument.add("");
+        markdownDocument.add("### Environment Profile");
+        markdownDocument.add("");
+        markdownDocument.add("| Property | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Java Version | `" + System.getProperty("java.version") + "` |");
+        markdownDocument.add("| Java Vendor | `" + System.getProperty("java.vendor") + "` |");
+        markdownDocument.add("| OS | `" + System.getProperty("os.name") + " " + System.getProperty("os.arch") + "` |");
+        markdownDocument.add("| Processors | `" + Runtime.getRuntime().availableProcessors() + "` |");
+        markdownDocument.add("| Max Heap | `" + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + " MB` |");
+        markdownDocument.add("| Timezone | `" + System.getProperty("user.timezone", "UTC") + "` |");
+        markdownDocument.add("| DTR Version | `2.6.0` |");
+        markdownDocument.add("| Timestamp | `" + Instant.now().toString() + "` |");
+    }
+
+    @Override
+    public void sayRecordComponents(Class<? extends Record> recordClass) {
+        if (recordClass == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Record Schema: `" + recordClass.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        var components = recordClass.getRecordComponents();
+        if (components == null || components.length == 0) {
+            markdownDocument.add("*(No record components found)*");
+            return;
+        }
+
+        markdownDocument.add("| Component | Type | Generic Type | Annotations |");
+        markdownDocument.add("| --- | --- | --- | --- |");
+
+        for (var component : components) {
+            String type = component.getType().getSimpleName();
+            String genericType = component.getGenericType().getTypeName();
+            // Simplify generic type if it matches simple type
+            String genericDisplay = genericType.equals(component.getType().getName()) ? "—" : genericType;
+            String annotations = Arrays.stream(component.getAnnotations())
+                    .map(a -> "`@" + a.annotationType().getSimpleName() + "`")
+                    .collect(Collectors.joining(", "));
+            if (annotations.isEmpty()) annotations = "—";
+            markdownDocument.add("| `" + component.getName() + "` | `" + type + "` | " + genericDisplay + " | " + annotations + " |");
+        }
+    }
+
+    @Override
+    public void sayException(Throwable t) {
+        if (t == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Exception: `" + t.getClass().getSimpleName() + "`");
+        markdownDocument.add("");
+        markdownDocument.add("**Message:** " + (t.getMessage() != null ? t.getMessage() : "*(no message)*"));
+        markdownDocument.add("");
+
+        // Cause chain
+        var causeChain = new ArrayList<String>();
+        Throwable cause = t.getCause();
+        while (cause != null) {
+            causeChain.add("`" + cause.getClass().getSimpleName() + "`"
+                    + (cause.getMessage() != null ? ": " + cause.getMessage() : ""));
+            cause = cause.getCause();
+        }
+        if (!causeChain.isEmpty()) {
+            markdownDocument.add("**Cause chain:**");
+            for (String c : causeChain) {
+                markdownDocument.add("- " + c);
+            }
+            markdownDocument.add("");
+        }
+
+        // Top stack frames
+        var frames = t.getStackTrace();
+        int limit = Math.min(5, frames.length);
+        if (limit > 0) {
+            markdownDocument.add("**Stack Trace (top " + limit + " frames):**");
+            markdownDocument.add("");
+            markdownDocument.add("| # | Class | Method | Line |");
+            markdownDocument.add("| --- | --- | --- | --- |");
+            for (int i = 0; i < limit; i++) {
+                var f = frames[i];
+                markdownDocument.add("| " + (i + 1) + " | `" + f.getClassName() + "` | `" + f.getMethodName() + "` | " + f.getLineNumber() + " |");
+            }
+        }
+    }
+
+    @Override
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        if (label == null || values == null || values.length == 0) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Chart: " + label);
+        markdownDocument.add("");
+
+        double max = Arrays.stream(values).max().orElse(1.0);
+        if (max == 0) max = 1.0;
+        int barWidth = 20;
+
+        markdownDocument.add("```");
+        for (int i = 0; i < values.length; i++) {
+            String rowLabel = (xLabels != null && i < xLabels.length) ? xLabels[i] : ("" + i);
+            int filled = (int) Math.round((values[i] / max) * barWidth);
+            int empty = barWidth - filled;
+            String bar = "█".repeat(filled) + "░".repeat(empty);
+            markdownDocument.add("%-6s %s  %.0f".formatted(rowLabel, bar, values[i]));
+        }
+        markdownDocument.add("```");
+    }
+
+    // =========================================================================
+    // Contract Verification + Git Evolution Timeline
+    // =========================================================================
+
+    @Override
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        if (contract == null) return;
+
+        // Auto-detect implementations from sealed hierarchy if none provided
+        Class<?>[] impls = (implementations == null || implementations.length == 0)
+                ? (contract.isSealed() ? contract.getPermittedSubclasses() : new Class<?>[0])
+                : implementations;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Contract Verification: `" + contract.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        var rows = ContractVerifier.verify(contract, impls);
+        if (rows.isEmpty()) {
+            markdownDocument.add("*(No public abstract methods found in contract)*");
+            return;
+        }
+
+        // Build header from impl names
+        List<String> implNames = new ArrayList<>(rows.getFirst().implStatus().keySet());
+        StringBuilder header = new StringBuilder("| Method |");
+        StringBuilder sep = new StringBuilder("| --- |");
+        for (String name : implNames) {
+            header.append(" ").append(name).append(" |");
+            sep.append(" --- |");
+        }
+        markdownDocument.add(header.toString());
+        markdownDocument.add(sep.toString());
+
+        int missing = 0;
+        for (var row : rows) {
+            StringBuilder line = new StringBuilder("| `").append(row.methodSig()).append("` |");
+            for (String status : row.implStatus().values()) {
+                line.append(" ").append(status).append(" |");
+                if (status.contains("MISSING")) missing++;
+            }
+            markdownDocument.add(line.toString());
+        }
+
+        markdownDocument.add("");
+        if (missing == 0) {
+            markdownDocument.add("**All contract methods covered across all implementations.**");
+        } else {
+            markdownDocument.add("**" + missing + " missing implementation(s) detected above (❌ MISSING).**");
+        }
+    }
+
+    @Override
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        if (clazz == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Evolution Timeline: `" + clazz.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        var entries = GitHistoryReader.read(clazz, maxEntries > 0 ? maxEntries : 10);
+
+        if (entries.isEmpty()) {
+            markdownDocument.add("> [!NOTE]");
+            markdownDocument.add("> Git history unavailable in this environment. " +
+                    "Run in a git repository with `git log` accessible to see commit history.");
+            return;
+        }
+
+        markdownDocument.add("| Commit | Date | Author | Summary |");
+        markdownDocument.add("| --- | --- | --- | --- |");
+        for (var entry : entries) {
+            markdownDocument.add("| `" + entry.hash() + "` | " + entry.date()
+                    + " | " + entry.author() + " | " + entry.subject() + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("*" + entries.size() + " most recent commits touching `"
+                + clazz.getSimpleName() + ".java`*");
     }
 
     public String convertTextToId(String text) {
