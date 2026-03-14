@@ -1,3 +1,15 @@
+Version 2.6.0
+=============
+
+ * 2026-03-13 Java 26 migration complete - upgraded to Java 26 EA with SDKMAN integration
+ * 2026-03-13 GitHub Actions act compatibility - all workflows now support local testing with act
+ * 2026-03-13 Comprehensive CI/CD pipeline with quality gates, security scanning, and multi-Java version testing
+ * 2026-03-13 Added .actrc configuration for local GitHub Actions testing
+ * 2026-03-13 Enhanced Maven configuration with Java 26 release flag in .mvn/maven.config
+ * 2026-03-13 Complete workflow suite: ci-gate, deployment-automation, publish-validation, quality-gates
+ * 2026-03-13 GPG key management and monitoring workflows for Maven Central publishing
+ * 2026-03-13 Updated documentation with Java 26 developer guide and JEP implementation details
+
 Version 1.1.11
 =============
 

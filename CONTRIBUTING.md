@@ -2,31 +2,77 @@
 
 Thank you for your interest in contributing to DTR! We welcome contributions of all kinds including bug reports, documentation improvements, feature requests, and pull requests.
 
-## Code of Conduct
+## Table of Contents
 
-This project adheres to the Contributor Covenant Code of Conduct. By participating, you are expected to uphold this code. Please see [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for details.
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Local CI Testing with act](#local-ci-testing-with-act)
+- [Development Workflows](#development-workflows)
+- [Code Style Guidelines](#code-style-guidelines)
+- [Testing Requirements](#testing-requirements)
+- [Pull Request Process](#pull-request-process)
+- [Troubleshooting](#troubleshooting)
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+### Required Tools
 
-- **Java 25 or later** (Java 25.0.2+ recommended)
-- **Maven 4.0.0-rc-5+** or **mvnd 2.0.0+**
+- **Java 26** (Java 26.ea.13-graal or later)
+- **Maven 4.0.0-rc-3+** or **mvnd 2.0.0+** (preferred)
 - **Git** for version control
+- **act** (for local CI testing) - [Install act](https://github.com/nektos/act#installation)
 
-### Setup Development Environment
+### Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/seanchatmangpt/dtr.git
 cd dtr
 
-# Verify Java version
-java -version  # Should show openjdk version "25.0.2" or later
+# Verify Java version (must be 26+)
+java -version
+# Expected output: openjdk version "26.ea.13-graal" or later
 
-# Verify Maven
-mvnd --version  # Should show Maven 4.0.0-rc-5+
+# Verify Maven (mvnd recommended for speed)
+mvnd --version
+# Expected output: Maven 4.0.0-rc-3+ or mvnd 2.0.0+
+
+# Verify act is installed
+act --version
+# Expected output: act version X.X.X
 ```
+
+### Installing Java 26 via SDKMAN
+
+```bash
+# Install SDKMAN if not already installed
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# Install Java 26 (Early Access)
+sdk install java 26.ea.13-graal
+sdk use java 26.ea.13-graal
+
+# Verify installation
+java -version
+```
+
+### Installing Maven mvnd (Maven Daemon)
+
+```bash
+# Download mvnd 2.0.0+
+wget https://github.com/apache/maven-mvnd/releases/download/2.0.0/mvnd-2.0.0-linux-amd64.tar.gz
+tar -xzf mvnd-2.0.0-linux-amd64.tar.gz
+export PATH="$PATH:$PWD/mvnd-2.0.0-linux-amd64/bin"
+
+# Or on macOS
+brew install mvnd
+
+# Verify installation
+mvnd --version
+```
+
+## Quick Start
 
 ### Building the Project
 
@@ -37,8 +83,8 @@ mvnd clean install
 # Build specific module
 mvnd clean install -pl dtr-core
 
-# Run integration tests
-mvnd test -pl dtr-integration-test
+# Build with all tests
+mvnd clean verify
 
 # Build with proxy (if behind corporate firewall)
 mvnd clean install \
@@ -55,8 +101,158 @@ mvnd test
 # Run specific test class
 mvnd test -Dtest=PhDThesisDocTest
 
+# Run integration tests only
+mvnd test -pl dtr-integration-test
+
 # Run with verbose output
 mvnd test -X
+
+# Run tests with coverage
+mvnd clean verify -Djacoco.skip=false
+```
+
+## Local CI Testing with act
+
+**act** allows you to run GitHub Actions workflows locally on your machine, speeding up development and catching issues before pushing.
+
+### Installing act
+
+```bash
+# On macOS
+brew install act
+
+# On Linux
+curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+
+# Via cargo
+cargo install act
+
+# Verify installation
+act --version
+```
+
+### Setting Up act Secrets
+
+Create a `.secrets` file in the project root (git-ignored) for local testing:
+
+```bash
+# Create .secrets file
+cat > .secrets << 'EOF'
+CENTRAL_USERNAME=your_username
+CENTRAL_TOKEN=your_token
+GPG_PRIVATE_KEY=your_gpg_private_key
+GPG_PASSPHRASE=your_passphrase
+GPG_KEY_ID=your_key_id
+EOF
+
+# Set proper permissions
+chmod 600 .secrets
+```
+
+**Note:** For local act testing, you can use dummy values if you're not testing deployment:
+
+```bash
+cat > .secrets << 'EOF'
+CENTRAL_USERNAME=test_user
+CENTRAL_TOKEN=test_token
+GPG_PRIVATE_KEY=test_key
+GPG_PASSPHRASE=test_pass
+GPG_KEY_ID=test_id
+EOF
+```
+
+### Running Workflows Locally
+
+```bash
+# List all workflows
+act -l
+
+# Run the CI gate workflow (default job)
+act -j quality-check
+
+# Run specific job
+act -j test-coverage
+
+# Run with specific Java version matrix
+act -j build-verification
+
+# Run all jobs in CI gate workflow
+act -j quality-check -j dependency-check -j test-coverage -j security-scan -j build-verification
+
+# Run with secrets file
+act --secret-file .secrets -j test-coverage
+
+# Run with verbose output
+act -v -j test-coverage
+
+# Run with specific platform (useful if act defaults to wrong architecture)
+act -P ubuntu-latest=catthehacker/ubuntu:act-latest
+```
+
+### Common act Commands
+
+```bash
+# Quick test: Run quality checks only
+act -j quality-check
+
+# Full CI: Run all CI gate jobs
+act -j quality-check -j dependency-check -j test-coverage -j security-scan -j build-verification
+
+# Test deployment readiness (requires real secrets)
+act -j deployment-ready --secret-file .secrets
+
+# Run specific workflow by event type
+act push -j quality-check
+act pull_request -j test-coverage
+
+# Dry run (show what would be executed)
+act -n -j quality-check
+```
+
+### Troubleshooting act Issues
+
+#### Docker Not Running
+
+```bash
+# Start Docker Desktop or Docker daemon
+sudo systemctl start docker  # Linux
+# Or open Docker Desktop on macOS/Windows
+
+# Verify Docker is running
+docker ps
+```
+
+#### Platform/Architecture Issues
+
+```bash
+# Use pre-built act images
+act -P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Or use official Ubuntu image
+act -P ubuntu-latest=node:16-buster-slim
+```
+
+#### Java Installation Issues
+
+The CI workflow uses SDKMAN to install Java 26. If this fails locally:
+
+```bash
+# Install Java 26 locally first
+sdk install java 26.ea.13-graal
+sdk use java 26.ea.13-graal
+
+# Then run act with local Java
+act -j build-verification
+```
+
+#### Maven Repository Cache
+
+```bash
+# Clear Maven cache if needed
+rm -rf ~/.m2/repository
+
+# Use act's container cache
+act --reuse --container-architecture linux/amd64 -j test-coverage
 ```
 
 ## How to Contribute

@@ -1,6 +1,6 @@
 # DTR (Documentation Testing Runtime) — Claude Code Quick Reference
 
-**Project:** Markdown documentation generator for Java 25 | **Version:** 2.5.0
+**Project:** Markdown documentation generator for Java 26 | **Version:** 2.5.0
 
 ---
 
@@ -11,7 +11,7 @@
 - ✅ Use actual DTR code (RenderMachine + say* methods)
 - ✅ Measure with System.nanoTime() on real execution
 - ✅ Report: metric + units + Java version + iterations + environment
-- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 25.0.2)" NOT "6667x faster"
+- **Example:** "JEP 516: 78ns avg (10M accesses, 100 iter, Java 26.ea.13)" NOT "6667x faster"
 
 ### 2. ALWAYS USE REAL DTR CLI
 - ✅ JUnit 5 tests with DtrContext
@@ -19,10 +19,11 @@
 - ❌ Never bypass with standalone generators
 
 ### 3. Toolchain (Non-Negotiable)
-- Java 25: `/usr/lib/jvm/java-25-openjdk-amd64`
+- Java 26: `/usr/lib/jvm/java-26-openjdk-amd64` or SDKMAN: `26.ea.13-graal`
 - Maven 4.0.0-rc-3+: `/opt/apache-maven-4.0.0-rc-3/bin/mvn`
 - mvnd 2.0.0+: `/opt/mvnd/bin/mvnd` (preferred)
 - Flag: `--enable-preview` in `.mvn/maven.config`
+- act: Local GitHub Actions testing (brew install act)
 
 ---
 
@@ -126,7 +127,7 @@ ctx.sayAndAssertThat("Status", actual, is(200)); // Assert + document result
 
 ---
 
-## 🚀 JAVA 25 FEATURES (Use These)
+## 🚀 JAVA 26 FEATURES (Use These)
 
 ```java
 // Records (immutable data)
@@ -148,17 +149,176 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 String html = """
     <div>Content</div>
     """;
+
+// Gatherers (Java 26) - Stream processing
+List<String> result = stream.gather(
+    gatherer(windowFixed(5))
+).toList();
 ```
 
 ---
 
 ## ✅ BEFORE CODING
 
-1. `java -version` → 25.0.2+
+1. `java -version` → 26.ea.13+
 2. `mvnd --version` → Maven 4.0.0-rc-3+
 3. `.mvn/maven.config` contains `--enable-preview`
 4. Proxy running (if needed): `python3 maven-proxy-auth.py &`
 5. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
+
+---
+
+## 🎭 ACT - LOCAL GITHUB ACTIONS TESTING
+
+**What is act?** Run GitHub Actions workflows locally on macOS/Linux/Windows
+
+### Quick Start
+```bash
+# Install act
+brew install act  # macOS
+# or: curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+
+# List workflows
+act -l
+
+# Run CI gate workflow
+act -j quality-check
+act -j test-coverage
+
+# Run all jobs in workflow
+act -W .github/workflows/ci-gate.yml
+
+# Dry run (show what would execute)
+act -n
+```
+
+### Secret Management for act
+```bash
+# Create .secrets file (NEVER commit this)
+cat > .secrets << EOF
+CENTRAL_USERNAME=your-username
+CENTRAL_TOKEN=your-token
+GPG_PRIVATE_KEY=$(cat ~/.gnupg/private.key | base64)
+GPG_PASSPHRASE=your-passphrase
+GPG_KEY_ID=your-key-id
+EOF
+
+# Use secrets file
+act --secret-file .secrets
+
+# Or pass individual secrets
+act -s GPG_PRIVATE_KEY="$(cat ~/.gnupg/private.key | base64)"
+```
+
+### Common Workflows
+```bash
+# Test Java 26 matrix build
+act -j build-verification --matrix java-version:26
+
+# Test specific job with secrets
+act -j deployment-ready --secret-file .secrets
+
+# Run with custom container
+act -j quality-check -P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Debug mode (verbose output)
+act -j test-coverage -v
+
+# Use specific GitHub event (push, pull_request, etc.)
+act push --secret-file .secrets
+```
+
+### Troubleshooting act
+```bash
+# Pull latest Docker images first
+act pull
+
+# Clear Docker cache if jobs fail
+docker system prune -f
+
+# Check act version
+act --version
+
+# Test workflow syntax
+act -n -j <job-name>
+```
+
+---
+
+## 🔄 GITHUB ACTIONS CI/CD PIPELINE
+
+### Workflow Files
+- `ci-gate.yml` — Quality gates, multi-Java builds, security scans
+- `publish.yml` — Maven Central deployment
+- `quality-gates.yml` — Code quality checks
+- `deployment-automation.yml` — Automated deployments
+
+### CI Gate Triggers
+```yaml
+on:
+  push:
+    branches: [ main, master, develop ]
+    tags: ['v*']
+  pull_request:
+    branches: [ main, master ]
+```
+
+### Jobs Overview
+1. **quality-check** — Spotless, Checkstyle, PMD, SpotBugs
+2. **dependency-check** — OWASP dependency checks, version updates
+3. **test-coverage** — Unit tests with JaCoCo coverage
+4. **security-scan** — Trivy vulnerability scanner
+5. **build-verification** — Matrix build: Java 21, 22, 26
+6. **deployment-ready** — Checks secrets before release
+
+### Java Setup in Workflows
+```yaml
+# Java 26 (Early Access via SDKMAN)
+- name: Set up Java 26 via SDKMAN
+  run: |
+    curl -s "https://get.sdkman.io" | bash
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    sdk install java 26.ea.13-graal
+    echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+    echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
+
+# Java 21/22 (Stable via Temurin)
+- name: Set up Java
+  uses: actions/setup-java@v4
+  with:
+    distribution: 'temurin'
+    java-version: '21'
+```
+
+### Required Secrets for Release
+Set these in GitHub repo settings (Settings → Secrets and variables → Actions):
+- `CENTRAL_USERNAME` — Maven Central username
+- `CENTRAL_TOKEN` — Maven Central password/token
+- `GPG_PRIVATE_KEY` — Base64-encoded GPG private key
+- `GPG_PASSPHRASE` — GPG key passphrase
+- `GPG_KEY_ID` — GPG key ID (last 8 chars)
+
+### Local Testing Before Push
+```bash
+# 1. Run full CI gate locally
+act -W .github/workflows/ci-gate.yml --secret-file .secrets
+
+# 2. Test specific job
+act -j build-verification --matrix java-version:26
+
+# 3. Dry run to check workflow syntax
+act -n -j deployment-ready
+
+# 4. Verify secrets are loaded
+act -j deployment-ready --secret-file .secrets -v
+```
+
+### Java 26 Migration Notes
+- Updated from Java 25 → 26.ea.13-graal
+- Works with act using SDKMAN in workflows
+- Maven compiler: `-Dmaven.compiler.release=26`
+- Multi-Java testing: 21, 22, 26 matrix builds
+- `--enable-preview` flag required in `.mvn/maven.config`
 
 ---
 
@@ -180,10 +340,12 @@ ps aux | grep maven-proxy      # Check proxy running
 - `dtr-core/` — Core library
 - `dtr-integration-test/` — Integration tests
 - `.mvn/maven.config` — Build flags (--enable-preview)
-- `pom.xml` — `<release>25</release>`
+- `pom.xml` — `<release>26</release>`
+- `.github/workflows/ci-gate.yml` — GitHub Actions CI/CD pipeline
+- `.secrets` — Local act secrets (NEVER commit)
 
 ---
 
-**Last Updated:** March 12, 2026
-**Branch:** claude/audit-codebase-quality-yjLpu
+**Last Updated:** March 13, 2026
+**Branch:** feat/java-26-migration-github-actions
 **Rule:** Always measure real, report real, use real DTR code.

@@ -1,8 +1,14 @@
-# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 25+
+# DTR (Documentation Testing Runtime) — Markdown Living Documentation for Java 26+
 
 > **Generate living documentation as your tests execute.** Every test run regenerates docs in multiple formats (Markdown, PDF, LaTeX, Blog posts, OpenAPI specs) from live behavior—keeping docs forever in sync with reality.
 
-**Latest:** `2.5.0` | **License:** Apache 2.0 | **Java:** 25+ (with `--enable-preview`) | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
+[![CI Gate](https://github.com/seanchatmangpt/dtr/actions/workflows/ci-gate.yml/badge.svg)](https://github.com/seanchatmangpt/dtr/actions/workflows/ci-gate.yml)
+[![Quality Gates](https://github.com/seanchatmangpt/dtr/actions/workflows/quality-gates.yml/badge.svg)](https://github.com/seanchatmangpt/dtr/actions/workflows/quality-gates.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.seanchatmangpt.dtr/dtr-core.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core/versions)
+[![Java 26](https://img.shields.io/badge/Java-26-orange.svg)](https://openjdk.org/projects/jdk/26/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+**Latest:** `2.5.0` | **Java:** 26+ (with `--enable-preview`) | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core`
 
 ---
 
@@ -497,7 +503,7 @@ new BlogRenderMachine(new SubstackTemplate())     // Substack
 </dependency>
 ```
 
-### Compiler Configuration (Java 25 + Preview)
+### Compiler Configuration (Java 26 + Preview)
 
 ```xml
 <plugin>
@@ -505,7 +511,7 @@ new BlogRenderMachine(new SubstackTemplate())     // Substack
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.13.0</version>
     <configuration>
-        <release>25</release>
+        <release>26</release>
         <compilerArgs>--enable-preview</compilerArgs>
     </configuration>
 </plugin>
@@ -561,11 +567,11 @@ mvnd test  # Docs automatically regenerate with new response format
 
 ---
 
-### Why Java 25?
+### Why Java 26?
 
-DTR targets Java 25 idioms for concise, expressive tests:
+DTR targets Java 26 idioms for concise, expressive tests:
 
-| Java 25 Feature | Use in DTR |
+| Java 26 Feature | Use in DTR |
 |---|---|
 | **Records** | Immutable test data (Product, User, etc.) |
 | **Sealed classes** | Type-safe test result hierarchies |
@@ -573,6 +579,8 @@ DTR targets Java 25 idioms for concise, expressive tests:
 | **Virtual threads** | Concurrent test execution without overhead |
 | **Text blocks** | Readable SQL/JSON examples in tests |
 | **Switch expressions** | Exhaustive conditional logic in assertions |
+| **String Templates** (Preview) | Dynamic SQL/JSON generation |
+| **Scoped Values** (Preview) | Thread-safe context passing |
 
 ---
 
@@ -594,15 +602,19 @@ A single test generates all of them. 🎯
 
 ## 🚀 Getting Started
 
-### 1. Install Java 25+ and Maven 4
+### 1. Install Java 26+ and Maven 4
 
 ```bash
-# Install Java 25+ (LTS) with --enable-preview
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+# Install Java 26+ (EA) with --enable-preview
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
+
+# Alternatively, use SDKMAN for latest Java 26 EA
+curl -s "https://get.sdkman.io" | bash
+sdk install java 26.ea.13-graal
 
 # Verify
-java -version          # Shows: openjdk version "25.0.2"
-mvnd --version         # Shows: Maven 4.0.0-rc-5
+java -version          # Shows: openjdk version "26-ea"
+mvnd --version         # Shows: Maven 4.0.0-rc-5+
 ```
 
 ### 2. Add DTR to your `pom.xml`
@@ -747,8 +759,101 @@ Then add to `.mvn/jvm.config`:
 ## 🔗 See Also
 
 - **[CLAUDE.md](./CLAUDE.md)** — Comprehensive project guide for contributors
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** — Contribution guidelines and development setup
 - **[Documentation](./docs/)** — Full API documentation and guides
 - **[Examples](./dtr-integration-test/src/test/java/)** — Working examples
+
+---
+
+## 🧪 Local Testing with act
+
+Test GitHub Actions workflows locally using [act](https://github.com/nektos/act) before pushing:
+
+```bash
+# Install act (macOS)
+brew install act
+
+# Install act (Linux)
+curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+
+# Run CI gate workflow locally
+act -j quality-check
+act -j test-coverage
+act -j build-verification
+
+# Run all jobs with Java 26
+act -j build-verification --matrix java-version:26
+
+# Dry run to see what would execute
+act -n
+```
+
+**Important:** The CI workflow uses SDKMAN to install Java 26.ea.13-graal, which is compatible with `act`. Ensure you have Docker installed and running.
+
+---
+
+## 🚀 Deploying to Maven Central
+
+### Prerequisites
+
+1. **Sonatype OSSRH Account** - Sign up at [central.sonatype.com](https://central.sonatype.com)
+2. **GPG Key** - Generate and upload your public key to a keyserver:
+   ```bash
+   gpg --gen-key
+   gpg --list-keys
+   gpg --keyserver keyserver.ubuntu.com --send-keys YOUR_KEY_ID
+   ```
+
+### GitHub Secrets Configuration
+
+Set these secrets in your GitHub repository settings (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|--------|-------------|
+| `CENTRAL_USERNAME` | Sonatype OSSRH username |
+| `CENTRAL_TOKEN` | Sonatype OSSRH token |
+| `GPG_PRIVATE_KEY` | Your GPG private key (base64 encoded) |
+| `GPG_PASSPHRASE` | GPG key passphrase |
+| `GPG_KEY_ID` | Last 8 characters of your GPG key ID |
+
+### Deployment Process
+
+1. **Create a release tag:**
+   ```bash
+   git tag -a v2.5.0 -m "Release v2.5.0"
+   git push origin v2.5.0
+   ```
+
+2. **CI Gate automatically:**
+   - Runs all quality checks
+   - Verifies build on Java 21, 22, and 26
+   - Checks required secrets are present
+   - Triggers deployment workflow on tag push
+
+3. **Manual deployment (if needed):**
+   ```bash
+   # Set env vars for Maven Central
+   export CENTRAL_USERNAME="your-username"
+   export CENTRAL_TOKEN="your-token"
+   export GPG_PASSPHRASE="your-passphrase"
+
+   # Deploy to Maven Central
+   mvnd clean deploy -Drelease=26
+   ```
+
+4. **Verify deployment:**
+   - Check [Maven Central](https://central.sonatype.com/artifact/io.github.seanchatmangpt.dtr/dtr-core)
+   - Allow 10-15 minutes for synchronization
+
+### Automatic Deployment Workflow
+
+The `.github/workflows/ci-gate.yml` workflow automatically handles deployments when you push a version tag (`v*`):
+
+- ✅ Runs all quality gates
+- ✅ Verifies Java 21, 22, and 26 compatibility
+- ✅ Checks deployment prerequisites (secrets, tag format)
+- ✅ Triggers deployment to Maven Central
+- ✅ Generates quality gate report
 
 ---
 
@@ -770,9 +875,10 @@ Then add to `.mvn/jvm.config`:
 
 DTR is a modern reimplementation and evolution of the original **[doctester](https://github.com/r10r-org/doctester)** project by the r10r organization. The original project provided the foundational concept of test-driven documentation generation. DTR modernizes this approach for:
 
-- **Java 25 & Beyond** — Leveraging latest JDK features (records, sealed classes, pattern matching, virtual threads, text blocks)
+- **Java 26 & Beyond** — Leveraging latest JDK features (records, sealed classes, pattern matching, virtual threads, text blocks, string templates)
 - **Maven Central Distribution** — Professional package management and easy adoption
 - **Enhanced Architecture** — Multi-format output (Markdown, LaTeX, HTML, OpenAPI, Blog exports)
+- **CI/CD Integration** — GitHub Actions workflows for quality gates and automated deployment
 - **Current Maintenance** — Active development with modern tooling and best practices
 
 **Thank you** to the r10r-org team for the original vision that inspired this project.
@@ -780,11 +886,12 @@ DTR is a modern reimplementation and evolution of the original **[doctester](htt
 ### Acknowledgments
 
 DTR builds on innovative technology including:
-- **Java 25 Preview Features** — Records, sealed classes, pattern matching, virtual threads, text blocks
+- **Java 26 Preview Features** — Records, sealed classes, pattern matching, virtual threads, text blocks, string templates
 - **Apache HttpClient 5** — Reliable HTTP testing foundation
 - **Jackson 2.x** — Flexible JSON/XML serialization
 - **Guava 33.x** — Essential utilities for the JVM
 - **JUnit 5 & JUnit Platform** — Industry-standard Java testing framework
+- **GitHub Actions & act** — CI/CD infrastructure and local testing
 - **Original doctester Project** — Foundational concept and inspiration
 - **The Java Community** — For feedback, testing, and adoption
 
