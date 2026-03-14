@@ -18,11 +18,7 @@ package io.github.seanchatmangpt.dtr.rendermachine;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hc.client5.http.cookie.Cookie;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import org.hamcrest.Matcher;
 
 public interface RenderMachineCommands {
 
@@ -146,19 +142,6 @@ public interface RenderMachineCommands {
      * @param text The footnote content.
      */
     public void sayFootnote(String text);
-
-    /**
-     * @return all cookies saved by this TestBrowser.
-     */
-    public List<Cookie> sayAndGetCookies();
-
-    public Cookie sayAndGetCookieWithName(String name);
-
-    public Response sayAndMakeRequest(Request httpRequest);
-
-    public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher);
-
-    public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher);
 
     /**
      * Documents a class's structure using Java reflection — the DTR stand-in for

@@ -67,12 +67,6 @@
             <artifactId>guava</artifactId>
         </dependency>
 
-        <!-- For uploading files we are using: -->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-        </dependency>
-
         <!-- Testing -->
         <dependency>
             <groupId>org.mockito</groupId>
@@ -92,12 +86,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--HttpClient 5.x is used to test low level Json Apis -->
-        <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-        </dependency>
-
         <!-- We use Jackson for rendering jsons and xml: -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -114,12 +102,6 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-        </dependency>
-
-        <!-- WebSocket client library -->
-        <dependency>
-            <groupId>org.java-websocket</groupId>
-            <artifactId>Java-WebSocket</artifactId>
         </dependency>
 
         <!-- We use slf4j for logging -->
@@ -178,17 +160,6 @@
         <dependency>
             <groupId>net.jqwik</groupId>
             <artifactId>jqwik</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Chaos / fault-injection: WireMock simulates HTTP server faults
-             (connection reset, empty response, random garbage) so we can verify
-             TestBrowserImpl handles them gracefully.
-             Using standalone artifact which shades its dependencies to avoid
-             conflicts with HttpClient 5.6 / httpcore5 5.4. -->
-        <dependency>
-            <groupId>org.wiremock</groupId>
-            <artifactId>wiremock-standalone</artifactId>
             <scope>test</scope>
         </dependency>
 
