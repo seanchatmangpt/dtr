@@ -1,7 +1,7 @@
-name: Publish to Maven Central
+name: Publish RC to GitHub Packages
 
-# Triggered ONLY by final version tags (no -rc.) created via `make release-*`
-# RC tags are handled by publish-rc.yml
+# Triggered by release candidate tags created via `make release-rc-*`
+# Final releases are handled by publish.yml
 on:
   push:
     tags:
@@ -18,9 +18,9 @@ env:
 jobs:
   # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
-    name: Build & Test
-    # Final releases only — RC tags are routed to publish-rc.yml via job condition
-    if: "!contains(github.ref_name, '-rc.')"
+    name: Build & Test (RC)
+    # RC tags only — final tags are routed to publish.yml via job condition
+    if: "contains(github.ref_name, '-rc.')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -46,17 +46,18 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
+          name: surefire-reports-rc
           path: |
             **/target/surefire-reports/
             **/target/failsafe-reports/
 
-  # ── 2. Deploy to Maven Central ─────────────────────────────────────────────
-  deploy:
-    name: Deploy to Maven Central
+  # ── 2. Publish to GitHub Packages ─────────────────────────────────────────
+  publish:
+    name: Publish to GitHub Packages
     needs: build
     runs-on: ubuntu-latest
-    environment: production
+    permissions:
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,9 +86,9 @@ jobs:
           <settings>
             <servers>
               <server>
-                <id>central</id>
-                <username>${env.CENTRAL_USERNAME}</username>
-                <password>${env.CENTRAL_TOKEN}</password>
+                <id>github</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
               </server>
             </servers>
             <profiles>
@@ -103,37 +104,15 @@ jobs:
           </settings>
           EOF
         env:
-          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
-          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Deploy
-        run: ./mvnw clean deploy -Prelease -DskipTests --no-transfer-progress
+      - name: Publish RC to GitHub Packages
+        run: ./mvnw clean deploy -Prelease-rc -DskipTests --no-transfer-progress
         env:
-          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
-          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-  # ── 3. Create GitHub Release ───────────────────────────────────────────────
-  release:
-    name: Create GitHub Release
-    needs: deploy
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Create release
-        run: |
-          gh release create "${{ github.ref_name }}" \
-            --title "DTR ${{ github.ref_name }}" \
-            --generate-notes \
-            --verify-tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
