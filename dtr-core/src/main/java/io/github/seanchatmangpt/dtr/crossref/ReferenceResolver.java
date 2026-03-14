@@ -52,7 +52,7 @@ public class ReferenceResolver {
 
     private final Map<Class<?>, Map<String, String>> sectionLabels = new HashMap<>();
     private final Map<String, String> anchorToLabel = new HashMap<>();
-    private final Map<String, Class<?>> anchorToDocTest = new HashMap<>();
+    private final Map<String, Class<?>> anchorOwner = new HashMap<>();
 
     /**
      * Parse a single .tex file and extract section-to-label mappings.
@@ -89,7 +89,7 @@ public class ReferenceResolver {
                 String label = labelMatcher.group(1);
                 classLabels.put(anchor, label);
                 anchorToLabel.put(anchor, label);
-                anchorToDocTest.put(anchor, docTestClass);
+                anchorOwner.put(anchor, docTestClass);
             }
         }
 
@@ -223,6 +223,6 @@ public class ReferenceResolver {
     public void clear() {
         sectionLabels.clear();
         anchorToLabel.clear();
-        anchorToDocTest.clear();
+        anchorOwner.clear();
     }
 }
