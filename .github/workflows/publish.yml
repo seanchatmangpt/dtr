@@ -1,317 +1,138 @@
 name: Publish to Maven Central
 
+# Triggered ONLY by version tags created via `make tag`
+# Make is the sole control surface — do not add workflow_dispatch here.
 on:
-  # Trigger on pushes to main branch
   push:
-    branches:
-      - main
-      - master
-    # Also trigger on tags (for releases)
     tags:
       - 'v*'
 
-  # Allow manual triggering
-  workflow_dispatch:
-    inputs:
-      release_type:
-        description: 'Release type'
-        required: true
-        default: 'snapshot'
-        type: choice
-        options:
-          - 'snapshot'
-          - 'release'
-          - 'dry-run'
-
-# Act testing configuration
 env:
-  # Java version
   JAVA_VERSION: '25'
-
-  # Maven settings
   MAVEN_OPTS: >-
     -Xmx2g
     -Xms1g
     -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
     -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
-    -Dmaven.compiler.release=25
 
 jobs:
-  # Build and test the project
+  # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
-    name: Build & Test (Java ${{ matrix.java-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java-version: ['21', '22', '25']
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Java ${{ matrix.java-version }}
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java-version }}
-          java-package: 'jdk'
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Verify Java version
-        run: |
-          java -version
-          javac -version
-
-      - name: Build and test
-        run: |
-          ./mvnw clean verify -T1C
-
-      - name: Upload test results
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-java${{ matrix.java-version }}
-          path: |
-            **/surefire-reports/
-            **/failsafe-reports/
-
-  # Package and sign artifacts
-  package:
-    name: Package & Sign
-    needs: build
+    name: Build & Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '25'
-          java-package: 'jdk'
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Cache Maven dependencies
+      - name: Cache Maven
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          restore-keys: ${{ runner.os }}-maven-
 
-      - name: Generate GPG key
+      - name: Build and test
+        run: ./mvnw clean verify --no-transfer-progress
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            **/target/surefire-reports/
+            **/target/failsafe-reports/
+
+  # ── 2. Deploy to Maven Central ─────────────────────────────────────────────
+  deploy:
+    name: Deploy to Maven Central
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Import GPG key
         run: |
-          # Import GPG key from secrets
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
-          # Export the public key for signing
-          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > public-key.asc
 
-      - name: Set up Maven settings
+      - name: Configure Maven settings
         run: |
           mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml << EOF
+          cat > ~/.m2/settings.xml << 'EOF'
           <settings>
             <servers>
               <server>
                 <id>central</id>
-                <username>${{ secrets.CENTRAL_USERNAME }}</username>
-                <password>${{ secrets.CENTRAL_TOKEN }}</password>
+                <username>${env.CENTRAL_USERNAME}</username>
+                <password>${env.CENTRAL_TOKEN}</password>
               </server>
             </servers>
             <profiles>
               <profile>
                 <id>gpg</id>
-                <activation>
-                  <activeByDefault>true</activeByDefault>
-                </activation>
+                <activation><activeByDefault>true</activeByDefault></activation>
                 <properties>
-                  <gpg.keyname>${{ secrets.GPG_KEY_ID }}</gpg.keyname>
-                  <gpg.passphrase>${{ secrets.GPG_PASSPHRASE }}</gpg.passphrase>
+                  <gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
+                  <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
                 </properties>
               </profile>
             </profiles>
-            <activeProfiles>
-              <activeProfile>gpg</activeProfile>
-            </activeProfiles>
           </settings>
           EOF
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Verify GPG key
-        run: |
-          gpg --list-secret-keys --keyid-format=long
-          gpg --list-keys --keyid-format=long
+      - name: Deploy
+        run: ./mvnw clean deploy -Prelease -DskipTests --no-transfer-progress
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Package and sign artifacts
-        run: |
-          # Package with signing (multi-module)
-          ./mvnw clean package -Prelease -T1C
-
-      - name: Generate checksums
-        run: |
-          # Generate SHA256 checksums for all artifacts
-          find . -name "*.jar" -path "*/target/*" -exec sha256sum {} \; > checksums.sha256
-          find . -name "*.pom" -path "*/target/*" -exec sha256sum {} \; >> checksums.sha256
-          find . -name "*.asc" -path "*/target/*" -exec sha256sum {} \; >> checksums.sha256
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-artifacts
-          path: |
-            **/target/*.jar
-            **/target/*.pom
-            **/target/*.asc
-            checksums.sha256
-            public-key.asc
-
-  # Deploy to Maven Central
-  deploy:
-    name: Deploy to Maven Central
-    needs: [build, package]
+  # ── 3. Create GitHub Release ───────────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    needs: deploy
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    environment: production
-    env:
-      # Use Central Portal API for deployment
-      CENTRAL_API_URL: https://central.sonatype.com/api/v1/publisher
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
         with:
-          name: signed-artifacts
-
-      - name: Set up Java 25
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '25'
-          java-package: 'jdk'
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Deploy to Maven Central
-        run: |
-          # Deploy using the central-publishing-maven-plugin (multi-module)
-          ./mvnw deploy -Prelease -T1C
-
-      - name: Verify deployment
-        run: |
-          # Verify the deployment by checking the Central Portal API
-          echo "Deployment completed. Check https://central.sonatype.com for status."
-
-  # Act Testing Job
-  act-test:
-    name: Act Testing
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 25
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '25'
-          java-package: 'jdk'
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Run Act testing
-        run: |
-          # Install Act
-          sudo curl -sL https://github.com/nektos/act/releases/latest/download/act_Linux_x86_64.tar.gz | tar xz -C /usr/local/bin
-
-          # Run Act with GitHub Actions configuration
-          act -W .github/workflows/ --dryrun --list
-          act -W .github/workflows/publish.yml --dryrun --list
-
-      - name: Generate Act report
-        run: |
-          echo "Act testing completed successfully"
-
-  # Generate release notes
-  release-notes:
-    name: Generate Release Notes
-    needs: [build, package, deploy]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    outputs:
-      release_notes: ${{ steps.generate.outputs.release_notes }}
-    steps:
-      - name: Generate release notes
-        id: generate
-        uses: actions/github-script@v7
-        with:
-          script: |
-            // Get the tag name
-            const tagName = context.ref.replace('refs/tags/', '');
-            const version = '${{ github.ref_name }}';
-            const actor = '${{ github.actor }}';
-
-            // Generate release notes using string concatenation to avoid YAML issues
-            const releaseNotes = '# DTR ' + version + ' Release\n\n' +
-              'Release date: ${{ github.event.created_at }}\n\n' +
-              '## What\'s Changed\n\n' +
-              'This release includes:\n' +
-              '- Bug fixes and improvements to the DTR framework\n' +
-              '- Enhanced documentation and examples\n' +
-              '- Performance optimizations\n' +
-              '- Central Portal integration updates\n\n' +
-              '## Artifacts\n\n' +
-              '- DTR Java 25 Framework library (multi-module)\n' +
-              '- Javadoc documentation\n' +
-              '- Source code\n' +
-              '- GPG signatures\n\n' +
-              '## Installation\n\n' +
-              'Add the following to your pom.xml:\n\n' +
-              '```xml\n' +
-              '<dependency>\n' +
-              '    <groupId>io.github.seanchatmangpt.dtr</groupId>\n' +
-              '    <artifactId>dtr-core</artifactId>\n' +
-              '    <version>' + version + '</version>\n' +
-              '</dependency>\n' +
-              '```\n\n' +
-              '## Links\n\n' +
-              '- [Source Code](https://github.com/seanchatmangpt/dtr)\n' +
-              '- [Maven Central](https://central.sonatype.com/)\n' +
-              '- [Documentation](https://github.com/seanchatmangpt/dtr/docs)\n\n' +
-              '## Contributors\n\n' +
-              actor + '\n\n' +
-              '## Acknowledgments\n\n' +
-              'Thank you to all contributors and the Java community for their support.';
-
-            // Set output
-            core.setOutput('release_notes', releaseNotes);
+          fetch-depth: 0
 
       - name: Create release
-        uses: actions/create-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${{ github.ref_name }}"
+          gh release create "$VERSION" \
+            --title "DTR $VERSION" \
+            --generate-notes \
+            --verify-tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: DTR ${{ github.ref }}
-          body: ${{ steps.generate.outputs.release_notes }}
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

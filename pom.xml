@@ -39,7 +39,7 @@ the specific language governing permissions and limitations under the License. -
         <url>https://github.com/seanchatmangpt/dtr</url>
         <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
         <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
-        <tag>dtr-2.6.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
@@ -226,13 +226,10 @@ the specific language governing permissions and limitations under the License. -
     <build>
         <plugins>
             <!-- Enforce Java 25+ and Maven 4+ on every build — inherited by all modules -->
-            <!-- TEMPORARILY DISABLED: Maven Central auth rate limiting (environment issue, not code issue) -->
-            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
-            -->
         </plugins>
 
         <pluginManagement>
@@ -397,7 +394,7 @@ the specific language governing permissions and limitations under the License. -
                         <configuration>
                             <doclint>none</doclint>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <release>26</release>
+                            <release>25</release>
                         </configuration>
                         <executions>
                             <execution>
