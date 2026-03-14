@@ -21,3 +21,4 @@ doctester-core/docs/test/
 # Release version temp file (written by scripts/bump.sh, deleted by release.sh)
 .release-version
 dtr-core/docs/test/io.github.seanchatmangpt.dtr.Stress*.md
+.claude/session-log.md
