@@ -67,7 +67,7 @@ the specific language governing permissions and limitations under the License. -
     </developers>
 
     <properties>
-        <maven.compiler.release>26</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -240,6 +240,11 @@ the specific language governing permissions and limitations under the License. -
             </dependency>
             <dependency>
                 <groupId>org.ninjaframework</groupId>
+                <artifactId>ninja-db-classic</artifactId>
+                <version>${ninja.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ninjaframework</groupId>
                 <artifactId>ninja-test-utilities</artifactId>
                 <version>${ninja.version}</version>
             </dependency>
@@ -331,7 +336,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.0</version>
                     <configuration>
-                        <release>26</release>
+                        <release>${maven.compiler.release}</release>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                         </compilerArgs>
@@ -391,7 +396,7 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.11.2</version>
                     <configuration>
                         <additionalOptions>--enable-preview</additionalOptions>
-                        <release>26</release>
+                        <release>${maven.compiler.release}</release>
                     </configuration>
                 </plugin>
 
@@ -409,8 +414,8 @@ the specific language governing permissions and limitations under the License. -
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[26,)</version>
-                                        <message>Java 26 or higher is required.</message>
+                                        <version>[25,)</version>
+                                        <message>Java 25 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
@@ -498,7 +503,7 @@ the specific language governing permissions and limitations under the License. -
                         <configuration>
                             <doclint>none</doclint>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <release>26</release>
+                            <release>${maven.compiler.release}</release>
                         </configuration>
                         <executions>
                             <execution>

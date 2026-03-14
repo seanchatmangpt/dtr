@@ -23,7 +23,7 @@ from typer.testing import CliRunner
 
 from dtr_cli.main import app
 
-runner = CliRunner()
+runner = CliRunner(mix_stderr=False)
 
 
 # ---------------------------------------------------------------------------

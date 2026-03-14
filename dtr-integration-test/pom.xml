@@ -33,13 +33,21 @@ the specific language governing permissions and limitations under the License. -
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <!-- Override to Java 17 bytecode: Ninja 7 uses Guice 6 with ASM 7.1 which
+                     cannot introspect Java 25 class files (major version 69). The Ninja
+                     webapp code does not use Java 25 language features so Java 17 is fine.
+                     combine.children=override prevents parent enablePreview arg merging. -->
+                <configuration combine.self="override">
+                    <release>17</release>
+                    <enablePreview>false</enablePreview>
+                </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>--enable-preview --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                    <argLine>--enable-preview --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 
@@ -119,6 +127,13 @@ the specific language governing permissions and limitations under the License. -
                     <include>**/*</include>
                 </includes>
             </resource>
+            <!-- persistence.xml lives under src/main/java/META-INF — copy it to classpath -->
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>META-INF/**/*</include>
+                </includes>
+            </resource>
         </resources>
 
     </build>
@@ -170,6 +185,11 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>org.ninjaframework</groupId>
             <artifactId>ninja-standalone</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ninjaframework</groupId>
+            <artifactId>ninja-db-classic</artifactId>
         </dependency>
 
         <dependency>
@@ -225,6 +245,13 @@ the specific language governing permissions and limitations under the License. -
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- SLF4J simple binding for test — reveals Ninja's suppressed error logs -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
 
