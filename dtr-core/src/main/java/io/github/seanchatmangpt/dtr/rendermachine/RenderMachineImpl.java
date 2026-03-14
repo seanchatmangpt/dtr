@@ -42,6 +42,8 @@ import io.github.seanchatmangpt.dtr.diagram.ClassDiagramGenerator;
 import io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer;
 import io.github.seanchatmangpt.dtr.diagram.ControlFlowGraphBuilder;
 import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocEntry;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocIndex;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.seanchatmangpt.dtr.bibliography.BibliographyManager;
@@ -1105,6 +1107,54 @@ public final class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
         markdownDocument.add("*" + entries.size() + " most recent commits touching `"
                 + clazz.getSimpleName() + ".java`*");
+    }
+
+    @Override
+    public void sayJavadoc(java.lang.reflect.Method method) {
+        if (method == null) return;
+
+        JavadocIndex.lookup(method).ifPresent(entry -> {
+            if (!entry.description().isBlank()) {
+                markdownDocument.add("");
+                markdownDocument.add(entry.description());
+            }
+
+            if (!entry.params().isEmpty()) {
+                markdownDocument.add("");
+                markdownDocument.add("| Parameter | Description |");
+                markdownDocument.add("| --- | --- |");
+                for (JavadocEntry.ParamDoc p : entry.params()) {
+                    markdownDocument.add("| `" + p.name() + "` | " + p.description() + " |");
+                }
+            }
+
+            entry.optReturns().ifPresent(r -> {
+                markdownDocument.add("");
+                markdownDocument.add("> [!NOTE]");
+                markdownDocument.add("> **Returns:** " + r);
+            });
+
+            if (!entry.throws_().isEmpty()) {
+                markdownDocument.add("");
+                markdownDocument.add("| Exception | Description |");
+                markdownDocument.add("| --- | --- |");
+                for (JavadocEntry.ThrowsDoc t : entry.throws_()) {
+                    markdownDocument.add("| `" + t.exception() + "` | " + t.description() + " |");
+                }
+            }
+
+            entry.optSince().ifPresent(s -> {
+                markdownDocument.add("");
+                markdownDocument.add("> [!NOTE]");
+                markdownDocument.add("> **Since:** " + s);
+            });
+
+            entry.optDeprecated().ifPresent(d -> {
+                markdownDocument.add("");
+                markdownDocument.add("> [!WARNING]");
+                markdownDocument.add("> **Deprecated:** " + d);
+            });
+        });
     }
 
     public String convertTextToId(String text) {

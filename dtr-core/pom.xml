@@ -39,6 +39,33 @@
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>extract-javadoc</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>make</executable>
+                            <arguments>
+                                <argument>extract-javadoc</argument>
+                            </arguments>
+                            <workingDirectory>${project.basedir}/..</workingDirectory>
+                            <successCodes>
+                                <successCode>0</successCode>
+                                <!-- Allow failure if Rust toolchain not installed -->
+                                <successCode>2</successCode>
+                            </successCodes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
 
         <resources>

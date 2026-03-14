@@ -192,6 +192,9 @@ public abstract class RenderMachine implements RenderMachineCommands {
     /** Git evolution timeline — no-op in base class. */
     public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {}
 
+    /** Javadoc documentation from dtr-javadoc index — no-op in base class. */
+    public void sayJavadoc(java.lang.reflect.Method method) {}
+
     /**
      * Finishes documentation generation and writes output to disk.
      */
