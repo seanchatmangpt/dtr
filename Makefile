@@ -1,95 +1,92 @@
 # DTR — Documentation Testing Runtime
 #
-# Release flow (Joe Armstrong: make it work, make it right, make it fast):
+# The human decides the type of change. The number is derived.
 #
-#   make tag VERSION=2.7.0        # bump version, commit, create annotated tag
-#   git push origin main          # push commit
-#   git push origin v2.7.0        # push tag — GitHub Actions publishes to Maven Central
+#   make release-patch   → bug fix, no API change
+#   make release-minor   → new say* methods, backward compatible
+#   make release-major   → breaking API change
 #
-# Local publish (needs GPG key + CENTRAL_USERNAME/CENTRAL_TOKEN in ~/.m2/settings.xml):
-#   make publish
-#
-# See: https://central.sonatype.com/publishing/deployments
+# That is the only decision a human needs to make.
+# scripts/bump-version.sh owns the arithmetic.
+# scripts/release.sh owns the tag and push.
+# GitHub Actions owns the signing and Maven Central publish.
 
-MVND := $(shell command -v /opt/mvnd/bin/mvnd 2>/dev/null)
-MVN  := $(if $(MVND),$(MVND),./mvnw)
+MVND           := /opt/mvnd/bin/mvnd
+CURRENT_VERSION := $(shell scripts/current-version.sh)
 
 .DEFAULT_GOAL := help
-.PHONY: help compile test verify clean install package tag release publish version check
+.PHONY: help compile test verify clean install package \
+        release-major release-minor release-patch \
+        publish version check
 
 help:
 	@echo ""
 	@echo "DTR build targets:"
-	@echo "  compile           compile all modules"
-	@echo "  test              run unit tests"
-	@echo "  verify            compile + test + checks"
-	@echo "  clean             remove build artifacts"
-	@echo "  install           install to local Maven repo (skip tests)"
-	@echo "  package           package JARs (skip tests)"
-	@echo "  tag VERSION=x.y.z bump pom version, commit, create git tag"
-	@echo "  publish           deploy to Maven Central (local, needs creds)"
-	@echo "  version           print current project version"
-	@echo "  check             verify toolchain (Java, Maven, GPG, Git)"
 	@echo ""
-	@echo "Release flow:"
-	@echo "  make tag VERSION=2.7.0"
-	@echo "  git push origin main && git push origin v2.7.0"
-	@echo "  # GitHub Actions handles GPG signing and Maven Central publish"
+	@echo "  compile          compile all modules"
+	@echo "  test             run unit tests"
+	@echo "  verify           compile + test + checks (CI gate)"
+	@echo "  clean            remove build artifacts"
+	@echo "  install          install to local Maven repo (skip tests)"
+	@echo "  package          package JARs (skip tests)"
+	@echo ""
+	@echo "Release — decide the change type, the version is derived:"
+	@echo ""
+	@echo "  release-patch    bug fix, no API change     ($(CURRENT_VERSION) → next patch)"
+	@echo "  release-minor    new features, compatible   ($(CURRENT_VERSION) → next minor)"
+	@echo "  release-major    breaking API change        ($(CURRENT_VERSION) → next major)"
+	@echo ""
+	@echo "  publish          deploy to Maven Central locally (needs creds)"
+	@echo "  version          print current project version"
+	@echo "  check            verify toolchain (Java, Maven, GPG, Git)"
 	@echo ""
 
 compile:
-	$(MVN) compile
+	$(MVND) compile
 
 test:
-	$(MVN) test
+	$(MVND) test
 
 verify:
-	$(MVN) verify
+	$(MVND) verify
 
 clean:
-	$(MVN) clean
+	$(MVND) clean
 
 install:
-	$(MVN) install -DskipTests
+	$(MVND) install -DskipTests
 
 package:
-	$(MVN) package -DskipTests
+	$(MVND) package -DskipTests
 
-# Create a release tag.
-# Updates pom.xml version, commits, and creates an annotated git tag.
-# GitHub Actions will publish to Maven Central when the tag is pushed.
-tag:
-ifndef VERSION
-	$(error VERSION is required: make tag VERSION=x.y.z)
-endif
-	@echo "==> Setting version to $(VERSION)"
-	$(MVN) versions:set -DnewVersion=$(VERSION) -DgenerateBackupPoms=false
-	@sed -i 's|<tag>.*</tag>|<tag>v$(VERSION)</tag>|' pom.xml
-	git add pom.xml dtr-core/pom.xml dtr-benchmarks/pom.xml 2>/dev/null; git add -u
-	git commit -m "Release v$(VERSION)"
-	git tag -a v$(VERSION) -m "Release v$(VERSION)"
-	@echo ""
-	@echo "==> Tagged v$(VERSION). Push with:"
-	@echo "    git push origin $$(git branch --show-current) && git push origin v$(VERSION)"
+release-major:
+	scripts/bump-version.sh major $(CURRENT_VERSION)
+	scripts/release.sh
 
-release: tag
+release-minor:
+	scripts/bump-version.sh minor $(CURRENT_VERSION)
+	scripts/release.sh
 
-# Deploy directly from local machine (CI normally does this via the tag workflow).
-# Requires ~/.m2/settings.xml with central server credentials and GPG key loaded.
+release-patch:
+	scripts/bump-version.sh patch $(CURRENT_VERSION)
+	scripts/release.sh
+
+# Local deploy — for developers who have GPG + Central credentials configured.
+# In CI, the tag push triggers publish.yml which does this automatically.
 publish:
-	$(MVN) clean deploy -Prelease -DskipTests
+	$(MVND) clean deploy -Prelease -DskipTests
 
 version:
-	@$(MVN) help:evaluate -Dexpression=project.version -q -DforceStdout
+	@scripts/current-version.sh
 
 check:
 	@echo "==> Java"
 	@java -version 2>&1
-	@echo "==> Build tool ($(MVN))"
-	@$(MVN) --version 2>&1 | head -2
+	@echo "==> mvnd"
+	@$(MVND) --version 2>&1 | head -2
 	@echo "==> GPG"
 	@gpg --version 2>&1 | head -1
 	@echo "==> Git"
 	@git --version
-	@echo "==> Project version"
-	@$(MAKE) -s version
+	@echo "==> Current version"
+	@scripts/current-version.sh

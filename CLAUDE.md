@@ -13,14 +13,24 @@ This is the most important section. Read it before writing any code.
 The only release path is:
 
 ```bash
-make tag VERSION=x.y.z
-git push origin main && git push origin vx.y.z
-# GitHub Actions does everything else
+make release-patch   # bug fix, no API change
+make release-minor   # new say* methods, backward compatible
+make release-major   # breaking API change
 ```
 
+The human decides the **type of change**. That is the only decision
+a human is qualified to make that a script cannot.
+The version number is a mechanical consequence — `scripts/bump-version.sh`
+owns the arithmetic, `scripts/release.sh` owns the tag and push,
+GitHub Actions owns the signing and Maven Central publish.
+
+No human ever types a version number. No version number is ever wrong.
+
 `mvn deploy` as a manual step is **forbidden**. That path is closed.
-If you find yourself suggesting `mvn deploy`, `mvn release:perform`, or
-any manual publish step — stop. You are breaking the invariant.
+`make release VERSION=x.y.z` is **forbidden** — it requires a human to
+know the current version and do arithmetic. That is unnecessary cognitive
+load and a drift surface.
+If you find yourself suggesting either — stop. You are breaking the invariant.
 The tag is the trigger. The trigger is the specification of done.
 
 ### The Gate: `mvnd verify`
@@ -68,8 +78,8 @@ March 23 is not "when JOTP is ready."
 March 23 is when `make release VERSION=1.0` fires.
 
 The right question is always:
-> **What needs to be true for `make release VERSION=x.y.z` to succeed
-> in a GitHub Actions runner and produce a complete receipted release?**
+> **What needs to be true for `make release-minor` (or patch/major) to
+> succeed in a GitHub Actions runner and produce a complete receipted release?**
 
 That question has a finite, enumerable answer:
 1. `mvnd verify` passes on all modules
@@ -253,6 +263,9 @@ make check                     # Verify entire toolchain
 ## 📚 FILES YOU NEED
 
 - `Makefile` — **start here**: `make help` shows all targets
+- `scripts/current-version.sh` — reads version from pom.xml (no Maven plugin)
+- `scripts/bump-version.sh` — updates all pom.xml files, owns the arithmetic
+- `scripts/release.sh` — commits, tags, pushes; fires the pipeline
 - `.github/workflows/publish.yml` — tag-triggered release to Maven Central
 - `.github/workflows/ci.yml` — `mvnd verify` gate for every push/PR
 - `maven-proxy-auth.py` — local dev proxy (not used in CI)
@@ -265,4 +278,4 @@ make check                     # Verify entire toolchain
 
 **Last Updated:** March 14, 2026
 **Branch:** claude/setup-makefile-github-actions-M0Kiz
-**Invariant:** The tag is the trigger. The pipeline is the specification. mvnd verify is the gate.
+**Invariant:** The human decides the change type. The script derives the number. The tag is the trigger. The pipeline is the specification. mvnd verify is the gate.
