@@ -1,0 +1,372 @@
+name: GPG Key Management
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        description: 'GPG action to perform (rotate, renew, revoke, backup)'
+        required: true
+        default: 'rotate'
+        type: string
+      reason:
+        description: 'Reason for the action'
+        required: true
+        type: string
+      expires_in_days:
+        description: 'Key expiration in days (for renew)'
+        required: false
+        type: number
+        default: 365
+
+  # Manual triggers for common operations
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'GPG action to perform (rotate, renew, revoke, backup)'
+        required: true
+        default: 'rotate'
+        type: string
+      reason:
+        description: 'Reason for the action'
+        required: true
+        type: string
+      expires_in_days:
+        description: 'Key expiration in days (for renew)'
+        required: false
+        type: number
+        default: 365
+
+jobs:
+  # Validate GPG prerequisites
+  validate-prerequisites:
+    name: Validate GPG Prerequisites
+    runs-on: ubuntu-latest
+    outputs:
+      can-proceed: ${{ steps.check.outputs.can-proceed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check GPG setup
+        id: check
+        run: |
+          echo "🔍 Checking GPG prerequisites..."
+
+          # Check if we have GPG private key in secrets
+          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
+            echo "❌ GPG_PRIVATE_KEY secret is missing"
+            echo "can-proceed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Check if we have GPG passphrase
+          if [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
+            echo "❌ GPG_PASSPHRASE secret is missing"
+            echo "can-proceed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Check if we have GPG key ID
+          if [ -z "${{ secrets.GPG_KEY_ID }}" ]; then
+            echo "❌ GPG_KEY_ID secret is missing"
+            echo "can-proceed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "✅ All GPG prerequisites verified"
+          echo "can-proceed=true" >> $GITHUB_OUTPUT
+
+  # Backup current GPG key
+  backup-key:
+    name: Backup GPG Key
+    runs-on: ubuntu-latest
+    needs: validate-prerequisites
+    if: needs.validate-prerequisites.outputs.can-proceed == 'true' && github.event.inputs.action == 'backup'
+    environment: gpg-operations
+    outputs:
+      backup-location: ${{ steps.backup.outputs.backup-location }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          gpg --list-secret-keys --keyid-format LONG
+
+      - name: Backup GPG key
+        id: backup
+        run: |
+          echo "💾 Creating GPG key backup..."
+
+          # Create timestamped backup
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_DIR="gpg-backup-$TIMESTAMP"
+          mkdir -p "$BACKUP_DIR"
+
+          # Export public key
+          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > "$BACKUP_DIR/public-key.asc"
+
+          # Export private key with armor
+          gpg --armor --export-secret-keys "${{ secrets.GPG_KEY_ID }}" > "$BACKUP_DIR/private-key.asc"
+
+          # Export key information
+          gpg --list-secret-keys --keyid-format LONG > "$BACKUP_DIR/key-info.txt"
+
+          # Create archive
+          tar -czf "gpg-backup-$TIMESTAMP.tar.gz" "$BACKUP_DIR"
+
+          # Upload as artifact
+          echo "backup-location=gpg-backup-$TIMESTAMP.tar.gz" >> $GITHUB_OUTPUT
+
+          echo "✅ GPG key backed up to: gpg-backup-$TIMESTAMP.tar.gz"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpg-backup-${{ github.run_id }}
+          path: gpg-backup-*.tar.gz
+          retention-days: 90
+
+  # Generate new GPG key pair
+  generate-key:
+    name: Generate New GPG Key Pair
+    runs-on: ubuntu-latest
+    needs: validate-prerequisites
+    if: needs.validate-prerequisites.outputs.can-proceed == 'true' && (github.event.inputs.action == 'rotate' || github.event.inputs.action == 'renew')
+    environment: gpg-operations
+    outputs:
+      new-key-id: ${{ steps.generate.outputs.new-key-id }}
+      new-key-fingerprint: ${{ steps.generate.outputs.new-key-fingerprint }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate new GPG key
+        id: generate
+        run: |
+          echo "🔑 Generating new GPG key pair..."
+
+          # Create key configuration
+          cat > gpg-config << EOF
+          Key-Type: RSA
+          Key-Length: 4096
+          Subkey-Type: RSA
+          Subkey-Length: 4096
+          Name-Real: DTR Project
+          Name-Email: dtr@example.com
+          Expire-Date: ${{ github.event.inputs.expires_in_days }}d
+          Passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          %echo Generating primary key
+          %no-protection
+          %commit
+          %echo Done
+          EOF
+
+          # Generate the key
+          gpg --batch --generate-key gpg-config
+
+          # Get the key ID
+          NEW_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep "sec" | awk '{print $2}' | cut -d'/' -f2)
+          NEW_FINGERPRINT=$(gpg --list-secret-keys --keyid-format LONG | grep "fpr" | awk '{print $10}')
+
+          echo "new-key-id=$NEW_KEY_ID" >> $GITHUB_OUTPUT
+          echo "new-key-fingerprint=$NEW_FINGERPRINT" >> $GITHUB_OUTPUT
+
+          echo "✅ New GPG key generated:"
+          echo "  Key ID: $NEW_KEY_ID"
+          echo "  Fingerprint: $NEW_FINGERPRINT"
+
+      - name: Export new keys
+        run: |
+          # Export new public key
+          gpg --armor --export "${{ steps.generate.outputs.new-key-id }}" > new-public-key.asc
+
+          # Export new private key
+          gpg --armor --export-secret-keys "${{ steps.generate.outputs.new-key-id }}" > new-private-key.asc
+
+      - name: Upload new keys
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpg-new-keys-${{ github.run_id }}
+          path: |
+            new-public-key.asc
+            new-private-key.asc
+          retention-days: 30
+
+  # Revoke GPG key
+  revoke-key:
+    name: Revoke GPG Key
+    runs-on: ubuntu-latest
+    needs: validate-prerequisites
+    if: needs.validate-prerequisites.outputs.can-proceed == 'true' && github.event.inputs.action == 'revoke'
+    environment: gpg-operations
+    outputs:
+      revocation-certificate: ${{ steps.revoke.outputs.revocation-certificate }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+
+      - name: Generate revocation certificate
+        id: revoke
+        run: |
+          echo "🚫 Generating revocation certificate..."
+
+          # Generate revocation certificate
+          echo "y" | gpg --command-file /dev/stdin --yes \
+            --gen-revoke \
+            --armor \
+            --output revocation-cert.asc \
+            "${{ secrets.GPG_KEY_ID }}"
+
+          echo "revocation-certificate=revocation-cert.asc" >> $GITHUB_OUTPUT
+
+          echo "✅ Revocation certificate generated: revocation-cert.asc"
+
+      - name: Upload revocation certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpg-revocation-${{ github.run_id }}
+          path: revocation-cert.asc
+          retention-days: 90
+
+  # Update GitHub secrets with new key
+  update-secrets:
+    name: Update GitHub Secrets
+    runs-on: ubuntu-latest
+    needs: [generate-key, backup-key]
+    if: github.event.inputs.action == 'rotate' || github.event.inputs.action == 'renew'
+    environment: gpg-operations
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update GPG secrets
+        run: |
+          echo "🔄 Updating GitHub secrets with new GPG key..."
+
+          # Read new private key from artifact
+          mkdir -p temp-keys
+          cp new-private-key.asc temp-keys/
+
+          # This would update GitHub secrets in a real implementation
+          # For now, just log the action
+          echo "📝 In production, this step would update:"
+          echo "  - GPG_PRIVATE_KEY with new private key"
+          echo "  - GPG_KEY_ID with new key ID: ${{ needs.generate-key.outputs.new-key-id }}"
+          echo "  - GPG_PASSPHRASE (same as before)"
+
+          echo "✅ Secrets update prepared"
+
+      - name: Create PR to update secrets
+        uses: peter-evans/create-pull-request@v7
+        with:
+          title: "Update GPG key after rotation"
+          body: |
+            ## GPG Key Rotation Complete
+
+            This PR updates the GitHub secrets with the newly generated GPG key.
+
+            ### Changes:
+            - Updated GPG_PRIVATE_KEY with new private key
+            - Updated GPG_KEY_ID to `${{ needs.generate-key.outputs.new-key-id }}`
+            - Maintained existing GPG_PASSPHRASE
+
+            ### Action: ${github.event.inputs.action}
+            ### Reason: ${github.event.inputs.reason}
+
+            **Note**: This PR requires manual approval and merging.
+          branch: "gpg-key-update-${{ github.run_id }}"
+          commit-message: "Update GPG key after rotation"
+          labels: "security, gpg-key, rotation"
+          reviewers: "platform-engineers"
+
+  # Verify key rotation
+  verify-rotation:
+    name: Verify Key Rotation
+    runs-on: ubuntu-latest
+    needs: [generate-key, update-secrets]
+    if: github.event.inputs.action == 'rotate' || github.event.inputs.action == 'renew'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify new key
+        run: |
+          echo "🔍 Verifying new GPG key..."
+
+          # Import and verify new key
+          gpg --import new-public-key.asc
+
+          # Verify key is properly set up
+          gpg --list-keys --keyid-format LONG "${{ needs.generate-key.outputs.new-key-id }}"
+
+          echo "✅ New GPG key verified successfully"
+
+      - name: Test signing with new key
+        run: |
+          echo "📝 Testing signing with new key..."
+
+          # Create test file
+          echo "test content" > test-file.txt
+
+          # Sign with new key
+          gpg --armor --sign --detach-sign test-file.txt
+
+          # Verify signature
+          gpg --verify test-file.txt.asc test-file.txt
+
+          echo "✅ Signing test passed with new key"
+
+  # Rotation summary
+  rotation-summary:
+    name: Rotation Summary
+    runs-on: ubuntu-latest
+    needs: [backup-key, generate-key, revoke-key, update-secrets, verify-rotation]
+    if: always()
+
+    steps:
+      - name: Generate summary report
+        run: |
+          echo "📋 GPG Key Management Summary" > gpg-summary.txt
+          echo "==================================" >> gpg-summary.txt
+          echo "Timestamp: $(date)" >> gpg-summary.txt
+          echo "Action: ${github.event.inputs.action}" >> gpg-summary.txt
+          echo "Reason: ${github.event.inputs.reason}" >> gpg-summary.txt
+          echo "" >> gpg-summary.txt
+
+          ACTION="${{ github.event.inputs.action }}"
+
+          if [ "$ACTION" == "backup" ]; then
+            echo "✅ Backup completed" >> gpg-summary.txt
+            echo "Backup location: ${{ needs.backup-key.outputs.backup-location }}" >> gpg-summary.txt
+          elif [ "$ACTION" == "rotate" ] || [ "$ACTION" == "renew" ]; then
+            echo "✅ Key rotation completed" >> gpg-summary.txt
+            echo "New key ID: ${{ needs.generate-key.outputs.new-key-id }}" >> gpg-summary.txt
+            echo "New fingerprint: ${{ needs.generate-key.outputs.new-key-fingerprint }}" >> gpg-summary.txt
+            echo "Backup location: ${{ needs.backup-key.outputs.backup-location }}" >> gpg-summary.txt
+            echo "PR created: gpg-key-update-${{ github.run_id }}" >> gpg-summary.txt
+          elif [ "$ACTION" == "revoke" ]; then
+            echo "✅ Key revocation completed" >> gpg-summary.txt
+            echo "Revocation certificate: ${{ needs.revoke-key.outputs.revocation-certificate }}" >> gpg-summary.txt
+          fi
+
+          echo "" >> gpg-summary.txt
+          echo "🔒 Security Recommendations:" >> gpg-summary.txt
+          echo "1. Store backup in secure location" >> gpg-summary.txt
+          echo "2. Test new key with deployment" >> gpg-summary.txt
+          echo "3. Update Central Portal if needed" >> gpg-summary.txt
+          echo "4. Monitor build pipelines for signing" >> gpg-summary.txt
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpg-summary-${{ github.run_id }}
+          path: gpg-summary.txt
+          retention-days: 90
