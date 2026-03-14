@@ -4,116 +4,151 @@
 
 ---
 
-## THE PIPELINE IS THE SPECIFICATION OF DONE
+## VERSION SCHEME: YYYY.MINOR.PATCH (CalVer)
 
-March 23 is not a deadline. It is a trigger.
+**Full year. Not short year. 2026.3.1 not 26.3.1.**
+
+| Component | Meaning | Rule |
+|-----------|---------|------|
+| `2026` | Year of release | Calendar year. Year boundary resets MINOR to 1. |
+| `.3` | Feature iteration within year | Starts at 1 on first release of each year. |
+| `.1` | Fix counter within MINOR | Resets to 0 on every MINOR bump. |
+
+**`release-major` does not exist.** The year is the major. The calendar owns that decision.
+
+Breaking changes use `@Deprecated` with a minimum one-year removal window.
+A method deprecated in `2026.3.0` is removed no earlier than `2027.1.0`.
+The year boundary is the breaking change window — it tells you *when*, not just *that*.
+
+### What the components communicate
+
+- `2026` — this was the truth in 2026. If you depend on `dtr:2026.3.1` in 2028, you know it is two years old. No lookup required. The version is a timestamp.
+- `3` — seven means seven capability expansions in 2026. Communicates release velocity.
+- `1` — the third feature release needed one fix. A patch number above 3 is a quality signal.
+
+### Year boundary rules
+
+- `make release-minor` in a new calendar year → automatically produces `YYYY.1.0`
+- `make release-year` → explicit year boundary if you need it before any minor bump
+- Year reset from `2026.x.x` to `2027.1.0` is **not** a breaking change signal
+
+### Downstream consumer contract (README, stated once)
 
 ```
-make release-minor
+DTR uses Calendar Versioning (YYYY.MINOR.PATCH). The year component resets
+the minor counter — 2026.7.0 to 2027.1.0 is not a breaking change. Breaking
+changes are signaled by @Deprecated annotations with a minimum one-year removal
+window. Use year-bounded Maven ranges: [2026.1.0,2027).
 ```
 
-That command fires a git tag. The tag fires GitHub Actions. Actions runs
-`mvnd verify` then `mvnd deploy -Prelease`. If verify passes, the artifact
-publishes to Maven Central, the GitHub Release is created, and the receipt
-exists. If verify fails, nothing publishes.
+### Maven version ranges
 
-**Everything generated in this repo during the next 10 days must be designed
-to pass `mvnd verify` in a GitHub Actions runner — not on your laptop.**
+```xml
+<!-- Locked to 2026 releases only (recommended for libraries) -->
+<version>[2026.1.0,2027)</version>
 
-The right question is never "what features does X need by March 23?"
-It is: "What must be true for `make release VERSION=1.0` to succeed in CI
-on March 23 and produce a complete, receipted, published release artifact?"
-That question has a finite, enumerable answer. The pipeline answers it.
+<!-- From 2026.3.0 onward within 2026 -->
+<version>[2026.3.0,2027)</version>
+```
+
+### RC builds
+
+```
+2026.3.0-rc.1    candidate → GitHub Packages only
+2026.3.0-rc.2    second candidate if needed
+2026.3.0         final → Maven Central
+```
+
+`make release-rc-minor` → tags `rc.1`, pushes to GitHub Packages.
+`make release-minor` when current version is RC → promotes to final, pushes to Maven Central.
 
 ---
 
-## THE ARMSTRONG INVARIANT
+## THE PIPELINE IS THE SPECIFICATION
 
-One command releases. No manual steps at release time. Ever.
+This is the most important section. Read it before writing any code.
 
-**The only release path is:**
-```
-make tag          # creates v<VERSION> tag, pushes to origin
-                  # GitHub Actions fires automatically
-                  # mvnd verify → mvnd deploy -Prelease → gh release create
-```
+### The Armstrong Invariant: One-Command Release
 
-**These paths are closed — do not suggest them:**
-- `mvn deploy` run locally
-- Uploading JARs by hand to Sonatype
-- Setting up `~/.m2/settings.xml` with real credentials
-- Any step a human must perform between `make tag` and a published artifact
-
-If you find yourself suggesting a manual deploy step, stop. The pipeline
-is broken. Fix the pipeline, not the workaround.
-
----
-
-## THE CI GATE: `mvnd verify`
-
-Every piece of code generated — DTR tests, benchmarks, JOTP implementation,
-documentation — must pass this gate:
+The only release path is:
 
 ```bash
-mvnd verify --enable-preview
+make release-patch   # bug fix, no API change
+make release-minor   # new say* methods, backward compatible
+make release-year    # explicit year boundary (January trigger)
 ```
 
-**CI environment constraints (design for these, not for localhost):**
+The human decides the **type of change**. That is the only decision
+a human is qualified to make that a script cannot.
+The version number is a mechanical consequence — `scripts/bump.sh`
+owns the arithmetic, `scripts/release.sh` owns the tag and push,
+GitHub Actions owns the signing and Maven Central publish.
 
-| Constraint | CI value | What it means for generated code |
-|---|---|---|
-| Java | 25.0.2, `--enable-preview` | All preview syntax must compile under `--enable-preview` |
-| GPG | loopback pinentry, key from `$GPG_PRIVATE_KEY` secret | No interactive passphrase prompts; no `~/.gnupg` assumed |
-| Maven Central credentials | `$CENTRAL_USERNAME` / `$CENTRAL_TOKEN` secrets | Never reference `~/.m2/settings.xml` |
-| Maven settings | Written by Actions at deploy time | No local settings assumed |
-| Network | No corporate proxy | Don't generate proxy-dependent code paths |
-| Enforcer | Java ≥ 25, Maven ≥ 4.0.0-rc-3 | These versions are hard requirements, not suggestions |
+No human ever types a version number. No version number is ever wrong.
 
-**GPG loopback is load-bearing context.** This pipeline has been through real
-GPG failure in CI. The `--pinentry-mode loopback` configuration in the release
-profile exists because interactive pinentry breaks headless runners. Do not
-remove it, and do not generate signing code that assumes a TTY.
+`mvn deploy` as a manual step is **forbidden**. That path is closed.
+`make release VERSION=x.y.z` is **forbidden** — it requires a human to
+know the current version and do arithmetic. That is unnecessary cognitive
+load and a drift surface.
+If you find yourself suggesting either — stop. You are breaking the invariant.
+The tag is the trigger. The trigger is the specification of done.
 
----
+### The Gate: `mvnd verify`
 
-## OUTPUT CONTRACT
+Everything generated in this project — DTR tests, benchmarks, JOTP code,
+documentation, generated sources — must pass `mvnd verify` in CI.
+Not locally. In CI.
 
-Generated DTR tests must land artifacts where the pipeline expects them:
+CI environment facts that are load-bearing:
+- Java 25 + `--enable-preview` (enforced by pom.xml compiler plugin)
+- GPG signing uses `--pinentry-mode loopback` (non-interactive, no TTY)
+- `~/.gnupg/gpg-agent.conf` must contain `allow-loopback-pinentry`
+- Credentials come from **GitHub secrets**, never from `~/.m2/settings.xml`
+- Required secrets: `CENTRAL_USERNAME`, `CENTRAL_TOKEN`, `GPG_PRIVATE_KEY`,
+  `GPG_PASSPHRASE`, `GPG_KEY_ID`
+- Maven cache: `.m2/repository` in `${{ github.workspace }}`
 
-```
-target/docs/test-results/    ← Markdown documentation output
-target/docs/blog/            ← Blog post output
-target/docs/pdf/             ← LaTeX/PDF output
-```
+If `mvnd verify` fails, nothing publishes. Design for CI, not the laptop.
 
-A DTR test that generates output somewhere else produces nothing visible in
-the release artifact. The pipeline doesn't pick it up. The release is incomplete.
+### The GPG Loopback Scar
 
-**Configure via system properties (already set in surefire config):**
-```xml
-<dtr.output.dir>docs/test</dtr.output.dir>
-<dtr.format>markdown</dtr.format>
-```
+The `--pinentry-mode loopback` configuration is not a workaround.
+It is load-bearing context from real CI failure.
+It tells you: this pipeline has been through real failure and survived.
+Do not remove it. Do not "simplify" it. It is correct.
 
-Do not hardcode output paths in test code. The pipeline owns the output contract.
+### The Output Contract
 
----
+DTR tests must produce artifacts where the Actions pipeline expects them:
 
-## FAILURE SEMANTICS
+| Output | Path |
+|--------|------|
+| Documentation | `target/docs/` |
+| Blog posts | `target/blog/` |
+| PDF/LaTeX | `target/pdf/` |
+| Test results | `target/docs/test-results/` |
+| Surefire reports | `target/surefire-reports/` |
 
-`mvnd verify` fails → nothing publishes.
+A DTR test that produces output at any other path is wrong.
+An agent that doesn't know this generates tests that produce output nowhere.
 
-This is not a bug. This is the invariant enforced.
+### Reasoning About Dates as Triggers, Not Deadlines
 
-Consequences for generated code:
-- Tests that pass locally but fail in CI (due to preview flags, missing secrets,
-  path assumptions) silently break the release. There is no partial publish.
-- Optimistic code — "this will probably work in CI" — violates the invariant.
-- If you cannot make a test pass under the CI constraints above, do not generate
-  the test. Generate a failing test that documents what is missing instead.
+The right question is always:
+> **What needs to be true for `make release-minor` (or patch/year) to
+> succeed in a GitHub Actions runner and produce a complete receipted release?**
 
-When `mvnd verify` fails in CI, the question is always:
-"What assumption about the local environment did this code make?"
+That question has a finite, enumerable answer:
+1. `mvnd verify` passes on all modules
+2. All DTR test output lands in `target/docs/`
+3. GPG key is loaded and loopback-capable
+4. `CENTRAL_USERNAME` and `CENTRAL_TOKEN` secrets are set
+5. The `release` Maven profile signs, packages, and publishes via
+   `central-publishing-maven-plugin`
+6. `docs/CHANGELOG.md` and `docs/releases/VERSION.md` are generated and committed
+7. GitHub Release is created from `docs/releases/VERSION.md`
+
+If those six things are true, the release succeeds. That is the scope.
 
 ---
 
@@ -175,7 +210,24 @@ Release sequence (all automated after `make release-*`):
 2. `scripts/release.sh` — generates `docs/CHANGELOG.md`, commits, tags `v<VERSION>`, pushes
 3. GitHub Actions fires on tag → `mvnd verify` → `mvnd deploy -Prelease` → `gh release create`
 
-RC sequence: same flow but `scripts/release-rc.sh` → `publish-rc.yml` → GitHub Packages only.
+RC sequence: same flow but `scripts/release-rc.sh` → publish.yml deploy-rc → GitHub Packages only.
+
+---
+
+## 🌐 MAVEN PROXY SOLUTION
+
+**Problem:** "too many authentication attempts" from Maven Central (local dev only)
+
+**Fix:**
+```bash
+python3 maven-proxy-auth.py &
+```
+
+Listens on 127.0.0.1:3128, handles HTTPS CONNECT tunneling, injects
+Proxy-Authorization header automatically.
+
+**This is a local dev problem only.** CI uses direct Maven Central access
+with token credentials from GitHub secrets.
 
 ---
 
@@ -201,6 +253,9 @@ class MyDocTest {
 **Before writing the test, ask:** Will this pass `mvnd verify --enable-preview`
 in a headless GitHub Actions runner with no local credentials? If not, fix
 that first.
+
+The test must pass `mvnd verify` in CI before it is correct.
+Output anywhere other than `target/docs/` is wrong.
 
 ---
 
@@ -265,10 +320,15 @@ Both are configured in `.mvn/maven.config` and `maven-surefire-plugin`.
 
 ## BEFORE CODING
 
+Ask this first: **"Does this pass `mvnd verify` in CI?"**
+
+Then:
 1. `java -version` → 25.0.2+
 2. `mvnd --version` → 2.0.0+
 3. `.mvn/maven.config` contains `--enable-preview` and `-Dmaven.compiler.enablePreview=true`
-4. Ask: **will this pass `mvnd verify` in CI?**
+4. Output goes to `target/docs/` — not anywhere else
+5. No manual deploy steps — the tag triggers everything
+6. Remember: **REAL CODE + REAL MEASUREMENTS + REAL DOCTESTER CLI**
 
 ---
 
@@ -280,6 +340,7 @@ mvnd --stop                    # Stop daemon if stale
 mvnd -X clean verify           # Verbose — find the real failure
 cat target/surefire-reports/*  # Test details
 echo $JAVA_HOME                # Verify Java 25
+make check                     # Verify entire toolchain
 
 # If Maven Central auth fails locally (not in CI):
 python3 maven-proxy-auth.py &
@@ -291,16 +352,24 @@ python3 maven-proxy-auth.py &
 
 | File | Purpose |
 |------|---------|
-| `Makefile` | Release control surface — start here |
-| `.github/workflows/publish.yml` | CI pipeline — tag-triggered, 3 jobs |
-| `pom.xml` | Root config, release profile, enforcer |
+| `Makefile` | Release control surface — `make help` shows all targets |
+| `.github/workflows/publish.yml` | Tag-triggered pipeline: classify → build → deploy/deploy-rc → release |
+| `pom.xml` | Root config, release profile, GPG config |
 | `dtr-core/` | Core library (deployed to Maven Central) |
 | `dtr-integration-test/` | Integration tests (not deployed) |
-| `.mvn/maven.config` | `--enable-preview`, `--batch-mode` |
+| `.mvn/maven.config` | `--enable-preview`, `-Dmaven.compiler.enablePreview=true` |
+| `scripts/current-version.sh` | Reads version from pom.xml (Python, no network) |
+| `scripts/bump.sh` | CalVer arithmetic, year-reset rules, writes `.release-version` |
+| `scripts/set-version.sh` | Direct version set, used by bump.sh and hotfix |
+| `scripts/release.sh` | Calls changelog.sh, commits, tags, pushes; fires pipeline |
+| `scripts/release-rc.sh` | RC variant: commits, tags rc.N, pushes to Packages |
+| `scripts/changelog.sh` | git log → `docs/releases/VERSION.md` + `docs/CHANGELOG.md` |
+| `maven-proxy-auth.py` | Local dev proxy (not used in CI) |
 
 ---
 
 **Last Updated:** March 14, 2026
-**Branch:** claude/align-claude-configs-XEzc5
+**Branch:** claude/setup-makefile-github-actions-M0Kiz
 **Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
-**Invariant:** One command releases. The pipeline is the specification of done.
+**Version scheme:** `YYYY.MINOR.PATCH` — year is major, calendar owns it, no `release-major`.
+**Invariant:** The human decides the change type. The script derives the number. The tag is the trigger. The pipeline is the specification. `mvnd verify` is the gate.
