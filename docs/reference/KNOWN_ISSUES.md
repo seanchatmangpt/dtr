@@ -104,7 +104,7 @@ mvnd clean install
 **Status:** By design
 **Severity:** Low
 
-JEP 516 Code Reflection is a preview feature in Java 25. All `sayCodeModel`, `sayControlFlowGraph`, `sayCallGraph`, and `sayOpProfile` calls will fail with `IllegalAccessError` if `--enable-preview` is not active.
+JEP 516 Code Reflection is a preview feature in Java 26. All `sayCodeModel`, `sayControlFlowGraph`, `sayCallGraph`, and `sayOpProfile` calls will fail with `IllegalAccessError` if `--enable-preview` is not active.
 
 **Workaround:** Ensure `--enable-preview` is in `.mvn/maven.config` and passed to Surefire via `<argLine>`.
 
@@ -126,7 +126,7 @@ JEP 516 Code Reflection is a preview feature in Java 25. All `sayCodeModel`, `sa
 **Status:** Known warning (non-fatal)
 **Severity:** Low
 
-WireMock (if present as a test dependency) emits a Jetty 9.4.x deprecation warning on Java 25:
+WireMock (if present as a test dependency) emits a Jetty 9.4.x deprecation warning on Java 26:
 
 ```
 WARNING: Jetty 9.4.x is deprecated

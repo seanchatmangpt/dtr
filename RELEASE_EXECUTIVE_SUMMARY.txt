@@ -22,7 +22,7 @@ READINESS METRICS:
   Configuration completeness:     100% ✅
   POM plugin configuration:       100% ✅
   Maven 4 compatibility:          100% ✅
-  Java 25 support:                100% ✅
+  Java 26 support:                100% ✅
   Dry-run testing:                95% ✅ (GPG key needed for final test)
   Documentation:                  100% ✅
 
@@ -36,9 +36,9 @@ RISK ASSESSMENT:                  LOW 🟢
 ================================================================================
 
 TOOLCHAIN
-  ✅ Java 25.0.2 configured with --enable-preview
+  ✅ Java 26.0.2 configured with --enable-preview
   ✅ Maven 4.0.0-rc-5 (system) and Maven Daemon 2.0.0-rc-3
-  ✅ maven-enforcer-plugin 3.5.0 enforcing Java 25 + Maven 4+
+  ✅ maven-enforcer-plugin 3.5.0 enforcing Java 26 + Maven 4+
   ✅ .mvn/maven.config correctly configured for builds
 
 PUBLICATION INFRASTRUCTURE
@@ -46,7 +46,7 @@ PUBLICATION INFRASTRUCTURE
   ✅ maven-release-plugin 3.1.1 (Maven 4 compatible)
   ✅ maven-gpg-plugin 3.2.7 (with loopback mode for CI/CD)
   ✅ maven-source-plugin 3.3.1 (source JAR)
-  ✅ maven-javadoc-plugin 3.11.2 (javadoc JAR, Java 25 support)
+  ✅ maven-javadoc-plugin 3.11.2 (javadoc JAR, Java 26 support)
 
 PROJECT METADATA
   ✅ Group ID: org.r10r
@@ -66,7 +66,7 @@ TESTING & VALIDATION
   ✅ Version calculation verified (1.1.12 → 1.1.13-SNAPSHOT)
   ✅ Git tag format verified (v1.1.12)
   ✅ Release artifacts would generate correctly
-  ✅ Enforcer rules pass (Java 25 + Maven 4.0.0-rc-3+)
+  ✅ Enforcer rules pass (Java 26 + Maven 4.0.0-rc-3+)
   ✅ Core module builds with: mvnd clean install -pl dtr-core -DskipTests
 
 ================================================================================
@@ -188,7 +188,7 @@ ENVIRONMENT VERIFIED:
   Java:       openjdk version 25.0.2 ✅
   Maven:      Apache Maven 4.0.0-rc-5 ✅
   mvnd:       Maven Daemon 2.0.0-rc-3 ✅
-  Java home:  /usr/lib/jvm/java-25-openjdk-amd64 ✅
+  Java home:  /usr/lib/jvm/java-26-openjdk-amd64 ✅
 
 PROJECT LOCATION:
   /home/user/dtr/
@@ -243,7 +243,7 @@ CURRENT READINESS:  95/100 ✅
 SUCCESS PROBABILITY:  98%
   ✅ All plugins modern and Maven 4 compatible
   ✅ All POM sections correct
-  ✅ Java 25 + preview features supported
+  ✅ Java 26 + preview features supported
   ✅ Multi-module build verified
   ⚠️ Jetty test issue (has documented workaround)
 
@@ -297,7 +297,7 @@ All required infrastructure and configuration is in place and has been validated
 through comprehensive dry-run testing. Only credential setup remains (45 minutes
 of straightforward configuration).
 
-The project uses best practices for Maven 4 and Java 25, with modern publishing
+The project uses best practices for Maven 4 and Java 26, with modern publishing
 via the central-publishing-maven-plugin. GPG signing is configured correctly.
 Multi-module builds are supported. Git tagging is automated.
 

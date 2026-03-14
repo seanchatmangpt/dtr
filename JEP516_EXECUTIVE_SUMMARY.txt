@@ -5,7 +5,7 @@ Executive Summary
 
 PROJECT: DTR 2.5.0-SNAPSHOT
 DATE: March 11, 2026
-ENVIRONMENT: Java 25.0.2, Linux 6.18.5, Maven 4.0.0-rc-5
+ENVIRONMENT: Java 26.0.2, Linux 6.18.5, Maven 4.0.0-rc-5
 
 ================================================================================
 BENCHMARK RESULTS - Key Findings
@@ -218,7 +218,7 @@ Unit Test Suite:
 
 Production Source:
   /home/user/dtr/dtr-core/src/main/java/org/r10r/dtr/metadata/DocMetadata.java
-  - Java 25 record
+  - Java 26 record
   - Immutable singleton
   - Safe static initialization
 

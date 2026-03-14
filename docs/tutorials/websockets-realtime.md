@@ -3,7 +3,7 @@
 Learn how DTR 2.6.0 embeds diagrams directly in generated documentation using `sayMermaid`, `sayClassDiagram`, and `sayCallGraph`. By the end of this tutorial you will produce a Markdown file containing architecture flowcharts, automatically generated class diagrams, and a call graph — all derived from real Java code.
 
 **Time:** ~25 minutes
-**Prerequisites:** Java 25, DTR 2.6.0, completion of [Your First DocTest](your-first-doctest.md)
+**Prerequisites:** Java 26, DTR 2.6.0, completion of [Your First DocTest](your-first-doctest.md)
 **What you'll learn:** How to write raw Mermaid DSL, how DTR generates class diagrams via reflection, and how to embed call graphs in living documentation
 
 ---

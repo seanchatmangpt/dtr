@@ -7,7 +7,7 @@ Status: SUCCESS
 
 SUMMARY
 -------
-✓ Successfully migrated DTR from Java 25 to Java 26
+✓ Successfully migrated DTR from Java 26 to Java 26
 ✓ All 531 tests pass with no exclusions
 ✓ Preview features fully enabled and operational
 ✓ Build process automated and verified

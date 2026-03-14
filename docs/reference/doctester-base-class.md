@@ -120,7 +120,7 @@ class FeatureDocTest {
     void overview(DtrContext ctx) {
         ctx.sayNextSection("Feature Overview");
         ctx.say("This document describes the v2.6.0 release.");
-        ctx.sayNote("Requires Java 25+ with --enable-preview.");
+        ctx.sayNote("Requires Java 26+ with --enable-preview.");
         ctx.sayWarning("API incompatible with DTR 2.5.x — see changelog.");
     }
 

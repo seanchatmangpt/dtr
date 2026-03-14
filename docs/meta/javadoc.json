@@ -1,174 +1,51 @@
 {
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayClassDiagram": {
-    "description": "Class diagram — no-op in base class. */",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#invokeBinary": {
+    "description": "Invoke LaTeX compiler binary with standard flags.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatSubsection": {
-    "description": "LaTeX command for subsection-level heading (e.g., \"\\\\\\\\subsection{%s}\").",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#ACMTemplate": {
-    "description": "Creates an ACM template with default SIGPLAN template and no conference header.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#LatexCompilationException": {
-    "description": "Constructs a LaTeX compilation exception with a detail message and cause.",
+  "io.github.seanchatmangpt.dtr.contract.ContractVerifier#verify": {
+    "description": "Verifies coverage of all public interface methods across the given implementations.",
     "params": [
       {
-        "name": "message",
-        "description": "description of the compilation failure"
+        "name": "contract",
+        "description": "the interface to check"
       },
       {
-        "name": "cause",
-        "description": "the underlying exception that triggered the failure"
+        "name": "implementations",
+        "description": "zero or more implementation classes"
       }
     ],
+    "returns": "list of rows, one per public method in the contract",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayDocCoverage": {
-    "description": "Renders a documentation coverage report for the given classes. */",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#escapeXml": {
+    "description": "Escape XML special characters for CCS concept XML.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeYaml": {
-    "description": "Escapes special YAML characters in the given string.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayAssertions": {
+    "description": "Renders assertion results in a table format with Check and Result columns.",
     "params": [
       {
-        "name": "text",
-        "description": "the text to escape"
-      }
-    ],
-    "returns": "escaped text safe for YAML",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayContractVerification": {
-    "description": "Contract verification — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.CompilerStrategy#getName": {
-    "description": "Get a human-readable name for this compiler strategy.",
-    "params": [],
-    "returns": "strategy name (e.g., \"latexmk\", \"Pandoc\")",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayStringProfile": {
-    "description": "Analyzes a string and renders its structural profile using Java string APIs. <p>Blue ocean innovation: renders word count, line count, character category distribution, and Unicode metrics for any string — using only {@link String#chars()}, {@link String#lines()}, and {@link Character} APIs. Invaluable for documenting text processing and NLP APIs.</p>",
-    "params": [
-      {
-        "name": "text",
-        "description": "the string to profile (may be a sample payload, template, etc.)"
+        "name": "assertions",
+        "description": "A map where keys are check descriptions and values are results."
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#size": {
-    "description": "Returns the number of registered citations.",
-    "params": [],
-    "returns": "the count of entries in the bibliography",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayRef": {
-    "description": "Convenience method to create and render a cross-reference to another DocTest's section. <p>Creates a {@link DocTestRef} and delegates to {@link #sayRef(DocTestRef)}. The reference is rendered as a markdown link in Markdown mode or as a LaTeX cross-reference command in LaTeX mode. In LaTeX, the resolved section number (e.g., \"Section 3.2\") is automatically substituted after compilation.</p>",
-    "params": [
-      {
-        "name": "docTestClass",
-        "description": "the target DocTest class (must not be null)"
-      },
-      {
-        "name": "anchor",
-        "description": "the section/anchor name within that DocTest, e.g., \"user-registration\"               (typically derived from @DocSection annotation value)"
-      }
-    ],
-    "throws": [],
-    "see": [
-      "DocTestRef#of(Class, String)",
-      "CrossReferenceIndex for reference resolution"
-    ]
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayDocOnly": {
-    "description": "Renders content only for documentation/blog output (ignored by slide render machines).",
-    "params": [
-      {
-        "name": "text",
-        "description": "the text to render in docs only"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderBibliography": {
-    "description": "Renders a bibliography section in markdown format.",
-    "params": [
-      {
-        "name": "entries",
-        "description": "the bibliography entries to render"
-      },
-      {
-        "name": "style",
-        "description": "the citation style to use"
-      }
-    ],
-    "returns": "formatted bibliography markdown",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.junit5.DtrContext#getRenderMachine": {
-    "description": "Gets the underlying RenderMachine.",
-    "params": [],
-    "returns": "the render machine",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayControlFlowGraph": {
-    "description": "Control flow graph — no-op in base class. */",
+  "io.github.seanchatmangpt.dtr.DtrTest#sayEvolutionTimeline": {
+    "description": "Documents git commit history for the source file of the given class. */",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.crossref.DocTestRef#of": {
-    "description": "Creates a new DocTestRef with the given DocTest class and anchor. <p>The resolved label starts as empty and is populated after LaTeX compilation.</p>",
-    "params": [
-      {
-        "name": "docTestClass",
-        "description": "the target DocTest class (must not be null)"
-      },
-      {
-        "name": "anchor",
-        "description": "the section/anchor name (e.g., \"user-registration\")"
-      }
-    ],
-    "returns": "a new DocTestRef with empty resolvedLabel",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countCodeListings": {
-    "description": "Counts code listings (lstlisting environments).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getEndDocument": {
-    "description": "Text to insert before \\\\end{document}.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#CrossReferenceIndex": {
-    "description": "Private constructor for singleton pattern.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatSection": {
+    "description": "LaTeX command for section-level heading (e.g., \"\\\\\\\\section{%s}\"). Placeholder %s will be replaced with heading text.",
     "params": [],
     "throws": [],
     "see": []
@@ -179,456 +56,82 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#platformName": {
-    "description": "Returns the platform name for logging/organization.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayStringProfile": {
+    "description": "Documents string profile — no-op in base class. */",
     "params": [],
-    "returns": "the platform name (e.g., \"revealjs\", \"powerpoint\")",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderEntryLatex": {
-    "description": "Renders a single entry as LaTeX.",
-    "params": [
-      {
-        "name": "entry",
-        "description": "the BibTeX entry"
-      },
-      {
-        "name": "index",
-        "description": "the numeric index"
-      },
-      {
-        "name": "style",
-        "description": "the citation style"
-      }
-    ],
-    "returns": "formatted entry as LaTeX",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatCodeBlock": {
+    "description": "Format code block with optional language syntax highlighting. Language may be null; implementations should handle gracefully.",
+    "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayStringProfile": {
-    "description": "Analyzes a string and renders its structural profile using Java string APIs.",
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#toLatex": {
+    "description": "Generates LaTeX index command for this term.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.RenderMachineLatex#convertTextToLatexLabel": {
+    "description": "Convert an anchor text to a valid LaTeX label format. Converts spaces to hyphens and removes invalid characters.",
     "params": [
       {
         "name": "text",
-        "description": "the string to profile"
+        "description": "the anchor text"
       }
     ],
+    "returns": "LaTeX label format",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#validatePdfOutput": {
-    "description": "Validate that PDF output file exists and is non-empty.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatJson": {
+    "description": "Format JSON/pretty-printed content in a code block.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#initRenderingMachineIfNull": {
-    "description": "Lazily initialises the shared {@code renderMachine} if it has not yet been created. Called from {@link #setupForTestCaseMethod} and available to subclasses that need to trigger initialisation outside the normal lifecycle.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayEnvProfile": {
-    "description": "Environment profile — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.evolution.GitHistoryReader#read": {
-    "description": "Returns up to {@code maxEntries} commits that touched the source file for the given class. Returns an empty list if git is unavailable or the file cannot be found in git history.",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class whose source file history to retrieve"
-      },
-      {
-        "name": "maxEntries",
-        "description": "maximum number of commits to return"
-      }
-    ],
-    "returns": "list of git entries, newest first",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayRef": {
-    "description": "Renders a cross-reference to another DocTest's section. The reference is resolved using the CrossReferenceIndex and rendered as a markdown link in Markdown mode or a LaTeX \\ref{} command in LaTeX mode.",
-    "params": [
-      {
-        "name": "ref",
-        "description": "the cross-reference to another DocTest section"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayCodeModel": {
-    "description": "Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations. On Java 25 and earlier, renders the method signature extracted via reflection.</p>",
+  "io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer#extractCallees": {
+    "description": "Extracts all unique callee method names from InvokeOp nodes in a method's code model.",
     "params": [
       {
         "name": "method",
-        "description": "the method to introspect and document"
+        "description": "the method to analyze"
       }
     ],
+    "returns": "list of callee method simple names, empty if no code model available",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getHostname": {
-    "description": "Get hostname via system property or `hostname` command.",
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getProperty": {
+    "description": "Get a system property with fallback to Maven properties.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.benchmark.BenchmarkRunner#run": {
-    "description": "Runs the benchmark with explicit warmup and measure counts.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.CompilerStrategy#compile": {
+    "description": "Compile a LaTeX file to PDF.",
     "params": [
       {
-        "name": "task",
-        "description": "the code to benchmark"
+        "name": "texFile",
+        "description": "the input .tex file path"
       },
       {
-        "name": "warmupRounds",
-        "description": "number of warmup iterations (discarded)"
-      },
-      {
-        "name": "measureRounds",
-        "description": "number of measured iterations"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#buildPandocCommand": {
-    "description": "Build the Pandoc command with appropriate engine selection.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#captureSystemProperties": {
-    "description": "Capture relevant system properties into a map for serialization.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeBibValue": {
-    "description": "Escapes special BibTeX characters in the given string.",
-    "params": [
-      {
-        "name": "value",
-        "description": "the raw value to escape"
-      }
-    ],
-    "returns": "escaped value safe for BibTeX",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getAllAnchors": {
-    "description": "Get all anchors registered in the index.",
-    "params": [],
-    "returns": "immutable map of anchor -> label",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#generateLatex": {
-    "description": "Generates LaTeX index entries for all terms.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#formatTweetable": {
-    "description": "Formats a tweetable/social media excerpt.",
-    "params": [
-      {
-        "name": "text",
-        "description": "the text to format (≤280 chars)"
-      }
-    ],
-    "returns": "the formatted text with platform-specific metadata",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.UnknownCitationException#UnknownCitationException": {
-    "description": "Creates an exception with a custom message.",
-    "params": [
-      {
-        "name": "message",
-        "description": "detailed error message"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayClassDiagram": {
-    "description": "Auto-generates a Mermaid classDiagram from reflection. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.InvalidAnchorException#InvalidAnchorException": {
-    "description": "Creates a new exception with the given message and cause.",
-    "params": [
-      {
-        "name": "message",
-        "description": "descriptive error message"
-      },
-      {
-        "name": "cause",
-        "description": "the underlying cause"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getGitBranch": {
-    "description": "Get current git branch via `git rev-parse --abbrev-ref HEAD`.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.InvalidDocTestRefException#InvalidDocTestRefException": {
-    "description": "Creates a new exception with the given message and cause.",
-    "params": [
-      {
-        "name": "message",
-        "description": "descriptive error message"
-      },
-      {
-        "name": "cause",
-        "description": "the underlying cause"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#logDegradationWarnings": {
-    "description": "Log warnings about Pandoc's reduced fidelity.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.blog.SocialQueueEntry#SocialQueueEntry": {
-    "description": "Create a new social queue entry with current timestamp.",
-    "params": [
-      {
-        "name": "platform",
-        "description": "the social platform"
-      },
-      {
-        "name": "content",
-        "description": "the post content"
-      },
-      {
-        "name": "url",
-        "description": "the target URL"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayDocCoverage": {
-    "description": "Documentation coverage — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayTldr": {
-    "description": "Renders a TLDR (too long; didn't read) summary for blogs.",
-    "params": [
-      {
-        "name": "text",
-        "description": "the summary text"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.WordCounter#stripLatexCommands": {
-    "description": "Strips LaTeX commands from content, keeping only text content.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getGitAuthor": {
-    "description": "Get git user name via `git config user.name`.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#setClassNameForDtrOutputFile": {
-    "description": "Alternative way to set the output file name. This can be handy when DTR is not part of JUnit lifecycle.",
-    "params": [
-      {
-        "name": "name",
-        "description": "alternative name of output file"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.diagram.ClassDiagramGenerator#generate": {
-    "description": "Generates a Mermaid {@code classDiagram} for the given classes.",
-    "params": [
-      {
-        "name": "classes",
-        "description": "the classes to include in the diagram"
-      }
-    ],
-    "returns": "Mermaid classDiagram DSL string",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayContractVerification": {
-    "description": "Documents interface contract coverage across implementation classes. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#resolveLabel": {
-    "description": "Resolve a DocTestRef to its LaTeX label. Returns the actual \\label{} identifier that will be used in the compiled PDF.",
-    "params": [
-      {
-        "name": "ref",
-        "description": "the reference to resolve"
-      }
-    ],
-    "returns": "the LaTeX label (e.g., \"section:user-creation\")",
-    "throws": [
-      {
-        "exception": "InvalidDocTestRefException",
-        "description": "if the DocTest class is not found"
-      },
-      {
-        "exception": "InvalidAnchorException",
-        "description": "if the anchor is not found in the target DocTest"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCallGraph": {
-    "description": "Call graph — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#isPdfEngineAvailable": {
-    "description": "Check if a PDF engine (xelatex, pdflatex) is available.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayEnvProfile": {
-    "description": "Renders an environment snapshot (Java, OS, heap, etc.). */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#mapKeywordToCCS": {
-    "description": "Map common keywords to ACM CCS taxonomy IDs. Pre-populated for stack domains (databases, languages, testing, etc.).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#selectPdfEngine": {
-    "description": "Select the best available PDF engine.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayCallSite": {
-    "description": "Documents the current call site using {@link StackWalker}. Renders the calling class, method name, and line number as provenance metadata.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCodeModel": {
-    "description": "Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations — control flow, method calls, field accesses, etc. Renders a detailed breakdown of operation types and their counts.</p> <p>On Java 25 and earlier, gracefully falls back to rendering the method signature (parameters with types, return type) extracted via reflection.</p> <p>Example:</p> <pre>{@code sayCodeModel(SayEvent.class.getMethod(\"toString\")); // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.) // Java 25-: Renders String toString() signature only }</pre>",
-    "params": [
-      {
-        "name": "method",
-        "description": "the method to introspect and document (must not be null)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.config.RenderConfig#selectTemplate": {
-    "description": "Select LaTeX template by name.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.LazyValue#get": {
-    "description": "Get the cached value, computing it once if needed (thread-safe). After the first call, subsequent accesses return the cached value with no allocation overhead. The JIT compiler can inline this after warm-up. If the initializer returns {@code null} the result is still cached so the initializer is never called more than once.",
-    "params": [],
-    "returns": "the cached value (may be {@code null} if the initializer returned null)",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#buildIndex": {
-    "description": "Build an index by scanning all .tex files in the given paths. Called as first pass of compilation to map all sayNextSection calls to their corresponding \\label{} commands.",
-    "params": [
-      {
-        "name": "texFiles",
-        "description": "list of .tex file paths to scan"
-      },
-      {
-        "name": "docTestClass",
-        "description": "the DocTest class corresponding to these files"
+        "name": "outputDir",
+        "description": "the directory where PDF should be written"
       }
     ],
     "throws": [
       {
-        "exception": "Exception",
-        "description": "if files cannot be read"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#convertTextToId": {
-    "description": "Converts a section heading to a lowercase anchor ID suitable for use in markdown table-of-contents links. Strips all non-alphanumeric characters.",
-    "params": [
+        "exception": "IOException",
+        "description": "if file operations fail"
+      },
       {
-        "name": "text",
-        "description": "the heading text to convert"
+        "exception": "InterruptedException",
+        "description": "if compilation process is interrupted"
       }
     ],
-    "returns": "a lowercase alphanumeric anchor ID",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#register": {
-    "description": "Register a cross-reference during test execution. Called by DTR.sayRef() to record each cross-reference made during test execution.",
-    "params": [
-      {
-        "name": "ref",
-        "description": "the reference to register"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getGitCommit": {
-    "description": "Get current git commit hash via `git rev-parse HEAD`.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.LazyValue#of": {
-    "description": "Create a new lazy value supplier.",
-    "params": [
-      {
-        "name": "initializer",
-        "description": "function that computes the value on first access"
-      }
-    ],
-    "returns": "a lazy value supplier that caches the computed value",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#sayCodeModel": {
-    "description": "Implements the previously-stub sayCodeModel(Method) using the Java 26 Code Reflection API. Renders an op-count table + IR excerpt when a code model is available; falls back to method signature rendering on older runtimes.",
-    "params": [],
-    "throws": [],
     "see": []
   },
   "io.github.seanchatmangpt.dtr.assembly.WordCounter#count": {
@@ -648,133 +151,82 @@
     ],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayBenchmark": {
-    "description": "Benchmark with explicit rounds — no-op in base class. */",
+  "io.github.seanchatmangpt.dtr.assembly.WordCounter#stripLatexCommands": {
+    "description": "Strips LaTeX commands from content, keeping only text content.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.assembly.WordCounter#skipBracedContent": {
-    "description": "Skips content within braces, returning the index after the closing brace.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#NatureTemplate": {
-    "description": "Creates a Nature template with optional code repository URL.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayJavadoc": {
-    "description": "Renders the extracted Javadoc for a method: description, parameter table, return value, throws, and {@code @since} — sourced from {@code docs/meta/javadoc.json} (generated by the dtr-javadoc Rust binary). <p>If the JSON index is not present or the method has no entry, this is a no-op.</p>",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#LatexCompilationException": {
+    "description": "Constructs a LaTeX compilation exception with a detail message and cause.",
     "params": [
       {
-        "name": "method",
-        "description": "the method whose Javadoc to render (must not be null)"
+        "name": "message",
+        "description": "description of the compilation failure"
+      },
+      {
+        "name": "cause",
+        "description": "the underlying exception that triggered the failure"
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.assembly.WordCounter#WordLimitExceededException": {
-    "description": "Creates a new exception with message and cause.",
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#addTerm": {
+    "description": "Adds a technical term to the index at the given page number.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#footnoteMarker": {
-    "description": "Returns the platform's preferred footnote marker format.",
-    "params": [
-      {
-        "name": "index",
-        "description": "the footnote index (1-based)"
-      }
-    ],
-    "returns": "the formatted footnote marker (e.g., \"[^1]\" for Markdown, \"[1]\" for others)",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#generateCCSConcepts": {
-    "description": "Generate CCS Concept XML from a list of keywords.",
+  "io.github.seanchatmangpt.dtr.junit5.DtrExtension#getOrCreateRenderMachine": {
+    "description": "Gets the RenderMachine for this test class, creating it if needed.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayDocOnly": {
-    "description": "Renders content only for documentation/blog output (ignored by slide render machines).",
-    "params": [
-      {
-        "name": "text",
-        "description": "the text to render in docs only"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#getLabelsForClass": {
-    "description": "Get all registered section labels for a DocTest class.",
-    "params": [
-      {
-        "name": "docTestClass",
-        "description": "the DocTest class"
-      }
-    ],
-    "returns": "map of anchor -> label",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.DocTestRef#toString": {
-    "description": "Returns a human-readable string representation of this reference. <p><strong>Behavior:</strong></p> <ul>   <li>If {@code resolvedLabel} is present: returns the resolved label       (e.g., \"Section 3.2\", \"page 42\")</li>   <li>If {@code resolvedLabel} is empty: returns the unresolved form       (e.g., \"See UserApiDocTest#user-registration\")</li> </ul>",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayOpProfile": {
+    "description": "Op profile — no-op in base class. */",
     "params": [],
-    "returns": "human-readable reference string",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#validateReferences": {
-    "description": "Validate that all registered references target valid DocTests and anchors. Called before compilation to catch invalid references early.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayRecordComponents": {
+    "description": "Renders a schema table for a Java record class — component names, types, and any annotations present. Uses {@link Class#getRecordComponents()} (Java 16+).",
     "params": [
       {
-        "name": "refs",
-        "description": "the references to validate"
+        "name": "recordClass",
+        "description": "the record class to document"
       }
     ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#assemble": {
+    "description": "Assembles multiple .tex files into a manifest with aggregated metadata.",
+    "params": [
+      {
+        "name": "texFiles",
+        "description": "list of paths to LaTeX source files"
+      }
+    ],
+    "returns": "AssemblyManifest containing aggregated metadata",
     "throws": [
       {
-        "exception": "InvalidDocTestRefException",
-        "description": "if a DocTest class is not found"
-      },
-      {
-        "exception": "InvalidAnchorException",
-        "description": "if an anchor is not found"
+        "exception": "IllegalArgumentException",
+        "description": "if texFiles is null or empty"
       }
     ],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCallGraph": {
-    "description": "Renders a Mermaid {@code graph LR} showing all method-to-method call relationships in the given class, extracted from InvokeOp nodes in each method's Java 26 Code Reflection IR. Only methods annotated with {@code @CodeReflection} contribute edges.",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class whose call graph to render"
-      }
-    ],
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatSubsection": {
+    "description": "LaTeX command for subsection-level heading (e.g., \"\\\\\\\\subsection{%s}\").",
+    "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.coverage.DocCoverageAnalyzer#analyze": {
-    "description": "Produces a coverage report for the given class.",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class whose public API to check"
-      },
-      {
-        "name": "documentedSigs",
-        "description": "set of method signatures that were documented (caller-tracked)"
-      }
-    ],
-    "returns": "list of coverage rows, one per public method",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayMermaid": {
+    "description": "Raw Mermaid diagram — no-op in base class. */",
+    "params": [],
     "throws": [],
     "see": []
   },
@@ -784,357 +236,118 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayKeyValue": {
-    "description": "Renders key-value pairs in a readable format.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getBeginDocument": {
+    "description": "Text to insert after \\\\begin{document}.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayNextSection": {
+    "description": "A heading that will appear as a top-level section in the documentation and in the table of contents. No escaping is done.",
     "params": [
       {
-        "name": "pairs",
-        "description": "A map of keys to values."
+        "name": "headline",
+        "description": "The section heading text."
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getInstance": {
-    "description": "Get the globally cached DocMetadata instance. Thread-safe and thread-confined (initialized at class load time).",
-    "params": [],
-    "returns": "the cached metadata for this JVM instance",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#say": {
-    "description": "A text that will be rendered as a paragraph in the documentation. No escaping is done. You can use markdown formatting inside the text.",
+  "io.github.seanchatmangpt.dtr.render.blog.SocialQueueWriter#SocialQueue": {
+    "description": "Create a new social queue with current timestamp.",
     "params": [
       {
-        "name": "text",
-        "description": "A text that may contain markdown formatting like \"This is my **bold** text\"."
+        "name": "docTest",
+        "description": "the doc test name"
+      },
+      {
+        "name": "entries",
+        "description": "the queue entries"
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#clear": {
-    "description": "Clear all internal state, removing all parsed section labels and anchor mappings. Called by CrossReferenceIndex.clear() to ensure a full reset.",
-    "params": [],
+  "io.github.seanchatmangpt.dtr.render.LazyValue#of": {
+    "description": "Create a new lazy value supplier.",
+    "params": [
+      {
+        "name": "initializer",
+        "description": "function that computes the value on first access"
+      }
+    ],
+    "returns": "a lazy value supplier that caches the computed value",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayHeroImage": {
-    "description": "Renders a hero image for blogs and slides (ignored by other formats).",
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderBibliography": {
+    "description": "Renders a bibliography section in markdown format.",
     "params": [
       {
-        "name": "altText",
-        "description": "the alt text for the image"
+        "name": "entries",
+        "description": "the bibliography entries to render"
+      },
+      {
+        "name": "style",
+        "description": "the citation style to use"
+      }
+    ],
+    "returns": "formatted bibliography markdown",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#setClassNameForDtrOutputFile": {
+    "description": "Alternative way to set the output file name. This can be handy when DTR is not part of JUnit lifecycle.",
+    "params": [
+      {
+        "name": "name",
+        "description": "alternative name of output file"
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#processDocAnnotations": {
-    "description": "Inspects the test method for doc annotations and emits the corresponding render-machine calls. All five annotation types are optional and independent. They are always emitted in this fixed order regardless of the order they appear in source code: <ol>   <li>{@link DocSection} — section heading via {@code sayNextSection()}</li>   <li>{@link DocDescription} — narrative paragraphs via {@code say()}</li>   <li>{@link DocNote} — info callout boxes via {@code sayRaw()}</li>   <li>{@link DocWarning} — warning callout boxes via {@code sayRaw()}</li>   <li>{@link DocCode} — HTML-escaped {@code <pre><code>} blocks via {@code sayRaw()}</li> </ol>",
-    "params": [
-      {
-        "name": "method",
-        "description": "the test method (from TestInfo)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countNewPages": {
-    "description": "Counts \\newpage directives in LaTeX content.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#generateLatex": {
-    "description": "Generates the LaTeX command for table of contents.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getPreamble": {
-    "description": "Full preamble including \\\\documentclass, \\\\usepackage, \\\\title, etc.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayJavadoc": {
-    "description": "Javadoc documentation from dtr-javadoc index — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#generateRefCommand": {
-    "description": "Generate a LaTeX \\ref{} command for a resolved reference. The returned string is a complete LaTeX command that can be embedded in the document. It references the label that will be resolved during two-pass compilation.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayRef": {
+    "description": "Renders a cross-reference to another DocTest's section. The reference is resolved using the CrossReferenceIndex and rendered as a markdown link in Markdown mode or a LaTeX \\ref{} command in LaTeX mode.",
     "params": [
       {
         "name": "ref",
-        "description": "the reference to generate a \\ref{} for"
+        "description": "the cross-reference to another DocTest section"
       }
     ],
-    "returns": "LaTeX command like \"\\ref{section:user-creation}\"",
-    "throws": [
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.InvalidDocTestRefException#InvalidDocTestRefException": {
+    "description": "Creates a new exception with the given message and cause.",
+    "params": [
       {
-        "exception": "InvalidDocTestRefException",
-        "description": "if the DocTest class is not found"
+        "name": "message",
+        "description": "descriptive error message"
       },
       {
-        "exception": "InvalidAnchorException",
-        "description": "if the anchor is not found"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatTable": {
-    "description": "Format a table from 2D string array. First row is headers.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatAssertions": {
-    "description": "Format assertion results as a table (Check | Result columns).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countCrossReferences": {
-    "description": "Counts cross-references (\\ref{...} and \\label{...}).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCodeModel": {
-    "description": "Documents a method's structure using reflection/CodeReflection API. <p>Default no-op implementation — override in render machines that support method introspection (e.g., {@link RenderMachineImpl}).</p>",
-    "params": [
-      {
-        "name": "method",
-        "description": "the method to introspect and document"
+        "name": "cause",
+        "description": "the underlying cause"
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#canonicalUrl": {
-    "description": "Formats the canonical URL (points back to GitHub/docs).",
-    "params": [
-      {
-        "name": "docTestUrl",
-        "description": "the base documentation URL"
-      }
-    ],
-    "returns": "the canonical URL for the blog post",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayException": {
-    "description": "Documents an exception — type, message, full cause chain, and the top 5 stack frames — in a structured table. Useful in error-handling and resilience documentation sections.",
-    "params": [
-      {
-        "name": "t",
-        "description": "the throwable to document (must not be null)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderEntryMarkdown": {
-    "description": "Renders a single entry as markdown.",
-    "params": [
-      {
-        "name": "entry",
-        "description": "the BibTeX entry"
-      }
-    ],
-    "returns": "formatted entry as markdown",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#generateLatexRef": {
-    "description": "Generate a LaTeX \\ref{} command for a cross-reference.",
-    "params": [
-      {
-        "name": "ref",
-        "description": "the reference to generate a command for"
-      }
-    ],
-    "returns": "LaTeX command like \"\\ref{section:user-creation}\"",
-    "throws": [
-      {
-        "exception": "InvalidDocTestRefException",
-        "description": "if the DocTest class is not found"
-      },
-      {
-        "exception": "InvalidAnchorException",
-        "description": "if the anchor is not found"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatJson": {
-    "description": "Format JSON/pretty-printed content in a code block.",
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#size": {
+    "description": "Returns the number of unique terms in the index.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.assembly.AssemblyManifest#toJson": {
-    "description": "Returns a machine-readable JSON representation of this manifest.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayStringProfile": {
-    "description": "Documents string profile — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#finishDocTest": {
-    "description": "JUnit 5 {@code @AfterAll} lifecycle hook that flushes and finalises the shared render machine after all test methods in the class have run. Calls {@code finishAndWriteOut()} to close output streams and write the final document files, then nulls the reference so the next test class starts fresh.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCallSite": {
-    "description": "Documents current call site — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayException": {
-    "description": "Documents an exception chain in a structured table. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getResolver": {
-    "description": "Get the underlying ReferenceResolver for advanced operations.",
-    "params": [],
-    "returns": "the ReferenceResolver instance",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#isBinaryAvailable": {
-    "description": "Check if a binary is available in PATH. Java 26 Enhancement (JEP 530 - Primitive Types in Patterns): Uses primitive pattern matching on int exit codes for zero-success semantics.",
-    "params": [
-      {
-        "name": "binary",
-        "description": "name of binary to check"
-      }
-    ],
-    "returns": "true if binary is available and returns exit code 0",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#toLatex": {
-    "description": "Generates LaTeX index command for this term.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.javadoc.JavadocEntry#optReturns": {
-    "description": "Returns the {@code @return} value as an Optional.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayMermaid": {
-    "description": "Renders a raw Mermaid diagram as a fenced code block. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayAndAssertThat": {
-    "description": "Overload for {@code boolean} primitives. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatNoteSlide": {
-    "description": "Formats a note/callout slide.",
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#convertTextToAnchor": {
+    "description": "Convert a section title to an anchor slug for use in markdown/LaTeX. Example: \"User Creation\" -> \"user-creation\"",
     "params": [
       {
         "name": "text",
-        "description": "the note text"
-      },
-      {
-        "name": "type",
-        "description": "the note type (\"note\", \"warning\", etc.)"
-      }
-    ],
-    "returns": "the formatted note slide",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXEntry#getField": {
-    "description": "Retrieves a field value by name (case-insensitive).",
-    "params": [
-      {
-        "name": "fieldName",
-        "description": "the field to retrieve"
-      }
-    ],
-    "returns": "the field value, or empty string if not present",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayEvolutionTimeline": {
-    "description": "Git evolution timeline — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatSectionSlide": {
-    "description": "Creates a slide from a section heading.",
-    "params": [
-      {
-        "name": "title",
         "description": "the section title"
       }
     ],
-    "returns": "the formatted slide",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeLaTeX": {
-    "description": "Escapes special LaTeX characters in the given string.",
-    "params": [
-      {
-        "name": "text",
-        "description": "the text to escape"
-      }
-    ],
-    "returns": "escaped text safe for LaTeX",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#getEntries": {
-    "description": "Returns all table of contents entries in hierarchical order.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#latexCommand": {
-    "description": "LaTeX section command for this entry.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#frontMatter": {
-    "description": "Generates platform-specific front matter (YAML or JSON headers).",
-    "params": [
-      {
-        "name": "meta",
-        "description": "the document metadata"
-      }
-    ],
-    "returns": "the front matter string",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getProperty": {
-    "description": "Get a system property with fallback to Maven properties.",
-    "params": [],
+    "returns": "the anchor slug",
     "throws": [],
     "see": []
   },
@@ -1159,104 +372,9 @@
     ],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#validateReferences": {
-    "description": "Validate all registered references against the index. Called before LaTeX compilation to ensure all referenced sections exist. Throws an exception on the first invalid reference found.",
+  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countCitations": {
+    "description": "Counts citation commands (\\cite{...}).",
     "params": [],
-    "throws": [
-      {
-        "exception": "InvalidDocTestRefException",
-        "description": "if a DocTest class is not found"
-      },
-      {
-        "exception": "InvalidAnchorException",
-        "description": "if an anchor is not found"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatCodeSlide": {
-    "description": "Formats a code slide with syntax highlighting.",
-    "params": [
-      {
-        "name": "code",
-        "description": "the code content"
-      },
-      {
-        "name": "language",
-        "description": "the programming language"
-      }
-    ],
-    "returns": "the formatted code slide",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayEvolutionTimeline": {
-    "description": "Documents git commit history for the source file of the given class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getReferences": {
-    "description": "Get all registered references. Returns an unmodifiable copy of the current references list.",
-    "params": [],
-    "returns": "immutable list of all registered references",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.CompilerStrategy#isAvailable": {
-    "description": "Check if this compiler strategy is available in the system PATH.",
-    "params": [],
-    "returns": "true if the required binary(ies) are available",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.diagram.ControlFlowGraphBuilder#build": {
-    "description": "Builds a Mermaid flowchart DSL string from the code model of the given method. Returns an empty string if no code model is available.",
-    "params": [
-      {
-        "name": "method",
-        "description": "the method (should be annotated with {@code @CodeReflection})"
-      }
-    ],
-    "returns": "Mermaid {@code flowchart TD} DSL, or empty string on failure",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#invokeBinary": {
-    "description": "Invoke LaTeX compiler binary with standard flags.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#addTerm": {
-    "description": "Adds a technical term to the index at the given page number.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayWarning": {
-    "description": "Renders a warning callout box (GitHub-style [!WARNING] alert).",
-    "params": [
-      {
-        "name": "message",
-        "description": "The warning message."
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#MultiRenderException": {
-    "description": "Constructs an exception that aggregates one or more render-machine failures.",
-    "params": [
-      {
-        "name": "message",
-        "description": "human-readable summary of the failure"
-      },
-      {
-        "name": "causes",
-        "description": "all exceptions thrown by individual render machines"
-      }
-    ],
     "throws": [],
     "see": []
   },
@@ -1271,6 +389,157 @@
     "throws": [],
     "see": []
   },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayAndAssertThat": {
+    "description": "Overload for {@code boolean} primitives. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayStringProfile": {
+    "description": "Analyzes a string and renders its structural profile using Java string APIs. <p>Blue ocean innovation: renders word count, line count, character category distribution, and Unicode metrics for any string — using only {@link String#chars()}, {@link String#lines()}, and {@link Character} APIs. Invaluable for documenting text processing and NLP APIs.</p>",
+    "params": [
+      {
+        "name": "text",
+        "description": "the string to profile (may be a sample payload, template, etc.)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderEntryMarkdown": {
+    "description": "Renders a single entry as markdown.",
+    "params": [
+      {
+        "name": "entry",
+        "description": "the BibTeX entry"
+      }
+    ],
+    "returns": "formatted entry as markdown",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayAnnotationProfile": {
+    "description": "Documents all annotations on a class and its methods using reflection.",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class to inspect for annotations"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayClassHierarchy": {
+    "description": "Renders the full class hierarchy (superclass chain + interfaces) as a tree.",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class whose hierarchy to render"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#getAllAnchors": {
+    "description": "Get all anchors registered in the index.",
+    "params": [],
+    "returns": "map of anchor -> label",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCallGraph": {
+    "description": "Renders a Mermaid {@code graph LR} showing all method-to-method call relationships in the given class, extracted from InvokeOp nodes in each method's Java 26 Code Reflection IR. Only methods annotated with {@code @CodeReflection} contribute edges.",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class whose call graph to render"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#canonicalUrl": {
+    "description": "Formats the canonical URL (points back to GitHub/docs).",
+    "params": [
+      {
+        "name": "docTestUrl",
+        "description": "the base documentation URL"
+      }
+    ],
+    "returns": "the canonical URL for the blog post",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayKeyValue": {
+    "description": "Renders key-value pairs in a readable format.",
+    "params": [
+      {
+        "name": "pairs",
+        "description": "A map of keys to values."
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.RenderMachineFactory#selectLatexTemplateLazy": {
+    "description": "Select LaTeX template based on system property (uses cached instances for JEP 526). The -Ddtr.latex.format property controls which academic/patent format: - arxiv (default): arXiv pre-print submissions - patent: USPTO patent exhibit format - ieee: IEEE journal articles - acm: ACM conference proceedings - nature: Nature scientific reports",
+    "params": [],
+    "returns": "selected cached LaTeX template",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayCallToAction": {
+    "description": "Renders a call-to-action link for blogs.",
+    "params": [
+      {
+        "name": "url",
+        "description": "the URL for the CTA button/link"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayDocOnly": {
+    "description": "Renders content only for documentation/blog output (ignored by slide render machines).",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to render in docs only"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeYaml": {
+    "description": "Escapes special YAML characters in the given string.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to escape"
+      }
+    ],
+    "returns": "escaped text safe for YAML",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#clear": {
+    "description": "Clears all terms from the index.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatSectionSlide": {
+    "description": "Creates a slide from a section heading.",
+    "params": [
+      {
+        "name": "title",
+        "description": "the section title"
+      }
+    ],
+    "returns": "the formatted slide",
+    "throws": [],
+    "see": []
+  },
   "io.github.seanchatmangpt.dtr.render.blog.BlogRenderMachine#BlogRenderMachine": {
     "description": "Create a blog render machine with the given platform template.",
     "params": [
@@ -1282,75 +551,78 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#compile": {
-    "description": "Compile a .tex file to PDF using available LaTeX compilers. Tries compilers in priority order. Returns early on first success. Logs warnings for each failure but does not throw exception if all fail.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatNote": {
+    "description": "Format an info/note callout box (colored background, icon, etc.).",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#ACMTemplate": {
+    "description": "Creates an ACM template with default SIGPLAN template and no conference header.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.WordCounter#WordLimitExceededException": {
+    "description": "Creates a new exception with message and cause.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#clear": {
+    "description": "Clear all registered references and reset the index. Useful for testing or when resetting between test runs.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.javadoc.JavadocEntry#optDeprecated": {
+    "description": "Returns the {@code @deprecated} value as an Optional.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.CompilerStrategy#isAvailable": {
+    "description": "Check if this compiler strategy is available in the system PATH.",
+    "params": [],
+    "returns": "true if the required binary(ies) are available",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#saySpeakerNote": {
+    "description": "Renders speaker notes for slides (ignored by doc/blog render machines).",
     "params": [
       {
-        "name": "texFile",
-        "description": "the .tex source file to compile"
+        "name": "text",
+        "description": "the speaker notes text"
       }
     ],
-    "returns": "true if compilation succeeded, false if all compilers unavailable",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#clear": {
-    "description": "Clears all entries from this table of contents.",
+  "io.github.seanchatmangpt.dtr.assembly.AssemblyManifest#toJson": {
+    "description": "Returns a machine-readable JSON representation of this manifest.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayNextSection": {
-    "description": "A heading that will appear as a top-level section in the documentation and in the table of contents. No escaping is done.",
+  "io.github.seanchatmangpt.dtr.diagram.ClassDiagramGenerator#generate": {
+    "description": "Generates a Mermaid {@code classDiagram} for the given classes.",
     "params": [
       {
-        "name": "headline",
-        "description": "The section heading text."
+        "name": "classes",
+        "description": "the classes to include in the diagram"
       }
     ],
+    "returns": "Mermaid classDiagram DSL string",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#reset": {
-    "description": "Reset the singleton for testing purposes.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayControlFlowGraph": {
-    "description": "Documents the control flow graph of a {@code @CodeReflection}-annotated method using the Java 26 Code Reflection API (JEP 516). Renders a Mermaid {@code flowchart TD} diagram where each basic block is a node and branch ops produce directed edges. Falls back to a text note on older runtimes.",
+  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#MultiRenderMachine": {
+    "description": "Create a multi-render machine delegating to the given machines (varargs).",
     "params": [
       {
-        "name": "method",
-        "description": "the method whose CFG to render (should be annotated with               {@code @java.lang.reflect.code.CodeReflection})"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#clear": {
-    "description": "Clears all terms from the index.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#platformName": {
-    "description": "Returns the platform name for output path organization.",
-    "params": [],
-    "returns": "the platform name (e.g., \"devto\", \"linkedin\", \"substack\")",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCite": {
-    "description": "Renders a citation reference with page number specification.",
-    "params": [
-      {
-        "name": "citationKey",
-        "description": "The BibTeX citation key to reference."
-      },
-      {
-        "name": "pageRef",
-        "description": "The page reference (e.g., \"42\" or \"pp. 10-15\")."
+        "name": "machines",
+        "description": "the render machines to dispatch to"
       }
     ],
     "throws": [],
@@ -1367,62 +639,45 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayMermaid": {
-    "description": "Renders a raw Mermaid diagram as a fenced {@code mermaid} code block. Mermaid renders natively on GitHub, GitLab, and Obsidian.",
-    "params": [
-      {
-        "name": "diagramDsl",
-        "description": "the Mermaid DSL string (e.g., \"flowchart TD\\n    A --> B\")"
-      }
-    ],
+  "io.github.seanchatmangpt.dtr.DtrTest#sayJavadoc": {
+    "description": "Renders Javadoc for a method from the dtr-javadoc index. */",
+    "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayContractVerification": {
-    "description": "Documents interface contract coverage across implementation classes. For each public method in the contract interface, checks whether each implementation provides a concrete override (✅ direct), inherits it (↗ inherited), or is missing it entirely (❌ MISSING). Uses only standard Java reflection. <p>If the contract is a sealed interface, permitted subclasses are automatically detected so the user does not need to enumerate them.</p>",
-    "params": [
-      {
-        "name": "contract",
-        "description": "the interface whose methods to verify"
-      },
-      {
-        "name": "implementations",
-        "description": "zero or more implementation classes to check"
-      }
-    ],
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#sayDocCoverage": {
+    "description": "Called by DtrContext with pre-computed coverage rows. */",
+    "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayFootnote": {
-    "description": "Renders a footnote with the given text.",
-    "params": [
-      {
-        "name": "text",
-        "description": "The footnote content."
-      }
-    ],
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#isAbstractValid": {
+    "description": "Validates that abstract is within 200-word limit. Nature requires abstracts to be self-contained and ≤200 words.",
+    "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayAnnotationProfile": {
-    "description": "Documents all annotations on a class and its methods using reflection.",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class to inspect for annotations"
-      }
-    ],
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatFootnote": {
+    "description": "Format a footnote in LaTeX. Text is escaped to prevent syntax errors.",
+    "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayRecordComponents": {
-    "description": "Renders a schema table for a Java record class — component names, types, and any annotations present. Uses {@link Class#getRecordComponents()} (Java 16+).",
-    "params": [
-      {
-        "name": "recordClass",
-        "description": "the record class to document"
-      }
-    ],
+  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countCrossReferences": {
+    "description": "Counts cross-references (\\ref{...} and \\label{...}).",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#computeFromBuild": {
+    "description": "Internal: Compute metadata from build environment. Called once at class initialization time via static field.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayEnvProfile": {
+    "description": "Renders a zero-parameter environment snapshot: Java version, OS, available processors, max heap (MB), timezone, and DTR version. Useful as a \"generated with\" footer in any documentation section.",
+    "params": [],
     "throws": [],
     "see": []
   },
@@ -1433,343 +688,52 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayCallToAction": {
-    "description": "Renders a call-to-action link for blogs.",
-    "params": [
-      {
-        "name": "url",
-        "description": "the URL for the CTA button/link"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#getInstance": {
-    "description": "Returns the singleton instance of BibliographyManager.",
-    "params": [],
-    "returns": "the shared BibliographyManager instance",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer#extractCallees": {
-    "description": "Extracts all unique callee method names from InvokeOp nodes in a method's code model.",
-    "params": [
-      {
-        "name": "method",
-        "description": "the method to analyze"
-      }
-    ],
-    "returns": "list of callee method simple names, empty if no code model available",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#countWords": {
-    "description": "Counts words in document body (excluding preamble and metadata). Nature Letters have a 3000-word limit.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.diagram.CallGraphBuilder#build": {
-    "description": "Builds a Mermaid {@code graph LR} DSL string from the call relationships in the given class. Only methods with code models contribute edges.",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class to analyze"
-      }
-    ],
-    "returns": "Mermaid graph DSL, or an empty string if no call relationships found",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayOpProfile": {
-    "description": "Op profile — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayAsciiChart": {
-    "description": "Renders an inline ASCII horizontal bar chart for numeric data. Bars are drawn with Unicode block characters ({@code ████}) normalized to the maximum value. No external dependencies — pure Java string math.",
-    "params": [
-      {
-        "name": "label",
-        "description": "the chart title"
-      },
-      {
-        "name": "values",
-        "description": "the numeric values (one bar per value)"
-      },
-      {
-        "name": "xLabels",
-        "description": "labels for each bar (must have the same length as {@code values})"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayTweetable": {
-    "description": "Renders a tweetable (≤280 chars) for social media queue.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#say": {
+    "description": "A text that will be rendered as a paragraph in the documentation. No escaping is done. You can use markdown formatting inside the text.",
     "params": [
       {
         "name": "text",
-        "description": "the text to tweet (will be truncated to 280 chars)"
+        "description": "A text that may contain markdown formatting like \"This is my **bold** text\"."
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayClassHierarchy": {
-    "description": "Documents class hierarchy — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#assemble": {
-    "description": "Assembles multiple .tex files into a manifest with aggregated metadata.",
-    "params": [
-      {
-        "name": "texFiles",
-        "description": "list of paths to LaTeX source files"
-      }
-    ],
-    "returns": "AssemblyManifest containing aggregated metadata",
-    "throws": [
-      {
-        "exception": "IllegalArgumentException",
-        "description": "if texFiles is null or empty"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#saySlideOnly": {
-    "description": "Renders content only for slide output (ignored by doc/blog render machines).",
-    "params": [
-      {
-        "name": "text",
-        "description": "the text to render on slides only"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#isWordCountValid": {
-    "description": "Enforces Nature word limits based on article type. - Letter: 3000 words max - Article: 5000 words max",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayJson": {
-    "description": "Serializes an object to JSON and renders it in a code block.",
-    "params": [
-      {
-        "name": "object",
-        "description": "The object to serialize (will be rendered as pretty-printed JSON)."
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.DocTestRef#docTestClassName": {
-    "description": "Returns the simple class name of the target DocTest. <p>Useful for constructing the reference in unresolved form.</p>",
-    "params": [],
-    "returns": "the simple class name (e.g., \"UserApiDocTest\")",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#computeFromBuild": {
-    "description": "Internal: Compute metadata from build environment. Called once at class initialization time via static field.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayException": {
-    "description": "Exception chain documentation — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#toString": {
-    "description": "Returns a human-readable text representation of the index.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayTable": {
-    "description": "Renders a markdown table from a 2D string array. The first row is treated as table headers.",
-    "params": [
-      {
-        "name": "data",
-        "description": "A 2D array where each row is a list of cells. First row becomes TH."
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCode": {
-    "description": "Renders a code block with optional syntax highlighting language hint.",
-    "params": [
-      {
-        "name": "code",
-        "description": "The code content."
-      },
-      {
-        "name": "language",
-        "description": "The programming language for syntax highlighting (e.g., \"java\", \"sql\", \"json\")."
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayJavadoc": {
-    "description": "Renders Javadoc for a method from the dtr-javadoc index. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#convertTextToAnchor": {
-    "description": "Convert a section title to an anchor slug for use in markdown/LaTeX. Example: \"User Creation\" -> \"user-creation\"",
-    "params": [
-      {
-        "name": "text",
-        "description": "the section title"
-      }
-    ],
-    "returns": "the anchor slug",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayEnvProfile": {
-    "description": "Renders a zero-parameter environment snapshot: Java version, OS, available processors, max heap (MB), timezone, and DTR version. Useful as a \"generated with\" footer in any documentation section.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayAsciiChart": {
-    "description": "Renders an ASCII horizontal bar chart for numeric data. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayTweetable": {
-    "description": "Renders a tweetable excerpt (≤280 chars) for social media queue.",
-    "params": [
-      {
-        "name": "text",
-        "description": "the text to tweet (will be truncated to 280 chars)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#finishAndWriteOut": {
-    "description": "Finishes documentation generation and writes output to disk.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayDocCoverage": {
-    "description": "Renders a documentation coverage report for the given classes — which public methods were documented in this test vs. which were not. Coverage is tracked automatically as {@code say*} methods are called.",
+  "io.github.seanchatmangpt.dtr.junit5.DtrContext#sayDocCoverage": {
+    "description": "Renders a documentation coverage report for the given classes, using the set of method names tracked during this test via say* calls.",
     "params": [
       {
         "name": "classes",
-        "description": "the classes whose public API to check for documentation coverage"
+        "description": "the classes whose public API to check for coverage"
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer#extractBlocks": {
-    "description": "Extracts blocks with their ops for CFG generation. Returns a list of block descriptions, each containing op names.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#setupForTestCaseMethod": {
-    "description": "JUnit 5 {@code @BeforeEach} lifecycle hook that wires the test class name and current test method into the render machine before each test method runs. Processes any {@link DocSection}, {@link DocDescription}, {@link DocNote}, {@link DocWarning}, and {@link DocCode} annotations present on the test method.",
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#buildIndex": {
+    "description": "Build an index by scanning all .tex files in the given paths. Called as first pass of compilation to map all sayNextSection calls to their corresponding \\label{} commands.",
     "params": [
       {
-        "name": "testInfo",
-        "description": "JUnit 5 test metadata (class name, method reference)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#clear": {
-    "description": "Clear all registered references and reset the index. Useful for testing or when resetting between test runs.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayReflectiveDiff": {
-    "description": "Compares two objects field-by-field using reflection and renders a diff table.",
-    "params": [
-      {
-        "name": "before",
-        "description": "the object representing the \"before\" state"
+        "name": "texFiles",
+        "description": "list of .tex file paths to scan"
       },
       {
-        "name": "after",
-        "description": "the object representing the \"after\" state (must be same type)"
+        "name": "docTestClass",
+        "description": "the DocTest class corresponding to these files"
       }
     ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#MultiRenderMachine": {
-    "description": "Create a multi-render machine delegating to the given machines (varargs).",
-    "params": [
+    "throws": [
       {
-        "name": "machines",
-        "description": "the render machines to dispatch to"
+        "exception": "Exception",
+        "description": "if files cannot be read"
       }
     ],
-    "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.RenderMachineLatex#convertTextToLatexLabel": {
-    "description": "Convert an anchor text to a valid LaTeX label format. Converts spaces to hyphens and removes invalid characters.",
-    "params": [
-      {
-        "name": "text",
-        "description": "the anchor text"
-      }
-    ],
-    "returns": "LaTeX label format",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getMavenVersion": {
-    "description": "Extract Maven version from system property or environment.",
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXEntry#toString": {
+    "description": "Renders the entry in standard BibTeX format.",
     "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatSection": {
-    "description": "LaTeX command for section-level heading (e.g., \"\\\\\\\\section{%s}\"). Placeholder %s will be replaced with heading text.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayBenchmark": {
-    "description": "Measures the given task with explicit warmup and measurement round counts.",
-    "params": [
-      {
-        "name": "label",
-        "description": "a human-readable label for the benchmark"
-      },
-      {
-        "name": "task",
-        "description": "the code to benchmark"
-      },
-      {
-        "name": "warmupRounds",
-        "description": "number of warmup iterations (discarded from results)"
-      },
-      {
-        "name": "measureRounds",
-        "description": "number of measured iterations"
-      }
-    ],
+    "returns": "a formatted BibTeX entry string",
     "throws": [],
     "see": []
   },
@@ -1793,253 +757,26 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.IEEETemplate#IEEETemplate": {
-    "description": "Creates an IEEE template with default journal mode.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatUnorderedList": {
-    "description": "Format an unordered (bullet) list in LaTeX.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.junit5.DtrExtension#createRenderMachine": {
-    "description": "Creates a new RenderMachine instance. Override to customize.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.javadoc.JavadocIndex#lookup": {
-    "description": "Looks up the Javadoc entry for the given method.",
+  "io.github.seanchatmangpt.dtr.DtrTest#setupForTestCaseMethod": {
+    "description": "JUnit 5 {@code @BeforeEach} lifecycle hook that wires the test class name and current test method into the render machine before each test method runs. Processes any {@link DocSection}, {@link DocDescription}, {@link DocNote}, {@link DocWarning}, and {@link DocCode} annotations present on the test method.",
     "params": [
       {
-        "name": "method",
-        "description": "the method to look up"
-      }
-    ],
-    "returns": "the Javadoc entry, or empty if not found",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayClassHierarchy": {
-    "description": "Renders the full class hierarchy (superclass chain + interfaces) as a tree.",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class whose hierarchy to render"
+        "name": "testInfo",
+        "description": "JUnit 5 test metadata (class name, method reference)"
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#escapeXml": {
-    "description": "Escape XML special characters for CCS concept XML.",
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#getTerms": {
+    "description": "Returns all indexed terms in alphabetical order with their page numbers.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayOpProfile": {
-    "description": "Renders a lightweight operation-count table for a method using the Java 26 Code Reflection API — same IR traversal as {@link #sayCodeModel(java.lang.reflect.Method)} but without the IR excerpt, for quick performance characterization.",
-    "params": [
-      {
-        "name": "method",
-        "description": "the method to profile (should be annotated with {@code @CodeReflection})"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#getCitation": {
-    "description": "Retrieves the formatted citation for the given key.",
-    "params": [
-      {
-        "name": "key",
-        "description": "the citation identifier"
-      }
-    ],
-    "returns": "the stored citation string, or null if key not found",
-    "throws": [
-      {
-        "exception": "IllegalArgumentException",
-        "description": "if key is null or empty"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#addEntry": {
-    "description": "Adds a section entry to the table of contents.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayException": {
+    "description": "Exception chain documentation — no-op in base class. */",
     "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderACMAuthorYear": {
-    "description": "Renders a single citation in ACM author-year style.",
-    "params": [
-      {
-        "name": "entry",
-        "description": "the BibTeX entry to render"
-      }
-    ],
-    "returns": "formatted citation like \"(Smith 2026)\"",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getDocumentClass": {
-    "description": "LaTeX document class (e.g., \"article\", \"report\", custom).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayClassHierarchy": {
-    "description": "Renders the full class hierarchy (superclass chain + interfaces) as a tree. <p>Blue ocean innovation: visualizes the inheritance graph of any class using only {@link Class#getSuperclass()} and {@link Class#getInterfaces()} — no external deps. Documents \"where does this class fit in the type hierarchy\" automatically.</p>",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class whose hierarchy to render"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.javadoc.JavadocEntry#optDeprecated": {
-    "description": "Returns the {@code @deprecated} value as an Optional.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.WordCounter#countWords": {
-    "description": "Counts words in cleaned text by splitting on whitespace.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#TableOfContents": {
-    "description": "Creates an empty table of contents builder.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayReflectiveDiff": {
-    "description": "Compares two objects field-by-field using reflection and renders a diff table. <p>Blue ocean innovation: shows exactly what changed between two states of an object — before/after, v1/v2, request/response. Uses {@link java.lang.reflect.Field} with {@code setAccessible(true)} to compare every declared field. Documents \"what changed\" automatically.</p>",
-    "params": [
-      {
-        "name": "before",
-        "description": "the object representing the \"before\" state"
-      },
-      {
-        "name": "after",
-        "description": "the object representing the \"after\" state (must be same type as before)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#formatCallToAction": {
-    "description": "Formats a call-to-action link for the article.",
-    "params": [
-      {
-        "name": "text",
-        "description": "the CTA button text"
-      },
-      {
-        "name": "url",
-        "description": "the target URL"
-      }
-    ],
-    "returns": "the formatted CTA (as Markdown link or platform-specific format)",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.slides.SlideRenderMachine#SlideRenderMachine": {
-    "description": "Create a slide render machine with the given template.",
-    "params": [
-      {
-        "name": "template",
-        "description": "the slide template (Reveal.js, Marp, etc.)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countTables": {
-    "description": "Counts table and figure environments.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.RenderMachineLatex#RenderMachineLatex": {
-    "description": "Creates a new LaTeX render machine with the specified template and metadata.",
-    "params": [
-      {
-        "name": "template",
-        "description": "the LaTeX template to use for formatting (e.g., ArXivTemplate)"
-      },
-      {
-        "name": "metadata",
-        "description": "the document metadata (title, author, date, keywords)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatFootnote": {
-    "description": "Format a footnote in LaTeX. Text is escaped to prevent syntax errors.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatNote": {
-    "description": "Format an info/note callout box (colored background, icon, etc.).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#size": {
-    "description": "Returns the number of entries in the table of contents.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatTableSlide": {
-    "description": "Formats a table slide.",
-    "params": [
-      {
-        "name": "data",
-        "description": "the table data"
-      }
-    ],
-    "returns": "the formatted table slide",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatCodeBlock": {
-    "description": "Format code block with optional language syntax highlighting. Language may be null; implementations should handle gracefully.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderLatexBibliography": {
-    "description": "Generates a complete LaTeX bibliography block with entries.",
-    "params": [
-      {
-        "name": "entries",
-        "description": "the bibliography entries"
-      },
-      {
-        "name": "style",
-        "description": "the citation style"
-      }
-    ],
-    "returns": "formatted LaTeX thebibliography environment",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#fileExtension": {
-    "description": "Returns the file extension for this template's output format.",
-    "params": [],
-    "returns": "the file extension (e.g., \"html\", \"pptx\", \"key\")",
     "throws": [],
     "see": []
   },
@@ -2071,133 +808,45 @@
     ],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayAnnotationProfile": {
-    "description": "Documents annotation profile — no-op in base class. */",
+  "io.github.seanchatmangpt.dtr.assembly.WordCounter#skipBracketedContent": {
+    "description": "Skips content within brackets, returning the index after the closing bracket.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer#analyze": {
-    "description": "Analyzes a method using the Java 26 Code Reflection API, with fallback to standard reflection on older runtimes or un-annotated methods.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#NatureTemplate": {
+    "description": "Creates a Nature template with optional code repository URL.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getEndDocument": {
+    "description": "Text to insert before \\\\end{document}.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#register": {
+    "description": "Register a cross-reference during test execution. Called by DTR.sayRef() to record each cross-reference made during test execution.",
     "params": [
       {
-        "name": "method",
-        "description": "the method to analyze (should be annotated with {@code @CodeReflection})"
+        "name": "ref",
+        "description": "the reference to register"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCode": {
+    "description": "Renders a code block with optional syntax highlighting language hint.",
+    "params": [
+      {
+        "name": "code",
+        "description": "The code content."
       },
       {
-        "name": "excerptLimit",
-        "description": "maximum number of op descriptions to include in the IR excerpt"
-      }
-    ],
-    "returns": "analysis result; never null",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#finishAndWriteOut": {
-    "description": "Finalizes all contained render machines concurrently using virtual threads. <p>This is where virtual threads provide the most measurable performance benefit: file I/O is blocking. A LaTeX compilation can take several seconds. Running all finalizations in parallel means the total wall-clock time is the slowest single finalizer, not the sum of all.</p>",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#IndexBuilder": {
-    "description": "Creates an empty index builder.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.render.RenderMachineFactory#selectLatexTemplateLazy": {
-    "description": "Select LaTeX template based on system property (uses cached instances for JEP 526). The -Ddtr.latex.format property controls which academic/patent format: - arxiv (default): arXiv pre-print submissions - patent: USPTO patent exhibit format - ieee: IEEE journal articles - acm: ACM conference proceedings - nature: Nature scientific reports",
-    "params": [],
-    "returns": "selected cached LaTeX template",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatKeyValue": {
-    "description": "Format key-value pairs as a 2-column LaTeX table.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayOrderedList": {
-    "description": "Renders an ordered (numbered) list.",
-    "params": [
-      {
-        "name": "items",
-        "description": "List of strings to render as numbered items."
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayRecordComponents": {
-    "description": "Renders a Java record's component schema table. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayEvolutionTimeline": {
-    "description": "Derives the git commit history for the source file of the given class using {@code git log --follow} and renders it as a timeline table (commit, date, author, subject). Falls back gracefully with a note if git is unavailable. <p>Follows the same {@code ProcessBuilder} + try/catch + fallback pattern already used in {@code DocMetadata}.</p>",
-    "params": [
-      {
-        "name": "clazz",
-        "description": "the class whose source file history to document"
-      },
-      {
-        "name": "maxEntries",
-        "description": "maximum number of commits to include (most recent first)"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeHtml": {
-    "description": "Escapes special HTML characters in the given string.",
-    "params": [
-      {
-        "name": "text",
-        "description": "the text to escape"
-      }
-    ],
-    "returns": "escaped text safe for HTML",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.config.RenderConfig#createRenderMachines": {
-    "description": "Create render machine(s) based on system properties.",
-    "params": [],
-    "returns": "Single RenderMachine if one format selected, or MultiRenderMachine if multiple",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.junit5.DtrExtension#getOrCreateRenderMachine": {
-    "description": "Gets the RenderMachine for this test class, creating it if needed.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.junit5.DtrContext#DtrContext": {
-    "description": "Creates a new DtrContext.",
-    "params": [
-      {
-        "name": "renderMachine",
-        "description": "the render machine for documentation output"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.config.RenderConfig#getLatexTemplate": {
-    "description": "Get the selected LaTeX template name.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#setFileName": {
-    "description": "Sets the output filename (typically the test class name).",
-    "params": [
-      {
-        "name": "fileName",
-        "description": "the filename for the generated documentation"
+        "name": "language",
+        "description": "The programming language for syntax highlighting (e.g., \"java\", \"sql\", \"json\")."
       }
     ],
     "throws": [],
@@ -2215,26 +864,109 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeJson": {
-    "description": "Escapes special JSON characters in the given string.",
+  "io.github.seanchatmangpt.dtr.crossref.InvalidAnchorException#InvalidAnchorException": {
+    "description": "Creates a new exception with the given message and cause.",
     "params": [
       {
-        "name": "text",
-        "description": "the text to escape"
+        "name": "message",
+        "description": "descriptive error message"
+      },
+      {
+        "name": "cause",
+        "description": "the underlying cause"
       }
     ],
-    "returns": "escaped text safe for JSON",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.config.RenderConfig#isFormatEnabled": {
-    "description": "Check if a specific output format is enabled.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatKeyValue": {
+    "description": "Format key-value pairs as a 2-column LaTeX table.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayCallGraph": {
-    "description": "Renders a call graph via Java 26 Code Reflection InvokeOp traversal. */",
+  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countNewPages": {
+    "description": "Counts \\newpage directives in LaTeX content.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#saySlideOnly": {
+    "description": "Renders content only for slide output (ignored by doc/blog render machines).",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to render on slides only"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatCodeSlide": {
+    "description": "Formats a code slide with syntax highlighting.",
+    "params": [
+      {
+        "name": "code",
+        "description": "the code content"
+      },
+      {
+        "name": "language",
+        "description": "the programming language"
+      }
+    ],
+    "returns": "the formatted code slide",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayTweetable": {
+    "description": "Renders a tweetable excerpt (≤280 chars) for social media queue.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to tweet (will be truncated to 280 chars)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayReflectiveDiff": {
+    "description": "Documents reflective diff — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#MultiRenderException": {
+    "description": "Constructs an exception that aggregates one or more render-machine failures.",
+    "params": [
+      {
+        "name": "message",
+        "description": "human-readable summary of the failure"
+      },
+      {
+        "name": "causes",
+        "description": "all exceptions thrown by individual render machines"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#sayJavaCode": {
+    "description": "Add a Java code example to the documentation. Useful for showing the test code that generates the HTTP requests/responses.",
+    "params": [
+      {
+        "name": "javaCode",
+        "description": "the Java code to include (as a string)"
+      },
+      {
+        "name": "description",
+        "description": "optional description of what the code does"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayMermaid": {
+    "description": "Renders a raw Mermaid diagram as a fenced code block. */",
     "params": [],
     "throws": [],
     "see": []
@@ -2245,72 +977,143 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#escapeLatex": {
-    "description": "Escape special LaTeX characters to prevent syntax errors. Must handle: _ $ % &amp; # ^ ~ \\\\ { }",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.CompilerStrategy#compile": {
-    "description": "Compile a LaTeX file to PDF.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayNote": {
+    "description": "Renders an info callout box (GitHub-style [!NOTE] alert).",
     "params": [
       {
-        "name": "texFile",
-        "description": "the input .tex file path"
-      },
-      {
-        "name": "outputDir",
-        "description": "the directory where PDF should be written"
+        "name": "message",
+        "description": "The info message."
       }
     ],
-    "throws": [
-      {
-        "exception": "IOException",
-        "description": "if file operations fail"
-      },
-      {
-        "exception": "InterruptedException",
-        "description": "if compilation process is interrupted"
-      }
-    ],
+    "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.assembly.WordCounter#skipBracketedContent": {
-    "description": "Skips content within brackets, returning the index after the closing bracket.",
+  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeHtml": {
+    "description": "Escapes special HTML characters in the given string.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to escape"
+      }
+    ],
+    "returns": "escaped text safe for HTML",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#addEntry": {
+    "description": "Adds a section entry to the table of contents.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.javadoc.JavadocEntry#optSince": {
-    "description": "Returns the {@code @since} value as an Optional.",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#mapKeywordToCCS": {
+    "description": "Map common keywords to ACM CCS taxonomy IDs. Pre-populated for stack domains (databases, languages, testing, etc.).",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayUnorderedList": {
-    "description": "Renders an unordered (bullet) list.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayContractVerification": {
+    "description": "Contract verification — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatUnorderedList": {
+    "description": "Format an unordered (bullet) list in LaTeX.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayOrderedList": {
+    "description": "Renders an ordered (numbered) list.",
     "params": [
       {
         "name": "items",
-        "description": "List of strings to render as bullet points."
+        "description": "List of strings to render as numbered items."
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.contract.ContractVerifier#verify": {
-    "description": "Verifies coverage of all public interface methods across the given implementations.",
+  "io.github.seanchatmangpt.dtr.DtrTest#sayRef": {
+    "description": "Convenience method to create and render a cross-reference to another DocTest's section. <p>Creates a {@link DocTestRef} and delegates to {@link #sayRef(DocTestRef)}. The reference is rendered as a markdown link in Markdown mode or as a LaTeX cross-reference command in LaTeX mode. In LaTeX, the resolved section number (e.g., \"Section 3.2\") is automatically substituted after compilation.</p>",
     "params": [
       {
-        "name": "contract",
-        "description": "the interface to check"
+        "name": "docTestClass",
+        "description": "the target DocTest class (must not be null)"
       },
       {
-        "name": "implementations",
-        "description": "zero or more implementation classes"
+        "name": "anchor",
+        "description": "the section/anchor name within that DocTest, e.g., \"user-registration\"               (typically derived from @DocSection annotation value)"
       }
     ],
-    "returns": "list of rows, one per public method in the contract",
+    "throws": [],
+    "see": [
+      "DocTestRef#of(Class, String)",
+      "CrossReferenceIndex for reference resolution"
+    ]
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#initRenderingMachineIfNull": {
+    "description": "Lazily initialises the shared {@code renderMachine} if it has not yet been created. Called from {@link #setupForTestCaseMethod} and available to subclasses that need to trigger initialisation outside the normal lifecycle.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#size": {
+    "description": "Returns the number of registered citations.",
+    "params": [],
+    "returns": "the count of entries in the bibliography",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.config.RenderConfig#selectTemplate": {
+    "description": "Select LaTeX template by name.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatWarning": {
+    "description": "Format a warning callout box (colored background, icon, etc.).",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayClassDiagram": {
+    "description": "Auto-generates a Mermaid {@code classDiagram} from the given classes using reflection ({@link Class#getSuperclass()}, {@link Class#getInterfaces()}, {@link Class#getDeclaredMethods()}). Inheritance and implementation relationships are rendered as directed edges.",
+    "params": [
+      {
+        "name": "classes",
+        "description": "the classes to include in the diagram"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatTable": {
+    "description": "Format a table from 2D string array. First row is headers.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayStringProfile": {
+    "description": "Analyzes a string and renders its structural profile using Java string APIs.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the string to profile"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayClassHierarchy": {
+    "description": "Renders the full class hierarchy (superclass chain + interfaces) as a tree. <p>Blue ocean innovation: visualizes the inheritance graph of any class using only {@link Class#getSuperclass()} and {@link Class#getInterfaces()} — no external deps. Documents \"where does this class fit in the type hierarchy\" automatically.</p>",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class whose hierarchy to render"
+      }
+    ],
     "throws": [],
     "see": []
   },
@@ -2337,9 +1140,1015 @@
     "throws": [],
     "see": []
   },
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getMavenVersion": {
+    "description": "Extract Maven version from system property or environment.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.IEEETemplate#IEEETemplate": {
+    "description": "Creates an IEEE template with default journal mode.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCallSite": {
+    "description": "Documents the current call site using {@link StackWalker}. <p>Blue ocean innovation: the documentation knows exactly where it was written. Every section generated by this call carries provenance — class, method, line number — derived from the live JVM stack at the moment of invocation.</p> <p>Uses {@code StackWalker.getInstance(RETAIN_CLASS_REFERENCE)} to walk the call stack and find the first frame outside of DTR's own machinery.</p>",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayBenchmark": {
+    "description": "Benchmarks with explicit warmup/measure rounds. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.WordCounter#countWords": {
+    "description": "Counts words in cleaned text by splitting on whitespace.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#extractFirstAuthor": {
+    "description": "Extracts the first author from an author field.",
+    "params": [
+      {
+        "name": "authorField",
+        "description": "the author field (may contain \"and\" separators)"
+      }
+    ],
+    "returns": "the first author surname",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCite": {
+    "description": "Renders a citation reference with page number specification.",
+    "params": [
+      {
+        "name": "citationKey",
+        "description": "The BibTeX citation key to reference."
+      },
+      {
+        "name": "pageRef",
+        "description": "The page reference (e.g., \"42\" or \"pp. 10-15\")."
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayEnvProfile": {
+    "description": "Renders an environment snapshot (Java, OS, heap, etc.). */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#validateReferences": {
+    "description": "Validate that all registered references target valid DocTests and anchors. Called before compilation to catch invalid references early.",
+    "params": [
+      {
+        "name": "refs",
+        "description": "the references to validate"
+      }
+    ],
+    "throws": [
+      {
+        "exception": "InvalidDocTestRefException",
+        "description": "if a DocTest class is not found"
+      },
+      {
+        "exception": "InvalidAnchorException",
+        "description": "if an anchor is not found"
+      }
+    ],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.diagram.CallGraphBuilder#build": {
+    "description": "Builds a Mermaid {@code graph LR} DSL string from the call relationships in the given class. Only methods with code models contribute edges.",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class to analyze"
+      }
+    ],
+    "returns": "Mermaid graph DSL, or an empty string if no call relationships found",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayControlFlowGraph": {
+    "description": "Control flow graph — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.benchmark.BenchmarkRunner#run": {
+    "description": "Runs the benchmark with explicit warmup and measure counts.",
+    "params": [
+      {
+        "name": "task",
+        "description": "the code to benchmark"
+      },
+      {
+        "name": "warmupRounds",
+        "description": "number of warmup iterations (discarded)"
+      },
+      {
+        "name": "measureRounds",
+        "description": "number of measured iterations"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.ACMTemplate#generateCCSConcepts": {
+    "description": "Generate CCS Concept XML from a list of keywords.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.config.RenderConfig#createRenderMachines": {
+    "description": "Create render machine(s) based on system properties.",
+    "params": [],
+    "returns": "Single RenderMachine if one format selected, or MultiRenderMachine if multiple",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#toString": {
+    "description": "Returns a human-readable text representation of the index.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#formatTweetable": {
+    "description": "Formats a tweetable/social media excerpt.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to format (≤280 chars)"
+      }
+    ],
+    "returns": "the formatted text with platform-specific metadata",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayClassDiagram": {
+    "description": "Class diagram — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayDocOnly": {
+    "description": "Renders content only for documentation/blog output (ignored by slide render machines).",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to render in docs only"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCallGraph": {
+    "description": "Call graph — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayException": {
+    "description": "Documents an exception — type, message, full cause chain, and the top 5 stack frames — in a structured table. Useful in error-handling and resilience documentation sections.",
+    "params": [
+      {
+        "name": "t",
+        "description": "the throwable to document (must not be null)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayAsciiChart": {
+    "description": "Renders an ASCII horizontal bar chart for numeric data. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayBenchmark": {
+    "description": "Benchmark with explicit rounds — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#resolveLabel": {
+    "description": "Resolve a DocTestRef to its LaTeX label. Returns the actual \\label{} identifier that will be used in the compiled PDF.",
+    "params": [
+      {
+        "name": "ref",
+        "description": "the reference to resolve"
+      }
+    ],
+    "returns": "the LaTeX label (e.g., \"section:user-creation\")",
+    "throws": [
+      {
+        "exception": "InvalidDocTestRefException",
+        "description": "if the DocTest class is not found"
+      },
+      {
+        "exception": "InvalidAnchorException",
+        "description": "if the anchor is not found in the target DocTest"
+      }
+    ],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayAsciiChart": {
+    "description": "ASCII chart — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#generateLatex": {
+    "description": "Generates LaTeX index entries for all terms.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#heroImage": {
+    "description": "Formats a hero image reference (platform-specific markdown syntax).",
+    "params": [
+      {
+        "name": "altText",
+        "description": "the alt text for the image"
+      }
+    ],
+    "returns": "the formatted image reference",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#TableOfContents": {
+    "description": "Creates an empty table of contents builder.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getGitAuthor": {
+    "description": "Get git user name via `git config user.name`.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#processDocAnnotations": {
+    "description": "Inspects the test method for doc annotations and emits the corresponding render-machine calls. All five annotation types are optional and independent. They are always emitted in this fixed order regardless of the order they appear in source code: <ol>   <li>{@link DocSection} — section heading via {@code sayNextSection()}</li>   <li>{@link DocDescription} — narrative paragraphs via {@code say()}</li>   <li>{@link DocNote} — info callout boxes via {@code sayRaw()}</li>   <li>{@link DocWarning} — warning callout boxes via {@code sayRaw()}</li>   <li>{@link DocCode} — HTML-escaped {@code <pre><code>} blocks via {@code sayRaw()}</li> </ol>",
+    "params": [
+      {
+        "name": "method",
+        "description": "the test method (from TestInfo)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#saySpeakerNote": {
+    "description": "Renders speaker notes for slides (ignored by doc/blog render machines).",
+    "params": [
+      {
+        "name": "text",
+        "description": "the speaker notes text"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.evolution.GitHistoryReader#read": {
+    "description": "Returns up to {@code maxEntries} commits that touched the source file for the given class. Returns an empty list if git is unavailable or the file cannot be found in git history.",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class whose source file history to retrieve"
+      },
+      {
+        "name": "maxEntries",
+        "description": "maximum number of commits to return"
+      }
+    ],
+    "returns": "list of git entries, newest first",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#isWordCountValid": {
+    "description": "Enforces Nature word limits based on article type. - Letter: 3000 words max - Article: 5000 words max",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#frontMatter": {
+    "description": "Generates platform-specific front matter (YAML or JSON headers).",
+    "params": [
+      {
+        "name": "meta",
+        "description": "the document metadata"
+      }
+    ],
+    "returns": "the front matter string",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#footnoteMarker": {
+    "description": "Returns the platform's preferred footnote marker format.",
+    "params": [
+      {
+        "name": "index",
+        "description": "the footnote index (1-based)"
+      }
+    ],
+    "returns": "the formatted footnote marker (e.g., \"[^1]\" for Markdown, \"[1]\" for others)",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.WordCounter#skipBracedContent": {
+    "description": "Skips content within braces, returning the index after the closing brace.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#buildPandocCommand": {
+    "description": "Build the Pandoc command with appropriate engine selection.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayEvolutionTimeline": {
+    "description": "Derives the git commit history for the source file of the given class using {@code git log --follow} and renders it as a timeline table (commit, date, author, subject). Falls back gracefully with a note if git is unavailable. <p>Follows the same {@code ProcessBuilder} + try/catch + fallback pattern already used in {@code DocMetadata}.</p>",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class whose source file history to document"
+      },
+      {
+        "name": "maxEntries",
+        "description": "maximum number of commits to include (most recent first)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#generateLatex": {
+    "description": "Generates the LaTeX command for table of contents.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
   "io.github.seanchatmangpt.dtr.DtrTest#sayControlFlowGraph": {
     "description": "Renders a control flow graph via Java 26 Code Reflection (JEP 516). */",
     "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.DocTestRef#toString": {
+    "description": "Returns a human-readable string representation of this reference. <p><strong>Behavior:</strong></p> <ul>   <li>If {@code resolvedLabel} is present: returns the resolved label       (e.g., \"Section 3.2\", \"page 42\")</li>   <li>If {@code resolvedLabel} is empty: returns the unresolved form       (e.g., \"See UserApiDocTest#user-registration\")</li> </ul>",
+    "params": [],
+    "returns": "human-readable reference string",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#toString": {
+    "description": "Returns a human-readable text representation of the table of contents.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#sayCodeModel": {
+    "description": "Implements the previously-stub sayCodeModel(Method) using the Java 26 Code Reflection API. Renders an op-count table + IR excerpt when a code model is available; falls back to method signature rendering on older runtimes.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#platformName": {
+    "description": "Returns the platform name for output path organization.",
+    "params": [],
+    "returns": "the platform name (e.g., \"devto\", \"linkedin\", \"substack\")",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#compile": {
+    "description": "Compile a .tex file to PDF using available LaTeX compilers. Tries compilers in priority order. Returns early on first success. Logs warnings for each failure but does not throw exception if all fail.",
+    "params": [
+      {
+        "name": "texFile",
+        "description": "the .tex source file to compile"
+      }
+    ],
+    "returns": "true if compilation succeeded, false if all compilers unavailable",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#platformName": {
+    "description": "Returns the platform name for logging/organization.",
+    "params": [],
+    "returns": "the platform name (e.g., \"revealjs\", \"powerpoint\")",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#reset": {
+    "description": "Reset the singleton for testing purposes.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayContractVerification": {
+    "description": "Documents interface contract coverage across implementation classes. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayDocCoverage": {
+    "description": "Documentation coverage — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayTweetable": {
+    "description": "Renders a tweetable (≤280 chars) for social media queue.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to tweet (will be truncated to 280 chars)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#logDegradationWarnings": {
+    "description": "Log warnings about Pandoc's reduced fidelity.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#finishAndWriteOut": {
+    "description": "Finishes documentation generation and writes output to disk.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayDocCoverage": {
+    "description": "Renders a documentation coverage report for the given classes — which public methods were documented in this test vs. which were not. Coverage is tracked automatically as {@code say*} methods are called.",
+    "params": [
+      {
+        "name": "classes",
+        "description": "the classes whose public API to check for documentation coverage"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#escapeLatex": {
+    "description": "Escape special LaTeX characters to prevent syntax errors. Must handle: _ $ % &amp; # ^ ~ \\\\ { }",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeJson": {
+    "description": "Escapes special JSON characters in the given string.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the text to escape"
+      }
+    ],
+    "returns": "escaped text safe for JSON",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#getInstance": {
+    "description": "Returns the singleton instance of BibliographyManager.",
+    "params": [],
+    "returns": "the shared BibliographyManager instance",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.SocialQueueEntry#SocialQueueEntry": {
+    "description": "Create a new social queue entry with current timestamp.",
+    "params": [
+      {
+        "name": "platform",
+        "description": "the social platform"
+      },
+      {
+        "name": "content",
+        "description": "the post content"
+      },
+      {
+        "name": "url",
+        "description": "the target URL"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.DocTestRef#docTestClassName": {
+    "description": "Returns the simple class name of the target DocTest. <p>Useful for constructing the reference in unresolved form.</p>",
+    "params": [],
+    "returns": "the simple class name (e.g., \"UserApiDocTest\")",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#validateReferences": {
+    "description": "Validate all registered references against the index. Called before LaTeX compilation to ensure all referenced sections exist. Throws an exception on the first invalid reference found.",
+    "params": [],
+    "throws": [
+      {
+        "exception": "InvalidDocTestRefException",
+        "description": "if a DocTest class is not found"
+      },
+      {
+        "exception": "InvalidAnchorException",
+        "description": "if an anchor is not found"
+      }
+    ],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getDocumentClass": {
+    "description": "LaTeX document class (e.g., \"article\", \"report\", custom).",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#validatePdfOutput": {
+    "description": "Validate that PDF output file exists and is non-empty.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countCodeListings": {
+    "description": "Counts code listings (lstlisting environments).",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatAssertions": {
+    "description": "Format assertion results as a table (Check | Result columns).",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayAnnotationProfile": {
+    "description": "Documents all annotations on a class and its methods using reflection. <p>Blue ocean innovation: renders the complete annotation landscape of any class — class-level annotations and per-method annotations in a structured table. No manual listing, no drift — derived from the bytecode at test runtime.</p>",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class to inspect for annotations"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#generateRefCommand": {
+    "description": "Generate a LaTeX \\ref{} command for a resolved reference. The returned string is a complete LaTeX command that can be embedded in the document. It references the label that will be resolved during two-pass compilation.",
+    "params": [
+      {
+        "name": "ref",
+        "description": "the reference to generate a \\ref{} for"
+      }
+    ],
+    "returns": "LaTeX command like \"\\ref{section:user-creation}\"",
+    "throws": [
+      {
+        "exception": "InvalidDocTestRefException",
+        "description": "if the DocTest class is not found"
+      },
+      {
+        "exception": "InvalidAnchorException",
+        "description": "if the anchor is not found"
+      }
+    ],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#countWords": {
+    "description": "Counts words in document body (excluding preamble and metadata). Nature Letters have a 3000-word limit.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#finishAndWriteOut": {
+    "description": "Finalizes all contained render machines concurrently using virtual threads. <p>This is where virtual threads provide the most measurable performance benefit: file I/O is blocking. A LaTeX compilation can take several seconds. Running all finalizations in parallel means the total wall-clock time is the slowest single finalizer, not the sum of all.</p>",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayOpProfile": {
+    "description": "Renders a lightweight operation-count table for a method using the Java 26 Code Reflection API — same IR traversal as {@link #sayCodeModel(java.lang.reflect.Method)} but without the IR excerpt, for quick performance characterization.",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method to profile (should be annotated with {@code @CodeReflection})"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#clear": {
+    "description": "Clears all entries from this table of contents.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayBenchmark": {
+    "description": "Measures the given task with explicit warmup and measurement round counts.",
+    "params": [
+      {
+        "name": "label",
+        "description": "a human-readable label for the benchmark"
+      },
+      {
+        "name": "task",
+        "description": "the code to benchmark"
+      },
+      {
+        "name": "warmupRounds",
+        "description": "number of warmup iterations (discarded from results)"
+      },
+      {
+        "name": "measureRounds",
+        "description": "number of measured iterations"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderEntryLatex": {
+    "description": "Renders a single entry as LaTeX.",
+    "params": [
+      {
+        "name": "entry",
+        "description": "the BibTeX entry"
+      },
+      {
+        "name": "index",
+        "description": "the numeric index"
+      },
+      {
+        "name": "style",
+        "description": "the citation style"
+      }
+    ],
+    "returns": "formatted entry as LaTeX",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayHeroImage": {
+    "description": "Renders a hero image for blogs and slides (ignored by other formats).",
+    "params": [
+      {
+        "name": "altText",
+        "description": "the alt text for the image"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayCallGraph": {
+    "description": "Renders a call graph via Java 26 Code Reflection InvokeOp traversal. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayOpProfile": {
+    "description": "Renders an op-profile table via Java 26 Code Reflection. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayJavadoc": {
+    "description": "Renders the extracted Javadoc for a method: description, parameter table, return value, throws, and {@code @since} — sourced from {@code docs/meta/javadoc.json} (generated by the dtr-javadoc Rust binary). <p>If the JSON index is not present or the method has no entry, this is a no-op.</p>",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method whose Javadoc to render (must not be null)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#CrossReferenceIndex": {
+    "description": "Private constructor for singleton pattern.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#clear": {
+    "description": "Clear all internal state, removing all parsed section labels and anchor mappings. Called by CrossReferenceIndex.clear() to ensure a full reset.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatTableSlide": {
+    "description": "Formats a table slide.",
+    "params": [
+      {
+        "name": "data",
+        "description": "the table data"
+      }
+    ],
+    "returns": "the formatted table slide",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayUnorderedList": {
+    "description": "Renders an unordered (bullet) list.",
+    "params": [
+      {
+        "name": "items",
+        "description": "List of strings to render as bullet points."
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderLatexBibliography": {
+    "description": "Generates a complete LaTeX bibliography block with entries.",
+    "params": [
+      {
+        "name": "entries",
+        "description": "the bibliography entries"
+      },
+      {
+        "name": "style",
+        "description": "the citation style"
+      }
+    ],
+    "returns": "formatted LaTeX thebibliography environment",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.javadoc.JavadocEntry#optReturns": {
+    "description": "Returns the {@code @return} value as an Optional.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.UnknownCitationException#UnknownCitationException": {
+    "description": "Creates an exception with a custom message.",
+    "params": [
+      {
+        "name": "message",
+        "description": "detailed error message"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.javadoc.JavadocEntry#optSince": {
+    "description": "Returns the {@code @since} value as an Optional.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#fromBuild": {
+    "description": "Create a DocMetadata instance from the current build/runtime environment. Reads git metadata via git commands, system properties, and Java runtime information. Note: This is called once at JVM startup (class initialization). Do NOT call this repeatedly; use getInstance() instead.",
+    "params": [],
+    "throws": [],
+    "deprecated": "Use getInstance() for the cached global instance",
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#RenderMachineImpl": {
+    "description": "Creates a new RenderMachineImpl with empty documentation.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayControlFlowGraph": {
+    "description": "Documents the control flow graph of a {@code @CodeReflection}-annotated method using the Java 26 Code Reflection API (JEP 516). Renders a Mermaid {@code flowchart TD} diagram where each basic block is a node and branch ops produce directed edges. Falls back to a text note on older runtimes.",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method whose CFG to render (should be annotated with               {@code @java.lang.reflect.code.CodeReflection})"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.config.RenderConfig#isFormatEnabled": {
+    "description": "Check if a specific output format is enabled.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayEnvProfile": {
+    "description": "Environment profile — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.junit5.DtrContext#DtrContext": {
+    "description": "Creates a new DtrContext.",
+    "params": [
+      {
+        "name": "renderMachine",
+        "description": "the render machine for documentation output"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeBibValue": {
+    "description": "Escapes special BibTeX characters in the given string.",
+    "params": [
+      {
+        "name": "value",
+        "description": "the raw value to escape"
+      }
+    ],
+    "returns": "escaped value safe for BibTeX",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer#extractBlocks": {
+    "description": "Extracts blocks with their ops for CFG generation. Returns a list of block descriptions, each containing op names.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayAnnotationProfile": {
+    "description": "Documents annotation profile — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.junit5.DtrExtension#createRenderMachine": {
+    "description": "Creates a new RenderMachine instance. Override to customize.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countTables": {
+    "description": "Counts table and figure environments.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayFootnote": {
+    "description": "Renders a footnote with the given text.",
+    "params": [
+      {
+        "name": "text",
+        "description": "The footnote content."
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.javadoc.JavadocIndex#lookup": {
+    "description": "Looks up the Javadoc entry for the given method.",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method to look up"
+      }
+    ],
+    "returns": "the Javadoc entry, or empty if not found",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayMermaid": {
+    "description": "Renders a raw Mermaid diagram as a fenced {@code mermaid} code block. Mermaid renders natively on GitHub, GitLab, and Obsidian.",
+    "params": [
+      {
+        "name": "diagramDsl",
+        "description": "the Mermaid DSL string (e.g., \"flowchart TD\\n    A --> B\")"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayClassDiagram": {
+    "description": "Auto-generates a Mermaid classDiagram from reflection. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.DocTestRef#of": {
+    "description": "Creates a new DocTestRef with the given DocTest class and anchor. <p>The resolved label starts as empty and is populated after LaTeX compilation.</p>",
+    "params": [
+      {
+        "name": "docTestClass",
+        "description": "the target DocTest class (must not be null)"
+      },
+      {
+        "name": "anchor",
+        "description": "the section/anchor name (e.g., \"user-registration\")"
+      }
+    ],
+    "returns": "a new DocTestRef with empty resolvedLabel",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#finishDocTest": {
+    "description": "JUnit 5 {@code @AfterAll} lifecycle hook that flushes and finalises the shared render machine after all test methods in the class have run. Calls {@code finishAndWriteOut()} to close output streams and write the final document files, then nulls the reference so the next test class starts fresh.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.diagram.ControlFlowGraphBuilder#build": {
+    "description": "Builds a Mermaid flowchart DSL string from the code model of the given method. Returns an empty string if no code model is available.",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method (should be annotated with {@code @CodeReflection})"
+      }
+    ],
+    "returns": "Mermaid {@code flowchart TD} DSL, or empty string on failure",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#isPdfEngineAvailable": {
+    "description": "Check if a PDF engine (xelatex, pdflatex) is available.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#formatCallToAction": {
+    "description": "Formats a call-to-action link for the article.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the CTA button text"
+      },
+      {
+        "name": "url",
+        "description": "the target URL"
+      }
+    ],
+    "returns": "the formatted CTA (as Markdown link or platform-specific format)",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayClassHierarchy": {
+    "description": "Documents class hierarchy — no-op in base class. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayCodeModel": {
+    "description": "Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations. On Java 26 and earlier, renders the method signature extracted via reflection.</p>",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method to introspect and document"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getGitBranch": {
+    "description": "Get current git branch via `git rev-parse --abbrev-ref HEAD`.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayReflectiveDiff": {
+    "description": "Compares two objects field-by-field using reflection and renders a diff table.",
+    "params": [
+      {
+        "name": "before",
+        "description": "the object representing the \"before\" state"
+      },
+      {
+        "name": "after",
+        "description": "the object representing the \"after\" state (must be same type)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayDocCoverage": {
+    "description": "Renders a documentation coverage report for the given classes. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getInstance": {
+    "description": "Get the globally cached DocMetadata instance. Thread-safe and thread-confined (initialized at class load time).",
+    "params": [],
+    "returns": "the cached metadata for this JVM instance",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCallToAction": {
+    "description": "Renders a call-to-action link for blogs.",
+    "params": [
+      {
+        "name": "url",
+        "description": "the URL for the CTA button/link"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayRaw": {
+    "description": "Injects raw content directly into the documentation output. Use this for custom markdown or other content that bypasses normal formatting.",
+    "params": [
+      {
+        "name": "rawMarkdown",
+        "description": "Raw content to inject (e.g., markdown tables, code blocks, or HTML)."
+      }
+    ],
     "throws": [],
     "see": []
   },
@@ -2355,58 +2164,25 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.render.RenderMachineFactory#createRenderMachine": {
-    "description": "Create a render machine for single format tests (simpler variant).",
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.RenderMachineLatex#RenderMachineLatex": {
+    "description": "Creates a new LaTeX render machine with the specified template and metadata.",
     "params": [
       {
-        "name": "testClassName",
-        "description": "the test class name"
-      }
-    ],
-    "returns": "configured render machine",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayRaw": {
-    "description": "Injects raw content directly into the documentation output. Use this for custom markdown or other content that bypasses normal formatting.",
-    "params": [
-      {
-        "name": "rawMarkdown",
-        "description": "Raw content to inject (e.g., markdown tables, code blocks, or HTML)."
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayBenchmark": {
-    "description": "Benchmarks with explicit warmup/measure rounds. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#buildIndex": {
-    "description": "Build the cross-reference index from .tex files (first pass). Scans all .tex files to extract section-to-label mappings before resolving cross-references. This is typically called during a pre-compilation step.",
-    "params": [
-      {
-        "name": "texFiles",
-        "description": "list of .tex file paths to scan"
+        "name": "template",
+        "description": "the LaTeX template to use for formatting (e.g., ArXivTemplate)"
       },
       {
-        "name": "docTestClass",
-        "description": "the DocTest class that generated these files"
+        "name": "metadata",
+        "description": "the document metadata (title, author, date, keywords)"
       }
     ],
-    "throws": [
-      {
-        "exception": "Exception",
-        "description": "if files cannot be read"
-      }
-    ],
+    "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayAsciiChart": {
-    "description": "ASCII chart — no-op in base class. */",
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#isCompiled": {
+    "description": "Check if the index has been compiled.",
     "params": [],
+    "returns": "true if buildIndex has been called successfully",
     "throws": [],
     "see": []
   },
@@ -2421,136 +2197,16 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayClassDiagram": {
-    "description": "Auto-generates a Mermaid {@code classDiagram} from the given classes using reflection ({@link Class#getSuperclass()}, {@link Class#getInterfaces()}, {@link Class#getDeclaredMethods()}). Inheritance and implementation relationships are rendered as directed edges.",
-    "params": [
-      {
-        "name": "classes",
-        "description": "the classes to include in the diagram"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.junit5.DtrContext#sayDocCoverage": {
-    "description": "Renders a documentation coverage report for the given classes, using the set of method names tracked during this test via say* calls.",
-    "params": [
-      {
-        "name": "classes",
-        "description": "the classes whose public API to check for coverage"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getInstance": {
-    "description": "Get the singleton instance of CrossReferenceIndex.",
-    "params": [],
-    "returns": "the global CrossReferenceIndex instance",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#saySpeakerNote": {
-    "description": "Renders speaker notes for slides (ignored by doc/blog render machines).",
-    "params": [
-      {
-        "name": "text",
-        "description": "the speaker notes text"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#getCauses": {
-    "description": "All exceptions from failing render machines. */",
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#captureSystemProperties": {
+    "description": "Capture relevant system properties into a map for serialization.",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#dispatchToAll": {
-    "description": "Dispatches an action to all contained render machines concurrently using structured concurrency. <p>Java 25 Enhancement (JEP 492 - Structured Concurrency):</p> <ol>   <li>Creates a {@link StructuredTaskScope} scope</li>   <li>Forks one task per machine — each task calls the action on its machine via a virtual thread</li>   <li>Joins when all tasks complete (blocks until all finish or an exception is thrown)</li>   <li>Propagates exceptions with full structured context</li> </ol> <p>This replaces the previous manual future-waiting pattern with JVM-native semantics. StructuredTaskScope ensures:</p> <ul>   <li><strong>No error swallowing:</strong> If any renderer fails, the failure is immediate</li>   <li><strong>Automatic cleanup:</strong> All tasks are guaranteed to complete before method returns</li>   <li><strong>Structured lifetime:</strong> Try-with-resources ensures proper scope closure</li>   <li><strong>Zero boilerplate:</strong> Simple, declarative concurrency patterns</li> </ul>",
-    "params": [
-      {
-        "name": "action",
-        "description": "the operation to invoke on each render machine"
-      }
-    ],
-    "throws": [
-      {
-        "exception": "MultiRenderException",
-        "description": "if any machine fails (wraps first exception)"
-      }
-    ],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderMarkdownInline": {
-    "description": "Renders a single citation in markdown inline format.",
-    "params": [
-      {
-        "name": "key",
-        "description": "the citation key"
-      }
-    ],
-    "returns": "formatted citation like \"[key]\"",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#sayJavaCode": {
-    "description": "Add a Java code example to the documentation. Useful for showing the test code that generates the HTTP requests/responses.",
-    "params": [
-      {
-        "name": "javaCode",
-        "description": "the Java code to include (as a string)"
-      },
-      {
-        "name": "description",
-        "description": "optional description of what the code does"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#fromBuild": {
-    "description": "Create a DocMetadata instance from the current build/runtime environment. Reads git metadata via git commands, system properties, and Java runtime information. Note: This is called once at JVM startup (class initialization). Do NOT call this repeatedly; use getInstance() instead.",
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getReferences": {
+    "description": "Get all registered references. Returns an unmodifiable copy of the current references list.",
     "params": [],
-    "throws": [],
-    "deprecated": "Use getInstance() for the cached global instance",
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#formatWarning": {
-    "description": "Format a warning callout box (colored background, icon, etc.).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#getAllAnchors": {
-    "description": "Get all anchors registered in the index.",
-    "params": [],
-    "returns": "map of anchor -> label",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCallToAction": {
-    "description": "Renders a call-to-action link for blogs.",
-    "params": [
-      {
-        "name": "url",
-        "description": "the URL for the CTA button/link"
-      }
-    ],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#isCompiled": {
-    "description": "Check if the index has been compiled.",
-    "params": [],
-    "returns": "true if buildIndex has been called successfully",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#toString": {
-    "description": "Returns a human-readable text representation of the table of contents.",
-    "params": [],
+    "returns": "immutable list of all registered references",
     "throws": [],
     "see": []
   },
@@ -2574,61 +2230,402 @@
     ],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#getTerms": {
-    "description": "Returns all indexed terms in alphabetical order with their page numbers.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayEvolutionTimeline": {
+    "description": "Git evolution timeline — no-op in base class. */",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#saySpeakerNote": {
-    "description": "Renders speaker notes for slides (ignored by doc/blog render machines).",
+  "io.github.seanchatmangpt.dtr.render.LazyValue#get": {
+    "description": "Get the cached value, computing it once if needed (thread-safe). After the first call, subsequent accesses return the cached value with no allocation overhead. The JIT compiler can inline this after warm-up. If the initializer returns {@code null} the result is still cached so the initializer is never called more than once.",
+    "params": [],
+    "returns": "the cached value (may be {@code null} if the initializer returned null)",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#buildIndex": {
+    "description": "Build the cross-reference index from .tex files (first pass). Scans all .tex files to extract section-to-label mappings before resolving cross-references. This is typically called during a pre-compilation step.",
+    "params": [
+      {
+        "name": "texFiles",
+        "description": "list of .tex file paths to scan"
+      },
+      {
+        "name": "docTestClass",
+        "description": "the DocTest class that generated these files"
+      }
+    ],
+    "throws": [
+      {
+        "exception": "Exception",
+        "description": "if files cannot be read"
+      }
+    ],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#latexCommand": {
+    "description": "LaTeX section command for this entry.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#size": {
+    "description": "Returns the number of entries in the table of contents.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getAllAnchors": {
+    "description": "Get all anchors registered in the index.",
+    "params": [],
+    "returns": "immutable map of anchor -> label",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayAsciiChart": {
+    "description": "Renders an inline ASCII horizontal bar chart for numeric data. Bars are drawn with Unicode block characters ({@code ████}) normalized to the maximum value. No external dependencies — pure Java string math.",
+    "params": [
+      {
+        "name": "label",
+        "description": "the chart title"
+      },
+      {
+        "name": "values",
+        "description": "the numeric values (one bar per value)"
+      },
+      {
+        "name": "xLabels",
+        "description": "labels for each bar (must have the same length as {@code values})"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayException": {
+    "description": "Documents an exception chain in a structured table. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#clear": {
+    "description": "Clears all registered citations. Useful for resetting state between test suites.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getResolver": {
+    "description": "Get the underlying ReferenceResolver for advanced operations.",
+    "params": [],
+    "returns": "the ReferenceResolver instance",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXEntry#getField": {
+    "description": "Retrieves a field value by name (case-insensitive).",
+    "params": [
+      {
+        "name": "fieldName",
+        "description": "the field to retrieve"
+      }
+    ],
+    "returns": "the field value, or empty string if not present",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.util.StringEscapeUtils#escapeLaTeX": {
+    "description": "Escapes special LaTeX characters in the given string.",
     "params": [
       {
         "name": "text",
-        "description": "the speaker notes text"
+        "description": "the text to escape"
       }
     ],
+    "returns": "escaped text safe for LaTeX",
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.DtrTest#sayOpProfile": {
-    "description": "Renders an op-profile table via Java 26 Code Reflection. */",
+  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#getCauses": {
+    "description": "All exceptions from failing render machines. */",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getBeginDocument": {
-    "description": "Text to insert after \\\\begin{document}.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayMermaid": {
-    "description": "Raw Mermaid diagram — no-op in base class. */",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.latex.NatureTemplate#isAbstractValid": {
-    "description": "Validates that abstract is within 200-word limit. Nature requires abstracts to be self-contained and ≤200 words.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCallSite": {
-    "description": "Documents the current call site using {@link StackWalker}. <p>Blue ocean innovation: the documentation knows exactly where it was written. Every section generated by this call carries provenance — class, method, line number — derived from the live JVM stack at the moment of invocation.</p> <p>Uses {@code StackWalker.getInstance(RETAIN_CLASS_REFERENCE)} to walk the call stack and find the first frame outside of DTR's own machinery.</p>",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayAssertions": {
-    "description": "Renders assertion results in a table format with Check and Result columns.",
+  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#formatNoteSlide": {
+    "description": "Formats a note/callout slide.",
     "params": [
       {
-        "name": "assertions",
-        "description": "A map where keys are check descriptions and values are results."
+        "name": "text",
+        "description": "the note text"
+      },
+      {
+        "name": "type",
+        "description": "the note type (\"note\", \"warning\", etc.)"
       }
     ],
+    "returns": "the formatted note slide",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayTldr": {
+    "description": "Renders a TLDR (too long; didn't read) summary for blogs.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the summary text"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#IndexBuilder": {
+    "description": "Creates an empty index builder.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.CompilerStrategy#getName": {
+    "description": "Get a human-readable name for this compiler strategy.",
+    "params": [],
+    "returns": "strategy name (e.g., \"latexmk\", \"Pandoc\")",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.ReferenceResolver#getLabelsForClass": {
+    "description": "Get all registered section labels for a DocTest class.",
+    "params": [
+      {
+        "name": "docTestClass",
+        "description": "the DocTest class"
+      }
+    ],
+    "returns": "map of anchor -> label",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#getInstance": {
+    "description": "Get the singleton instance of CrossReferenceIndex.",
+    "params": [],
+    "returns": "the global CrossReferenceIndex instance",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayWarning": {
+    "description": "Renders a warning callout box (GitHub-style [!WARNING] alert).",
+    "params": [
+      {
+        "name": "message",
+        "description": "The warning message."
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderACMAuthorYear": {
+    "description": "Renders a single citation in ACM author-year style.",
+    "params": [
+      {
+        "name": "entry",
+        "description": "the BibTeX entry to render"
+      }
+    ],
+    "returns": "formatted citation like \"(Smith 2026)\"",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayCodeModel": {
+    "description": "Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations — control flow, method calls, field accesses, etc. Renders a detailed breakdown of operation types and their counts.</p> <p>On Java 26 and earlier, gracefully falls back to rendering the method signature (parameters with types, return type) extracted via reflection.</p> <p>Example:</p> <pre>{@code sayCodeModel(SayEvent.class.getMethod(\"toString\")); // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.) // Java 26-: Renders String toString() signature only }</pre>",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method to introspect and document (must not be null)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getHostname": {
+    "description": "Get hostname via system property or `hostname` command.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.junit5.DtrContext#getRenderMachine": {
+    "description": "Gets the underlying RenderMachine.",
+    "params": [],
+    "returns": "the render machine",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.assembly.TableOfContents#getEntries": {
+    "description": "Returns all table of contents entries in hierarchical order.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexCompiler#isBinaryAvailable": {
+    "description": "Check if a binary is available in PATH. Java 26 Enhancement (JEP 530 - Primitive Types in Patterns): Uses primitive pattern matching on int exit codes for zero-success semantics.",
+    "params": [
+      {
+        "name": "binary",
+        "description": "name of binary to check"
+      }
+    ],
+    "returns": "true if binary is available and returns exit code 0",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.PandocStrategy#selectPdfEngine": {
+    "description": "Select the best available PDF engine.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCodeModel": {
+    "description": "Documents a method's structure using reflection/CodeReflection API. <p>Default no-op implementation — override in render machines that support method introspection (e.g., {@link RenderMachineImpl}).</p>",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method to introspect and document"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderMarkdownInline": {
+    "description": "Renders a single citation in markdown inline format.",
+    "params": [
+      {
+        "name": "key",
+        "description": "the citation key"
+      }
+    ],
+    "returns": "formatted citation like \"[key]\"",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.latex.LatexTemplate#getPreamble": {
+    "description": "Full preamble including \\\\documentclass, \\\\usepackage, \\\\title, etc.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.slides.SlideTemplate#fileExtension": {
+    "description": "Returns the file extension for this template's output format.",
+    "params": [],
+    "returns": "the file extension (e.g., \"html\", \"pptx\", \"key\")",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.diagram.CodeModelAnalyzer#analyze": {
+    "description": "Analyzes a method using the Java 26 Code Reflection API, with fallback to standard reflection on older runtimes or un-annotated methods.",
+    "params": [
+      {
+        "name": "method",
+        "description": "the method to analyze (should be annotated with {@code @CodeReflection})"
+      },
+      {
+        "name": "excerptLimit",
+        "description": "maximum number of op descriptions to include in the IR excerpt"
+      }
+    ],
+    "returns": "analysis result; never null",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.config.RenderConfig#getLatexTemplate": {
+    "description": "Get the selected LaTeX template name.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayReflectiveDiff": {
+    "description": "Compares two objects field-by-field using reflection and renders a diff table. <p>Blue ocean innovation: shows exactly what changed between two states of an object — before/after, v1/v2, request/response. Uses {@link java.lang.reflect.Field} with {@code setAccessible(true)} to compare every declared field. Documents \"what changed\" automatically.</p>",
+    "params": [
+      {
+        "name": "before",
+        "description": "the object representing the \"before\" state"
+      },
+      {
+        "name": "after",
+        "description": "the object representing the \"after\" state (must be same type as before)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.coverage.DocCoverageAnalyzer#analyze": {
+    "description": "Produces a coverage report for the given class.",
+    "params": [
+      {
+        "name": "clazz",
+        "description": "the class whose public API to check"
+      },
+      {
+        "name": "documentedSigs",
+        "description": "set of method signatures that were documented (caller-tracked)"
+      }
+    ],
+    "returns": "list of coverage rows, one per public method",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.slides.SlideRenderMachine#SlideRenderMachine": {
+    "description": "Create a slide render machine with the given template.",
+    "params": [
+      {
+        "name": "template",
+        "description": "the slide template (Reveal.js, Marp, etc.)"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.MultiRenderMachine#dispatchToAll": {
+    "description": "Dispatches an action to all contained render machines concurrently using structured concurrency. <p>Java 26 Enhancement (JEP 492 - Structured Concurrency):</p> <ol>   <li>Creates a {@link StructuredTaskScope} scope</li>   <li>Forks one task per machine — each task calls the action on its machine via a virtual thread</li>   <li>Joins when all tasks complete (blocks until all finish or an exception is thrown)</li>   <li>Propagates exceptions with full structured context</li> </ol> <p>This replaces the previous manual future-waiting pattern with JVM-native semantics. StructuredTaskScope ensures:</p> <ul>   <li><strong>No error swallowing:</strong> If any renderer fails, the failure is immediate</li>   <li><strong>Automatic cleanup:</strong> All tasks are guaranteed to complete before method returns</li>   <li><strong>Structured lifetime:</strong> Try-with-resources ensures proper scope closure</li>   <li><strong>Zero boilerplate:</strong> Simple, declarative concurrency patterns</li> </ul>",
+    "params": [
+      {
+        "name": "action",
+        "description": "the operation to invoke on each render machine"
+      }
+    ],
+    "throws": [
+      {
+        "exception": "MultiRenderException",
+        "description": "if any machine fails (wraps first exception)"
+      }
+    ],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayContractVerification": {
+    "description": "Documents interface contract coverage across implementation classes. For each public method in the contract interface, checks whether each implementation provides a concrete override (✅ direct), inherits it (↗ inherited), or is missing it entirely (❌ MISSING). Uses only standard Java reflection. <p>If the contract is a sealed interface, permitted subclasses are automatically detected so the user does not need to enumerate them.</p>",
+    "params": [
+      {
+        "name": "contract",
+        "description": "the interface whose methods to verify"
+      },
+      {
+        "name": "implementations",
+        "description": "zero or more implementation classes to check"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayCallSite": {
+    "description": "Documents the current call site using {@link StackWalker}. Renders the calling class, method name, and line number as provenance metadata.",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.render.RenderMachineFactory#createRenderMachine": {
+    "description": "Create a render machine for single format tests (simpler variant).",
+    "params": [
+      {
+        "name": "testClassName",
+        "description": "the test class name"
+      }
+    ],
+    "returns": "configured render machine",
     "throws": [],
     "see": []
   },
@@ -2643,108 +2640,111 @@
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.assembly.DocumentAssembler#countCitations": {
-    "description": "Counts citation commands (\\cite{...}).",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.assembly.IndexBuilder#size": {
-    "description": "Returns the number of unique terms in the index.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#extractFirstAuthor": {
-    "description": "Extracts the first author from an author field.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#setFileName": {
+    "description": "Sets the output filename (typically the test class name).",
     "params": [
       {
-        "name": "authorField",
-        "description": "the author field (may contain \"and\" separators)"
-      }
-    ],
-    "returns": "the first author surname",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayNote": {
-    "description": "Renders an info callout box (GitHub-style [!NOTE] alert).",
-    "params": [
-      {
-        "name": "message",
-        "description": "The info message."
+        "name": "fileName",
+        "description": "the filename for the generated documentation"
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#sayDocCoverage": {
-    "description": "Called by DtrContext with pre-computed coverage rows. */",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayCallSite": {
+    "description": "Documents current call site — no-op in base class. */",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.render.blog.SocialQueueWriter#SocialQueue": {
-    "description": "Create a new social queue with current timestamp.",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayJson": {
+    "description": "Serializes an object to JSON and renders it in a code block.",
     "params": [
       {
-        "name": "docTest",
-        "description": "the doc test name"
+        "name": "object",
+        "description": "The object to serialize (will be rendered as pretty-printed JSON)."
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#convertTextToId": {
+    "description": "Converts a section heading to a lowercase anchor ID suitable for use in markdown table-of-contents links. Strips all non-alphanumeric characters.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the heading text to convert"
+      }
+    ],
+    "returns": "a lowercase alphanumeric anchor ID",
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex#generateLatexRef": {
+    "description": "Generate a LaTeX \\ref{} command for a cross-reference.",
+    "params": [
+      {
+        "name": "ref",
+        "description": "the reference to generate a command for"
+      }
+    ],
+    "returns": "LaTeX command like \"\\ref{section:user-creation}\"",
+    "throws": [
+      {
+        "exception": "InvalidDocTestRefException",
+        "description": "if the DocTest class is not found"
       },
       {
-        "name": "entries",
-        "description": "the queue entries"
+        "exception": "InvalidAnchorException",
+        "description": "if the anchor is not found"
       }
     ],
-    "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayReflectiveDiff": {
-    "description": "Documents reflective diff — no-op in base class. */",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachine#sayJavadoc": {
+    "description": "Javadoc documentation from dtr-javadoc index — no-op in base class. */",
     "params": [],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#clear": {
-    "description": "Clears all registered citations. Useful for resetting state between test suites.",
-    "params": [],
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.bibliography.BibTeXEntry#toString": {
-    "description": "Renders the entry in standard BibTeX format.",
-    "params": [],
-    "returns": "a formatted BibTeX entry string",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayAnnotationProfile": {
-    "description": "Documents all annotations on a class and its methods using reflection. <p>Blue ocean innovation: renders the complete annotation landscape of any class — class-level annotations and per-method annotations in a structured table. No manual listing, no drift — derived from the bytecode at test runtime.</p>",
+  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands#sayTable": {
+    "description": "Renders a markdown table from a 2D string array. The first row is treated as table headers.",
     "params": [
       {
-        "name": "clazz",
-        "description": "the class to inspect for annotations"
+        "name": "data",
+        "description": "A 2D array where each row is a list of cells. First row becomes TH."
       }
     ],
     "throws": [],
     "see": []
   },
-  "io.github.seanchatmangpt.dtr.render.blog.BlogTemplate#heroImage": {
-    "description": "Formats a hero image reference (platform-specific markdown syntax).",
-    "params": [
-      {
-        "name": "altText",
-        "description": "the alt text for the image"
-      }
-    ],
-    "returns": "the formatted image reference",
-    "throws": [],
-    "see": []
-  },
-  "io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl#RenderMachineImpl": {
-    "description": "Creates a new RenderMachineImpl with empty documentation.",
+  "io.github.seanchatmangpt.dtr.metadata.DocMetadata#getGitCommit": {
+    "description": "Get current git commit hash via `git rev-parse HEAD`.",
     "params": [],
     "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayRecordComponents": {
+    "description": "Renders a Java record's component schema table. */",
+    "params": [],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.bibliography.BibliographyManager#getCitation": {
+    "description": "Retrieves the formatted citation for the given key.",
+    "params": [
+      {
+        "name": "key",
+        "description": "the citation identifier"
+      }
+    ],
+    "returns": "the stored citation string, or null if key not found",
+    "throws": [
+      {
+        "exception": "IllegalArgumentException",
+        "description": "if key is null or empty"
+      }
+    ],
     "see": []
   }
 }

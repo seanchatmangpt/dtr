@@ -12,7 +12,7 @@ Do not use `./mvnw` — the Maven wrapper downloads Maven 3, which is incompatib
 
 ---
 
-## 1. Install Java 25
+## 1. Install Java 26
 
 ### Using SDKMAN (recommended)
 
@@ -32,7 +32,7 @@ sudo apt-get install openjdk-25-jdk
 ### Set JAVA_HOME
 
 ```bash
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
 ```
 
@@ -102,7 +102,7 @@ mvnd --version
 # Expected: mvnd 2.x.x / Maven 4.0.0-rc-5
 
 echo $JAVA_HOME
-# Expected: /usr/lib/jvm/java-25-openjdk-amd64
+# Expected: /usr/lib/jvm/java-26-openjdk-amd64
 ```
 
 ---
@@ -171,7 +171,7 @@ mvnd clean test
 ### IntelliJ IDEA
 
 1. Open the root `pom.xml` as a Maven project.
-2. In **File > Project Structure > SDK**, select Java 25.
+2. In **File > Project Structure > SDK**, select Java 26.
 3. In **Build > Compiler**, set "Target bytecode version" to 25.
 4. In run configurations, add `--enable-preview` to **VM Options**.
 
@@ -180,7 +180,7 @@ mvnd clean test
 1. Install the "Extension Pack for Java".
 2. Open the project root folder.
 3. The `.mvn/maven.config` file provides `--enable-preview` to the compiler automatically when building through Maven tasks.
-4. In `.vscode/settings.json`, set `"java.configuration.runtimes"` to point to your Java 25 installation.
+4. In `.vscode/settings.json`, set `"java.configuration.runtimes"` to point to your Java 26 installation.
 
 ---
 
@@ -189,7 +189,7 @@ mvnd clean test
 mvnd stores settings in `~/.m2/mvnd.properties`. Recommended configuration for DTR development:
 
 ```properties
-mvnd.javaHome=/usr/lib/jvm/java-25-openjdk-amd64
+mvnd.javaHome=/usr/lib/jvm/java-26-openjdk-amd64
 mvnd.jvmArgs=-Xmx2g --enable-preview -Dfile.encoding=UTF-8
 mvnd.minHeapSize=256m
 mvnd.maxHeapSize=2g

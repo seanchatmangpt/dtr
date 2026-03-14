@@ -185,20 +185,20 @@ mvnd --version
 
 **Fix:** Ensure `.mvn/maven.config` contains `--enable-preview`.
 
-### 3. Java 25 and Below No Longer Supported
+### 3. Java 26 and Below No Longer Supported
 
 **Status:** Enforced by maven-enforcer-plugin.
 
 ```xml
 <requireJavaVersion>
-  <version>[25,)</version>
+  <version>[26,)</version>
   <message>Java 26 or higher is required.</message>
 </requireJavaVersion>
 ```
 
-**Build will fail** if JAVA_HOME points to Java 25 or lower.
+**Build will fail** if JAVA_HOME points to Java 26 or lower.
 
-**For Java 25 Projects:**
+**For Java 26 Projects:**
 Continue using DTR 2.4.0.
 
 ---

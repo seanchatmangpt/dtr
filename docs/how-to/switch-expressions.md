@@ -1,6 +1,6 @@
 # How-to: Switch Expressions for Concise Type Handling
 
-Use Java 25 switch expressions to replace `if/else` chains with exhaustive, type-safe pattern matching. Switch expressions return values, enable guarded patterns, and force completeness at compile time.
+Use Java 26 switch expressions to replace `if/else` chains with exhaustive, type-safe pattern matching. Switch expressions return values, enable guarded patterns, and force completeness at compile time.
 
 **DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 

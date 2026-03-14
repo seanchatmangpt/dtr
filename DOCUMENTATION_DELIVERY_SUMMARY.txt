@@ -39,7 +39,7 @@ Content:
 ✅ Core components explanation
 ✅ Request/response pipeline
 ✅ Documentation generation flow
-✅ Java 25 features usage
+✅ Java 26 features usage
 ✅ Design patterns employed
 ✅ Extension points for custom implementations
 
@@ -85,7 +85,7 @@ Files Created:
      ✅ What's New (6 major features)
      ✅ Breaking Changes (3 documented)
      ✅ Sealed Classes Redesign explanation
-     ✅ Java 25 Features (with code examples)
+     ✅ Java 26 Features (with code examples)
      ✅ Performance improvements & benchmarks
      ✅ Dependency updates (21 dependencies)
      ✅ Known Issues & workarounds
@@ -206,7 +206,7 @@ PROJECT STATUS: READY FOR MAVEN CENTRAL RELEASE
 ================================================================================
 
 All requirements met:
-✅ Source code: Java 25 compatible, all modules compile
+✅ Source code: Java 26 compatible, all modules compile
 ✅ Maven Central config: Release repository, GPG-ready
 ✅ Version: 2.5.0 (release, not snapshot)
 ✅ License: Apache 2.0 headers on all sources

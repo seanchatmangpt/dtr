@@ -40,9 +40,9 @@ Calling `sayCallSite()` now — the output below is the live call stack:
 
 | Check | Result |
 | --- | --- |
+| sayCallSite() does not throw | `✓ PASS` |
 | StackWalker skips DTR internals | `✓ PASS` |
 | No manual labeling required | `✓ PASS` |
-| sayCallSite() does not throw | `✓ PASS` |
 
 ## Innovation 2: Annotation Profile from Bytecode
 

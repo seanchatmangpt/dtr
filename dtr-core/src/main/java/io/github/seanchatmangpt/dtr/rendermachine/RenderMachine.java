@@ -20,7 +20,7 @@ package io.github.seanchatmangpt.dtr.rendermachine;
  *
  * <p>Supports multiple output formats: Markdown, Blog posts, Slides, LaTeX, etc.</p>
  *
- * <p>Java 25 Design Note:</p>
+ * <p>Java 26 Design Note:</p>
  * <p>While sealed classes (JEP 409) would normally enforce a closed type hierarchy for
  * static analysis and devirtualization, this class remains open due to Java's constraint
  * that sealed classes in non-modular projects cannot have permitted subclasses in

@@ -113,7 +113,7 @@ Renders the full class hierarchy (superclass chain + interfaces) as a tree.
 
 ### `sayCodeModel`
 
-Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations. On Java 25 and earlier, renders the method signature extracted via reflection.</p>
+Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations. On Java 26 and earlier, renders the method signature extracted via reflection.</p>
 
 | Parameter | Description |
 | --- | --- |

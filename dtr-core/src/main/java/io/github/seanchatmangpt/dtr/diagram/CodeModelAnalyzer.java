@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * and IR excerpts for documentation.</p>
  *
  * <p>Falls back gracefully to method signature introspection when no code model is
- * available (method not annotated with {@code @CodeReflection}, or runtime &lt; Java 25).</p>
+ * available (method not annotated with {@code @CodeReflection}, or runtime &lt; Java 26).</p>
  */
 @SuppressWarnings("preview")
 public final class CodeModelAnalyzer {
@@ -54,7 +54,7 @@ public final class CodeModelAnalyzer {
         String sig = buildSignature(method);
 
         try {
-            // Java 25/26 preview: Method.codeModel() returns Optional<CoreOps.FuncOp>
+            // Java 26/26 preview: Method.codeModel() returns Optional<CoreOps.FuncOp>
             var codeModelOpt = (java.util.Optional<?>) method.getClass()
                     .getMethod("codeModel")
                     .invoke(method);

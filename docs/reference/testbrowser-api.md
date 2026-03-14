@@ -115,7 +115,7 @@ class MyApiDocTest {
     void introduction(DtrContext ctx) {
         ctx.sayNextSection("Introduction");
         ctx.say("This document covers the v2.6.0 API.");
-        ctx.sayNote("Requires Java 25+ with --enable-preview.");
+        ctx.sayNote("Requires Java 26+ with --enable-preview.");
     }
 
     @Test

@@ -73,7 +73,7 @@ class SearchRequestDocTest {
 
 ## Document Validation with Compact Constructors
 
-Java 25 records support validation in the compact constructor. Document what happens when validation fails:
+Java 26 records support validation in the compact constructor. Document what happens when validation fails:
 
 ```java
 @Test
@@ -192,7 +192,7 @@ void documentPagination(DtrContext ctx) {
 
 ## Best Practices
 
-**Use compact constructors for validation.** Java 25 records with compact constructors are the cleanest way to express invariants. The constraints live with the data type.
+**Use compact constructors for validation.** Java 26 records with compact constructors are the cleanest way to express invariants. The constraints live with the data type.
 
 **Document defaults separately.** `sayRecordComponents` shows types and annotations but not default values. Add a `sayJson` call with a `defaults()` factory method to show defaults clearly.
 

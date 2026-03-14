@@ -146,7 +146,7 @@ To add new benchmarks:
 
 - **JMH 1.37**: Harness for writing and running benchmarks
 - **DocTester Core 2.5.0-SNAPSHOT**: Core library being benchmarked
-- **Java 25**: With `--enable-preview` flag
+- **Java 26**: With `--enable-preview` flag
 
 ## Troubleshooting
 
@@ -168,4 +168,4 @@ A: Save results as JSON:
 
 - JMH User Guide: https://github.com/openjdk/jmh/wiki/Userguide
 - JMH Samples: https://github.com/openjdk/jmh/tree/master/jmh-samples
-- Java 25 Preview Features: https://openjdk.org/projects/jdk/25/
+- Java 26 Preview Features: https://openjdk.org/projects/jdk/25/

@@ -146,8 +146,8 @@ void documentProductApiSchemas(DtrContext ctx) {
     ctx.say("**POST /api/products — Request body:**");
     ctx.sayRecordComponents(CreateProductRequest.class);
     ctx.sayJson(new CreateProductRequest(
-        "Java 25 in Action",
-        "A comprehensive guide to Java 25 language features.",
+        "Java 26 in Action",
+        "A comprehensive guide to Java 26 language features.",
         49.99, 100, "books-programming"
     ));
 
@@ -155,8 +155,8 @@ void documentProductApiSchemas(DtrContext ctx) {
     ctx.sayRecordComponents(ProductResponse.class);
     ctx.sayJson(new ProductResponse(
         "prod_abc123",
-        "Java 25 in Action",
-        "A comprehensive guide to Java 25 language features.",
+        "Java 26 in Action",
+        "A comprehensive guide to Java 26 language features.",
         49.99, 100, "books-programming",
         java.time.Instant.now(),
         java.time.Instant.now()

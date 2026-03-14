@@ -37,12 +37,12 @@ sayCodeModel(m);  // uses Code Reflection IR when available
 
 ### Method Code Model: `int exampleSum(int, int)`
 
-*(Code model not available — method not annotated with `@CodeReflection` or runtime < Java 25)*
+*(Code model not available — method not annotated with `@CodeReflection` or runtime < Java 26)*
 
 **Signature:** `int exampleSum(int, int)`
 
 > [!NOTE]
-> When `@CodeReflection` is present and Java 25+ preview is enabled, the table shows real op types from the JVM's code model. Without the annotation, the method falls back to signature rendering.
+> When `@CodeReflection` is present and Java 26+ preview is enabled, the table shows real op types from the JVM's code model. Without the annotation, the method falls back to signature rendering.
 
 ## A2: sayControlFlowGraph(Method) — Mermaid CFG
 
@@ -50,7 +50,7 @@ Extracts the control flow graph from a `@CodeReflection`-annotated method and re
 
 ### Control Flow Graph: `exampleSum`
 
-*(Control flow graph not available — method requires `@CodeReflection` annotation and Java 25+)*
+*(Control flow graph not available — method requires `@CodeReflection` annotation and Java 26+)*
 
 > [!NOTE]
 > If no code model is available, a fallback message is shown. Enable with `--enable-preview` and `@CodeReflection`.
@@ -61,7 +61,7 @@ For each `@CodeReflection`-annotated method in the given class, extracts all `In
 
 ### Call Graph: `BlueOceanInnovationsTest`
 
-*(Call graph not available — methods require `@CodeReflection` annotation and Java 25+)*
+*(Call graph not available — methods require `@CodeReflection` annotation and Java 26+)*
 
 > [!NOTE]
 > Only methods annotated with `@CodeReflection` contribute edges. Non-annotated methods are skipped.
@@ -72,11 +72,11 @@ Same Code Reflection traversal as `sayCodeModel(Method)` but renders only the op
 
 ### Op Profile: `int exampleSum(int, int)`
 
-*(Op profile not available — method requires `@CodeReflection` annotation and Java 25+)*
+*(Op profile not available — method requires `@CodeReflection` annotation and Java 26+)*
 
 ## B1: sayBenchmark() — Inline Performance Documentation
 
-Atomically measures and documents real performance in one call. Uses `System.nanoTime()` in a tight loop with configurable warmup rounds. Uses Java 25 virtual threads (`StructuredTaskScope`) for parallel warmup batches to reduce JIT cold-start bias. Reports avg/min/max/p99 ns and throughput ops/sec.
+Atomically measures and documents real performance in one call. Uses `System.nanoTime()` in a tight loop with configurable warmup rounds. Uses Java 26 virtual threads (`StructuredTaskScope`) for parallel warmup batches to reduce JIT cold-start bias. Reports avg/min/max/p99 ns and throughput ops/sec.
 
 ```java
 var map = Map.of("key", 42);
@@ -90,11 +90,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `144 ns` |
-| Min | `114 ns` |
-| Max | `6210 ns` |
-| p99 | `905 ns` |
-| Ops/sec | `6,944,444` |
+| Avg | `155 ns` |
+| Min | `119 ns` |
+| Max | `6032 ns` |
+| p99 | `693 ns` |
+| Ops/sec | `6,451,612` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -105,11 +105,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `308 ns` |
-| Min | `199 ns` |
-| Max | `11899 ns` |
-| p99 | `1491 ns` |
-| Ops/sec | `3,246,753` |
+| Avg | `336 ns` |
+| Min | `232 ns` |
+| Max | `5251 ns` |
+| p99 | `4328 ns` |
+| Ops/sec | `2,976,190` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -209,7 +209,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `4022 MB` |
 | Timezone | `Etc/UTC` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-14T19:54:00.805608125Z` |
+| Timestamp | `2026-03-14T20:24:47.621266495Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -351,11 +351,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `101 ns` |
-| Min | `85 ns` |
-| Max | `1397 ns` |
-| p99 | `1397 ns` |
-| Ops/sec | `9,900,990` |
+| Avg | `109 ns` |
+| Min | `88 ns` |
+| Max | `1965 ns` |
+| p99 | `1965 ns` |
+| Ops/sec | `9,174,311` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |

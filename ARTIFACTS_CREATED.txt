@@ -11,7 +11,7 @@ CONSOLIDATION ARTIFACTS - Complete File List
 2. BENCHMARKS MODULE STRUCTURE
    /home/user/dtr/dtr-benchmarks/
    ├── pom.xml (4.5 KB)
-   │   - Maven 4 configuration with Java 25 and JMH 1.37
+   │   - Maven 4 configuration with Java 26 and JMH 1.37
    │   - Shade plugin for executable JAR
    │   - Parent: org.r10r:dtr
    │
@@ -117,7 +117,7 @@ BUILD VERIFICATION
 
 Maven Integration:
   ✓ pom.xml follows Maven 4 conventions
-  ✓ Java 25 + preview enabled
+  ✓ Java 26 + preview enabled
   ✓ JMH configuration correct
   ✓ Shade plugin for JAR creation
   ✓ Proper parent reference to root pom

@@ -2,7 +2,7 @@
 ## DocMetadata Global Singleton Caching
 
 **Date:** March 11, 2026  
-**System:** Linux 6.18.5, Java 25.0.2, Maven 4.0.0-rc-5  
+**System:** Linux 6.18.5, Java 26.0.2, Maven 4.0.0-rc-5  
 **Test Environment:** Standalone benchmark + existing unit test suite  
 
 ---

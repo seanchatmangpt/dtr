@@ -70,13 +70,13 @@
 
     <build>
         <plugins>
-            <!-- Compiler with Java 25 and preview flags -->
+            <!-- Compiler with Java 26 and preview flags -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>25</release>
+                    <release>26</release>
                     <compilerArgs>
                         <arg>--enable-preview</arg>
                     </compilerArgs>

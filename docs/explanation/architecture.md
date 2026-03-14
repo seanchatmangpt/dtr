@@ -207,7 +207,7 @@ Provides `sayBenchmark(Runnable, int iterations)` — runs the given lambda `ite
 - `beforeEach`: A fresh `DtrContext` is injected into the test method via the `DtrContext` parameter.
 - `afterEach`: Any pending section markers or open blocks are closed.
 
-### Java 25 Requirement
+### Java 26 Requirement
 
 DTR requires `--enable-preview` because it uses the Code Reflection API (Project Babylon, JEP 516). This API is used by `sayCallSite()` to capture the exact source location where documentation was generated — file name, line number, method name — without requiring a stack walk at runtime. The flag is not optional.
 

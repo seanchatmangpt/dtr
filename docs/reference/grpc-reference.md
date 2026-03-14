@@ -3,7 +3,7 @@
 **Package:** `io.github.seanchatmangpt.dtr.core`
 **Version:** 2.3.0+ (stable in 2.6.0)
 
-DTR integrates with JEP 516 Code Reflection (available in Java 25 with `--enable-preview`) to expose JVM-level code models. These five methods let you document the internal structure of methods and classes: code model, control flow, call graphs, and opcode profiles.
+DTR integrates with JEP 516 Code Reflection (available in Java 26 with `--enable-preview`) to expose JVM-level code models. These five methods let you document the internal structure of methods and classes: code model, control flow, call graphs, and opcode profiles.
 
 All Code Reflection methods require `--enable-preview` (already set in `.mvn/maven.config`).
 
@@ -202,7 +202,7 @@ Use this to identify methods with unusually high invocation or branching counts 
 All Code Reflection methods require:
 
 1. `--enable-preview` flag (already in `.mvn/maven.config` for this project)
-2. Java 25 or later
+2. Java 26 or later
 3. The analyzed class must be on the test classpath
 
 ```bash
@@ -245,4 +245,4 @@ void fullCodeReflectionAudit(DtrContext ctx) {
 - [say* Core API Reference](request-api.md) — all 37 method signatures
 - [JVM Introspection API Reference](realtime-protocols-reference.md) — reflection-based introspection
 - [Mermaid Diagram API Reference](http-constants.md) — Mermaid rendering in all output formats
-- [Java 25 Features Reference](java25-features-reference.md) — JEP 516 overview
+- [Java 26 Features Reference](java25-features-reference.md) — JEP 516 overview

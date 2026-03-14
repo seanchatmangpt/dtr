@@ -42,7 +42,7 @@ class <TopicName>DocTest {
 - Use `System.nanoTime()` for timing — never estimate
 - Run the actual code, capture real output
 - Report: metric + units + Java version + iteration count
-- Example: "78ns avg (10M accesses, 100 iter, Java 25.0.2)"
+- Example: "78ns avg (10M accesses, 100 iter, Java 26)"
 - Never write: "~6000x faster" or "significantly faster" without a measurement
 
 ### Output contract
@@ -53,7 +53,7 @@ class <TopicName>DocTest {
 ### CI gate compliance
 - Test must pass `mvnd verify --enable-preview` in a headless CI runner
 - No interactive I/O, no credentials, no local-only paths
-- Use `--enable-preview` for any Java 25 preview syntax
+- Use `--enable-preview` for any Java 26 preview syntax
 
 ### say* method selection
 | Method | When to use |

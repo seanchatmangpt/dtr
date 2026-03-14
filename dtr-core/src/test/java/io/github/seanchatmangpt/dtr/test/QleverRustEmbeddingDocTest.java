@@ -409,7 +409,7 @@ public class QleverRustEmbeddingDocTest extends DtrTest {
             {"Intersection",                        "Novelty", "Key Gap Filled"},
             {"tree-sitter CST → RDF serialization", "Highest", "200+ grammar coverage; CST richer than AST"},
             {"SPARQL-backed LSP for code nav",      "Highest", "No implementation exists anywhere"},
-            {"Project Babylon (Java 25+ preview) → RDF triples", "High", "SSA code models as build artifacts"},
+            {"Project Babylon (Java 26+ preview) → RDF triples", "High", "SSA code models as build artifacts"},
             {"Streaming delta updates via tree-sitter","Medium","File-change → delta triples → QLever Update"},
             {"Code graph → ML/LLM SPARQL CONSTRUCT","Medium",  "GNN training data via query"},
         });

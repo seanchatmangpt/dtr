@@ -17,7 +17,7 @@ This section is for developers who want to contribute to DTR itself — fix bugs
 
 DTR 2.6.0 requires:
 
-- **Java 25** with `--enable-preview` (Java 24 and below are not supported)
+- **Java 26** with `--enable-preview` (Java 24 and below are not supported)
 - **Maven 4.0.0-rc-5+** or **mvnd 2.x** (the Maven Daemon is preferred for local development)
 
 Do not use `./mvnw` — the Maven wrapper downloads Maven 3, which is incompatible.
@@ -77,7 +77,7 @@ Good contributions:
 
 - **New `say*` methods** with Javadoc, a no-op default, a `RenderMachineImpl` implementation, and a test
 - **Bug fixes** with a failing test that passes after the fix
-- **Java 25 modernization** — records, sealed classes, pattern matching where appropriate
+- **Java 26 modernization** — records, sealed classes, pattern matching where appropriate
 - **Documentation improvements** — examples, corrections, clarifications
 - **Performance** — JMH benchmarks in `dtr-benchmarks/` with real measurements
 

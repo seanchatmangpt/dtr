@@ -8,7 +8,7 @@ Visualize the internal structure of your Java methods and classes using DTR 2.6.
 
 ## sayControlFlowGraph: Method-Level Flow
 
-`sayControlFlowGraph(Method)` uses Java 25 Code Reflection IR (preview) to produce a Mermaid `flowchart` showing the control flow branches inside a single method: conditionals, loops, switches, and exception handlers.
+`sayControlFlowGraph(Method)` uses Java 26 Code Reflection IR (preview) to produce a Mermaid `flowchart` showing the control flow branches inside a single method: conditionals, loops, switches, and exception handlers.
 
 ### Basic Usage
 
@@ -167,7 +167,7 @@ void profileAndBenchmark(DtrContext ctx) throws NoSuchMethodException {
 
 **Combine with `sayOpProfile` and `sayBenchmark`.** The full picture of a method is: what it does (CFG), how it relates to other methods (call graph), how many operations it performs (op profile), and how fast it runs (benchmark).
 
-**Requires `--enable-preview`.** Both `sayControlFlowGraph` and `sayOpProfile` depend on Java 25 Code Reflection IR, which is a preview feature. Ensure `--enable-preview` is in your `.mvn/maven.config`.
+**Requires `--enable-preview`.** Both `sayControlFlowGraph` and `sayOpProfile` depend on Java 26 Code Reflection IR, which is a preview feature. Ensure `--enable-preview` is in your `.mvn/maven.config`.
 
 ---
 

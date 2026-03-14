@@ -36,19 +36,19 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Transparent to test code: use exactly like a single RenderMachine.</p>
  *
- * <p><strong>Java 25 showcase — structured concurrency:</strong> Each dispatch uses
+ * <p><strong>Java 26 showcase — structured concurrency:</strong> Each dispatch uses
  * {@link StructuredTaskScope} (JEP 492).
  * This replaces manual future waiting and error aggregation with JVM-native structured semantics:
  * if any renderer fails, the error is propagated immediately with full context.
  * This is simpler, safer, and faster than CompletableFuture chains.</p>
  *
- * <p><strong>Java 25/26 showcase — virtual threads:</strong> All tasks run on virtual threads
+ * <p><strong>Java 26/26 showcase — virtual threads:</strong> All tasks run on virtual threads
  * (Project Loom) which are JVM-scheduled, not OS-scheduled. They have near-zero creation overhead,
  * making one-virtual-thread-per-machine-per-call practical even for high-frequency {@code say*} calls.
  * When DTR generates 8+ simultaneous output formats, wall-clock time is the slowest single
  * renderer, not the sum of all renderers.</p>
  *
- * <p><strong>Java 25 Enhancement:</strong> Structured concurrency with StructuredTaskScope
+ * <p><strong>Java 26 Enhancement:</strong> Structured concurrency with StructuredTaskScope
  * ensures all rendering tasks are properly managed: if any renderer fails mid-rendering,
  * the exception is propagated immediately, and all tasks are cleaned up properly.</p>
  *
@@ -101,7 +101,7 @@ public final class MultiRenderMachine extends RenderMachine {
     /**
      * Dispatches an action to all contained render machines concurrently using structured concurrency.
      *
-     * <p>Java 25 Enhancement (JEP 492 - Structured Concurrency):</p>
+     * <p>Java 26 Enhancement (JEP 492 - Structured Concurrency):</p>
      * <ol>
      *   <li>Creates a {@link StructuredTaskScope} scope</li>
      *   <li>Forks one task per machine — each task calls the action on its machine via a virtual thread</li>

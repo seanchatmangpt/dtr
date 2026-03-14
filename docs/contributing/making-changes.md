@@ -22,7 +22,7 @@ git checkout -b docs/improve-codebase-tour
 
 ## Code Style
 
-DTR follows standard Java conventions with Java 25 idioms throughout:
+DTR follows standard Java conventions with Java 26 idioms throughout:
 
 - **4 spaces per indent** (no tabs)
 - **UTF-8** everywhere
@@ -48,9 +48,9 @@ DTR follows standard Java conventions with Java 25 idioms throughout:
 
 ---
 
-## Java 25 Idioms
+## Java 26 Idioms
 
-DTR is a Java 25 project with `--enable-preview`. Prefer modern idioms:
+DTR is a Java 26 project with `--enable-preview`. Prefer modern idioms:
 
 **Use records for value types:**
 ```java

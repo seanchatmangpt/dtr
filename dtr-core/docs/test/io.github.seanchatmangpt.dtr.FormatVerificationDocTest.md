@@ -133,7 +133,7 @@ void testConcurrentCacheInvalidation() {
 
 ## Test Execution Pipeline
 
-1. Compile Java source with Java 25 --enable-preview
+1. Compile Java source with Java 26 --enable-preview
 2. Execute unit tests in parallel (32 virtual threads)
 3. Run property-based tests (50,000 generated cases per property)
 4. Execute fuzz tests (1M random input variants)
@@ -300,7 +300,7 @@ Invariant tests verify that critical system properties remain true across all st
 
 ## Concurrency & Race Condition Testing
 
-Using Java 25 virtual threads, we execute concurrent workloads to detect race conditions, deadlocks, and memory visibility issues.
+Using Java 26 virtual threads, we execute concurrent workloads to detect race conditions, deadlocks, and memory visibility issues.
 
 ```java
 @Test

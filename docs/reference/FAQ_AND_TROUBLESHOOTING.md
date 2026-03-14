@@ -66,12 +66,12 @@ echo $https_proxy           # check env var
 
 ### Q: Java version error
 
-**Error:** `Unsupported class version` or `Java 25 is required`
+**Error:** `Unsupported class version` or `Java 26 is required`
 
 **Solution:**
 ```bash
 java -version  # verify 25+
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 java -version  # verify again
 mvnd clean install
 ```

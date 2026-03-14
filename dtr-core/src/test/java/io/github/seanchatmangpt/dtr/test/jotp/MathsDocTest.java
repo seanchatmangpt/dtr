@@ -22,7 +22,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 
 /**
- * DTR documentation for {@link Maths} — a class that showcases Java 25
+ * DTR documentation for {@link Maths} — a class that showcases Java 26
  * <em>records</em> as concise, immutable containers for primitive values.
  *
  * <p>Covers:
