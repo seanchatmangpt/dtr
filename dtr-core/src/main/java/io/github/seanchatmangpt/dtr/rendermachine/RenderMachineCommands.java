@@ -20,6 +20,15 @@ import java.util.Map;
 
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 
+/**
+ * Core documentation-output contract for the DTR render machine.
+ *
+ * <p>Every {@code say*} method maps to a distinct documentation primitive
+ * (paragraph, heading, table, code block, etc.).  Implementations route the
+ * calls to one or more output engines (Markdown, LaTeX, HTML, blog, …).
+ *
+ * @since 1.0
+ */
 public interface RenderMachineCommands {
 
     /**

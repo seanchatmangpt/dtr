@@ -106,6 +106,14 @@ public abstract class DtrTest implements RenderMachineCommands {
     // Protected only for testing
     protected static RenderMachine renderMachine = null;
 
+    /**
+     * JUnit 5 {@code @BeforeEach} lifecycle hook that wires the test class name
+     * and current test method into the render machine before each test method runs.
+     * Processes any {@link DocSection}, {@link DocDescription}, {@link DocNote},
+     * {@link DocWarning}, and {@link DocCode} annotations present on the test method.
+     *
+     * @param testInfo JUnit 5 test metadata (class name, method reference)
+     */
     @BeforeEach
     public void setupForTestCaseMethod(TestInfo testInfo) {
 
@@ -193,6 +201,11 @@ public abstract class DtrTest implements RenderMachineCommands {
 
     }
 
+    /**
+     * Lazily initialises the shared {@code renderMachine} if it has not yet been
+     * created. Called from {@link #setupForTestCaseMethod} and available to
+     * subclasses that need to trigger initialisation outside the normal lifecycle.
+     */
     public void initRenderingMachineIfNull() {
 
         if (renderMachine == null) {
@@ -201,6 +214,13 @@ public abstract class DtrTest implements RenderMachineCommands {
 
     }
 
+    /**
+     * JUnit 5 {@code @AfterAll} lifecycle hook that flushes and finalises the
+     * shared render machine after all test methods in the class have run.
+     * Calls {@code finishAndWriteOut()} to close output streams and write the
+     * final document files, then nulls the reference so the next test class
+     * starts fresh.
+     */
     @AfterAll
     public static void finishDocTest() {
 

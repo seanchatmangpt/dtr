@@ -1157,6 +1157,13 @@ public final class RenderMachineImpl extends RenderMachine {
         });
     }
 
+    /**
+     * Converts a section heading to a lowercase anchor ID suitable for use
+     * in markdown table-of-contents links. Strips all non-alphanumeric characters.
+     *
+     * @param text the heading text to convert
+     * @return a lowercase alphanumeric anchor ID
+     */
     public String convertTextToId(String text) {
         return text.toLowerCase()
                 .replaceAll("[^a-z0-9]", "");

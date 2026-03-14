@@ -413,6 +413,12 @@ public final class MultiRenderMachine extends RenderMachine {
     public static final class MultiRenderException extends RuntimeException {
         private final List<Exception> causes;
 
+        /**
+         * Constructs an exception that aggregates one or more render-machine failures.
+         *
+         * @param message human-readable summary of the failure
+         * @param causes  all exceptions thrown by individual render machines
+         */
         public MultiRenderException(String message, List<Exception> causes) {
             super(message);
             this.causes = List.copyOf(causes);
