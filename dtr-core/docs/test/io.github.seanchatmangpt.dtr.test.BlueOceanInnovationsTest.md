@@ -90,11 +90,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `184 ns` |
-| Min | `115 ns` |
-| Max | `18395 ns` |
-| p99 | `1352 ns` |
-| Ops/sec | `5,434,782` |
+| Avg | `278 ns` |
+| Min | `114 ns` |
+| Max | `34224 ns` |
+| p99 | `2401 ns` |
+| Ops/sec | `3,597,122` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `25.0.2` |
@@ -105,11 +105,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `365 ns` |
-| Min | `202 ns` |
-| Max | `8773 ns` |
-| p99 | `5909 ns` |
-| Ops/sec | `2,739,726` |
+| Avg | `411 ns` |
+| Min | `206 ns` |
+| Max | `26694 ns` |
+| p99 | `1505 ns` |
+| Ops/sec | `2,433,090` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `25.0.2` |
@@ -209,7 +209,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `4022 MB` |
 | Timezone | `Etc/UTC` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-14T19:14:25.114282361Z` |
+| Timestamp | `2026-03-14T20:29:40.724024615Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -351,11 +351,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `94 ns` |
-| Min | `88 ns` |
-| Max | `320 ns` |
-| p99 | `320 ns` |
-| Ops/sec | `10,638,297` |
+| Avg | `281 ns` |
+| Min | `86 ns` |
+| Max | `18899 ns` |
+| p99 | `18899 ns` |
+| Ops/sec | `3,558,718` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `25.0.2` |
