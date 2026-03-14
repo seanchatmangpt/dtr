@@ -15,8 +15,6 @@
  */
 package io.github.seanchatmangpt.dtr.rendermachine;
 
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-
 /**
  * Abstract base class for render machines that convert test execution into documentation.
  *
@@ -41,13 +39,6 @@ import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
  * </ul>
  */
 public abstract class RenderMachine implements RenderMachineCommands {
-
-    /**
-     * Sets the TestBrowser instance for HTTP request execution.
-     *
-     * @param testBrowser the HTTP client to use for requests
-     */
-    public abstract void setTestBrowser(TestBrowser testBrowser);
 
     /**
      * Sets the output filename (typically the test class name).

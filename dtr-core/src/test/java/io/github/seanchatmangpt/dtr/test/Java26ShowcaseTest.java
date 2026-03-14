@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
 import io.github.seanchatmangpt.dtr.rendermachine.SayEvent;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -64,11 +63,6 @@ public class Java26ShowcaseTest extends DtrTest {
     @AfterAll
     static void afterAll() {
         finishDocTest();
-    }
-
-    @Override
-    public Url testServerUrl() {
-        throw new UnsupportedOperationException("technical treatise — no HTTP server needed");
     }
 
     // =========================================================================

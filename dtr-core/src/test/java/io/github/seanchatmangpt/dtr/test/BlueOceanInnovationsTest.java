@@ -18,7 +18,6 @@ package io.github.seanchatmangpt.dtr.test;
 import io.github.seanchatmangpt.dtr.DtrTest;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
 import io.github.seanchatmangpt.dtr.reflectiontoolkit.CallSiteRecord;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -46,11 +45,6 @@ public class BlueOceanInnovationsTest extends DtrTest {
     @AfterAll
     static void afterAll() {
         finishDocTest();
-    }
-
-    @Override
-    public Url testServerUrl() {
-        throw new UnsupportedOperationException("BlueOceanInnovationsTest — no HTTP server needed");
     }
 
     // =========================================================================

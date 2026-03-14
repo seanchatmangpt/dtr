@@ -20,8 +20,6 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowserImpl;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -40,9 +38,7 @@ import java.util.Optional;
  *     @Test
  *     void testGetUsers(DtrContext context) {
  *         context.sayNextSection("User API");
- *         var response = context.sayAndMakeRequest(
- *             Request.GET().url(context.testServerUrl().path("/api/users")));
- *         context.sayAndAssertThat("200 OK", 200, equalTo(response.httpStatus));
+ *         context.say("Documentation for User API goes here.");
  *     }
  * }
  * }</pre>
@@ -50,28 +46,18 @@ import java.util.Optional;
  * <p>The extension manages:
  * <ul>
  *   <li>RenderMachine lifecycle (one per test class)</li>
- *   <li>TestBrowser lifecycle (one per test method)</li>
  *   <li>Documentation output generation after all tests complete</li>
  * </ul>
  */
 public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
 
     private static final String RENDER_MACHINE_KEY = "dtr.renderMachine";
-    private static final String TEST_BROWSER_KEY = "dtr.testBrowser";
     private static final String FILE_NAME_KEY = "dtr.fileName";
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         // Get or create the RenderMachine (shared across test methods in a class)
         var renderMachine = getOrCreateRenderMachine(context);
-
-        // Create a fresh TestBrowser for each test
-        var testBrowser = createTestBrowser();
-        renderMachine.setTestBrowser(testBrowser);
-
-        // Store in test context
-        var store = getStore(context);
-        store.put(TEST_BROWSER_KEY, testBrowser);
 
         // Process @DocSection / @DocDescription annotations if present
         processAnnotations(context, renderMachine);
@@ -109,32 +95,10 @@ public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
     }
 
     /**
-     * Gets the TestBrowser for the current test method.
-     */
-    public TestBrowser getTestBrowser(ExtensionContext context) {
-        var store = getStore(context);
-        var testBrowser = (TestBrowser) store.get(TEST_BROWSER_KEY);
-
-        if (testBrowser == null) {
-            testBrowser = createTestBrowser();
-            store.put(TEST_BROWSER_KEY, testBrowser);
-        }
-
-        return testBrowser;
-    }
-
-    /**
      * Creates a new RenderMachine instance. Override to customize.
      */
     protected RenderMachine createRenderMachine() {
         return new RenderMachineImpl();
-    }
-
-    /**
-     * Creates a new TestBrowser instance. Override to customize.
-     */
-    protected TestBrowser createTestBrowser() {
-        return new TestBrowserImpl();
     }
 
     private ExtensionContext.Store getStore(ExtensionContext context) {

@@ -113,10 +113,10 @@ public class ValidateAndStressTest extends DtrTest {
     @Test
     public void t1_04_sayAndAssertThatPassingShowsSuccess() {
         sayNextSection("Validation: passing assertions");
-        sayAndAssertThat("Boolean true is true", true, is(true));
-        sayAndAssertThat("String equality works", "hello", equalTo("hello"));
-        sayAndAssertThat("Integer equality works", 42, equalTo(42));
-        sayAndAssertThat("String contains check", "hello world", containsString("world"));
+        assertThat(true, is(true));
+        assertThat("hello", equalTo("hello"));
+        assertThat(42, equalTo(42));
+        assertThat("hello world", containsString("world"));
     }
 
     @Test
@@ -125,7 +125,7 @@ public class ValidateAndStressTest extends DtrTest {
 
         boolean caughtFailure = false;
         try {
-            sayAndAssertThat("This assertion intentionally fails", false, is(true));
+            assertThat(false, is(true));
         } catch (AssertionError _) {
             caughtFailure = true;
         }
@@ -136,9 +136,7 @@ public class ValidateAndStressTest extends DtrTest {
     @Test
     public void t1_06_sayAndAssertThatWithReasonShowsReason() {
         sayNextSection("Validation: assertion with reason");
-        sayAndAssertThat("Value matches expected",
-                "custom reason for debugging",
-                100, equalTo(100));
+        assertThat("custom reason for debugging", 100, equalTo(100));
     }
 
     @Test
@@ -197,12 +195,12 @@ public class ValidateAndStressTest extends DtrTest {
         int failures = 0;
         for (int i = 0; i < 5; i++) {
             try {
-                sayAndAssertThat("Intentional failure #" + i, i, equalTo(i + 100));
+                assertThat(i, equalTo(i + 100));
             } catch (AssertionError _) {
                 failures++;
             }
         }
-        sayAndAssertThat("Caught all 5 failures", failures, equalTo(5));
+        assertThat(failures, equalTo(5));
         say("5 consecutive failures should each produce a failure admonition.");
     }
 
@@ -213,7 +211,7 @@ public class ValidateAndStressTest extends DtrTest {
             sayNextSection("Rapid section " + i);
             say("Rapid paragraph " + i);
             sayRaw("<hr/>");
-            sayAndAssertThat("Rapid assert " + i, i, equalTo(i));
+            assertThat(i, equalTo(i));
         }
     }
 

@@ -26,14 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hc.client5.http.cookie.Cookie;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-import org.hamcrest.Matcher;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +51,6 @@ public final class BlogRenderMachine extends RenderMachine {
     private String tldr = "";
     private String cta = "";
     private int wordCount = 0;
-    private TestBrowser testBrowser;
 
     /**
      * Create a blog render machine with the given platform template.
@@ -66,11 +59,6 @@ public final class BlogRenderMachine extends RenderMachine {
      */
     public BlogRenderMachine(BlogTemplate template) {
         this.template = template;
-    }
-
-    @Override
-    public void setTestBrowser(TestBrowser testBrowser) {
-        this.testBrowser = testBrowser;
     }
 
     @Override
@@ -306,55 +294,6 @@ public final class BlogRenderMachine extends RenderMachine {
     @Override
     public void saySpeakerNote(String text) {
         // Ignored for blog output
-    }
-
-    @Override
-    public List<Cookie> sayAndGetCookies() {
-        List<Cookie> cookies = testBrowser.getCookies();
-        buffer.append("### Cookies\n");
-        for (Cookie cookie : cookies) {
-            buffer.append("- **").append(cookie.getName()).append("**: `")
-                .append(cookie.getValue()).append("`\n");
-        }
-        buffer.append("\n");
-        return cookies;
-    }
-
-    @Override
-    public Cookie sayAndGetCookieWithName(String name) {
-        Cookie cookie = testBrowser.getCookieWithName(name);
-        if (cookie != null) {
-            buffer.append("### Cookie: ").append(name).append("\n")
-                .append("- **Value**: `").append(cookie.getValue()).append("`\n\n");
-        }
-        return cookie;
-    }
-
-    @Override
-    public Response sayAndMakeRequest(Request httpRequest) {
-        Response response = testBrowser.makeRequest(httpRequest);
-        buffer.append("### Request\n\n```\n")
-            .append(httpRequest.httpRequestType).append(" ")
-            .append(httpRequest.uri).append("\n```\n\n");
-        buffer.append("### Response\n\n```\n")
-            .append(response.httpStatus).append(" ")
-            .append(response.payloadAsString()).append("\n```\n\n");
-        return response;
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher) {
-        boolean matches = matcher.matches(actual);
-        buffer.append("- **").append(message).append("**: ")
-            .append(matches ? "✓ PASS" : "✗ FAIL").append("\n");
-        if (!matches) {
-            buffer.append("  Reason: ").append(reason).append("\n");
-        }
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
-        sayAndAssertThat(message, "", actual, matcher);
     }
 
     @Override

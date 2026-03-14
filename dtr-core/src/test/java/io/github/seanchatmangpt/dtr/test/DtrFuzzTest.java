@@ -16,15 +16,11 @@
 package io.github.seanchatmangpt.dtr;
 
 import net.jqwik.api.*;
-import net.jqwik.api.constraints.CharRange;
-import net.jqwik.api.constraints.StringLength;
 import net.jqwik.api.lifecycle.BeforeProperty;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -203,29 +199,6 @@ class DtrFuzzTest {
     }
 
     // =========================================================================
-    // 5. sayAndAssertThat() — message/reason string fuzzing
-    // =========================================================================
-
-    @Property(tries = 2000)
-    @Label("sayAndAssertThat() message/reason fuzz with full Unicode")
-    void fuzzSayAndAssertThatMessageWithFullUnicode(
-            @ForAll("fullUnicode") String message,
-            @ForAll("fullUnicode") String reason) {
-        // Matching value: assertion always passes; we fuzz message/reason strings
-        assertDoesNotThrow(() ->
-                rm.sayAndAssertThat(message, reason, "x", equalTo("x")));
-    }
-
-    @Property
-    @Label("sayAndAssertThat() message fuzz with adversarial strings")
-    void fuzzSayAndAssertThatMessageWithAdversarialStrings(
-            @ForAll("adversarialStrings") String message,
-            @ForAll("adversarialStrings") String reason) {
-        assertDoesNotThrow(() ->
-                rm.sayAndAssertThat(message, reason, 42, equalTo(42)));
-    }
-
-    // =========================================================================
     // 5b. convertTextToId() — determinism invariant (same input → same output always)
     // =========================================================================
 
@@ -256,34 +229,4 @@ class DtrFuzzTest {
             "input=" + text.length() + " chars, got '" + id1 + "' vs '" + id2 + "'");
     }
 
-    // =========================================================================
-    // 6. Url path/query fuzzing — adversarial path segments
-    // =========================================================================
-
-    @Property(tries = 2000)
-    @Label("Url.path() never throws for printable ASCII path segments")
-    void fuzzUrlPathWithAscii(
-            @ForAll @CharRange(from = 0x20, to = 0x7E) @StringLength(min = 0, max = 100) String segment) {
-        assertDoesNotThrow(() -> {
-            try {
-                Url.host("http://localhost:8080").path(segment).toString();
-            } catch (IllegalStateException _) {
-                // URISyntaxException for malformed input is acceptable
-            }
-        });
-    }
-
-    @Property(tries = 500)
-    @Label("Url query params never throw for random bytes decoded as UTF-8")
-    void fuzzUrlQueryParamWithRandomBytes(
-            @ForAll("randomBytesAsString") String key,
-            @ForAll("randomBytesAsString") String value) {
-        assertDoesNotThrow(() -> {
-            try {
-                Url.host("http://localhost:8080").addQueryParameter(key, value).toString();
-            } catch (IllegalStateException _) {
-                // URISyntaxException is acceptable
-            }
-        });
-    }
 }

@@ -15,11 +15,9 @@
  */
 package io.github.seanchatmangpt.dtr;
 
-import org.apache.hc.client5.http.cookie.Cookie;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
@@ -30,11 +28,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowserImpl;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.crossref.CrossReferenceIndex;
 import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
@@ -43,39 +36,29 @@ import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
  * Abstract base class for documentation testing framework using JUnit 5.
  *
  * <p>DtrTest bridges test execution and documentation generation, allowing developers
- * to write tests that simultaneously verify API behavior and auto-generate comprehensive
- * API documentation. Supports multiple output formats: Markdown, LaTeX/PDF, blog posts,
+ * to write tests that simultaneously verify behavior and auto-generate comprehensive
+ * documentation. Supports multiple output formats: Markdown, LaTeX/PDF, blog posts,
  * and presentation slides.</p>
  *
  * <p><strong>Core Features:</strong></p>
  * <ul>
- *   <li>HTTP testing via {@link TestBrowser} (cookie persistence, multipart uploads, auth)</li>
  *   <li>Documentation generation via {@link RenderMachine} (multiple output formats)</li>
  *   <li>Annotation-driven documentation: {@link DocSection}, {@link DocDescription}, etc.</li>
  *   <li>Reflection-based code introspection: {@link #sayCodeModel(Class)}, {@link #sayAnnotationProfile(Class)}</li>
- *   <li>OpenAPI specification auto-generation from HTTP interactions</li>
  *   <li>Cross-references between DocTests with automatic section numbering</li>
  * </ul>
  *
  * <p><strong>Basic Usage:</strong></p>
  * <pre>{@code
  * @ExtendWith(DtrExtension.class)
- * class UserApiDocTest extends DtrTest {
- *     @Override
- *     public Url testServerUrl() {
- *         return Url.host("http://localhost:8080");
- *     }
+ * class MyDocTest extends DtrTest {
  *
  *     @Test
- *     @DocSection("User Registration")
- *     @DocDescription("Creates a new user account")
- *     void testCreateUser() {
- *         var response = sayAndMakeRequest(
- *             Request.POST()
- *                 .url(testServerUrl().path("/api/users"))
- *                 .contentTypeApplicationJson()
- *                 .payload(new User("alice", "alice@example.com")));
- *         sayAndAssertThat("Status is 201", response.httpStatus, equalTo(201));
+ *     @DocSection("Overview")
+ *     @DocDescription("Describes the feature.")
+ *     void testFeature() {
+ *         say("Feature works as expected.");
+ *         sayCode("System.out.println(\"Hello\");", "java");
  *     }
  * }
  * }</pre>
@@ -83,7 +66,7 @@ import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
  * <p><strong>JUnit 5 Integration:</strong></p>
  * <p>While this class is abstract and doesn't require {@code @ExtendWith(DtrExtension.class)},
  * it is designed to work seamlessly with that extension. The extension manages the
- * RenderMachine lifecycle (one per test class) and TestBrowser lifecycle (one per test method).</p>
+ * RenderMachine lifecycle (one per test class).</p>
  *
  * <p><strong>Annotation Processing:</strong></p>
  * <p>The following annotations on test methods are automatically processed and rendered:</p>
@@ -101,10 +84,9 @@ import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
  *
  * @see DtrExtension for JUnit 5 integration
  * @see RenderMachine for output format options
- * @see TestBrowser for HTTP testing capabilities
  * @since 1.0.0
  */
-public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
+public abstract class DtrTest implements RenderMachineCommands {
 
     /**
      * classNameForDtrOutputFile will be set by the testWatcher. That way
@@ -120,9 +102,6 @@ public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
 
     private final Logger logger = LoggerFactory.getLogger(DtrTest.class);
 
-    // Unique for each test method.
-    private TestBrowser testBrowser;
-
 	// Unique for whole testClass => one outputfile per testClass.
     // Protected only for testing
     protected static RenderMachine renderMachine = null;
@@ -137,10 +116,6 @@ public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
         currentTestMethod = testInfo.getTestMethod().orElse(null);
 
         initRenderingMachineIfNull();
-
-        // Set a fresh TestBrowser for each testmethod.
-        testBrowser = getTestBrowser();
-        renderMachine.setTestBrowser(testBrowser);
 
         // This is all a bit strange. But JUnit's @BeforeAll
         // is static. Therefore the only possibility to transmit
@@ -255,25 +230,6 @@ public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
     }
 
     @Override
-    public final <T> void sayAndAssertThat(String message,
-            String reason,
-            T actual,
-            Matcher<? super T> matcher) {
-
-        renderMachine.sayAndAssertThat(message, reason, actual, matcher);
-
-    }
-
-    @Override
-    public final <T> void sayAndAssertThat(String message,
-            T actual,
-            Matcher<? super T> matcher) {
-
-        sayAndAssertThat(message, "", actual, matcher);
-
-    }
-
-    @Override
     public final void sayTable(String[][] data) {
         renderMachine.sayTable(data);
     }
@@ -360,60 +316,8 @@ public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
     }
 
     // //////////////////////////////////////////////////////////////////////////
-    // Inlined methods of the TestBrowser (for convenience)
-    // //////////////////////////////////////////////////////////////////////////
-    /**
-     * @return all cookies saved by this TestBrowser.
-     */
-    @Override
-    public final List<Cookie> getCookies() {
-        return testBrowser.getCookies();
-    }
-
-    @Override
-    public final List<Cookie> sayAndGetCookies() {
-        return testBrowser.getCookies();
-    }
-
-    @Override
-    public final Cookie getCookieWithName(String name) {
-        return testBrowser.getCookieWithName(name);
-    }
-
-    @Override
-    public final Cookie sayAndGetCookieWithName(String name) {
-        return testBrowser.getCookieWithName(name);
-    }
-
-    @Override
-    public final void clearCookies() {
-        testBrowser.clearCookies();
-    }
-
-    @Override
-    public final Response makeRequest(Request httpRequest) {
-        return testBrowser.makeRequest(httpRequest);
-    }
-
-    @Override
-    public final Response sayAndMakeRequest(Request httpRequest) {
-        return renderMachine.sayAndMakeRequest(httpRequest);
-    }
-
-    // //////////////////////////////////////////////////////////////////////////
     // Configuration of DoctestJ
     // //////////////////////////////////////////////////////////////////////////
-    /**
-     * You may override this method if you want to supply your own testbrowser
-     * for your class or classes.
-     *
-     * @return a TestBrowser that will be used for each test method.
-     */
-    public TestBrowser getTestBrowser() {
-
-        return new TestBrowserImpl();
-
-    }
 
     /**
      * You may override this method if you want to supply your own rendering
@@ -424,30 +328,6 @@ public abstract class DtrTest implements TestBrowser, RenderMachineCommands {
      */
     public RenderMachine getRenderMachine() {
         return RenderMachineFactory.createRenderMachine(getClass().getSimpleName());
-    }
-
-    /**
-     * Convenience method that allows you to write tests with the testbrowser in
-     * a fluent way.
-     *
-     * <code>
-     *
-     * sayAndMakeRequest(
-     *           Request
-     *               .GET()
-     *               .url(testServerUrl().path("search").addQueryParameter("q", "toys")));
-     * </code>
-     *
-     *
-     * @return a valid host name of your test server (eg http://localhost:8127).
-     * This will be used in the testServerUrl() method.
-     */
-    public Url testServerUrl() {
-
-        final String errorText = "If you want to use the TestBrowser you have to override getTestServerUrl().";
-        logger.error(errorText);
-
-        throw new IllegalStateException(errorText);
     }
 
     /**

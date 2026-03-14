@@ -15,8 +15,6 @@
  */
 package io.github.seanchatmangpt.dtr;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,7 +22,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import io.github.seanchatmangpt.dtr.rendermachine.SayEvent;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 
 /**
  * Enterprise Documentation Architecture Guide — DTR say* API.
@@ -403,26 +400,7 @@ class ExtendedSayApiDocTest extends DtrTest {
         );
 
         // ========================================================================
-        // 9. sayAndAssertThat() — assertions that generate documentation
-        // ========================================================================
-        sayNextSection("9. sayAndAssertThat() — Assertions That Generate Documentation");
-
-        say(
-            "`sayAndAssertThat()` unifies test assertions and documentation generation. " +
-            "The assertion message becomes the documentation prose. The matcher result " +
-            "becomes the documentation evidence. A failing assertion fails the test AND " +
-            "produces a document that honestly reports the failure — which is exactly the " +
-            "behaviour you want in a CI pipeline."
-        );
-
-        sayAndAssertThat("DTR say* API provides 9 documentation methods", "9 methods implemented",
-                equalTo("9 methods implemented"));
-
-        sayAndAssertThat("sayAndAssertThat() integrates assertion and documentation in one call",
-                true, equalTo(true));
-
-        // ========================================================================
-        // Summary: Choosing the Right Method
+        // Summary: Choosing the Right say* Method
         // ========================================================================
         sayNextSection("Summary: Architectural Decision Guide for say* Methods");
 
@@ -443,7 +421,6 @@ class ExtendedSayApiDocTest extends DtrTest {
             {"Validated system properties",        "sayAssertions()",    "sayNote() with bullet points"},
             {"A must-act warning",                 "sayWarning()",       "sayNote()"},
             {"Structural code facts",              "sayCodeModel()",     "sayCode() with hand-typed class"},
-            {"An HTTP interaction",                "sayAndMakeRequest()", "sayCode() with curl command"},
         });
 
         sayNote(
@@ -519,8 +496,4 @@ class ExtendedSayApiDocTest extends DtrTest {
         );
     }
 
-    @Override
-    public Url testServerUrl() {
-        return Url.host("http://localhost:8080");
-    }
 }

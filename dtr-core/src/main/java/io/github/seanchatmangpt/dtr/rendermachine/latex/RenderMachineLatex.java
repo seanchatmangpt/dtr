@@ -24,20 +24,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hc.client5.http.cookie.Cookie;
 import io.github.seanchatmangpt.dtr.bibliography.BibliographyManager;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.metadata.DocMetadata;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
-import io.github.seanchatmangpt.dtr.testbrowser.Request;
-import io.github.seanchatmangpt.dtr.testbrowser.Response;
-import io.github.seanchatmangpt.dtr.testbrowser.TestBrowser;
-import org.hamcrest.Matcher;
-
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +53,6 @@ import org.slf4j.LoggerFactory;
  * <p><strong>Features:</strong></p>
  * <ul>
  *   <li>LaTeX escaping of special characters in text, code, and tables</li>
- *   <li>HTTP request/response formatted as syntax-highlighted code listings</li>
  *   <li>Automatic bibliography integration via BibTeX</li>
  *   <li>Cross-references between DocTests with LaTeX \ref{} commands</li>
  *   <li>Metadata support: title, author, date, keywords for PDF properties</li>
@@ -86,7 +77,6 @@ import org.slf4j.LoggerFactory;
  *     metadata);
  *
  * latex.setFileName("ApiDocTest");
- * latex.setTestBrowser(browser);
  * latex.sayNextSection("REST API Specification");
  * latex.say("Documents the complete REST API...");
  * latex.finishAndWriteOut();
@@ -116,9 +106,6 @@ public final class RenderMachineLatex extends RenderMachine {
 
     /** Accumulated LaTeX document lines. */
     private final List<String> texDocument;
-
-    /** HTTP client for making requests and documenting them. */
-    private TestBrowser testBrowser;
 
     /** Output filename (typically the test class name). */
     private String fileName;
@@ -305,85 +292,6 @@ public final class RenderMachineLatex extends RenderMachine {
     }
 
     @Override
-    public List<Cookie> sayAndGetCookies() {
-        List<Cookie> cookies = testBrowser.getCookies();
-
-        texDocument.add("");
-        texDocument.add("\\subsubsection*{Cookies}");
-
-        if (cookies.isEmpty()) {
-            texDocument.add("\\textit{(No cookies)}");
-        } else {
-            var cookieList = new ArrayList<String>();
-            for (Cookie cookie : cookies) {
-                String cookieStr = template.escapeLatex(cookie.getName())
-                    + " = \\texttt{"
-                    + template.escapeLatex(cookie.getValue()) + "}";
-                cookieList.add(cookieStr);
-            }
-            texDocument.add(template.formatUnorderedList(cookieList));
-        }
-
-        return cookies;
-    }
-
-    @Override
-    public Cookie sayAndGetCookieWithName(String name) {
-        Cookie cookie = testBrowser.getCookieWithName(name);
-
-        texDocument.add("");
-        texDocument.add("\\subsubsection*{Cookie: " + template.escapeLatex(name) + "}");
-
-        if (cookie != null) {
-            var cookieMap = Map.of(
-                "Name", cookie.getName(),
-                "Value", cookie.getValue(),
-                "Path", cookie.getPath() != null ? cookie.getPath() : "(default)",
-                "Domain", cookie.getDomain() != null ? cookie.getDomain() : "(default)"
-            );
-            texDocument.add(template.formatKeyValue(cookieMap));
-        } else {
-            texDocument.add("\\textit{(Cookie not found)}");
-        }
-
-        return cookie;
-    }
-
-    @Override
-    public Response sayAndMakeRequest(Request request) {
-        Response response = testBrowser.makeRequest(request);
-        formatHttpExchange(request, response);
-        return response;
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, T actual, Matcher<? super T> matcher) {
-        sayAndAssertThat(message, "", actual, matcher);
-    }
-
-    @Override
-    public <T> void sayAndAssertThat(String message, String reason, T actual, Matcher<? super T> matcher) {
-        try {
-            Assert.assertThat(reason, actual, matcher);
-            texDocument.add("");
-            texDocument.add("\\textbf{\\color{green}\\checkmark} " + template.escapeLatex(message));
-        } catch (AssertionError e) {
-            texDocument.add("");
-            texDocument.add("\\textbf{\\color{red}\\times} \\textbf{FAILED:} " + template.escapeLatex(message));
-            texDocument.add("");
-            texDocument.add("\\begin{verbatim}");
-            texDocument.add(convertStackTraceToString(e));
-            texDocument.add("\\end{verbatim}");
-            throw e;
-        }
-    }
-
-    @Override
-    public void setTestBrowser(TestBrowser testBrowser) {
-        this.testBrowser = testBrowser;
-    }
-
-    @Override
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -453,53 +361,6 @@ public final class RenderMachineLatex extends RenderMachine {
         } catch (IOException e) {
             logger.error("Error writing LaTeX file: {}", outputFile, e);
         }
-    }
-
-    private void formatHttpExchange(Request request, Response response) {
-        texDocument.add("");
-        texDocument.add("\\subsubsection*{HTTP Exchange}");
-
-        // Request section
-        texDocument.add("");
-        texDocument.add("\\textbf{Request}");
-        texDocument.add("");
-
-        var requestLines = new ArrayList<String>();
-        String httpMethod = request.httpRequestType;
-        String url = request.uri.toString();
-        requestLines.add(httpMethod + " " + url);
-
-        for (Entry<String, String> header : request.headers.entrySet()) {
-            requestLines.add(header.getKey() + ": " + header.getValue());
-        }
-
-        if (request.payload != null) {
-            requestLines.add("");
-            requestLines.add(request.payloadAsPrettyString());
-        }
-
-        texDocument.add(template.formatCodeBlock(String.join("\n", requestLines), null));
-
-        // Response section
-        texDocument.add("");
-        texDocument.add("\\textbf{Response}");
-        texDocument.add("");
-
-        var responseLines = new ArrayList<String>();
-        responseLines.add("HTTP/1.1 " + response.httpStatus);
-
-        if (!response.headers.isEmpty()) {
-            for (Entry<String, String> header : response.headers.entrySet()) {
-                responseLines.add(header.getKey() + ": " + header.getValue());
-            }
-        }
-
-        if (response.payload != null) {
-            responseLines.add("");
-            responseLines.add(response.payloadAsPrettyString());
-        }
-
-        texDocument.add(template.formatCodeBlock(String.join("\n", responseLines), null));
     }
 
     private String convertStackTraceToString(Throwable throwable) {

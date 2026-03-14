@@ -27,7 +27,6 @@ import io.github.seanchatmangpt.dtr.metadata.DocMetadata;
 import io.github.seanchatmangpt.dtr.render.RenderMachineFactory;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.SayEvent;
-import io.github.seanchatmangpt.dtr.testbrowser.Url;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -123,11 +122,6 @@ public class PhDThesisDocTest extends DtrTest {
     public RenderMachine getRenderMachine() {
         return RenderMachineFactory.createRenderMachine(
                 getClass().getSimpleName(), DocMetadata.fromBuild());
-    }
-
-    @Override
-    public Url testServerUrl() {
-        throw new UnsupportedOperationException("PhD thesis — no HTTP server needed");
     }
 
     // === CHAPTER 0 ===
