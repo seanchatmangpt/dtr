@@ -141,19 +141,24 @@ When `mvnd verify` fails in CI, the question is always:
 
 ## RELEASE COMMANDS
 
+The human decides the type of change. The version number is derived.
+
 ```bash
-make help        # show all targets
-make version     # print current version from pom.xml
-make tag         # create v<VERSION> tag + push → triggers full CI publish
-make release     # alias for tag
-make patch       # bump patch (2.6.0→2.6.1), commit, tag, push
-make minor       # bump minor (2.6.0→2.7.0), commit, tag, push
-make snapshot    # deploy SNAPSHOT to Maven Central (no tag, no GitHub release)
+make release-patch   # bug fix, no API change      → bumps x.y.Z
+make release-minor   # new features, compatible     → bumps x.Y.0
+make release-major   # breaking API change          → bumps X.0.0
+make snapshot        # deploy SNAPSHOT (no tag, no release)
+make version         # print current version
 ```
 
-**Never run `mvn deploy` or `./mvnw deploy` directly.** Use `make tag` for
-releases and `make snapshot` for snapshot deploys. Everything else goes
-through `mvnd verify` first.
+**Never type a version number. Never run `mvn deploy` directly.**
+The scripts own the arithmetic. You own the semantics (patch/minor/major).
+
+Release sequence (all automated after `make release-*`):
+1. `scripts/current-version.sh` — reads version from pom.xml
+2. `scripts/bump-version.sh` — increments, updates all pom.xml files
+3. `scripts/release.sh` — commits, tags `v<VERSION>`, pushes tag
+4. GitHub Actions fires on tag push → `mvnd verify` → `mvnd deploy -Prelease` → `gh release create`
 
 ---
 
