@@ -983,4 +983,117 @@ public interface RenderMachineCommands {
                     + " \u2014 pull, don\u2019t push!");
         }
     }
+
+    // =========================================================================
+    // Blue Ocean: Toyota Kaizen Cycle (Continuous Improvement Measurement)
+    // =========================================================================
+
+    /**
+     * Documents a {@link io.github.seanchatmangpt.dtr.toyota.KaizenCycle.KaizenReport}
+     * as a structured performance trend table plus a summary line.
+     *
+     * <p>Renders one row per cycle showing Cycle, Avg (ns), Min (ns), Max (ns), and
+     * Improvement %. Follows the table with a bold baseline → final summary and
+     * total improvement. Emits a note when improvement exceeds 20% and a warning
+     * when the process has not yet converged.</p>
+     *
+     * @param report the Kaizen report produced by
+     *               {@link io.github.seanchatmangpt.dtr.toyota.KaizenCycle#run}
+     */
+    default void sayKaizenCycle(
+            io.github.seanchatmangpt.dtr.toyota.KaizenCycle.KaizenReport report) {
+
+        var cycles = report.cycles();
+        String[][] table = new String[cycles.size() + 1][5];
+        table[0] = new String[]{"Cycle", "Avg (ns)", "Min (ns)", "Max (ns)", "Improvement %"};
+
+        for (int i = 0; i < cycles.size(); i++) {
+            var c = cycles.get(i);
+            table[i + 1] = new String[]{
+                String.valueOf(c.cycle()),
+                String.valueOf(c.avgNs()),
+                String.valueOf(c.minNs()),
+                String.valueOf(c.maxNs()),
+                String.format("%.2f%%", c.improvementPct())
+            };
+        }
+        sayTable(table);
+
+        say("Baseline: **" + report.baselineNs() + "ns** \u2192 Final: **"
+                + report.finalNs() + "ns** | Total improvement: **"
+                + String.format("%.2f%%", report.totalImprovementPct())
+                + "** | Converged: **" + (report.converged() ? "yes" : "no") + "**");
+
+        if (report.totalImprovementPct() > 20.0) {
+            sayNote("Significant kaizen improvement \u2014 "
+                    + String.format("%.2f%%", report.totalImprovementPct())
+                    + " faster than baseline");
+        }
+
+        if (!report.converged()) {
+            sayWarning("Process has not converged \u2014 more kaizen cycles needed");
+        }
+    }
+
+    // =========================================================================
+    // Blue Ocean: Toyota Andon Board — Stop-the-Line Health Dashboard
+    // =========================================================================
+
+    /**
+     * Renders a Toyota Andon system health dashboard from a
+     * {@link io.github.seanchatmangpt.dtr.toyota.AndonBoard.BoardState}.
+     *
+     * <p>Displays the overall line status (RUNNING or STOPPED), a per-station
+     * signal table, aggregate counts, and appropriate warnings or notes based on
+     * station health. Follows Toyota's Andon philosophy: any RED station stops the
+     * line; YELLOW stations require monitoring.</p>
+     *
+     * <p>Renders:</p>
+     * <ol>
+     *   <li>Bold summary line: line name and RUNNING/STOPPED status</li>
+     *   <li>Table: Station | Signal | Status | Defect</li>
+     *   <li>Count summary: GREEN: N | YELLOW: M | RED: K</li>
+     *   <li>Warning if redCount &gt; 0 (line stopped due to defects)</li>
+     *   <li>Note if line is running but yellowCount &gt; 0 (degraded stations)</li>
+     * </ol>
+     *
+     * @param board the evaluated board state produced by
+     *              {@link io.github.seanchatmangpt.dtr.toyota.AndonBoard#evaluate}
+     */
+    default void sayAndonBoard(
+            io.github.seanchatmangpt.dtr.toyota.AndonBoard.BoardState board) {
+
+        say("**Andon Board: " + board.lineName() + "** \u2014 Line "
+                + (board.lineRunning() ? "\uD83D\uDFE2 RUNNING" : "\uD83D\uDD34 STOPPED"));
+
+        var stations = board.stations();
+        String[][] table = new String[stations.size() + 1][4];
+        table[0] = new String[]{"Station", "Signal", "Status", "Defect"};
+        for (int i = 0; i < stations.size(); i++) {
+            var s = stations.get(i);
+            String defectMsg = s.defect() != null
+                    ? s.defect().getClass().getSimpleName() + ": " + s.defect().getMessage()
+                    : "\u2014";
+            String signalLabel = switch (s.signal()) {
+                case GREEN  -> "\uD83D\uDFE2 GREEN";
+                case YELLOW -> "\uD83D\uDFE1 YELLOW";
+                case RED    -> "\uD83D\uDD34 RED";
+            };
+            table[i + 1] = new String[]{s.name(), signalLabel, s.status(), defectMsg};
+        }
+        sayTable(table);
+
+        say("GREEN: " + board.greenCount()
+                + " | YELLOW: " + board.yellowCount()
+                + " | RED: " + board.redCount());
+
+        if (board.redCount() > 0) {
+            sayWarning("Line stopped \u2014 " + board.redCount()
+                    + " station(s) have defects. Pull the Andon cord!");
+        }
+
+        if (board.lineRunning() && board.yellowCount() > 0) {
+            sayNote("Degraded stations detected \u2014 monitor closely");
+        }
+    }
 }
