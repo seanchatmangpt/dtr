@@ -27,7 +27,8 @@ CURRENT_VERSION := $(shell scripts/current-version.sh)
         build-guard guard-scan guard-scan-json guard-test clean-guard \
         build-observatory observe observe-test clean-observatory \
         dx dx-fast \
-        build-cct cct-test clean-cct
+        build-cct cct-test clean-cct \
+        cache-stats
 
 help:
 	@echo ""
@@ -50,6 +51,11 @@ help:
 	@echo "  release-rc-minor   RC: bump minor, push to GitHub Packages"
 	@echo "  release-rc-patch   RC: bump patch, push to GitHub Packages"
 	@echo "  (promote RC → final with: make release-minor or release-patch)"
+	@echo ""
+	@echo "Release Safety — prevent accidents:"
+	@echo "  make release-minor ARGS=\"--dry-run\"     preview release without pushing"
+	@echo "  make release-patch ARGS=\"--dry-run\"     preview release without pushing"
+	@echo "  make release-rc-minor ARGS=\"--dry-run\"  preview RC without pushing"
 	@echo ""
 	@echo "  publish            deploy locally (needs GPG + Central creds)"
 	@echo "  version            print current project version"
@@ -93,28 +99,34 @@ snapshot:
 	$(MVND) clean deploy -Prelease-rc -Dgpg.skip=true --no-transfer-progress
 
 # ─── Final releases — bump, changelog, commit, tag, push → GitHub Actions ───
+#
+# Usage: make release-minor [ARGS="--dry-run"]
+#   ARGS="--dry-run"  preview changes without executing git operations
 
 release-minor:
 	scripts/bump.sh minor
-	scripts/release.sh
+	scripts/release.sh $(ARGS)
 
 release-patch:
 	scripts/bump.sh patch
-	scripts/release.sh
+	scripts/release.sh $(ARGS)
 
 release-year:
 	scripts/bump.sh year
-	scripts/release.sh
+	scripts/release.sh $(ARGS)
 
 # ─── Release candidates → GitHub Packages ────────────────────────────────────
+#
+# Usage: make release-rc-minor [ARGS="--dry-run"]
+#   ARGS="--dry-run"  preview changes without executing git operations
 
 release-rc-minor:
 	scripts/bump.sh minor rc
-	scripts/release-rc.sh
+	scripts/release-rc.sh $(ARGS)
 
 release-rc-patch:
 	scripts/bump.sh patch rc
-	scripts/release-rc.sh
+	scripts/release-rc.sh $(ARGS)
 
 # ─── Utilities ───────────────────────────────────────────────────────────────
 
