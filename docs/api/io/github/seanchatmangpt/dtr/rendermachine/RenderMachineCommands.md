@@ -7,7 +7,7 @@ Core documentation-output contract for the DTR render machine. <p>Every {@code s
 
 ```java
 public interface RenderMachineCommands {
-    // say, sayNextSection, sayRaw, sayTable, sayCode, sayWarning, sayNote, sayKeyValue, ... (48 total)
+    // say, sayNextSection, sayRaw, sayTable, sayCode, sayWarning, sayNote, sayKeyValue, ... (58 total)
 }
 ```
 
@@ -25,6 +25,18 @@ A text that will be rendered as a paragraph in the documentation. No escaping is
 
 ---
 
+### `sayActorMessages`
+
+Documents actor-model message passing: which actors send what messages to which targets. Renders a Mermaid sequence diagram showing concurrent asynchronous communication without shared state. <p>Blue ocean: Joe Armstrong's "share nothing" discipline made visible — every message hop is explicit, auditable, and always up to date.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `title` | diagram title |
+| `actors` | actor names in order of appearance |
+| `messages` | list of {@code [sender, receiver, message]} triples |
+
+---
+
 ### `sayAgentLoop`
 
 Documents an AI agent's reasoning loop: observations (inputs the agent perceives), decisions (actions it chose), and tools (external calls it made). Renders a sequence diagram showing the agent ↔ environment interaction over one full loop iteration. <p>Blue ocean: the first documentation primitive designed specifically for agentic AI workflows — no other documentation framework has this.</p>
@@ -35,6 +47,18 @@ Documents an AI agent's reasoning loop: observations (inputs the agent perceives
 | `observations` | what the agent observed (in order) |
 | `decisions` | what the agent decided (in order) |
 | `tools` | external tool calls the agent made (in order) |
+
+---
+
+### `sayAndon`
+
+Documents a Toyota Andon-cord production-status board: each workstation and its current status. Renders a table with status-coded rows (✅ Normal / ⚠️ Caution / ❌ Stopped) and a station-health summary. <p>Blue ocean: production dashboards are ephemeral; this generates a point-in-time snapshot in the documentation record.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `system` | system or line name (e.g. "Payment Processing Line") |
+| `stations` | station / service names |
+| `statuses` | status strings: "NORMAL", "CAUTION", or "STOPPED" |
 
 ---
 
@@ -256,6 +280,18 @@ Documents an exception — type, message, full cause chain, and the top 5 stack 
 
 ---
 
+### `sayFaultTolerance`
+
+Documents a "let it crash" fault-tolerance scenario: a list of failures paired with supervisor-driven recoveries. Renders a two-column table plus a recovery-ratio metric (recoveries / failures). <p>Blue ocean: makes the implicit restart contract explicit — reviewers can audit fault coverage without reading OTP supervisor specs.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `scenario` | scenario name (e.g. "Database connection pool exhausted") |
+| `failures` | failure descriptions in order |
+| `recoveries` | supervisor recovery actions in corresponding order |
+
+---
+
 ### `sayFootnote`
 
 Renders a footnote with the given text.
@@ -299,6 +335,32 @@ Serializes an object to JSON and renders it in a code block.
 
 ---
 
+### `sayKaizen`
+
+Documents a Kaizen continuous-improvement event: measures a metric before and after the improvement, renders a comparison table with absolute delta and percentage improvement, and calls out the improvement ratio. <p>Blue ocean: Toyota's improvement discipline applied to software metrics — latency, throughput, defect rate — with machine-verified numbers.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `metric` | name of the metric (e.g. "P99 latency", "Build time") |
+| `before` | measurement samples before the improvement |
+| `after` | measurement samples after the improvement |
+| `unit` | unit label (e.g. "ms", "s", "defects/kloc") |
+
+---
+
+### `sayKanban`
+
+Documents a Kanban board snapshot: items in backlog, in progress (WIP), and done. Renders as a three-column markdown table and reports the WIP count and flow efficiency (done / total). <p>Blue ocean: living documentation of work state — the board IS the documentation, auto-generated from your tracking data.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `board` | board name (e.g. "Sprint 42", "Q2 Infrastructure") |
+| `backlog` | items not yet started |
+| `wip` | items currently in progress |
+| `done` | completed items |
+
+---
+
 ### `sayKeyValue`
 
 Renders key-value pairs in a readable format.
@@ -316,6 +378,18 @@ Renders a raw Mermaid diagram as a fenced {@code mermaid} code block. Mermaid re
 | Parameter | Description |
 | --- | --- |
 | `diagramDsl` | the Mermaid DSL string (e.g., "flowchart TD\n    A --> B") |
+
+---
+
+### `sayMuda`
+
+Documents a Muda (waste) analysis: identifies the seven TPS wastes present in a process and the corresponding improvement actions. Renders a waste-type → description → action table and a waste-elimination ratio. <p>Blue ocean: waste is identified in retrospectives but rarely committed to documentation — this makes the analysis a first-class artefact.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `process` | process name (e.g. "Manual deployment pipeline") |
+| `wastes` | waste descriptions (what waste was found) |
+| `improvements` | improvement actions for each waste |
 
 ---
 
@@ -368,6 +442,31 @@ Renders a parallel execution trace as a Mermaid Gantt chart. Each agent is a sec
 | `title` | chart title |
 | `agents` | agent/thread names (same length as timeSlots) |
 | `timeSlots` | parallel list of {startMs, durationMs} per agent |
+
+---
+
+### `sayPatternMatch`
+
+Documents Erlang-style pattern matching: a set of patterns, the values they are matched against, and whether each match succeeds. Renders a three-column table with ✅ / ❌ match indicators. <p>Blue ocean: pattern-matching logic is tested but never documented — this surfaces the full match matrix as executable specification.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `title` | section title |
+| `patterns` | pattern strings (e.g. "{ok, Value}", "_") |
+| `values` | value strings tested against corresponding patterns |
+| `matches` | true if the pattern matched, false if it did not |
+
+---
+
+### `sayPokaYoke`
+
+Documents Poka-yoke (mistake-proofing) devices: each mistake-proof mechanism and whether it was verified as effective. Renders a mechanism → verified table with ✅ / ❌ indicators and an effectiveness %. <p>Blue ocean: error-prevention mechanisms are described in runbooks but never tested and documented together — this unifies both.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `operation` | operation name (e.g. "Production deployment") |
+| `mistakeProofs` | mistake-proofing mechanism descriptions |
+| `verified` | true if the mechanism was confirmed effective |
 
 ---
 
@@ -445,6 +544,17 @@ Analyzes a string and renders its structural profile using Java string APIs. <p>
 
 ---
 
+### `saySupervisionTree`
+
+Documents an Erlang/OTP-style supervision tree showing which supervisors manage which workers. Renders as a Mermaid {@code graph TD} with supervisor → child edges, restart strategies, and worker counts. <p>Blue ocean: surfaces fault-tolerance topology that is implicit in OTP app files but never visualised in documentation.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `title` | diagram title (e.g. "Payment Service Supervision Tree") |
+| `supervisors` | map of supervisor name → list of child names |
+
+---
+
 ### `sayTable`
 
 Renders a markdown table from a 2D string array. The first row is treated as table headers.
@@ -474,6 +584,18 @@ Renders an unordered (bullet) list.
 | Parameter | Description |
 | --- | --- |
 | `items` | List of strings to render as bullet points. |
+
+---
+
+### `sayValueStream`
+
+Documents a Value Stream Map: the sequence of process steps from demand to delivery, each with a measured cycle time. Renders a bar chart of cycle times and reports total lead time, value-adding time, and efficiency. <p>Blue ocean: value stream mapping is a whiteboard exercise; this generates a measurable, always-current version from real data.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `product` | product or feature name (e.g. "Feature → Production") |
+| `steps` | process step names in flow order |
+| `cycleTimeMs` | measured cycle time for each step in milliseconds |
 
 ---
 

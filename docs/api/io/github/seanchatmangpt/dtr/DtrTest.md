@@ -7,7 +7,7 @@ Abstract base class for documentation testing framework using JUnit 5. <p>DtrTes
 
 ```java
 public abstract class DtrTest implements RenderMachineCommands {
-    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (50 total)
+    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (60 total)
 }
 ```
 
@@ -45,6 +45,12 @@ Inspects the test method for doc annotations and emits the corresponding render-
 
 ---
 
+### `sayActorMessages`
+
+Documents actor-model message passing as a sequence diagram. */
+
+---
+
 ### `sayAgentLoop`
 
 Documents an AI agent's reasoning loop as a sequence diagram. */
@@ -54,6 +60,12 @@ Documents an AI agent's reasoning loop as a sequence diagram. */
 ### `sayAndAssertThat`
 
 Overload for {@code boolean} primitives. */
+
+---
+
+### `sayAndon`
+
+Documents a Toyota Andon-cord production-status board. */
 
 ---
 
@@ -197,6 +209,12 @@ Documents an exception chain in a structured table. */
 
 ---
 
+### `sayFaultTolerance`
+
+Documents a "let it crash" fault-tolerance scenario. */
+
+---
+
 ### `sayHeatmap`
 
 Renders a 2-D ASCII heatmap for matrix data. */
@@ -219,9 +237,27 @@ Renders Javadoc for a method from the dtr-javadoc index. */
 
 ---
 
+### `sayKaizen`
+
+Documents a Kaizen continuous-improvement event with before/after metrics. */
+
+---
+
+### `sayKanban`
+
+Documents a Kanban board snapshot. */
+
+---
+
 ### `sayMermaid`
 
 Renders a raw Mermaid diagram as a fenced code block. */
+
+---
+
+### `sayMuda`
+
+Documents a Muda waste-elimination analysis. */
 
 ---
 
@@ -234,6 +270,18 @@ Renders an op-profile table via Java 26 Code Reflection. */
 ### `sayParallelTrace`
 
 Renders a parallel execution trace as a Mermaid Gantt chart. */
+
+---
+
+### `sayPatternMatch`
+
+Documents Erlang-style pattern matching results. */
+
+---
+
+### `sayPokaYoke`
+
+Documents Poka-yoke mistake-proofing mechanisms and their verification. */
 
 ---
 
@@ -307,6 +355,12 @@ Analyzes a string and renders its structural profile using Java string APIs.
 
 ---
 
+### `saySupervisionTree`
+
+Documents an Erlang/OTP supervision tree as a Mermaid graph. */
+
+---
+
 ### `sayTimeSeries`
 
 Documents a metric time-series with ASCII sparkline and trend summary. */
@@ -330,6 +384,12 @@ Renders a tweetable excerpt (≤280 chars) for social media queue.
 | Parameter | Description |
 | --- | --- |
 | `text` | the text to tweet (will be truncated to 280 chars) |
+
+---
+
+### `sayValueStream`
+
+Documents a Value Stream Map with measured cycle times. */
 
 ---
 
