@@ -65,9 +65,9 @@ impl DecayCache {
 /// Optimized with decay weight caching, pattern map pooling, and fast sigmoid.
 pub struct RiskScorer {
     /// Decay factor (0-1): how much weight to give to violations older than the decay window
-    decay_factor: f64,
+    pub decay_factor: f64,
     /// Window in days: violations older than this decay more aggressively
-    decay_window_days: i64,
+    pub decay_window_days: i64,
     /// Precomputed decay weights for O(1) lookup on hot path
     decay_cache: DecayCache,
 }
@@ -171,6 +171,7 @@ impl RiskScorer {
     /// Older violations decay linearly towards decay_factor.
     /// DEPRECATED: Use DecayCache::get_weight() instead for O(1) performance.
     #[deprecated(since = "0.2.0", note = "Use decay_cache.get_weight() for O(1) lookup")]
+    #[allow(dead_code)]
     #[inline]
     fn compute_decay_weight(&self, age_days: i64) -> f64 {
         self.decay_cache.get_weight(age_days)

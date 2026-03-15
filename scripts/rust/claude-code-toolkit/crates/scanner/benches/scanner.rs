@@ -69,6 +69,21 @@ fn bench_extract_methods(c: &mut Criterion) {
     });
 }
 
+fn bench_extract_methods_repeated(c: &mut Criterion) {
+    let java_content = black_box(create_10kb_java_file());
+    let java_bytes = java_content.as_bytes();
+
+    c.bench_function("extract_methods_repeated_10calls", |b| {
+        b.iter(|| {
+            let mut _count = 0;
+            for _ in 0..10 {
+                _count += extract_methods(java_bytes).len();
+            }
+            _count
+        });
+    });
+}
+
 fn bench_pattern_match(c: &mut Criterion) {
     let pattern_set = PatternSet::new();
     let body = black_box(sample_method());
@@ -121,6 +136,7 @@ fn bench_scanner_single_file(c: &mut Criterion) {
 criterion_group!(
     benches,
     bench_extract_methods,
+    bench_extract_methods_repeated,
     bench_pattern_match,
     bench_walk_files,
     bench_scanner_single_file

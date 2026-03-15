@@ -106,12 +106,95 @@ fn bench_apply_edits_with_diff(c: &mut Criterion) {
     });
 }
 
+// Scaling benchmark: test edit count from 1 → 10 → 100
+fn bench_scaling_edits(c: &mut Criterion) {
+    let source = black_box(large_java_source()); // 10KB
+
+    let mut group = c.benchmark_group("edit_scaling");
+    for edit_count in [1, 10, 100].iter() {
+        group.bench_with_input(
+            BenchmarkId::from_parameter(format!("{}_edits", edit_count)),
+            edit_count,
+            |b, &count| {
+                b.iter(|| {
+                    let mut plan = RemediationPlan::new("/tmp/test.java");
+                    for i in 0..count {
+                        let start = (i * (source.len() / count)).saturating_sub(1);
+                        let end = (start + 5).min(source.len());
+                        if start < end {
+                            plan.add_edit(Edit::new(start, end, "X"));
+                        }
+                    }
+                    plan.sort_edits();
+                    apply_edits(&source, &plan).ok()
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
+// Batch write benchmark: test 10KB, 100KB, 1MB files
+fn bench_atomic_write_scaling(c: &mut Criterion) {
+    let temp_dir = TempDir::new().expect("create temp dir");
+
+    let mut group = c.benchmark_group("atomic_write_scaling");
+    for size_kb in [10, 100, 1024].iter() {
+        let data = vec![b'x'; size_kb * 1024];
+        let data = black_box(data);
+
+        group.bench_with_input(
+            BenchmarkId::from_parameter(format!("{}kb", size_kb)),
+            size_kb,
+            |b, &_size| {
+                let mut counter = 0;
+                b.iter(|| {
+                    counter += 1;
+                    let path = temp_dir.path().join(format!("file_{}.bin", counter));
+                    atomic_write(&path, &data).ok()
+                });
+            },
+        );
+    }
+    group.finish();
+    drop(temp_dir);
+}
+
+// Diff generation benchmark on large file
+fn bench_diff_generation(c: &mut Criterion) {
+    // Create a 100KB source file
+    let mut large_source = Vec::new();
+    for _ in 0..50 {
+        large_source.extend_from_slice(&large_java_source());
+    }
+    let source = black_box(large_source);
+
+    c.bench_function("diff_generation_100kb_file", |b| {
+        b.iter(|| {
+            let mut plan = RemediationPlan::new("/tmp/test.java");
+            // Apply sparse edits (5 across 100KB)
+            for i in 0..5 {
+                let start = (i * source.len()) / 5;
+                let end = (start + 20).min(source.len());
+                if start < end {
+                    plan.add_edit(Edit::new(start, end, "OPTIMIZED"));
+                }
+            }
+            plan.sort_edits();
+            apply_edits(&source, &plan).ok()
+        });
+    });
+}
+
 criterion_group!(
     benches,
     bench_apply_single_edit,
     bench_apply_10_edits,
     bench_atomic_write,
-    bench_apply_edits_with_diff
+    bench_apply_edits_with_diff,
+    bench_scaling_edits,
+    bench_atomic_write_scaling,
+    bench_diff_generation
 );
 
 criterion_main!(benches);
