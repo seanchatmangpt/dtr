@@ -1,11 +1,11 @@
-/// Thread-safe lazy-loading cache for RiskScorer models.
-///
-/// Provides efficient caching of configured RiskScorer instances
-/// to avoid repeated decay cache construction and decay parameter computation.
+//! Thread-safe lazy-loading cache for RiskScorer models.
+//!
+//! Provides efficient caching of configured RiskScorer instances
+//! to avoid repeated decay cache construction and decay parameter computation.
 
 use crate::scorer::RiskScorer;
-use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 /// Thread-safe lazy-loading cache for RiskScorer models.
 ///
@@ -95,7 +95,10 @@ mod tests {
         let scorer1 = cache.get_scorer(0.5, 90);
         let scorer2 = cache.get_scorer(0.3, 60);
 
-        assert!(scorer1.decay_factor != scorer2.decay_factor || scorer1.decay_window_days != scorer2.decay_window_days);
+        assert!(
+            scorer1.decay_factor != scorer2.decay_factor
+                || scorer1.decay_window_days != scorer2.decay_window_days
+        );
         assert_eq!(cache.size(), 2);
     }
 

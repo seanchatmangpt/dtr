@@ -5,8 +5,8 @@
 /// Javadoc comment.
 
 use std::path::Path;
-use crate::error::{DocViolation, ViolationKind};
-use crate::parser::child_text_by_kind;
+use super::error::{DocViolation, ViolationKind};
+use super::parser::child_text_by_kind;
 
 /// Find all public, non-@Override methods and top-level type declarations that
 /// lack an immediately preceding `/** ... */` Javadoc comment.

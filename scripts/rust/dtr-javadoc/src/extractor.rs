@@ -1,18 +1,19 @@
-/// Javadoc extraction from Java source files.
-///
-/// This module handles parsing Java source files, extracting method-level and
-/// module-level documentation via tree-sitter queries, and assembling per-file
-/// results.
+//! Javadoc extraction from Java source files.
+//!
+//! This module handles parsing Java source files, extracting method-level and
+//! module-level documentation via tree-sitter queries, and assembling per-file
+//! results.
 
 use std::collections::HashMap;
 use std::path::Path;
 use rayon::prelude::*;
+use tree_sitter::StreamingIterator;
 use walkdir::WalkDir;
 
-use crate::model::{JavadocEntry, ModuleDoc, FileDocResult};
-use crate::parser::{parse_javadoc_comment, child_text_by_kind};
-use crate::util::{derive_package, class_name_from_path};
-use crate::validator::find_violations;
+use super::model::{JavadocEntry, ModuleDoc, FileDocResult};
+use super::parser::parse_javadoc_comment;
+use super::util::{derive_package, class_name_from_path};
+use super::validator::find_violations;
 
 /// Finds `(block_comment) . (method_declaration | constructor_declaration)` pairs.
 /// The `.` anchor enforces immediate adjacency — the Javadoc spec.
@@ -73,7 +74,7 @@ pub fn process_all(
 ) -> (
     HashMap<String, JavadocEntry>,
     Vec<ModuleDoc>,
-    crate::error::DocViolation,
+    Vec<super::error::DocViolation>,
 ) {
     let files: Vec<std::path::PathBuf> = WalkDir::new(source_dir)
         .into_iter()
@@ -92,7 +93,7 @@ pub fn process_all(
 
     let mut method_docs: HashMap<String, JavadocEntry> = HashMap::new();
     let mut module_docs: Vec<ModuleDoc> = Vec::new();
-    let mut violations: Vec<crate::error::DocViolation> = Vec::new();
+    let mut violations: Vec<super::error::DocViolation> = Vec::new();
 
     for r in results {
         for (k, v) in r.method_docs {
@@ -198,10 +199,10 @@ fn extract_method_docs(
         .unwrap_or(1);
 
     let mut cursor = tree_sitter::QueryCursor::new();
-    let mut qmatches = cursor.matches(&java_query, root, source);
+    let qmatches = cursor.matches(&java_query, root, source);
     let mut results = Vec::new();
 
-    while let Some(m) = qmatches.next() {
+    for m in qmatches {
         let doc_node = m.captures.iter().find(|c| c.index as usize == doc_idx);
         let name_node = m.captures.iter().find(|c| c.index as usize == name_idx);
 
@@ -237,9 +238,9 @@ fn extract_module_doc(
     let decl_idx = capture_names.iter().position(|n| *n == "decl").unwrap_or(2);
 
     let mut cursor = tree_sitter::QueryCursor::new();
-    let mut qmatches = cursor.matches(&java_query, root, source);
+    let qmatches = cursor.matches(&java_query, root, source);
 
-    while let Some(m) = qmatches.next() {
+    for m in qmatches {
         let doc_node = m.captures.iter().find(|c| c.index as usize == doc_idx);
         let decl_node = m.captures.iter().find(|c| c.index as usize == decl_idx);
 

@@ -63,6 +63,28 @@ impl DecayCache {
 /// Risk scorer that computes a normalized [0, 1] risk score.
 /// Uses temporal decay: recent violations weight more than old ones.
 /// Optimized with decay weight caching, pattern map pooling, and fast sigmoid.
+///
+/// # Examples
+///
+/// ```
+/// use cct_oracle::RiskScorer;
+/// use cct_oracle::ViolationRecord;
+/// use chrono::Utc;
+///
+/// let scorer = RiskScorer::new();
+///
+/// // Empty violations -> zero risk
+/// let score = scorer.score_risk(&[]);
+/// assert_eq!(score, 0.0);
+///
+/// // Recent violation -> higher risk
+/// let recent = ViolationRecord {
+///     pattern: "unsafe-cast".to_string(),
+///     timestamp: Utc::now(),
+/// };
+/// let score = scorer.score_risk(&[recent.clone()]);
+/// assert!(score > 0.0 && score <= 1.0);
+/// ```
 #[derive(Clone, Debug)]
 pub struct RiskScorer {
     /// Decay factor (0-1): how much weight to give to violations older than the decay window
@@ -77,6 +99,16 @@ impl RiskScorer {
     /// Create a new risk scorer with default parameters.
     /// Decay window: 90 days. Decay factor: 0.5.
     /// Builds decay cache (~10KB) for O(1) weight lookups.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_oracle::RiskScorer;
+    ///
+    /// let scorer = RiskScorer::new();
+    /// assert_eq!(scorer.decay_factor, 0.5);
+    /// assert_eq!(scorer.decay_window_days, 90);
+    /// ```
     pub fn new() -> Self {
         let decay_factor = 0.5;
         let decay_window_days = 90;
@@ -89,6 +121,17 @@ impl RiskScorer {
 
     /// Create a new risk scorer with custom decay parameters.
     /// Builds decay cache for the custom parameters.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_oracle::RiskScorer;
+    ///
+    /// // Custom decay: more lenient older violations
+    /// let scorer = RiskScorer::with_decay(0.2, 180);
+    /// assert_eq!(scorer.decay_factor, 0.2);
+    /// assert_eq!(scorer.decay_window_days, 180);
+    /// ```
     pub fn with_decay(decay_factor: f64, decay_window_days: i64) -> Self {
         let decay_factor = decay_factor.clamp(0.0, 1.0);
         let decay_window_days = decay_window_days.max(1);
@@ -110,6 +153,31 @@ impl RiskScorer {
     /// - Cached decay weights: O(1) lookup instead of 200ns computation
     /// - Fast sigmoid: log-free approximation for final normalization
     /// - Pattern deduplication via HashMap (unavoidable for correctness)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_oracle::{RiskScorer, ViolationRecord};
+    /// use chrono::Utc;
+    ///
+    /// let scorer = RiskScorer::new();
+    ///
+    /// // Multiple recent violations -> higher risk
+    /// let violations = vec![
+    ///     ViolationRecord {
+    ///         pattern: "unsafe-cast".to_string(),
+    ///         timestamp: Utc::now(),
+    ///     },
+    ///     ViolationRecord {
+    ///         pattern: "hardcoded-secret".to_string(),
+    ///         timestamp: Utc::now(),
+    ///     },
+    /// ];
+    ///
+    /// let score = scorer.score_risk(&violations);
+    /// assert!(score > 0.0 && score <= 1.0);
+    /// assert!(score > 0.3); // Multiple violations should score high
+    /// ```
     pub fn score_risk(&self, violations: &[ViolationRecord]) -> f64 {
         if violations.is_empty() {
             return 0.0;

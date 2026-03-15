@@ -60,28 +60,23 @@ fn create_violated_java_file(path: &PathBuf, violation_count: usize) {
     file.write_all(java_code.as_bytes()).unwrap();
 }
 
-/// Benchmark: Single file scan latency (baseline).
-fn bench_single_file() {
+/// Criterion-based benchmark: Single file scan latency (baseline).
+fn criterion_single_file(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
-    let file_path = temp_dir.path().join("Single.java");
-
+    let file_path = black_box(temp_dir.path().join("Single.java"));
     create_clean_java_file(&file_path, 10);
 
     let scanner = Scanner::new();
 
-    let start = Instant::now();
-    let result = scanner.scan_file(&file_path).unwrap();
-    let elapsed = start.elapsed();
-
-    println!(
-        "✓ Single file scan: {:.2}ms (violations: {})",
-        elapsed.as_secs_f64() * 1000.0,
-        result.violations.len()
-    );
+    c.bench_function("latency_single_file_baseline", |b| {
+        b.iter(|| {
+            let _ = scanner.scan_file(&file_path);
+        });
+    });
 }
 
-/// Benchmark: 10 files sequential vs parallel.
-fn bench_ten_files() {
+/// Criterion-based benchmark: 10 files parallel scan.
+fn criterion_ten_files(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
     let mut files = Vec::new();
 
@@ -91,42 +86,23 @@ fn bench_ten_files() {
         files.push(file_path);
     }
 
+    let files = black_box(files);
     let scanner = Scanner::new();
 
-    // Sequential baseline
-    let start = Instant::now();
-    let mut _violations = 0;
-    for file in &files {
-        if let Ok(result) = scanner.scan_file(file) {
-            _violations += result.violations.len();
-        }
-    }
-    let sequential_elapsed = start.elapsed();
-
-    // Parallel scan
-    let start = Instant::now();
-    let results = scanner.scan_files_parallel(&files);
-    let parallel_violations: usize = results.iter().map(|r| r.violations.len()).sum();
-    let parallel_elapsed = start.elapsed();
-
-    let speedup = sequential_elapsed.as_secs_f64() / parallel_elapsed.as_secs_f64();
-    println!(
-        "✓ 10 files:  sequential={:.2}ms, parallel={:.2}ms, speedup={:.2}x (violations: {})",
-        sequential_elapsed.as_secs_f64() * 1000.0,
-        parallel_elapsed.as_secs_f64() * 1000.0,
-        speedup,
-        parallel_violations
-    );
+    c.bench_function("latency_ten_files_parallel", |b| {
+        b.iter(|| {
+            let _ = scanner.scan_files_parallel(&files);
+        });
+    });
 }
 
-/// Benchmark: 100 files with target 4-8x speedup.
-fn bench_hundred_files() {
+/// Criterion-based benchmark: 100 files parallel scan with statistical percentiles.
+fn criterion_hundred_files(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
     let mut files = Vec::new();
 
     for i in 0..100 {
         let file_path = temp_dir.path().join(format!("File{:03}.java", i));
-        // Mix of clean and violated files (80% clean, 20% violated)
         if i % 5 == 0 {
             create_violated_java_file(&file_path, 3);
         } else {
@@ -135,36 +111,23 @@ fn bench_hundred_files() {
         files.push(file_path);
     }
 
+    let files = black_box(files);
     let scanner = Scanner::new();
 
-    // Sequential baseline
-    let start = Instant::now();
-    let mut _violations = 0;
-    for file in &files {
-        if let Ok(result) = scanner.scan_file(file) {
-            _violations += result.violations.len();
-        }
-    }
-    let sequential_elapsed = start.elapsed();
+    let mut group = c.benchmark_group("latency_100_files");
+    group.sample_size(20); // 20 samples for statistical analysis
 
-    // Parallel scan
-    let start = Instant::now();
-    let results = scanner.scan_files_parallel(&files);
-    let parallel_violations: usize = results.iter().map(|r| r.violations.len()).sum();
-    let parallel_elapsed = start.elapsed();
+    group.bench_function("parallel_scan", |b| {
+        b.iter(|| {
+            let _ = scanner.scan_files_parallel(&files);
+        });
+    });
 
-    let speedup = sequential_elapsed.as_secs_f64() / parallel_elapsed.as_secs_f64();
-    println!(
-        "✓ 100 files: sequential={:.2}ms, parallel={:.2}ms, speedup={:.2}x (violations: {})",
-        sequential_elapsed.as_secs_f64() * 1000.0,
-        parallel_elapsed.as_secs_f64() * 1000.0,
-        speedup,
-        parallel_violations
-    );
+    group.finish();
 }
 
-/// Benchmark: 1000 files (production scale).
-fn bench_thousand_files() {
+/// Criterion-based benchmark: 1000 files parallel scan (production scale).
+fn criterion_thousand_files(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
     let mut files = Vec::new();
 
@@ -178,45 +141,26 @@ fn bench_thousand_files() {
         files.push(file_path);
     }
 
+    let files = black_box(files);
     let scanner = Scanner::new();
 
-    // Sequential baseline (sample first 100 for reasonable benchmark time)
-    let sample_size = 100;
-    let start = Instant::now();
-    let mut _violations = 0;
-    for file in files.iter().take(sample_size) {
-        if let Ok(result) = scanner.scan_file(file) {
-            _violations += result.violations.len();
-        }
-    }
-    let sequential_sample_elapsed = start.elapsed();
-    let sequential_estimated =
-        sequential_sample_elapsed.as_secs_f64() * (1000.0 / sample_size as f64);
+    let mut group = c.benchmark_group("latency_1000_files");
+    group.sample_size(10); // Smaller sample for large workload
 
-    // Parallel scan (full 1000 files)
-    let start = Instant::now();
-    let results = scanner.scan_files_parallel(&files);
-    let parallel_violations: usize = results.iter().map(|r| r.violations.len()).sum();
-    let parallel_elapsed = start.elapsed();
+    group.bench_function("parallel_scan", |b| {
+        b.iter(|| {
+            let _ = scanner.scan_files_parallel(&files);
+        });
+    });
 
-    let speedup = sequential_estimated / parallel_elapsed.as_secs_f64();
-    println!(
-        "✓ 1000 files: sequential_est={:.2}ms (from 100 sample), parallel={:.2}ms, speedup={:.2}x (violations: {})",
-        sequential_estimated * 1000.0,
-        parallel_elapsed.as_secs_f64() * 1000.0,
-        speedup,
-        parallel_violations
-    );
+    group.finish();
 }
 
-fn main() {
-    println!("\n════ Concurrency Optimization Benchmarks ════\n");
-    println!("Target: 4-8x speedup on 4-core CPU for 100+ files\n");
-
-    bench_single_file();
-    bench_ten_files();
-    bench_hundred_files();
-    bench_thousand_files();
-
-    println!("\n════ Benchmark Complete ════\n");
-}
+criterion_group!(
+    benches,
+    criterion_single_file,
+    criterion_ten_files,
+    criterion_hundred_files,
+    criterion_thousand_files
+);
+criterion_main!(benches);

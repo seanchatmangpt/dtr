@@ -7,6 +7,36 @@
 //! - source-stats.json   Java file counts by module
 //! - tests.json          Test class counts by module
 //! - guard-status.json   H-Guard scan result
+//!
+//! # Example
+//!
+//! Generate all facts for a project:
+//!
+//! ```no_run
+//! use dtr_observatory::{gather_modules, gather_java_profile, gather_rust_capabilities,
+//!                      gather_source_stats, gather_tests, gather_guard_status, write_facts};
+//! use std::path::Path;
+//!
+//! let root = Path::new(".");
+//! let modules = gather_modules(root).expect("gather_modules");
+//! let java_profile = gather_java_profile(root).expect("gather_java_profile");
+//! let rust_caps = gather_rust_capabilities(root).expect("gather_rust_capabilities");
+//! let source_stats = gather_source_stats(root).expect("gather_source_stats");
+//! let tests = gather_tests(root).expect("gather_tests");
+//! let guard_status = gather_guard_status(root).expect("gather_guard_status");
+//!
+//! let facts = vec![
+//!     ("modules.json", modules),
+//!     ("java-profile.json", java_profile),
+//!     ("rust-capabilities.json", rust_caps),
+//!     ("source-stats.json", source_stats),
+//!     ("tests.json", tests),
+//!     ("guard-status.json", guard_status),
+//! ];
+//!
+//! let output_dir = root.join("docs").join("facts");
+//! write_facts(&output_dir, &facts).expect("write_facts");
+//! ```
 
 use anyhow::{Context, Result};
 use serde_json::{json, Value};
@@ -22,6 +52,18 @@ use walkdir::WalkDir;
 /// # Errors
 ///
 /// Returns an error if the directory cannot be read or files cannot be parsed.
+///
+/// # Example
+///
+/// ```no_run
+/// use dtr_observatory::gather_modules;
+/// use std::path::Path;
+///
+/// let root = Path::new(".");
+/// let modules_json = gather_modules(root).expect("gather_modules");
+/// assert!(modules_json["version"].is_string());
+/// assert!(modules_json["modules"].is_array());
+/// ```
 pub fn gather_modules(root: &Path) -> Result<Value> {
     let pom = root.join("pom.xml");
     let content =

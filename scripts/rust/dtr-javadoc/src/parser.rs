@@ -1,11 +1,11 @@
-/// Javadoc comment parsing via tree-sitter-javadoc.
-///
-/// This module uses the tree-sitter-javadoc grammar to parse `/** ... */` comments
-/// into structured `JavadocEntry` types with description, parameters, returns,
-/// throws, and meta-tags.
+//! Javadoc comment parsing via tree-sitter-javadoc.
+//!
+//! This module uses the tree-sitter-javadoc grammar to parse `/** ... */` comments
+//! into structured `JavadocEntry` types with description, parameters, returns,
+//! throws, and meta-tags.
 
-use crate::model::{JavadocEntry, ParamDoc, ThrowsDoc};
-use crate::util::clean_comment_text;
+use super::model::{JavadocEntry, ParamDoc, ThrowsDoc};
+use super::util::clean_comment_text;
 
 /// Parse a `/** ... */` comment into a structured `JavadocEntry`.
 ///

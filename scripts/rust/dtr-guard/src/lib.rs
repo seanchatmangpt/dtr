@@ -5,6 +5,39 @@
 //!
 //! Each pattern is a compiled regex applied line-by-line to Java source.
 //! Files in test source trees are excluded by default.
+//!
+//! # Examples
+//!
+//! Compile the patterns once and scan multiple lines:
+//!
+//! ```
+//! use dtr_guard::GuardPatterns;
+//!
+//! let patterns = GuardPatterns::compile();
+//! let violations = patterns.scan_line("        // TODO fix this", 42, "Example.java");
+//! assert!(!violations.is_empty());
+//! assert_eq!(violations[0].code, "H_TODO");
+//! ```
+//!
+//! Scan content from a string (e.g., proposed code changes):
+//!
+//! ```
+//! use dtr_guard::{scan_content, GuardPatterns};
+//!
+//! let patterns = GuardPatterns::compile();
+//! let code = "public void process() { // TODO implement\n}";
+//! let violations = scan_content(code, "proposed.java", &patterns);
+//! assert!(!violations.is_empty());
+//! ```
+//!
+//! Check if a file path is in a test directory:
+//!
+//! ```
+//! use dtr_guard::is_test_path;
+//!
+//! assert!(is_test_path("src/test/java/FooTest.java"));
+//! assert!(!is_test_path("src/main/java/Foo.java"));
+//! ```
 
 use anyhow::Result;
 use regex::Regex;
@@ -47,6 +80,17 @@ impl GuardPatterns {
     /// # Panics
     /// Panics if any of the regex patterns fail to compile (e.g., due to invalid regex syntax).
     /// This is a programmer error and should never occur with the hardcoded patterns.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use dtr_guard::GuardPatterns;
+    ///
+    /// let patterns = GuardPatterns::compile();
+    /// // Reuse patterns across many scan_line() calls for efficiency
+    /// let v1 = patterns.scan_line("// TODO", 1, "file.java");
+    /// let v2 = patterns.scan_line("return null;", 2, "file.java");
+    /// ```
     #[must_use]
     pub fn compile() -> Self {
         GuardPatterns {
@@ -102,6 +146,22 @@ impl GuardPatterns {
 
     /// Scan a single line against all H-Guard patterns.
     /// Returns zero or more violations (a line can match multiple patterns).
+    ///
+    /// # Arguments
+    /// * `line` — the source line (may contain leading/trailing whitespace)
+    /// * `line_num` — 1-based line number (for error reporting)
+    /// * `file` — file path or label (for error reporting)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use dtr_guard::GuardPatterns;
+    ///
+    /// let patterns = GuardPatterns::compile();
+    /// let violations = patterns.scan_line("    public void foo() { }", 10, "Example.java");
+    /// assert!(!violations.is_empty());
+    /// assert!(violations.iter().any(|v| v.code == "H_EMPTY"));
+    /// ```
     #[must_use]
     pub fn scan_line(&self, line: &str, line_num: usize, file: &str) -> Vec<Violation> {
         let mut hits = Vec::new();

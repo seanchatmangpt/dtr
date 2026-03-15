@@ -48,7 +48,6 @@ fn integration_oracle_works() {
     let _scorer = cct_oracle::scorer::RiskScorer::new();
 
     // Scorer can be created
-    assert!(true);
     println!("Oracle risk scorer initialized");
 }
 
@@ -83,7 +82,7 @@ fn integration_patterns_works() {
     let default_patterns: Vec<(cct_patterns::PatternConfig, regex::Regex)> = vec![];
     let violations = cct_patterns::scan_content(java_content, "test.java", &default_patterns);
 
-    assert!(violations.len() >= 0, "Pattern scan completed");
+    // Pattern scan completed, violations can be 0 or more
     println!("Patterns scanned: {} violations", violations.len());
 }
 

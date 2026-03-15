@@ -23,6 +23,27 @@ pub mod hasher {
     /// Streaming ensures efficient processing of variable-sized inputs.
     ///
     /// Target: <10µs per method body on modern CPUs with AVX-512 support.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_cache::hasher::hash_method_body;
+    ///
+    /// let body = b"public void foo() { return null; }";
+    ///
+    /// // Hash is deterministic
+    /// let hash1 = hash_method_body(body);
+    /// let hash2 = hash_method_body(body);
+    /// assert_eq!(hash1, hash2);
+    ///
+    /// // Hash is always 32 bytes (blake3)
+    /// assert_eq!(hash1.len(), 32);
+    ///
+    /// // Different inputs produce different hashes
+    /// let other = b"public void bar() { return null; }";
+    /// let hash3 = hash_method_body(other);
+    /// assert_ne!(hash1, hash3);
+    /// ```
     #[inline(always)]
     pub fn hash_method_body(body_bytes: &[u8]) -> [u8; 32] {
         // blake3 native SIMD is enabled via Cargo.toml features
@@ -141,6 +162,19 @@ pub mod store {
         ///
         /// # Errors
         /// Returns an error if the database cannot be created or initialized.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use cct_cache::store::Store;
+        /// use tempfile::TempDir;
+        ///
+        /// let temp = TempDir::new().unwrap();
+        /// let db_path = temp.path().join("cache.db");
+        ///
+        /// let store = Store::new(&db_path).unwrap();
+        /// // Store is ready to use
+        /// ```
         pub fn new(db_path: &Path) -> Result<Self> {
             let db = Database::create(db_path)?;
             // Initialize tables on creation
@@ -168,6 +202,30 @@ pub mod store {
         ///
         /// # Panics
         /// Never panics. Recovers from poisoned locks by discarding pending data.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use cct_cache::store::{Store, CachedScanResult};
+        /// use tempfile::TempDir;
+        /// use std::time::{SystemTime, UNIX_EPOCH};
+        ///
+        /// let temp = TempDir::new().unwrap();
+        /// let store = Store::new(&temp.path().join("cache.db")).unwrap();
+        ///
+        /// let hash = [42u8; 32];
+        /// let result = CachedScanResult {
+        ///     path: "Test.java".to_string(),
+        ///     violation_count: 3,
+        ///     cached_at: SystemTime::now()
+        ///         .duration_since(UNIX_EPOCH)
+        ///         .unwrap()
+        ///         .as_secs(),
+        /// };
+        ///
+        /// store.insert(&hash, &result).unwrap();
+        /// store.flush_batch().unwrap();
+        /// ```
         #[inline(always)]
         pub fn insert(&self, hash: &[u8; 32], result: &CachedScanResult) -> Result<()> {
             // Encode once, reuse in both direct and batched paths
@@ -236,6 +294,34 @@ pub mod store {
         ///
         /// # Errors
         /// Returns an error if opening a read transaction or deserializing the cached result fails.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use cct_cache::store::{Store, CachedScanResult};
+        /// use tempfile::TempDir;
+        /// use std::time::{SystemTime, UNIX_EPOCH};
+        ///
+        /// let temp = TempDir::new().unwrap();
+        /// let store = Store::new(&temp.path().join("cache.db")).unwrap();
+        ///
+        /// let hash = [123u8; 32];
+        /// let result = CachedScanResult {
+        ///     path: "App.java".to_string(),
+        ///     violation_count: 2,
+        ///     cached_at: SystemTime::now()
+        ///         .duration_since(UNIX_EPOCH)
+        ///         .unwrap()
+        ///         .as_secs(),
+        /// };
+        ///
+        /// store.insert(&hash, &result).unwrap();
+        /// store.flush_batch().unwrap();
+        ///
+        /// let retrieved = store.query(&hash).unwrap();
+        /// assert!(retrieved.is_some());
+        /// assert_eq!(retrieved.unwrap().path, "App.java");
+        /// ```
         pub fn query(&self, hash: &[u8; 32]) -> Result<Option<CachedScanResult>> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(SCAN_RESULTS_TABLE)?;

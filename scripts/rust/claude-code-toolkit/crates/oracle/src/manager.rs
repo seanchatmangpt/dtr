@@ -2,9 +2,8 @@
 ///
 /// Provides a unified interface to coordinate model training, caching,
 /// and batch risk scoring across the oracle subsystem.
-
 use crate::cache::ModelCache;
-use crate::model::{FileStats, ViolationRecord};
+use crate::model::ViolationRecord;
 use crate::naive_bayes::NaiveBayesOracle;
 use crate::scorer::RiskScorer;
 

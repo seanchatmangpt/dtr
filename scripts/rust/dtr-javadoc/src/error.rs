@@ -1,8 +1,8 @@
-/// Documentation violation types and TPS Jidoka enforcement.
-///
-/// This module defines violation detection types used to enforce the TPS rule:
-/// "stop the line on every missing doc". A violation indicates a public type or
-/// method that lacks an immediately preceding Javadoc comment.
+//! Documentation violation types and TPS Jidoka enforcement.
+//!
+//! This module defines violation detection types used to enforce the TPS rule:
+//! "stop the line on every missing doc". A violation indicates a public type or
+//! method that lacks an immediately preceding Javadoc comment.
 
 use std::path::PathBuf;
 

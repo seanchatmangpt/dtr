@@ -24,3 +24,8 @@ serde_json = { workspace = true }
 anyhow = { workspace = true }
 walkdir = { workspace = true }
 regex = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+tempfile = "3"
+chrono = { workspace = true }

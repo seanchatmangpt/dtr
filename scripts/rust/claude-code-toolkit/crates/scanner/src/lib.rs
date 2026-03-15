@@ -414,6 +414,26 @@ const DEFAULT_EXCLUDES: &[&str] = &["/src/test/", "Test.java", "DocTest.java", "
 /// Walk `root` for `.java` files, skipping test paths and `.gitignore`-d entries.
 ///
 /// `extra_excludes` extends the default exclusion list with additional path substrings.
+///
+/// Default exclusions: `/src/test/`, `Test.java`, `DocTest.java`, `/target/`
+///
+/// # Examples
+///
+/// ```
+/// use cct_scanner::walk_java_files;
+/// use std::path::PathBuf;
+/// use tempfile::TempDir;
+/// use std::fs;
+///
+/// let temp = TempDir::new().unwrap();
+/// let src = temp.path().join("src");
+/// fs::create_dir_all(&src).unwrap();
+/// fs::write(src.join("App.java"), "public class App {}").unwrap();
+///
+/// let files = walk_java_files(temp.path(), &[]);
+/// assert_eq!(files.len(), 1);
+/// assert!(files[0].ends_with("App.java"));
+/// ```
 pub fn walk_java_files(root: &Path, extra_excludes: &[&str]) -> Vec<PathBuf> {
     let all_excludes: Vec<&str> = DEFAULT_EXCLUDES
         .iter()
@@ -482,6 +502,19 @@ pub struct Scanner {
 }
 
 impl Scanner {
+    /// Create a new scanner with all H-Guard patterns ready to use.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_scanner::Scanner;
+    /// use std::path::Path;
+    ///
+    /// let scanner = Scanner::new();
+    /// let java_code = b"public class Test { public void foo() { return null; } }";
+    /// let result = scanner.scan_source(Path::new("Test.java"), java_code);
+    /// assert!(result.violations.iter().any(|v| v.pattern == "H_STUB_NULL"));
+    /// ```
     pub fn new() -> Self {
         Scanner {
             patterns: PatternSet::new(),
@@ -490,6 +523,34 @@ impl Scanner {
     }
 
     /// Scan in-memory source bytes. Used directly in tests and by `scan_file`.
+    ///
+    /// Performs both per-method scanning (H_TODO, H_STUB_*, H_MOCK, etc.)
+    /// and class-level scanning (H_MOCK_CLASS for mock/stub/fake class declarations).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_scanner::Scanner;
+    /// use std::path::Path;
+    ///
+    /// let scanner = Scanner::new();
+    /// let code = r#"
+    /// public class UserService {
+    ///     public User getUser() {
+    ///         // TODO: fetch from database
+    ///         return null;
+    ///     }
+    /// }
+    /// "#;
+    ///
+    /// let result = scanner.scan_source(
+    ///     Path::new("UserService.java"),
+    ///     code.as_bytes()
+    /// );
+    /// assert!(!result.violations.is_empty());
+    /// assert!(result.violations.iter().any(|v| v.pattern == "H_TODO"));
+    /// assert!(result.violations.iter().any(|v| v.pattern == "H_STUB_NULL"));
+    /// ```
     pub fn scan_source(&self, path: &Path, source: &[u8]) -> ScanResult {
         let methods = extract_methods(source);
         let mut violations = Vec::new();
@@ -524,6 +585,21 @@ impl Scanner {
     ///
     /// # Errors
     /// Returns an error if the file cannot be opened or memory-mapped.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_scanner::Scanner;
+    /// use tempfile::NamedTempFile;
+    /// use std::io::Write;
+    ///
+    /// let mut file = NamedTempFile::new().unwrap();
+    /// writeln!(file, "public class Test {{ public void foo() {{ return null; }} }}").unwrap();
+    ///
+    /// let scanner = Scanner::new();
+    /// let result = scanner.scan_file(file.path()).unwrap();
+    /// assert!(!result.violations.is_empty());
+    /// ```
     pub fn scan_file(&self, path: &Path) -> Result<ScanResult> {
         let file = File::open(path)?;
         // SAFETY: we do not mutate the backing file while the mapping is live.

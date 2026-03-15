@@ -1,19 +1,46 @@
+//! `cct-oracle` — Naive Bayes violation risk scoring and prediction.
+//!
+//! Analyzes H-Guard pattern violation history across Java source files to predict
+//! which files are most likely to contain violations. Used by the scanner to prioritize
+//! files for faster detection and interactive feedback.
+//!
+//! # Architecture
+//!
+//! - [`NaiveBayesOracle`]: Trains on historical violation data (pattern + file pairs)
+//! - [`RiskScorer`]: Scores individual files based on trained probabilities
+//! - [`FileStats`]: Summary of a file's violation history and risk profile
+//! - [`ViolationRecord`]: Single violation event (pattern + timestamp)
+//!
+//! # Example
+//!
+//! ```ignore
+//! use cct_oracle::{NaiveBayesOracle, RiskScorer};
+//!
+//! let mut oracle = NaiveBayesOracle::new();
+//! oracle.add_training_sample("src/Main.java", &violation_history);
+//! oracle.train();
+//!
+//! let scorer = RiskScorer::from(&oracle);
+//! let risk_score = scorer.score_file("src/Utils.java");
+//! println!("Risk score: {:.3}", risk_score);
+//! ```
+
 // Public module exports
+pub mod error;
+pub mod manager;
 pub mod model;
 pub mod naive_bayes;
 pub mod scorer;
-pub mod manager;
-pub mod error;
 
 // Internal modules (not exposed in public API)
 mod cache;
 
 // Public API re-exports
+pub use error::{OracleError, Result};
+pub use manager::OracleManager;
 pub use model::{FileStats, ViolationRecord};
 pub use naive_bayes::NaiveBayesOracle;
 pub use scorer::RiskScorer;
-pub use manager::OracleManager;
-pub use error::{OracleError, Result};
 
 #[cfg(test)]
 mod tests {

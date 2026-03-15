@@ -1,3 +1,15 @@
+//! End-to-end benchmark suite for cct-scanner.
+//!
+//! Measures complete scan workflows across various file scenarios:
+//! - Single file baseline
+//! - 10 files with cold/hot cache
+//! - 100 files with cache warmup
+//! - 1000 files at production scale
+//! - Large file with 500 methods
+//!
+//! Uses Criterion framework with percentile tracking (p50/p95/p99).
+//! Run with: `cargo bench --release end_to_end -- --nocapture --verbose`
+
 use cct_scanner::Scanner;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::fs;

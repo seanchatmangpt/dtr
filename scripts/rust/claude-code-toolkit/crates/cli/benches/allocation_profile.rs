@@ -3,10 +3,11 @@
 //! Measures:
 //! - Allocation counts in hot paths (scanner, oracle, cache stages)
 //! - Memory peak RSS for various file counts
-//! - Per-file latency breakdown (time per file, not total)
+//! - Per-file latency breakdown with percentile analysis (p50/p95/p99)
 //! - Scaling behavior from 1 to 1000 files
 //!
-//! Run with: `cargo bench --release -- --nocapture allocation`
+//! Uses Criterion framework for statistical analysis with percentile reporting.
+//! Run with: `cargo bench --release allocation -- --nocapture --verbose`
 
 use cct_scanner::Scanner;
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
@@ -65,10 +66,11 @@ public class CleanExample {
     .to_string()
 }
 
-/// Benchmark per-file latency: <10ms hot, <100ms cold
+/// Benchmark per-file latency with percentile tracking: <10ms hot, <100ms cold
 fn bench_per_file_latency(c: &mut Criterion) {
     let mut group = c.benchmark_group("per_file_latency");
     group.sample_size(50); // Smaller sample for consistency
+    group.measurement_time(std::time::Duration::from_secs(10)); // Extended measurement for percentiles
 
     let temp_dir = TempDir::new().expect("create temp dir");
     let scanner = Scanner::new();
@@ -93,7 +95,7 @@ fn bench_per_file_latency(c: &mut Criterion) {
         let root = black_box(temp_dir.path().to_path_buf());
 
         group.bench_with_input(
-            BenchmarkId::from_parameter(scenario),
+            BenchmarkId::from_parameter(&scenario),
             file_count,
             |b, fc| {
                 b.iter(|| {
@@ -109,10 +111,11 @@ fn bench_per_file_latency(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark amortized per-file cost with scaling
+/// Benchmark amortized per-file cost with scaling and percentile tracking
 fn bench_amortized_scaling(c: &mut Criterion) {
     let mut group = c.benchmark_group("amortized_per_file");
-    group.measurement_time(std::time::Duration::from_secs(5));
+    group.measurement_time(std::time::Duration::from_secs(10)); // Increased for better percentile data
+    group.sample_size(30); // Ensure adequate samples for p50/p95/p99
 
     let temp_dir = TempDir::new().expect("create temp dir");
     let scanner = Scanner::new();
@@ -154,9 +157,13 @@ fn bench_amortized_scaling(c: &mut Criterion) {
     group.finish();
 }
 
-/// Benchmark memory stability: should stay <50MB even for 10K files
+/// Benchmark memory stability with percentile tracking: should stay <50MB even for 10K files
 fn bench_memory_stability(c: &mut Criterion) {
-    c.bench_function("memory_stability_100_files", |b| {
+    let mut group = c.benchmark_group("memory_stability");
+    group.sample_size(20); // Adequate samples for percentile tracking
+    group.measurement_time(std::time::Duration::from_secs(5));
+
+    group.bench_function("scan_100_files", |b| {
         b.iter_batched(
             || {
                 let temp_dir = TempDir::new().expect("create temp dir");
@@ -187,10 +194,16 @@ fn bench_memory_stability(c: &mut Criterion) {
             criterion::BatchSize::SmallInput,
         );
     });
+
+    group.finish();
 }
 
-/// Benchmark cache hit rate after warmup
+/// Benchmark cache hit rate after warmup with percentile tracking
 fn bench_cache_hit_rate(c: &mut Criterion) {
+    let mut group = c.benchmark_group("cache_hit_rate");
+    group.sample_size(40); // More samples for percentile accuracy
+    group.measurement_time(std::time::Duration::from_secs(5));
+
     let temp_dir = TempDir::new().expect("create temp dir");
     let scanner = Scanner::new();
 
@@ -214,7 +227,12 @@ fn bench_cache_hit_rate(c: &mut Criterion) {
     scanner.scan_files_parallel(&files);
     let cold_elapsed = cold_start.elapsed();
 
-    c.bench_function("cache_hit_rate_50_identical_files", |b| {
+    eprintln!(
+        "Cache warmup (cold): {:.2}ms",
+        cold_elapsed.as_secs_f64() * 1000.0
+    );
+
+    group.bench_function("hot_cache_50_identical", |b| {
         b.iter(|| {
             let files: Vec<PathBuf> = (0..50)
                 .map(|i| root.join(format!("Identical{}.java", i)))
@@ -223,10 +241,7 @@ fn bench_cache_hit_rate(c: &mut Criterion) {
         });
     });
 
-    eprintln!(
-        "Cache warmup (cold): {:.2}ms",
-        cold_elapsed.as_secs_f64() * 1000.0
-    );
+    group.finish();
 }
 
 criterion_group!(

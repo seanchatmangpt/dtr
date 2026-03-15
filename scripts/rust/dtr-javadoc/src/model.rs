@@ -1,10 +1,10 @@
-/// Data models for Javadoc extraction.
-///
-/// This module defines the core data structures for representing extracted
-/// documentation at the method and module levels, plus per-file results.
+//! Data models for Javadoc extraction.
+//!
+//! This module defines the core data structures for representing extracted
+//! documentation at the method and module levels, plus per-file results.
 
 use serde::{Deserialize, Serialize};
-use crate::error::DocViolation;
+use super::error::DocViolation;
 
 /// Method-level Javadoc entry with description, parameters, returns, throws, and tags.
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
