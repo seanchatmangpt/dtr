@@ -98,7 +98,7 @@ if [ ! -f "${MAVEN4_HOME}/bin/mvn" ]; then
 fi
 
 INSTALLED_MVN_VERSION=$("${MAVEN4_HOME}/bin/mvn" --version 2>/dev/null \
-    | grep -oP 'Apache Maven \K[0-9]+[^ ]+' | head -1 || echo "unknown")
+    | awk '/^Apache Maven/{print $3}' | head -1 || echo "unknown")
 if [[ "$INSTALLED_MVN_VERSION" != 4.* ]]; then
     fail "Expected Maven 4.x, got: $INSTALLED_MVN_VERSION"
 fi
@@ -157,11 +157,11 @@ EOF
 # manage this themselves; only inject in sandboxed remote sessions.
 if [ "$OS" != "Darwin" ] && [ ! -f "$HOME/.m2/settings.xml" ]; then
     log "Configuring Maven proxy settings..."
-    PROXY_HOST=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP '(?<=proxyHost=)[^ ]+' | head -1 || true)
-    PROXY_PORT=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP '(?<=proxyPort=)[^ ]+' | head -1 || true)
-    PROXY_USER=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP '(?<=proxyUser=)[^ ]+' | head -1 || true)
-    PROXY_PASS=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP '(?<=proxyPassword=)[^ ]+' | head -1 || true)
-    NOPROXY=$(echo "${JAVA_TOOL_OPTIONS:-}" | grep -oP '(?<=nonProxyHosts=)[^ ]+' | head -1 || true)
+    PROXY_HOST=$(echo "${JAVA_TOOL_OPTIONS:-}" | sed -n 's/.*proxyHost=\([^ ]*\).*/\1/p' | head -1 || true)
+    PROXY_PORT=$(echo "${JAVA_TOOL_OPTIONS:-}" | sed -n 's/.*proxyPort=\([^ ]*\).*/\1/p' | head -1 || true)
+    PROXY_USER=$(echo "${JAVA_TOOL_OPTIONS:-}" | sed -n 's/.*proxyUser=\([^ ]*\).*/\1/p' | head -1 || true)
+    PROXY_PASS=$(echo "${JAVA_TOOL_OPTIONS:-}" | sed -n 's/.*proxyPassword=\([^ ]*\).*/\1/p' | head -1 || true)
+    NOPROXY=$(echo "${JAVA_TOOL_OPTIONS:-}" | sed -n 's/.*nonProxyHosts=\([^ ]*\).*/\1/p' | head -1 || true)
 
     if [ -n "$PROXY_HOST" ] && [ -n "$PROXY_PORT" ]; then
         log "Writing Maven settings.xml with proxy: ${PROXY_HOST}:${PROXY_PORT}"
