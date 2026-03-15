@@ -58,10 +58,10 @@ sealed interface SayEvent permits
 
 | Check | Result |
 | --- | --- |
+| All 4 pipeline events processed | `✓ PASS` |
 | No instanceof in render dispatch | `✓ PASS` |
 | Records ensure immutability | `✓ PASS` |
 | Sealed hierarchy enforces completeness | `✓ PASS` |
-| All 4 pipeline events processed | `✓ PASS` |
 
 > [!NOTE]
 > Add SayEvent.NewFormatEvent to the sealed interface: every switch in every renderer fails to compile until it handles the new case. Silent no-ops are structurally impossible.
@@ -114,13 +114,13 @@ void testConcurrentCacheInvalidation() {
 
 | Key | Value |
 | --- | --- |
+| `Property-Based Library` | `jqwik (50k test cases)` |
+| `Concurrency Level` | `32 virtual threads` |
 | `Fuzzing Engine` | `libFuzzer integration` |
 | `Test Framework` | `JUnit 5 + Hamcrest` |
 | `Mutation Score` | `98.7%` |
 | `Coverage Target` | `100% branch coverage` |
 | `Timeout Per Test` | `5 seconds` |
-| `Property-Based Library` | `jqwik (50k test cases)` |
-| `Concurrency Level` | `32 virtual threads` |
 
 ## Testing Capabilities
 
@@ -165,12 +165,12 @@ Test execution metadata is captured and available for export:
 
 | Check | Result |
 | --- | --- |
+| Performance regression free | `✓ avg 142ms (within SLA)` |
 | Code coverage adequate | `✓ 100% branch coverage` |
 | Mutation score acceptable | `✓ 98.7% > 98.0% threshold` |
 | Unit tests pass | `✓ 1,243/1,247 (99.68%)` |
 | Property invariants hold | `✓ 50,000/50,000 (100%)` |
 | Fuzzing finds no crashes | `✓ 1,000,000/1,000,000 (100%)` |
-| Performance regression free | `✓ avg 142ms (within SLA)` |
 
 ## Patent-Specific Testing Methodology
 
@@ -223,10 +223,10 @@ The implementation exhibits high mutation resistance (98.7% mutation kill rate):
   "mutationEngine" : "PIT (Pitest)",
   "mutationsKilled" : 1013,
   "mutationsCovered" : {
+    "arithmeticMutations" : "98.1%",
     "conditionalMutations" : "99.8%",
     "boundaryMutations" : "100%",
-    "returnValueMutations" : "97.2%",
-    "arithmeticMutations" : "98.1%"
+    "returnValueMutations" : "97.2%"
   }
 }
 ```
@@ -257,11 +257,11 @@ void propertyConcurrentMapEventualConsistency(@ForAll List<String> keys) {
 
 | Check | Result |
 | --- | --- |
+| Test cases generated per property | `50,000` |
+| Shrinking examples enabled | `Yes` |
 | Properties defined | `12` |
 | Failures found and fixed | `3` |
 | Total property checks executed | `600,000` |
-| Test cases generated per property | `50,000` |
-| Shrinking examples enabled | `Yes` |
 
 ## Fuzzing (Libfuzzer)
 
@@ -282,11 +282,11 @@ public void fuzzJsonParser(byte[] data) {
 
 | Key | Value |
 | --- | --- |
+| `Time budget per iteration` | `100ms` |
 | `Fuzz iterations` | `1,000,000` |
 | `Timeout violations` | `0` |
 | `Unique crashes found` | `0` |
 | `Memory leaks found` | `0` |
-| `Time budget per iteration` | `100ms` |
 
 ## Invariant-Based Testing
 
