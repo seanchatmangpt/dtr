@@ -699,4 +699,65 @@ public final class SlideRenderMachine extends RenderMachine {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void sayDiff(String before, String after, String language) {
+        slides.append("---\n");
+        slides.append("# Code Diff\n\n");
+        if (language != null && !language.isEmpty()) {
+            slides.append("```diff\n");
+            slides.append("--- before (").append(language).append(")\n");
+            slides.append("+++ after (").append(language).append(")\n");
+        } else {
+            slides.append("```diff\n");
+            slides.append("--- before\n");
+            slides.append("+++ after\n");
+        }
+
+        if (before != null && after != null) {
+            String[] beforeLines = before.split("\n", -1);
+            String[] afterLines = after.split("\n", -1);
+
+            int i = 0, j = 0;
+            while (i < beforeLines.length && j < afterLines.length) {
+                if (beforeLines[i].equals(afterLines[j])) {
+                    slides.append(" ").append(beforeLines[i]).append("\n");
+                    i++;
+                    j++;
+                } else {
+                    slides.append("-").append(beforeLines[i]).append("\n");
+                    i++;
+                    if (j < afterLines.length && !afterLines[j].equals(beforeLines[i >= beforeLines.length ? beforeLines.length - 1 : i])) {
+                        slides.append("+").append(afterLines[j]).append("\n");
+                        j++;
+                    }
+                }
+            }
+
+            while (i < beforeLines.length) {
+                slides.append("-").append(beforeLines[i]).append("\n");
+                i++;
+            }
+
+            while (j < afterLines.length) {
+                slides.append("+").append(afterLines[j]).append("\n");
+                j++;
+            }
+        }
+
+        slides.append("```\n");
+    }
+
+    @Override
+    public void sayBreakingChange(String what, String removedIn, String migrateWith) {
+        slides.append("---\n");
+        slides.append("# Breaking Change\n\n");
+        slides.append("> [!WARNING]\n");
+        slides.append("> **Breaking Change:** ").append(what != null ? what : "API change")
+            .append(" removed in ").append(removedIn != null ? removedIn : "next version").append("\n");
+        if (migrateWith != null && !migrateWith.isEmpty()) {
+            slides.append(">\n");
+            slides.append("> ").append(migrateWith).append("\n");
+        }
+    }
 }

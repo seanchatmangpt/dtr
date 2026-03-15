@@ -31,6 +31,35 @@ PASSED_CHECKS=0
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 
+# ─── Helper functions (define early) ───────────────────────────────────────
+show_help() {
+    cat << EOF
+DTR Precondition Validator — Check toolchain before build/release
+
+Usage:
+  scripts/check-preconditions.sh                 Check all required tools
+  scripts/check-preconditions.sh --tool java     Check specific tool (java|mvn|git|rust)
+  scripts/check-preconditions.sh --verbose       Show detailed diagnostics
+  scripts/check-preconditions.sh --fix-action    Display fix commands (no checks)
+
+Tools Validated:
+  • Java 26+ (required for all builds)
+  • Maven 4.0.0+ or mvnd 2.0.0+ (required for compile/test/release)
+  • Git (required for version/tag management)
+  • Rust + Cargo (optional, required only for Rust tools)
+
+Exit Codes:
+  0 = all checks passed
+  1 = one or more checks failed (see FIX section)
+  2 = internal error (script issue)
+
+Examples:
+  make check                             # Run from Makefile
+  scripts/check-preconditions.sh         # Full validation
+  scripts/check-preconditions.sh --verbose --tool java
+EOF
+}
+
 # ─── Argument parsing ──────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -69,34 +98,6 @@ log_info() {
 
 log_fix() {
     echo -e "  ${YELLOW}FIX:${RESET} $*"
-}
-
-show_help() {
-    cat << EOF
-DTR Precondition Validator — Check toolchain before build/release
-
-Usage:
-  scripts/check-preconditions.sh                 Check all required tools
-  scripts/check-preconditions.sh --tool java     Check specific tool (java|mvn|git|rust)
-  scripts/check-preconditions.sh --verbose       Show detailed diagnostics
-  scripts/check-preconditions.sh --fix-action    Display fix commands (no checks)
-
-Tools Validated:
-  • Java 26+ (required for all builds)
-  • Maven 4.0.0+ or mvnd 2.0.0+ (required for compile/test/release)
-  • Git (required for version/tag management)
-  • Rust + Cargo (optional, required only for Rust tools)
-
-Exit Codes:
-  0 = all checks passed
-  1 = one or more checks failed (see FIX section)
-  2 = internal error (script issue)
-
-Examples:
-  make check                             # Run from Makefile
-  scripts/check-preconditions.sh         # Full validation
-  scripts/check-preconditions.sh --verbose --tool java
-EOF
 }
 
 # ─── Version parsing helpers ──────────────────────────────────────────────

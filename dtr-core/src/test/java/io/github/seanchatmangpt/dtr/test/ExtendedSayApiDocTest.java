@@ -494,6 +494,65 @@ class ExtendedSayApiDocTest extends DtrTest {
             "the documentation changes on the next test run. This is the fundamental " +
             "property that distinguishes DTR from every other documentation tool."
         );
+
+        // ========================================================================
+        // sayDiff() — unified diff with syntax highlighting
+        // ========================================================================
+        sayNextSection("sayDiff() — Unified Diff with Syntax Highlighting");
+
+        say(
+            "Documents code migrations and API changes with before/after diffs. Renders " +
+            "unified diff format with syntax highlighting support for Java, YAML, JSON, " +
+            "XML, properties, and other languages."
+        );
+
+        say("Example: Demonstrating a method refactoring with added null safety:");
+
+        sayDiff(
+            "public String getValue() {\n    return value;\n}",
+            "public String getValue() {\n    return Objects.requireNonNull(value, \"value must not be null\");\n}",
+            "java"
+        );
+
+        say("The diff above shows a real-world migration: adding null-safety guards. " +
+            "`sayDiff()` encodes this migration path directly in the documentation.");
+
+        // ========================================================================
+        // sayBreakingChange() — machine-readable breaking change documentation
+        // ========================================================================
+        sayNextSection("sayBreakingChange() — Machine-Readable Breaking Changes");
+
+        say(
+            "Breaking changes are the most dangerous category of API documentation. " +
+            "They must be discovered by automation (CI/CD, dependency analysis tools), " +
+            "not by humans reading release notes. `sayBreakingChange()` encodes the removal, " +
+            "version, and migration path in both human-readable markdown and machine-readable " +
+            "JSON for automated processing."
+        );
+
+        sayBreakingChange(
+            "sayFoo() method",
+            "v2027.0",
+            "Use sayBar() instead — offers improved null safety and better error messages"
+        );
+
+        say("The warning above is rendered as GitHub-style [!WARNING] in markdown and " +
+            "structured JSON in release notes:");
+
+        sayCode(
+            "{\n" +
+            "  \"removed\": \"sayFoo() method\",\n" +
+            "  \"version\": \"v2027.0\",\n" +
+            "  \"migration\": \"Use sayBar() instead — offers improved null safety and better error messages\"\n" +
+            "}",
+            "json"
+        );
+
+        sayNote(
+            "The JSON structure enables Maven Central, language-specific package managers, " +
+            "and dependency scanners to parse breaking changes programmatically. Tools like " +
+            "Dependabot, Renovate, and SonarQube can now guide engineers toward compatible versions."
+        );
     }
 
 }

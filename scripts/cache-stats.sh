@@ -24,24 +24,27 @@ NC='\033[0m' # No Color
 
 # Collect current environment fingerprint
 collect_env() {
-    local java_version=$(java -version 2>&1 | head -1)
-    local mvnd_version=$($MVND --version 2>&1 | head -1)
-    local os_info=$(uname -a)
+    local java_version=$(java -version 2>&1 | head -1 | sed 's/"/\\"/g')
+    local mvnd_version=$($MVND --version 2>&1 | head -1 | sed 's/"/\\"/g')
+    local os_info=$(uname -a | sed 's/"/\\"/g')
     local pom_hash=$(md5sum pom.xml | awk '{print $1}')
     local config_hash=$(md5sum .mvn/maven.config 2>/dev/null | awk '{print $1}' || echo "N/A")
     local timestamp=$(date +%s)
+    local cache_exists=$([ -d "$CACHE_DIR" ] && echo "true" || echo "false")
+    local cache_size=$(du -sb "$CACHE_DIR" 2>/dev/null | awk '{print $1}' || echo "0")
 
-    echo "{
-  \"timestamp\": $timestamp,
-  \"java_version\": \"$(echo "$java_version" | sed 's/"/\\"/g')\",
-  \"mvnd_version\": \"$(echo "$mvnd_version" | sed 's/"/\\"/g')\",
-  \"os_info\": \"$(echo "$os_info" | sed 's/"/\\"/g')\",
-  \"pom_hash\": \"$pom_hash\",
-  \"config_hash\": \"$config_hash\",
-  \"cache_dir_exists\": $([ -d "$CACHE_DIR" ] && echo 'true' || echo 'false'),
-  \"cache_dir_size\": $(du -sh "$CACHE_DIR" 2>/dev/null | awk '{print $1}' || echo '0'),
-  \"cache_dir_size_bytes\": $(du -sb "$CACHE_DIR" 2>/dev/null | awk '{print $1}' || echo '0')
-}"
+    cat <<EOF
+{
+  "timestamp": $timestamp,
+  "java_version": "$java_version",
+  "mvnd_version": "$mvnd_version",
+  "os_info": "$os_info",
+  "pom_hash": "$pom_hash",
+  "config_hash": "$config_hash",
+  "cache_dir_exists": $cache_exists,
+  "cache_dir_size_bytes": $cache_size
+}
+EOF
 }
 
 # Check if cache is valid
