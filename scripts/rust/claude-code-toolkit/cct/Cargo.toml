@@ -15,6 +15,10 @@ cct-git = { path = "../cct-git" }
 cct-patterns = { path = "../cct-patterns" }
 cct-facts = { path = "../cct-facts" }
 cct-pipeline = { path = "../cct-pipeline" }
+cct-scanner = { path = "../crates/scanner" }
+cct-cache = { path = "../crates/cache" }
+cct-oracle = { path = "../crates/oracle" }
+cct-remediate = { path = "../crates/remediate" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }

@@ -187,11 +187,15 @@ name = "cct"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "cct-cache",
  "cct-facts",
  "cct-git",
  "cct-hooks",
+ "cct-oracle",
  "cct-patterns",
  "cct-pipeline",
+ "cct-remediate",
+ "cct-scanner",
  "serde",
  "serde_json",
  "walkdir",
