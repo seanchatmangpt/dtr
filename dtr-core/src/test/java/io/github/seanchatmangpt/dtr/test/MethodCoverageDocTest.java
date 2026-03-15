@@ -18,7 +18,6 @@ package io.github.seanchatmangpt.dtr.test;
 import io.github.seanchatmangpt.dtr.DtrTest;
 import io.github.seanchatmangpt.dtr.benchmark.BenchmarkComparison;
 import io.github.seanchatmangpt.dtr.methodcoverage.MethodCoverageTracker;
-import io.github.seanchatmangpt.dtr.methodcoverage.MethodCoverageTracker.CoverageResult;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
