@@ -450,6 +450,9 @@ pub mod manager {
         ///
         /// Optimization: Uses Arc-wrapped results to avoid cloning on L1 hits.
         /// L2 misses promote to L1 with zero-copy Arc sharing.
+        ///
+        /// # Errors
+        /// Returns an error if querying the disk store fails.
         #[inline(always)]
         pub fn query(&self, method_body: &[u8]) -> Result<Option<CachedScanResult>> {
             let hash = hash_method_body(method_body);
@@ -477,6 +480,9 @@ pub mod manager {
         /// L2 write is buffered and may auto-flush after 100 accumulated inserts.
         ///
         /// Target: <5µs for L1 only, <50µs amortized for L2 batch commit.
+        ///
+        /// # Errors
+        /// Returns an error if inserting to the disk store fails.
         #[inline(always)]
         pub fn insert(&self, method_body: &[u8], result: &CachedScanResult) -> Result<()> {
             let hash = hash_method_body(method_body);
@@ -492,11 +498,17 @@ pub mod manager {
         }
 
         /// Insert method metadata by pre-computed hash.
+        ///
+        /// # Errors
+        /// Returns an error if the underlying store operation fails.
         pub fn insert_method_metadata(&self, hash: &[u8; 32], method_name: &str) -> Result<()> {
             self.store.insert_method_metadata(hash, method_name)
         }
 
         /// Query method metadata by pre-computed hash.
+        ///
+        /// # Errors
+        /// Returns an error if the underlying store operation fails.
         pub fn query_method_metadata(&self, hash: &[u8; 32]) -> Result<Option<String>> {
             self.store.query_method_metadata(hash)
         }
