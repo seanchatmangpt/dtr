@@ -5,7 +5,6 @@
 use crate::editor::RemediationPlan;
 use anyhow::{anyhow, Result};
 use similar::TextDiff;
-use std::str;
 
 /// Apply edits from a remediation plan to source bytes.
 /// Returns the modified source and a unified diff string.

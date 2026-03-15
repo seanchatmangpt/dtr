@@ -88,7 +88,7 @@ pub struct ScanReceipt {
 
 impl ScanReceipt {
     fn new(violations: Vec<ScanViolation>, files_scanned: usize, cache_hits: usize, priority_time: f64) -> Self {
-        let status = if violations.is_empty() { "GREEN" } else { "RED" };
+        let status = if violations.is_empty() { "GREEN".to_string() } else { "RED".to_string() };
         Self {
             status,
             violation_count: violations.len(),
@@ -189,7 +189,7 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
 
     // Layer 1 + 2: Scan with caching
     let mut violations = Vec::new();
-    let mut cache_hits = 0;
+    let cache_hits = 0;
     for file_path in sorted_files {
         match scanner.scan_file(&file_path) {
             Ok(result) => {
