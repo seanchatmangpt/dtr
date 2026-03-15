@@ -1,3 +1,8 @@
+/// Thread-safe lazy-loading cache for RiskScorer models.
+///
+/// Provides efficient caching of configured RiskScorer instances
+/// to avoid repeated decay cache construction and decay parameter computation.
+
 use crate::scorer::RiskScorer;
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
@@ -9,8 +14,11 @@ use std::collections::HashMap;
 ///
 /// **Performance benefit:** Model loads in ~100µs (once per session) instead of
 /// per-scorer creation.
+///
+/// This is part of the internal cache layer and is accessed through
+/// the OracleManager public API for most use cases.
 #[derive(Debug, Clone)]
-pub struct ModelCache {
+pub(crate) struct ModelCache {
     /// Cached scorers by configuration (decay_factor, decay_window_days)
     cache: Arc<Mutex<HashMap<(i32, i64), RiskScorer>>>,
 }

@@ -167,19 +167,26 @@ pub mod store {
         /// Returns an error if serialization fails or if flushing the batch fails.
         ///
         /// # Panics
-        /// Panics if the write buffer lock is poisoned.
+        /// Never panics. Recovers from poisoned locks by discarding pending data.
         #[inline(always)]
         pub fn insert(&self, hash: &[u8; 32], result: &CachedScanResult) -> Result<()> {
             // Encode once, reuse in both direct and batched paths
             let encoded = bincode::serialize(result)?;
 
-            let mut buffer = self.write_buffer.lock().unwrap();
+            // Recover from poisoned locks instead of panicking
+            let mut buffer = match self.write_buffer.lock() {
+                Ok(guard) => guard,
+                Err(poisoned) => poisoned.into_inner(),
+            };
 
             // Auto-flush when buffer reaches 100 (reduces round-trips)
             if buffer.len() >= 100 {
                 drop(buffer); // Release lock
                 self.flush_batch()?;
-                buffer = self.write_buffer.lock().unwrap();
+                buffer = match self.write_buffer.lock() {
+                    Ok(guard) => guard,
+                    Err(poisoned) => poisoned.into_inner(),
+                };
             }
 
             buffer.push(WriteOperation {
@@ -196,22 +203,30 @@ pub mod store {
         /// Returns an error if opening a write transaction, inserting records, or committing fails.
         ///
         /// # Panics
-        /// Panics if the write buffer lock is poisoned.
+        /// Never panics. Recovers from poisoned locks by discarding pending data.
         pub fn flush_batch(&self) -> Result<()> {
-            let mut buffer = self.write_buffer.lock().unwrap();
+            // Recover from poisoned locks instead of panicking
+            let mut buffer = match self.write_buffer.lock() {
+                Ok(guard) => guard,
+                Err(poisoned) => poisoned.into_inner(),
+            };
             if buffer.is_empty() {
                 return Ok(());
             }
 
             // Single transaction for all buffered writes (one round-trip instead of N)
             let write_txn = self.db.begin_write()?;
+            let mut inserted_count = 0;
             {
                 let mut table = write_txn.open_table(SCAN_RESULTS_TABLE)?;
-                for op in buffer.drain(..) {
+                for op in buffer.iter() {
                     table.insert(&op.hash, op.encoded.as_slice())?;
+                    inserted_count += 1;
                 }
             }
             write_txn.commit()?;
+            // Only remove successfully committed entries from buffer
+            buffer.drain(..inserted_count);
             Ok(())
         }
 
@@ -230,7 +245,7 @@ pub mod store {
                     // Avoid unnecessary Vec allocation: deserialize borrowed slice directly
                     let result = bincode::deserialize(entry.value())?;
                     Ok(Some(result))
-                }
+                },
                 None => Ok(None),
             }
         }

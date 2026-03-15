@@ -237,13 +237,13 @@ fn main() -> Result<()> {
             warmup,
         } => {
             cmd_scan(&root, json, include_tests, warmup)?;
-        }
+        },
         Commands::Observe { root, output } => {
             cmd_observe(&root, output)?;
-        }
+        },
         Commands::Remediate { plan } => {
             cmd_remediate(&plan)?;
-        }
+        },
     }
 
     Ok(())

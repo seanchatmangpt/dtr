@@ -1,10 +1,19 @@
+// Public module exports
 pub mod model;
 pub mod naive_bayes;
 pub mod scorer;
+pub mod manager;
+pub mod error;
 
+// Internal modules (not exposed in public API)
+mod cache;
+
+// Public API re-exports
 pub use model::{FileStats, ViolationRecord};
 pub use naive_bayes::NaiveBayesOracle;
 pub use scorer::RiskScorer;
+pub use manager::OracleManager;
+pub use error::{OracleError, Result};
 
 #[cfg(test)]
 mod tests {

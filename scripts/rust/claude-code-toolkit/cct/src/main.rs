@@ -26,11 +26,11 @@ fn main() -> Result<()> {
         "--help" | "-h" | "help" => {
             print_usage();
             Ok(())
-        }
+        },
         unknown => {
             eprintln!("cct: unknown subcommand '{unknown}'. Try 'cct help'.");
             process::exit(1);
-        }
+        },
     }
 }
 
@@ -48,7 +48,7 @@ fn cmd_scan(args: &[String]) -> Result<()> {
             "--config" => {
                 i += 1;
                 config_path = args.get(i).map(PathBuf::from);
-            }
+            },
             f => files.push(PathBuf::from(f)),
         }
         i += 1;
@@ -100,13 +100,13 @@ fn cmd_observe(args: &[String]) -> Result<()> {
             "--root" => {
                 i += 1;
                 root = args.get(i).map(PathBuf::from).unwrap_or(root);
-            }
+            },
             "--output" => {
                 i += 1;
                 output = args.get(i).map(PathBuf::from);
-            }
+            },
             "--quiet" => quiet = true,
-            _ => {}
+            _ => {},
         }
         i += 1;
     }
@@ -151,12 +151,12 @@ fn cmd_dx(args: &[String]) -> Result<()> {
                     "Build".into()
                 };
                 skip_phases.push(phase);
-            }
+            },
             "--phase" => {
                 i += 1;
                 single_phase = args.get(i).cloned();
-            }
-            _ => {}
+            },
+            _ => {},
         }
         i += 1;
     }
@@ -182,7 +182,7 @@ fn cmd_dx(args: &[String]) -> Result<()> {
                 match cct_facts::write_facts(&root_clone.join("docs/facts"), &facts) {
                     Ok(_) => {
                         cct_pipeline::PhaseResult::green(format!("{} facts written", facts.len()))
-                    }
+                    },
                     Err(e) => cct_pipeline::PhaseResult::red(format!("facts failed: {e}")),
                 }
             }
@@ -218,7 +218,7 @@ fn cmd_dx(args: &[String]) -> Result<()> {
                         } else {
                             cct_pipeline::PhaseResult::green("no output (assume clean)")
                         }
-                    }
+                    },
                     Err(e) => cct_pipeline::PhaseResult::red(format!("guard failed: {e}")),
                 }
             }
@@ -234,7 +234,7 @@ fn cmd_dx(args: &[String]) -> Result<()> {
                 } else {
                     cct_pipeline::PhaseResult::green("working tree clean")
                 }
-            }
+            },
             Err(e) => cct_pipeline::PhaseResult::red(format!("git check failed: {e}")),
         });
 
@@ -265,7 +265,7 @@ fn cmd_hook(args: &[String]) -> Result<()> {
         _ => {
             eprintln!("cct hook: specify 'stop' or 'pre-tool-use'");
             process::exit(1);
-        }
+        },
     }
 }
 

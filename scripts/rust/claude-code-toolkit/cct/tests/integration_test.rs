@@ -125,16 +125,17 @@ fn integration_git_works() {
 
     // Git: can detect state
     let temp_dir = PathBuf::from("/tmp");
-    let git_state = cct_git::git_state(&temp_dir)
-        .unwrap_or_else(|_| cct_git::GitState {
-            branch: "unknown".to_string(),
-            has_uncommitted: false,
-            untracked_files: vec![],
-            unpushed_count: 0,
-        });
+    let git_state = cct_git::git_state(&temp_dir).unwrap_or_else(|_| cct_git::GitState {
+        branch: "unknown".to_string(),
+        has_uncommitted: false,
+        untracked_files: vec![],
+        unpushed_count: 0,
+    });
 
-    println!("Git state: branch={}, uncommitted={}",
-             git_state.branch, git_state.has_uncommitted);
+    println!(
+        "Git state: branch={}, uncommitted={}",
+        git_state.branch, git_state.has_uncommitted
+    );
 }
 
 #[test]

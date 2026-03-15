@@ -17,7 +17,8 @@ fn bench_blake3_hash_micro(c: &mut Criterion) {
             for (String item : items) {
                 System.out.println(item);
             }
-        }".repeat(4);
+        }"
+    .repeat(4);
     let medium_body = black_box(medium_src.as_bytes());
     group.throughput(Throughput::Bytes(medium_body.len() as u64));
     group.bench_function("method_512b", |b| b.iter(|| hash_method_body(medium_body)));
@@ -27,7 +28,8 @@ fn bench_blake3_hash_micro(c: &mut Criterion) {
             for (int i = 0; i < 1000; i++) {
                 System.out.println(i);
             }
-        }".repeat(8);
+        }"
+    .repeat(8);
     let large_body = black_box(large_src.as_bytes());
     group.throughput(Throughput::Bytes(large_body.len() as u64));
     group.bench_function("method_1kb", |b| b.iter(|| hash_method_body(large_body)));

@@ -6,13 +6,14 @@
 //! - 100 files: target 4-8x speedup on 4-core CPU
 //! - 1000 files: extrapolate to production scale
 //!
-//! Run with: `cargo bench --release -- --nocapture`
+//! Uses Criterion framework for statistical analysis with percentile reporting.
+//! Run with: `cargo bench --release latency -- --nocapture --verbose`
 
 use cct_scanner::Scanner;
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use std::time::Instant;
 use tempfile::TempDir;
 
 /// Generate a clean Java file for benchmarking.

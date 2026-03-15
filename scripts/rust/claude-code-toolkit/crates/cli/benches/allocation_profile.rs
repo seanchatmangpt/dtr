@@ -197,7 +197,11 @@ fn bench_cache_hit_rate(c: &mut Criterion) {
     // Create 50 identical files (high cache hit potential)
     let content = sample_java_with_violations();
     for i in 0..50 {
-        create_test_java_file(temp_dir.path(), format!("Identical{}.java", i).as_str(), &content);
+        create_test_java_file(
+            temp_dir.path(),
+            format!("Identical{}.java", i).as_str(),
+            &content,
+        );
     }
 
     let root = black_box(temp_dir.path().to_path_buf());

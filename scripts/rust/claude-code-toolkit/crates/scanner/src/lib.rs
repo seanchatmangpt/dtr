@@ -102,6 +102,29 @@ fn get_cached_method_query() -> &'static Query {
 ///
 /// # Panics
 /// Panics if the parser lock is poisoned.
+///
+/// # Examples
+///
+/// ```
+/// use cct_scanner::extract_methods;
+///
+/// let java_code = r#"
+/// public class Greeter {
+///     public String greet(String name) {
+///         return "Hello, " + name;
+///     }
+///
+///     public void sayGoodbye() {
+///         System.out.println("Goodbye");
+///     }
+/// }
+/// "#;
+///
+/// let methods = extract_methods(java_code.as_bytes());
+/// assert_eq!(methods.len(), 2);
+/// assert!(methods[0].name == "greet" || methods[0].name == "sayGoodbye");
+/// assert!(methods[0].body.contains("{") && methods[0].body.contains("}"));
+/// ```
 pub fn extract_methods(source: &[u8]) -> Vec<MethodBody> {
     let mut parser = get_cached_parser().lock().unwrap();
     let tree = match parser.parse(source, None) {
@@ -253,6 +276,23 @@ fn get_cached_structural_patterns() -> &'static [RegexPattern] {
 }
 
 impl PatternSet {
+    /// Create a new pattern set with all H-Guard patterns pre-compiled.
+    ///
+    /// Patterns are cached using `OnceLock` for efficiency, so multiple
+    /// instantiations reuse the same compiled automata.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_scanner::PatternSet;
+    ///
+    /// let patterns = PatternSet::new();
+    /// let body = "{ // TODO: implement\n    return null;\n}";
+    /// let hits = patterns.match_body(body);
+    ///
+    /// assert!(!hits.is_empty());
+    /// assert!(hits.iter().any(|h| h.pattern == "H_TODO"));
+    /// ```
     pub fn new() -> Self {
         PatternSet {
             todo_ac: get_cached_todo_ac(),
@@ -274,6 +314,44 @@ impl PatternSet {
     }
 
     /// Scan a method body string and return all pattern hits.
+    ///
+    /// Detects H-Guard violations including:
+    /// - `H_TODO`: TODO/FIXME/HACK/XXX comments
+    /// - `H_MOCK`: mock/stub/fake/demo variable prefixes (camelCase)
+    /// - `H_STUB_NULL`: `return null;` statements
+    /// - `H_STUB_EMPTY_STRING`: `return "";` statements
+    /// - `H_STUB_EMPTY_COLLECTION`: empty collection returns
+    /// - `H_EMPTY`: completely empty method bodies
+    /// - `H_FALLBACK`: catch blocks with fake returns
+    /// - `H_SILENT`: logging instead of throwing exceptions
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cct_scanner::PatternSet;
+    ///
+    /// let patterns = PatternSet::new();
+    ///
+    /// // Detect H_TODO
+    /// let body_todo = "{\n    // TODO: implement this\n    return 0;\n}";
+    /// let hits = patterns.match_body(body_todo);
+    /// assert!(hits.iter().any(|h| h.pattern == "H_TODO"));
+    ///
+    /// // Detect H_STUB_NULL
+    /// let body_null = "{\n    return null;\n}";
+    /// let hits = patterns.match_body(body_null);
+    /// assert!(hits.iter().any(|h| h.pattern == "H_STUB_NULL"));
+    ///
+    /// // Detect H_EMPTY
+    /// let body_empty = "{}";
+    /// let hits = patterns.match_body(body_empty);
+    /// assert!(hits.iter().any(|h| h.pattern == "H_EMPTY"));
+    ///
+    /// // Detect H_MOCK variables (camelCase)
+    /// let body_mock = "{\n    String mockService = null;\n}";
+    /// let hits = patterns.match_body(body_mock);
+    /// assert!(hits.iter().any(|h| h.pattern == "H_MOCK"));
+    /// ```
     pub fn match_body(&self, body: &str) -> Vec<PatternHit> {
         let body_bytes = body.as_bytes();
         let mut hits = Vec::new();

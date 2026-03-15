@@ -1,5 +1,3 @@
 too-many-arguments-threshold = 8
 single-char-binding-names-threshold = 5
-warn-default-hash = false
 cognitive-complexity-threshold = 40
-docs-link-with-quotes = false

@@ -1,3 +1,28 @@
+//! DTR Javadoc — Documentation extraction and validation for Java source files.
+//!
+//! Extracts Javadoc comments from Java source using tree-sitter-java, validates
+//! that all public types and methods are documented, and generates markdown API
+//! reference documentation.
+//!
+//! # Features
+//!
+//! - **Javadoc parsing**: Extracts `@param`, `@return`, `@throws`, `@since`, `@deprecated`, `@see`
+//! - **Violation detection**: Identifies public types/methods missing documentation
+//! - **Markdown generation**: Renders API docs as GitHub-flavored markdown
+//! - **Parallel scanning**: Uses rayon to scan multiple files concurrently
+//!
+//! # Example
+//!
+//! ```no_run
+//! use dtr_javadoc::process_all;
+//! use std::path::Path;
+//!
+//! let results = process_all(Path::new("src/main/java"), Path::new("target/docs"));
+//! for violation in results.violations {
+//!     eprintln!("{}", violation);
+//! }
+//! ```
+
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -10,6 +35,10 @@ use walkdir::WalkDir;
 // Data model — method-level
 // ============================================================================
 
+/// Parsed Javadoc comment from a Java method.
+///
+/// Contains the method description and tags extracted from a `/** ... */` Javadoc
+/// comment. Used as the primary documentation model for methods.
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 pub struct JavadocEntry {
     pub description: String,
@@ -24,15 +53,25 @@ pub struct JavadocEntry {
     pub see: Vec<String>,
 }
 
+/// Documentation for a single `@param` tag in Javadoc.
+///
+/// Represents a method parameter with its name and description.
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ParamDoc {
+    /// Parameter name from the `@param name` tag
     pub name: String,
+    /// Description text following the parameter name
     pub description: String,
 }
 
+/// Documentation for a single `@throws` tag in Javadoc.
+///
+/// Represents an exception that the method may throw.
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ThrowsDoc {
+    /// Exception class name from `@throws ExceptionType`
     pub exception: String,
+    /// Description of when/why this exception is thrown
     pub description: String,
 }
 
@@ -108,9 +147,16 @@ impl std::fmt::Display for DocViolation {
 // Per-file result
 // ============================================================================
 
+/// Complete documentation result for a single Java source file.
+///
+/// Contains the parsed class-level documentation, all method documentations,
+/// and any violations (missing docs) found in the file.
 pub struct FileDocResult {
+    /// Type-level Javadoc, if the class/interface/enum is documented
     pub module_doc: Option<ModuleDoc>,
+    /// All method/constructor Javadoc entries found
     pub method_docs: Vec<(String, JavadocEntry)>,
+    /// List of public items missing documentation
     pub violations: Vec<DocViolation>,
 }
 
