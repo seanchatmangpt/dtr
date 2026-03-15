@@ -1,0 +1,29 @@
+[package]
+name = "cct-scanner"
+version = "0.1.0"
+edition = "2021"
+description = "AST-based Java scanner using tree-sitter + aho-corasick for H-Guard pattern detection"
+
+[[bench]]
+name = "scanner"
+harness = false
+
+[dependencies]
+aho-corasick    = { workspace = true }
+regex           = { workspace = true }
+memchr          = { workspace = true }
+tree-sitter     = { workspace = true }
+tree-sitter-java = { workspace = true }
+ignore          = { workspace = true }
+memmap2         = { workspace = true }
+globset         = { workspace = true }
+serde           = { workspace = true }
+serde_json      = { workspace = true }
+anyhow          = { workspace = true }
+bstr            = { workspace = true }
+rayon           = { workspace = true }
+streaming-iterator = "0.1"
+
+[dev-dependencies]
+tempfile = "3"
+criterion = { version = "0.5", features = ["html_reports"] }

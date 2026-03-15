@@ -1,0 +1,20 @@
+[package]
+name = "cct-remediate"
+version = "0.1.0"
+edition = "2021"
+description = "Atomic remediation engine using crop rope byte-offsets, similar diffs, and tempfile atomic writes"
+
+[[bench]]
+name = "remediate"
+harness = false
+
+[dependencies]
+crop = "0.1"
+similar = "2"
+tempfile = "3"
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }

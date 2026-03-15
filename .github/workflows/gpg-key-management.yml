@@ -264,7 +264,7 @@ jobs:
           echo "✅ Secrets update prepared"
 
       - name: Create PR to update secrets
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v7.0.3
         with:
           title: "Update GPG key after rotation"
           body: |

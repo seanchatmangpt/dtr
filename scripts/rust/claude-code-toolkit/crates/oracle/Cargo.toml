@@ -1,0 +1,22 @@
+[package]
+name = "cct-oracle"
+version = "0.1.0"
+edition = "2021"
+description = "Naive Bayes risk scorer for prioritizing high-violation files in scanner execution"
+
+[[bench]]
+name = "oracle"
+harness = false
+
+[dependencies]
+smartcore = "0.4"
+ordered-float = "4"
+chrono = { workspace = true }
+rayon = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
+criterion = { version = "0.5", features = ["html_reports"] }
