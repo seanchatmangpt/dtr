@@ -31,7 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.github.seanchatmangpt.dtr.contract.ContractVerifier;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
+import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocEntry;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocIndex;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -544,21 +548,123 @@ public final class BlogRenderMachine extends RenderMachine {
     public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
         if (contract == null) return;
         buffer.append("### Contract: `").append(contract.getSimpleName()).append("`\n\n");
-        buffer.append("> Contract verification details available in primary markdown output.\n\n");
+
+        var rows = ContractVerifier.verify(contract, implementations);
+        if (rows.isEmpty()) {
+            buffer.append("> No methods found in contract interface.\n\n");
+            return;
+        }
+
+        // Build header row
+        buffer.append("| Method |");
+        for (Class<?> impl : implementations) {
+            if (impl != null) {
+                buffer.append(" `").append(impl.getSimpleName()).append("` |");
+            }
+        }
+        buffer.append("\n| --- |");
+        for (Class<?> impl : implementations) {
+            if (impl != null) {
+                buffer.append(" --- |");
+            }
+        }
+        buffer.append("\n");
+
+        // Build data rows
+        for (var row : rows) {
+            buffer.append("| `").append(row.methodSig()).append("` |");
+            for (var entry : row.implStatus().entrySet()) {
+                buffer.append(" ").append(entry.getValue()).append(" |");
+            }
+            buffer.append("\n");
+        }
+        buffer.append("\n");
     }
 
     @Override
     public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
         if (clazz == null) return;
         buffer.append("### Evolution Timeline: `").append(clazz.getSimpleName()).append("`\n\n");
-        buffer.append("> Git history available in primary markdown output.\n\n");
+
+        int limit = maxEntries > 0 ? maxEntries : 10;
+        var entries = GitHistoryReader.read(clazz, limit);
+
+        if (entries.isEmpty()) {
+            buffer.append("> Git history unavailable (not in a git repository or file not tracked).\n\n");
+            return;
+        }
+
+        buffer.append("| Commit | Date | Author | Subject |\n| --- | --- | --- | --- |\n");
+        for (var entry : entries) {
+            buffer.append("| `").append(entry.hash()).append("` | ")
+                .append(entry.date()).append(" | ")
+                .append(entry.author()).append(" | ")
+                .append(entry.subject()).append(" |\n");
+        }
+        buffer.append("\n*").append(entries.size()).append(" commits shown*\n\n");
     }
 
     @Override
     public void sayJavadoc(java.lang.reflect.Method method) {
         if (method == null) return;
         buffer.append("### Javadoc: `").append(method.getName()).append("`\n\n");
-        buffer.append("> Javadoc extraction available in primary markdown output.\n\n");
+
+        var entryOpt = JavadocIndex.lookup(method);
+        if (entryOpt.isEmpty()) {
+            buffer.append("> Javadoc not available (run `make extract-javadoc` to generate).\n\n");
+            return;
+        }
+
+        var entry = entryOpt.get();
+
+        // Description
+        if (entry.description() != null && !entry.description().isEmpty()) {
+            buffer.append("**Description:** ").append(entry.description()).append("\n\n");
+        }
+
+        // Parameters table
+        if (entry.params() != null && !entry.params().isEmpty()) {
+            buffer.append("**Parameters:**\n\n| Parameter | Description |\n| --- | --- |\n");
+            for (var param : entry.params()) {
+                buffer.append("| `").append(param.name()).append("` | ")
+                    .append(param.description()).append(" |\n");
+            }
+            buffer.append("\n");
+        }
+
+        // Return value
+        if (entry.returns() != null && !entry.returns().isEmpty()) {
+            buffer.append("**Returns:** ").append(entry.returns()).append("\n\n");
+        }
+
+        // Throws
+        if (entry.throws_() != null && !entry.throws_().isEmpty()) {
+            buffer.append("**Throws:**\n\n| Exception | Description |\n| --- | --- |\n");
+            for (var thr : entry.throws_()) {
+                buffer.append("| `").append(thr.exception()).append("` | ")
+                    .append(thr.description()).append(" |\n");
+            }
+            buffer.append("\n");
+        }
+
+        // Since
+        if (entry.since() != null && !entry.since().isEmpty()) {
+            buffer.append("**Since:** `").append(entry.since()).append("`\n\n");
+        }
+
+        // Deprecated
+        if (entry.deprecated() != null && !entry.deprecated().isEmpty()) {
+            buffer.append("> **Deprecated:** ").append(entry.deprecated()).append("\n\n");
+        }
+
+        // See also
+        if (entry.see() != null && !entry.see().isEmpty()) {
+            buffer.append("**See Also:**\n");
+            for (String see : entry.see()) {
+                buffer.append("- `").append(see).append("`\n");
+            }
+            buffer.append("\n");
+        }
     }
 
     @Override

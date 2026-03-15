@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
+import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocEntry;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocIndex;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -440,7 +443,18 @@ public final class SlideRenderMachine extends RenderMachine {
         if (clazz == null) return;
         flushCurrentSlide();
         slideBuffer.append(template.formatSectionSlide("Evolution: " + clazz.getSimpleName()));
-        currentBullets.add("Git history requires primary markdown output");
+
+        int limit = maxEntries > 0 ? maxEntries : 10;
+        var entries = GitHistoryReader.read(clazz, limit);
+
+        if (entries.isEmpty()) {
+            currentBullets.add("Git history unavailable");
+        } else {
+            for (var entry : entries) {
+                currentBullets.add("`" + entry.hash() + "` " + entry.date() + " — " + entry.subject());
+            }
+            currentBullets.add("*" + entries.size() + " commits*");
+        }
         flushCurrentSlide();
     }
 
@@ -449,7 +463,32 @@ public final class SlideRenderMachine extends RenderMachine {
         if (method == null) return;
         flushCurrentSlide();
         slideBuffer.append(template.formatSectionSlide("Javadoc: " + method.getName()));
-        currentBullets.add("Javadoc requires primary markdown output");
+
+        var entry = JavadocIndex.lookup(method);
+
+        if (entry.isEmpty()) {
+            currentBullets.add("Javadoc not available");
+        } else {
+            JavadocEntry je = entry.get();
+
+            // Description
+            if (je.description() != null && !je.description().isEmpty()) {
+                currentBullets.add(je.description());
+            }
+
+            // Parameters
+            if (je.params() != null && !je.params().isEmpty()) {
+                currentBullets.add("**Parameters:**");
+                for (var param : je.params()) {
+                    currentBullets.add("- `" + param.name() + "`: " + param.description());
+                }
+            }
+
+            // Returns
+            if (je.returns() != null && !je.returns().isEmpty()) {
+                currentBullets.add("**Returns:** " + je.returns());
+            }
+        }
         flushCurrentSlide();
     }
 

@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.seanchatmangpt.dtr.bibliography.BibliographyManager;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
+import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocEntry;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocIndex;
 import io.github.seanchatmangpt.dtr.metadata.DocMetadata;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import org.slf4j.Logger;
@@ -717,7 +720,26 @@ public final class RenderMachineLatex extends RenderMachine {
         texDocument.add("");
         texDocument.add("\\subsection{Evolution Timeline: \\texttt{" + clazz.getSimpleName() + "}}");
         texDocument.add("");
-        texDocument.add("\\textit{Git history available in primary markdown output.}");
+
+        int limit = maxEntries > 0 ? maxEntries : 10;
+        var entries = GitHistoryReader.read(clazz, limit);
+
+        if (entries.isEmpty()) {
+            texDocument.add("\\textit{Git history unavailable (not in a git repository or file not tracked).}");
+        } else {
+            texDocument.add("\\begin{tabular}{llll}");
+            texDocument.add("\\textbf{Commit} & \\textbf{Date} & \\textbf{Author} & \\textbf{Subject} \\\\");
+            texDocument.add("\\hline");
+            for (var entry : entries) {
+                texDocument.add("\\texttt{" + entry.hash() + "} & " +
+                    entry.date() + " & " +
+                    template.escapeLatex(entry.author()) + " & " +
+                    template.escapeLatex(entry.subject()) + " \\\\");
+            }
+            texDocument.add("\\end{tabular}");
+            texDocument.add("");
+            texDocument.add("\\textit{" + entries.size() + " commits shown.}");
+        }
         texDocument.add("");
     }
 
@@ -727,7 +749,46 @@ public final class RenderMachineLatex extends RenderMachine {
         texDocument.add("");
         texDocument.add("\\subsection{Javadoc: \\texttt{" + method.getName() + "}}");
         texDocument.add("");
-        texDocument.add("\\textit{Javadoc extraction available in primary markdown output.}");
+
+        var entry = JavadocIndex.lookup(method);
+
+        if (entry.isEmpty()) {
+            texDocument.add("\\textit{Javadoc not available for this method.}");
+        } else {
+            JavadocEntry je = entry.get();
+
+            // Description
+            if (je.description() != null && !je.description().isEmpty()) {
+                texDocument.add(template.escapeLatex(je.description()));
+                texDocument.add("");
+            }
+
+            // Parameters table
+            if (je.params() != null && !je.params().isEmpty()) {
+                texDocument.add("\\textbf{Parameters:}");
+                texDocument.add("\\begin{tabular}{ll}");
+                texDocument.add("Parameter & Description \\\\");
+                texDocument.add("\\hline");
+                for (var param : je.params()) {
+                    texDocument.add("\\texttt{" + param.name() + "} & " +
+                            template.escapeLatex(param.description()) + " \\\\");
+                }
+                texDocument.add("\\end{tabular}");
+                texDocument.add("");
+            }
+
+            // Returns
+            if (je.returns() != null && !je.returns().isEmpty()) {
+                texDocument.add("\\textbf{Returns:} " + template.escapeLatex(je.returns()));
+                texDocument.add("");
+            }
+
+            // Since
+            if (je.since() != null && !je.since().isEmpty()) {
+                texDocument.add("\\textbf{Since:} \\texttt{" + je.since() + "}");
+                texDocument.add("");
+            }
+        }
         texDocument.add("");
     }
 
