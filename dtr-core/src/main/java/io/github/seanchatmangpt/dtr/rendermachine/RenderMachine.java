@@ -135,65 +135,105 @@ public abstract class RenderMachine implements RenderMachineCommands {
         // No-op for render machines that don't support method code model rendering
     }
 
-    /** Documents current call site — no-op in base class. */
-    public void sayCallSite() {}
+    /** Documents current call site — no-op in base class; override in implementations. */
+    public void sayCallSite() {
+        // No-op default — override in render machines that support call site documentation
+    }
 
-    /** Documents annotation profile — no-op in base class. */
-    public void sayAnnotationProfile(Class<?> clazz) {}
+    /** Documents annotation profile — no-op in base class; override in implementations. */
+    public void sayAnnotationProfile(Class<?> clazz) {
+        // No-op default — override in render machines that support annotation profiling
+    }
 
-    /** Documents class hierarchy — no-op in base class. */
-    public void sayClassHierarchy(Class<?> clazz) {}
+    /** Documents class hierarchy — no-op in base class; override in implementations. */
+    public void sayClassHierarchy(Class<?> clazz) {
+        // No-op default — override in render machines that support class hierarchy rendering
+    }
 
-    /** Documents string profile — no-op in base class. */
-    public void sayStringProfile(String text) {}
+    /** Documents string profile — no-op in base class; override in implementations. */
+    public void sayStringProfile(String text) {
+        // No-op default — override in render machines that support string profiling
+    }
 
-    /** Documents reflective diff — no-op in base class. */
-    public void sayReflectiveDiff(Object before, Object after) {}
+    /** Documents reflective diff — no-op in base class; override in implementations. */
+    public void sayReflectiveDiff(Object before, Object after) {
+        // No-op default — override in render machines that support reflective diffing
+    }
 
-    /** Control flow graph — no-op in base class. */
-    public void sayControlFlowGraph(java.lang.reflect.Method method) {}
+    /** Control flow graph — no-op in base class; override in implementations. */
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {
+        // No-op default — override in render machines that support CFG rendering
+    }
 
-    /** Call graph — no-op in base class. */
-    public void sayCallGraph(Class<?> clazz) {}
+    /** Call graph — no-op in base class; override in implementations. */
+    public void sayCallGraph(Class<?> clazz) {
+        // No-op default — override in render machines that support call graph rendering
+    }
 
-    /** Op profile — no-op in base class. */
-    public void sayOpProfile(java.lang.reflect.Method method) {}
+    /** Op profile — no-op in base class; override in implementations. */
+    public void sayOpProfile(java.lang.reflect.Method method) {
+        // No-op default — override in render machines that support op profiling
+    }
 
-    /** Benchmark — no-op in base class. */
-    public void sayBenchmark(String label, Runnable task) {}
+    /** Benchmark — no-op in base class; override in implementations. */
+    public void sayBenchmark(String label, Runnable task) {
+        // No-op default — override in render machines that support benchmark rendering
+    }
 
-    /** Benchmark with explicit rounds — no-op in base class. */
-    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {}
+    /** Benchmark with explicit rounds — no-op in base class; override in implementations. */
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        // No-op default — override in render machines that support parameterized benchmarks
+    }
 
-    /** Raw Mermaid diagram — no-op in base class. */
-    public void sayMermaid(String diagramDsl) {}
+    /** Raw Mermaid diagram — no-op in base class; override in implementations. */
+    public void sayMermaid(String diagramDsl) {
+        // No-op default — override in render machines that support Mermaid diagram rendering
+    }
 
-    /** Class diagram — no-op in base class. */
-    public void sayClassDiagram(Class<?>... classes) {}
+    /** Class diagram — no-op in base class; override in implementations. */
+    public void sayClassDiagram(Class<?>... classes) {
+        // No-op default — override in render machines that support class diagram rendering
+    }
 
-    /** Documentation coverage — no-op in base class. */
-    public void sayDocCoverage(Class<?>... classes) {}
+    /** Documentation coverage — no-op in base class; override in implementations. */
+    public void sayDocCoverage(Class<?>... classes) {
+        // No-op default — override in render machines that support coverage reporting
+    }
 
-    /** Environment profile — no-op in base class. */
-    public void sayEnvProfile() {}
+    /** Environment profile — no-op in base class; override in implementations. */
+    public void sayEnvProfile() {
+        // No-op default — override in render machines that support environment profiling
+    }
 
-    /** Record components schema — no-op in base class. */
-    public void sayRecordComponents(Class<? extends Record> recordClass) {}
+    /** Record components schema — no-op in base class; override in implementations. */
+    public void sayRecordComponents(Class<? extends Record> recordClass) {
+        // No-op default — override in render machines that support record schema rendering
+    }
 
-    /** Exception chain documentation — no-op in base class. */
-    public void sayException(Throwable t) {}
+    /** Exception chain documentation — no-op in base class; override in implementations. */
+    public void sayException(Throwable t) {
+        // No-op default — override in render machines that support exception chain rendering
+    }
 
-    /** ASCII chart — no-op in base class. */
-    public void sayAsciiChart(String label, double[] values, String[] xLabels) {}
+    /** ASCII chart — no-op in base class; override in implementations. */
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        // No-op default — override in render machines that support ASCII chart rendering
+    }
 
-    /** Contract verification — no-op in base class. */
-    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {}
+    /** Contract verification — no-op in base class; override in implementations. */
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        // No-op default — override in render machines that support contract verification
+    }
 
-    /** Git evolution timeline — no-op in base class. */
-    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {}
+    /** Git evolution timeline — no-op in base class; override in implementations. */
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        // No-op default — override in render machines that support evolution timeline rendering
+    }
 
-    /** Javadoc documentation from dtr-javadoc index — no-op in base class. */
-    public void sayJavadoc(java.lang.reflect.Method method) {}
+    /** Javadoc documentation from dtr-javadoc index — no-op in base class; override in implementations. */
+    public void sayJavadoc(java.lang.reflect.Method method) {
+        // No-op default — override in render machines that support Javadoc rendering
+    }
 
     /**
      * Finishes documentation generation and writes output to disk.

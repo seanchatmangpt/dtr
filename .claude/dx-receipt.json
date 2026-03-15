@@ -1,1 +1,1 @@
-{"overall": "green", "generated": "2026-03-15T20:50:13Z", "elapsed_seconds": 0, "violations": 0, "skip_verify": true, "phases": {"observatory": "skip", "guard": "skip", "build": "skip", "git": "green"}}
+{"overall": "red", "generated": "2026-03-15T22:00:35Z", "elapsed_seconds": 8, "violations": 98, "skip_verify": false, "phases": {"observatory": "green", "guard": "red", "build": "red", "git": "red"}}

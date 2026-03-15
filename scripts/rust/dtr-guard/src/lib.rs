@@ -105,6 +105,24 @@ impl GuardPatterns {
             return hits;
         }
 
+        // Honor inline suppression: trailing `// hguard-ok` or `// H-GUARD: ok` comment
+        // allows a line to be excluded from all checks. Use sparingly — only for
+        // intentional platform no-ops (e.g. `return "";  // hguard-ok`).
+        if trimmed.contains("// hguard-ok") || trimmed.contains("// H-GUARD: ok") {
+            return hits;
+        }
+
+        // Records are not empty method bodies — Java auto-generates equals/hashCode/
+        // toString/accessors for records. Exclude `public record Foo(...) {}` lines.
+        // Pattern: word `record` followed by identifier, parameter list, optional
+        // implements clause, then a body that is just `{}`.
+        if trimmed.contains("record ")
+            && (trimmed.ends_with("{}") || trimmed.ends_with("{ }"))
+            && trimmed.contains("(")
+        {
+            return hits;
+        }
+
         let fix = "throw new UnsupportedOperationException(\"Not implemented\");";
 
         if self.h_todo.is_match(line) {
@@ -331,6 +349,21 @@ mod tests {
             .contains(&"H_EMPTY".to_string()));
         assert!(violation_codes("    protected void onStart() {}")
             .contains(&"H_EMPTY".to_string()));
+    }
+
+    #[test]
+    fn h_empty_body_record_excluded() {
+        // Java records auto-generate equals/hashCode/toString — not H_EMPTY violations.
+        assert!(!violation_codes("    public record BlockInfo(int index, List<String> opDescs) {}")
+            .contains(&"H_EMPTY".to_string()));
+        assert!(!violation_codes("public record CoverageRow(String methodSig, boolean documented, String via) {}")
+            .contains(&"H_EMPTY".to_string()));
+    }
+
+    #[test]
+    fn hguard_ok_suppression() {
+        // Lines with // hguard-ok are excluded from all checks.
+        assert!(violation_codes(r#"        return "";  // hguard-ok"#).is_empty());
     }
 
     #[test]

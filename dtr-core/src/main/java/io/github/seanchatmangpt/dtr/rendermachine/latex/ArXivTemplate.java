@@ -74,12 +74,28 @@ public record ArXivTemplate() implements LatexTemplate {
 
     @Override
     public String getBeginDocument() {
-        return "";
+        return """
+            \\title{Research Title}
+            \\author{Author Name \\\\
+            Institution Name \\\\
+            \\texttt{author@example.com}}
+            \\date{\\today}
+            \\maketitle
+
+            \\begin{abstract}
+            Abstract goes here. Summarize the contributions in 150--250 words.
+            \\end{abstract}
+
+            """;
     }
 
     @Override
     public String getEndDocument() {
-        return "";
+        return """
+            \\bibliographystyle{plain}
+            \\bibliography{references}
+
+            """;
     }
 
     @Override
