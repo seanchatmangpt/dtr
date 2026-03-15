@@ -83,6 +83,9 @@ pub struct Scanner {
 
 impl Scanner {
     /// Compile all patterns from a config.
+    ///
+    /// # Errors
+    /// Returns an error if any regex pattern fails to compile.
     pub fn new(config: PatternFile) -> Result<Self> {
         let mut patterns = Vec::new();
         for p in config.patterns {
@@ -99,6 +102,9 @@ impl Scanner {
     }
 
     /// Load from a TOML file and compile.
+    ///
+    /// # Errors
+    /// Returns an error if reading/parsing the TOML file fails, or if any regex pattern fails to compile.
     pub fn from_toml(path: &Path) -> Result<Self> {
         Self::new(PatternFile::from_toml(path)?)
     }
