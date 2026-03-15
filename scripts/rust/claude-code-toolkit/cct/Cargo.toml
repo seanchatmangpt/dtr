@@ -3,6 +3,7 @@ name = "cct"
 version = "0.1.0"
 edition = "2021"
 description = "Claude Code Toolkit — cct scan | cct observe | cct dx | cct hook"
+rust-version = "1.70"
 
 [[bin]]
 name = "cct"
@@ -14,7 +15,12 @@ cct-git = { path = "../cct-git" }
 cct-patterns = { path = "../cct-patterns" }
 cct-facts = { path = "../cct-facts" }
 cct-pipeline = { path = "../cct-pipeline" }
+cct-scanner = { path = "../crates/scanner" }
+cct-cache = { path = "../crates/cache" }
+cct-oracle = { path = "../crates/oracle" }
+cct-remediate = { path = "../crates/remediate" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 walkdir = { workspace = true }
+regex = { workspace = true }

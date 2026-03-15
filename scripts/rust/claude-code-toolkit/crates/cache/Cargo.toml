@@ -3,6 +3,7 @@ name = "cct-cache"
 version = "0.1.0"
 edition = "2021"
 description = "Content-addressed cache layer using redb + blake3 for H-Guard scanner results"
+rust-version = "1.70"
 
 [[bench]]
 name = "cache"

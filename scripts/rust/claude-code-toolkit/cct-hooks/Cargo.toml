@@ -3,6 +3,7 @@ name = "cct-hooks"
 version = "0.1.0"
 edition = "2021"
 description = "Claude Code hook payload types — deserialize stdin, serialize block decisions"
+rust-version = "1.70"
 
 [dependencies]
 serde = { workspace = true }

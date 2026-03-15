@@ -1,0 +1,14 @@
+[advisories]
+vulnerability = "deny"
+unmaintained = "warn"
+unsound = "deny"
+notice = "warn"
+
+[licenses]
+allow = ["MIT", "Apache-2.0", "ISC", "0BSD", "Unlicense", "BSD-2-Clause", "BSD-3-Clause"]
+deny = ["GPL-2.0", "GPL-2.0-only", "GPL-3.0", "AGPL-3.0"]
+
+[bans]
+# Prevent dependency bloat
+multiple-versions = "warn"
+wildcards = "warn"

@@ -10,12 +10,12 @@
 
 use serde::{Deserialize, Serialize};
 
-pub mod editor;
 pub mod differ;
+pub mod editor;
 pub mod writer;
 
-pub use editor::{Edit, RemediationPlan};
 pub use differ::apply_edits;
+pub use editor::{Edit, RemediationPlan};
 pub use writer::atomic_write;
 
 /// Proof-of-remediation: hashes before/after, diff output, and success flag.

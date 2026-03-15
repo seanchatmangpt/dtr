@@ -58,6 +58,9 @@ pub fn gather_all(root: &Path) -> Vec<(&'static str, Value)> {
 }
 
 /// Detect the primary project type.
+///
+/// # Errors
+/// Returns an error if JSON serialization fails.
 pub fn gather_project_type(root: &Path) -> Result<Value> {
     let has_pom = root.join("pom.xml").exists();
     let has_cargo = root.join("Cargo.toml").exists();
@@ -65,12 +68,19 @@ pub fn gather_project_type(root: &Path) -> Result<Value> {
     let has_gradle = root.join("build.gradle").exists() || root.join("build.gradle.kts").exists();
     let has_pyproject = root.join("pyproject.toml").exists();
 
-    let kind = if has_pom { "maven" }
-        else if has_cargo { "cargo" }
-        else if has_gradle { "gradle" }
-        else if has_npm { "npm" }
-        else if has_pyproject { "python" }
-        else { "unknown" };
+    let kind = if has_pom {
+        "maven"
+    } else if has_cargo {
+        "cargo"
+    } else if has_gradle {
+        "gradle"
+    } else if has_npm {
+        "npm"
+    } else if has_pyproject {
+        "python"
+    } else {
+        "unknown"
+    };
 
     Ok(json!({
         "type": kind,
@@ -84,6 +94,9 @@ pub fn gather_project_type(root: &Path) -> Result<Value> {
 }
 
 /// Count source files by extension.
+///
+/// # Errors
+/// Returns an error if JSON serialization fails.
 pub fn gather_source_stats(root: &Path) -> Result<Value> {
     use walkdir::WalkDir;
     let mut counts: std::collections::HashMap<String, u64> = std::collections::HashMap::new();
@@ -114,13 +127,16 @@ pub fn gather_source_stats(root: &Path) -> Result<Value> {
 }
 
 /// Collect git metadata.
+///
+/// # Errors
+/// Returns an error if JSON serialization fails.
 pub fn gather_git_info(root: &Path) -> Result<Value> {
     let r = root.to_string_lossy();
 
-    let branch = git_output(&["-C", &r, "branch", "--show-current"])
-        .unwrap_or_else(|| "unknown".into());
-    let last_commit = git_output(&["-C", &r, "log", "--oneline", "-1"])
-        .unwrap_or_else(|| "(no commits)".into());
+    let branch =
+        git_output(&["-C", &r, "branch", "--show-current"]).unwrap_or_else(|| "unknown".into());
+    let last_commit =
+        git_output(&["-C", &r, "log", "--oneline", "-1"]).unwrap_or_else(|| "(no commits)".into());
     let is_dirty = Command::new("git")
         .args(["-C", &r, "diff", "--quiet"])
         .status()
@@ -139,15 +155,22 @@ pub fn gather_git_info(root: &Path) -> Result<Value> {
 }
 
 /// Gather Maven project metadata from pom.xml.
+///
+/// # Errors
+/// Returns an error if reading or parsing the pom.xml file fails, or if JSON serialization fails.
 pub fn gather_maven(root: &Path) -> Result<Value> {
     let pom = std::fs::read_to_string(root.join("pom.xml"))?;
 
     let version = extract_between(&pom, "<version>", "</version>").unwrap_or("unknown");
     let group_id = extract_between(&pom, "<groupId>", "</groupId>").unwrap_or("unknown");
     let artifact_id = extract_between(&pom, "<artifactId>", "</artifactId>").unwrap_or("unknown");
-    let java_release = extract_between(&pom, "<maven.compiler.release>", "</maven.compiler.release>")
-        .or_else(|| extract_between(&pom, "<release>", "</release>"))
-        .unwrap_or("unknown");
+    let java_release = extract_between(
+        &pom,
+        "<maven.compiler.release>",
+        "</maven.compiler.release>",
+    )
+    .or_else(|| extract_between(&pom, "<release>", "</release>"))
+    .unwrap_or("unknown");
 
     // Collect module names
     let modules: Vec<&str> = pom
@@ -173,6 +196,9 @@ pub fn gather_maven(root: &Path) -> Result<Value> {
 }
 
 /// Gather Cargo workspace metadata from root Cargo.toml.
+///
+/// # Errors
+/// Returns an error if reading the Cargo.toml file fails, or if JSON serialization fails.
 pub fn gather_cargo(root: &Path) -> Result<Value> {
     let cargo_toml = std::fs::read_to_string(root.join("Cargo.toml"))?;
 
@@ -204,6 +230,9 @@ pub fn gather_cargo(root: &Path) -> Result<Value> {
 }
 
 /// Gather npm package metadata from package.json.
+///
+/// # Errors
+/// Returns an error if reading or parsing the package.json file fails, or if JSON serialization fails.
 pub fn gather_npm(root: &Path) -> Result<Value> {
     let content = std::fs::read_to_string(root.join("package.json"))?;
     let pkg: Value = serde_json::from_str(&content)?;
@@ -218,6 +247,9 @@ pub fn gather_npm(root: &Path) -> Result<Value> {
 // ─── Writer ──────────────────────────────────────────────────────────────────
 
 /// Write fact files to `output_dir` as minified JSON.
+///
+/// # Errors
+/// Returns an error if creating the output directory, serializing JSON, or writing files fails.
 pub fn write_facts(output_dir: &Path, facts: &[(&str, Value)]) -> Result<()> {
     std::fs::create_dir_all(output_dir)?;
     for (name, value) in facts {
@@ -262,10 +294,14 @@ mod tests {
     fn dtr_root() -> PathBuf {
         // cct-facts/ → claude-code-toolkit/ → rust/ → scripts/ → dtr/
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent().unwrap()
-            .parent().unwrap()
-            .parent().unwrap()
-            .parent().unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
             .to_path_buf()
     }
 

@@ -1,5 +1,5 @@
+use cct_scanner::{extract_methods, walk_java_files, PatternSet, Scanner};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use cct_scanner::{extract_methods, PatternSet, Scanner, walk_java_files};
 use std::fs;
 use std::path::Path;
 use tempfile::TempDir;
@@ -29,7 +29,8 @@ fn sample_method() -> String {
             System.out.println(item);
         }
     }
-    "#.to_string()
+    "#
+    .to_string()
 }
 
 // 10KB Java file
@@ -53,7 +54,10 @@ public class TestClass {
 
     // Repeat the method to reach ~10KB
     for i in 0..30 {
-        content.push_str(&format!("    public void repeatedMethod{}() {{\n        {}\n    }}\n", i, &method));
+        content.push_str(&format!(
+            "    public void repeatedMethod{}() {{\n        {}\n    }}\n",
+            i, &method
+        ));
     }
     content.push_str("}\n");
     content
@@ -63,9 +67,7 @@ fn bench_extract_methods(c: &mut Criterion) {
     let java_content = black_box(create_10kb_java_file());
 
     c.bench_function("extract_methods_10kb", |b| {
-        b.iter(|| {
-            extract_methods(java_content.as_bytes())
-        });
+        b.iter(|| extract_methods(java_content.as_bytes()));
     });
 }
 

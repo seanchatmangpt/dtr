@@ -99,6 +99,9 @@ fn get_cached_method_query() -> &'static Query {
 /// Parse `source` with tree-sitter-java and return all method bodies found.
 ///
 /// Returns an empty vec on parse failure (e.g. fragment, not a full compilation unit).
+///
+/// # Panics
+/// Panics if the parser lock is poisoned.
 pub fn extract_methods(source: &[u8]) -> Vec<MethodBody> {
     let mut parser = get_cached_parser().lock().unwrap();
     let tree = match parser.parse(source, None) {
@@ -116,7 +119,7 @@ pub fn extract_methods(source: &[u8]) -> Vec<MethodBody> {
         .expect("capture 'method_body'");
 
     let mut cursor = QueryCursor::new();
-    let mut matches = cursor.matches(&query, tree.root_node(), source);
+    let mut matches = cursor.matches(query, tree.root_node(), source);
 
     let mut methods = Vec::new();
     while let Some(m) = matches.next() {
@@ -368,10 +371,8 @@ struct ClassLevelPatterns {
 impl ClassLevelPatterns {
     fn new() -> Self {
         ClassLevelPatterns {
-            mock_class_re: Regex::new(
-                r"\b(?:class|interface)\s+(?:Mock|Stub|Fake|Demo)[A-Z]\w*",
-            )
-            .unwrap(),
+            mock_class_re: Regex::new(r"\b(?:class|interface)\s+(?:Mock|Stub|Fake|Demo)[A-Z]\w*")
+                .unwrap(),
         }
     }
 
@@ -442,6 +443,9 @@ impl Scanner {
     }
 
     /// Scan a file on disk using memmap2 for zero-copy reading.
+    ///
+    /// # Errors
+    /// Returns an error if the file cannot be opened or memory-mapped.
     pub fn scan_file(&self, path: &Path) -> Result<ScanResult> {
         let file = File::open(path)?;
         // SAFETY: we do not mutate the backing file while the mapping is live.
@@ -619,8 +623,7 @@ public class MockUserRepository {
     #[test]
     fn test_scan_source_h_stub_null() {
         let scanner = Scanner::new();
-        let result =
-            scanner.scan_source(Path::new("UserService.java"), STUB_NULL_JAVA.as_bytes());
+        let result = scanner.scan_source(Path::new("UserService.java"), STUB_NULL_JAVA.as_bytes());
         assert!(
             result.violations.iter().any(|v| v.pattern == "H_STUB_NULL"),
             "return null should trigger H_STUB_NULL, got: {:?}",
@@ -642,10 +645,15 @@ public class MockUserRepository {
     #[test]
     fn test_scan_source_h_mock_class() {
         let scanner = Scanner::new();
-        let result =
-            scanner.scan_source(Path::new("MockUserRepository.java"), MOCK_CLASS_JAVA.as_bytes());
+        let result = scanner.scan_source(
+            Path::new("MockUserRepository.java"),
+            MOCK_CLASS_JAVA.as_bytes(),
+        );
         assert!(
-            result.violations.iter().any(|v| v.pattern == "H_MOCK_CLASS"),
+            result
+                .violations
+                .iter()
+                .any(|v| v.pattern == "H_MOCK_CLASS"),
             "Mock class declaration should trigger H_MOCK_CLASS, got: {:?}",
             result.violations
         );

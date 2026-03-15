@@ -30,6 +30,9 @@ const WRITE_CHUNK_SIZE: usize = 64 * 1024;
 ///
 /// # Returns
 /// Ok(()) on success, Err if write/rename fails
+///
+/// # Errors
+/// Returns an error if creating the temp file, writing data, flushing, syncing, or renaming fails.
 pub fn atomic_write(path: &Path, data: &[u8]) -> Result<()> {
     // Determine parent directory for temp file (same as destination)
     let parent_dir = path.parent().unwrap_or_else(|| Path::new("."));
@@ -170,12 +173,18 @@ mod tests {
         let tmp_count = entries
             .filter_map(|e| {
                 e.ok().and_then(|entry| {
-                    entry.file_name().into_string().ok()
+                    entry
+                        .file_name()
+                        .into_string()
+                        .ok()
                         .filter(|n| n.contains(".tmp"))
                         .map(|_| ())
                 })
             })
             .count();
-        assert_eq!(tmp_count, 0, "no temp files should remain after atomic_write");
+        assert_eq!(
+            tmp_count, 0,
+            "no temp files should remain after atomic_write"
+        );
     }
 }

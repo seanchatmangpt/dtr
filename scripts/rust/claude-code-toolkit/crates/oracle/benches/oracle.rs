@@ -1,8 +1,7 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId, Throughput};
-use cct_oracle::{RiskScorer, NaiveBayesOracle, ViolationRecord};
+use cct_oracle::{NaiveBayesOracle, RiskScorer, ViolationRecord};
 use chrono::Utc;
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use rayon::prelude::*;
-use std::time::Instant;
 
 fn create_test_violation(pattern: &str, days_ago: i64) -> ViolationRecord {
     let timestamp = Utc::now() - chrono::Duration::days(days_ago);
@@ -24,9 +23,7 @@ fn bench_score_single_file(c: &mut Criterion) {
     ]);
 
     c.bench_function("score_single_file_5violations", |b| {
-        b.iter(|| {
-            scorer.score_risk(&violation_history)
-        });
+        b.iter(|| scorer.score_risk(&violation_history));
     });
 }
 
@@ -133,9 +130,7 @@ fn bench_predict_after_training(c: &mut Criterion) {
     ]);
 
     c.bench_function("naive_bayes_predict_single", |b| {
-        b.iter(|| {
-            oracle.predict(&test_history)
-        });
+        b.iter(|| oracle.predict(&test_history));
     });
 }
 

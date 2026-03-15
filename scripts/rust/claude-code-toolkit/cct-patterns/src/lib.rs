@@ -51,13 +51,21 @@ pub struct PatternFile {
 }
 
 impl PatternFile {
+    /// Load a pattern config from a TOML file.
+    ///
+    /// # Errors
+    /// Returns an error if reading or parsing the TOML file fails.
     pub fn from_toml(path: &Path) -> Result<Self> {
-        let content = std::fs::read_to_string(path)
-            .with_context(|| format!("reading {}", path.display()))?;
+        let content =
+            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
         toml::from_str(&content).with_context(|| format!("parsing {}", path.display()))
     }
 
-    pub fn from_str(s: &str) -> Result<Self> {
+    /// Load a pattern config from a TOML string.
+    ///
+    /// # Errors
+    /// Returns an error if parsing the TOML fails.
+    pub fn from_toml_str(s: &str) -> Result<Self> {
         toml::from_str(s).map_err(Into::into)
     }
 }
@@ -75,6 +83,9 @@ pub struct Scanner {
 
 impl Scanner {
     /// Compile all patterns from a config.
+    ///
+    /// # Errors
+    /// Returns an error if any regex pattern fails to compile.
     pub fn new(config: PatternFile) -> Result<Self> {
         let mut patterns = Vec::new();
         for p in config.patterns {
@@ -91,18 +102,26 @@ impl Scanner {
     }
 
     /// Load from a TOML file and compile.
+    ///
+    /// # Errors
+    /// Returns an error if reading/parsing the TOML file fails, or if any regex pattern fails to compile.
     pub fn from_toml(path: &Path) -> Result<Self> {
         Self::new(PatternFile::from_toml(path)?)
     }
 
     /// Load from an embedded TOML string and compile.
-    pub fn from_str(toml: &str) -> Result<Self> {
-        Self::new(PatternFile::from_str(toml)?)
+    ///
+    /// # Errors
+    /// Returns an error if parsing the TOML string fails, or if any regex pattern fails to compile.
+    pub fn from_toml_str(toml: &str) -> Result<Self> {
+        Self::new(PatternFile::from_toml_str(toml)?)
     }
 
     /// Returns true if the file path should be excluded.
     pub fn is_excluded(&self, path: &str) -> bool {
-        self.exclude_paths.iter().any(|ex| path.contains(ex.as_str()))
+        self.exclude_paths
+            .iter()
+            .any(|ex| path.contains(ex.as_str()))
     }
 
     /// Returns true if the file extension is in scope.
@@ -110,18 +129,23 @@ impl Scanner {
         if self.extensions.is_empty() {
             return true; // no filter = all files
         }
-        self.extensions.iter().any(|ext| path.ends_with(ext.as_str()))
+        self.extensions
+            .iter()
+            .any(|ext| path.ends_with(ext.as_str()))
     }
 
     /// Scan a single file. Uses Blake3 content cache for repeated identical bodies.
+    ///
+    /// # Errors
+    /// Returns an error if reading the file fails.
     pub fn scan_file(&mut self, path: &Path) -> Result<Vec<Violation>> {
         let path_str = path.to_string_lossy();
         if self.is_excluded(&path_str) || !self.is_in_scope(&path_str) {
             return Ok(vec![]);
         }
 
-        let content = std::fs::read_to_string(path)
-            .with_context(|| format!("reading {}", path.display()))?;
+        let content =
+            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
 
         // Blake3 cache lookup — normalize whitespace before hashing
         let normalized = normalize(&content);
@@ -131,7 +155,10 @@ impl Scanner {
             // Remap cached violations to the actual file path (hash may come from another file)
             return Ok(cached
                 .iter()
-                .map(|v| Violation { file: path_str.to_string(), ..v.clone() })
+                .map(|v| Violation {
+                    file: path_str.to_string(),
+                    ..v.clone()
+                })
                 .collect());
         }
 
@@ -142,6 +169,12 @@ impl Scanner {
 
     /// Scan multiple files, ordering them by Naive Bayes prior (highest violation
     /// probability first) so that time-to-first-violation is minimized.
+    ///
+    /// # Errors
+    /// Returns an error if scanning any file fails.
+    ///
+    /// # Panics
+    /// Panics if comparing float scores fails (NaN comparison).
     pub fn scan_files_prioritized(&mut self, paths: &[&Path]) -> Result<Vec<Violation>> {
         // Simple prior: order by filename heuristic (longer paths often = deeper = more complex)
         // A real implementation would persist a violation-count histogram per path prefix.
@@ -167,8 +200,12 @@ fn violation_prior_score(path: &Path) -> f64 {
     let s = path.to_string_lossy();
     let mut score = 0.0_f64;
     // Files named *Impl*, *Base*, *Abstract* tend to have more stubs
-    if s.contains("Impl") { score += 2.0; }
-    if s.contains("Abstract") || s.contains("Base") { score += 1.5; }
+    if s.contains("Impl") {
+        score += 2.0;
+    }
+    if s.contains("Abstract") || s.contains("Base") {
+        score += 1.5;
+    }
     // Deeper paths often = more complex implementations
     score += path.components().count() as f64 * 0.1;
     score
@@ -176,10 +213,7 @@ fn violation_prior_score(path: &Path) -> f64 {
 
 /// Normalize whitespace for content hashing (collapse runs of whitespace to single space).
 fn normalize(content: &str) -> String {
-    content
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
+    content.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 // ─── Violation ────────────────────────────────────────────────────────────────
@@ -196,7 +230,11 @@ pub struct Violation {
 }
 
 /// Scan content string line by line against compiled patterns.
-pub fn scan_content(content: &str, file_label: &str, patterns: &[(PatternConfig, Regex)]) -> Vec<Violation> {
+pub fn scan_content(
+    content: &str,
+    file_label: &str,
+    patterns: &[(PatternConfig, Regex)],
+) -> Vec<Violation> {
     let mut violations = Vec::new();
     for (line_num, line) in content.lines().enumerate() {
         for (config, re) in patterns {
@@ -229,9 +267,19 @@ pub struct ScanReceipt {
 
 impl ScanReceipt {
     pub fn new(violations: Vec<Violation>, files_scanned: usize, cache_hits: usize) -> Self {
-        let status = if violations.is_empty() { "GREEN" } else { "RED" };
+        let status = if violations.is_empty() {
+            "GREEN"
+        } else {
+            "RED"
+        };
         let violation_count = violations.len();
-        Self { status, violation_count, violations, files_scanned, cache_hits }
+        Self {
+            status,
+            violation_count,
+            violations,
+            files_scanned,
+            cache_hits,
+        }
     }
 }
 
@@ -263,12 +311,12 @@ severity = "error"
 "#;
 
     fn make_scanner() -> Scanner {
-        Scanner::from_str(JAVA_TOML).unwrap()
+        Scanner::from_toml_str(JAVA_TOML).unwrap()
     }
 
     #[test]
     fn detects_todo_comment() {
-        let mut s = make_scanner();
+        let s = make_scanner();
         let violations = scan_content("// TODO implement this\n", "Foo.java", &s.patterns);
         assert!(!violations.is_empty());
         assert_eq!(violations[0].pattern, "H_TODO");
@@ -284,7 +332,11 @@ severity = "error"
     #[test]
     fn clean_content_has_no_violations() {
         let s = make_scanner();
-        let violations = scan_content("public String getName() { return name; }\n", "Foo.java", &s.patterns);
+        let violations = scan_content(
+            "public String getName() { return name; }\n",
+            "Foo.java",
+            &s.patterns,
+        );
         assert!(violations.is_empty());
     }
 
@@ -320,8 +372,12 @@ severity = "error"
     #[test]
     fn scan_receipt_red_when_violations() {
         let v = Violation {
-            file: "F.java".into(), line: 1, pattern: "H_TODO".into(),
-            severity: "error".into(), matched: "// TODO".into(), fix: "fix".into(),
+            file: "F.java".into(),
+            line: 1,
+            pattern: "H_TODO".into(),
+            severity: "error".into(),
+            matched: "// TODO".into(),
+            fix: "fix".into(),
         };
         let receipt = ScanReceipt::new(vec![v], 1, 0);
         assert_eq!(receipt.status, "RED");

@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use cct_remediate::{Edit, RemediationPlan, apply_edits, atomic_write};
+use cct_remediate::{apply_edits, atomic_write, Edit, RemediationPlan};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use tempfile::TempDir;
 
 fn sample_java_source() -> Vec<u8> {

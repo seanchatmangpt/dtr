@@ -3,6 +3,7 @@ name = "cct-remediate"
 version = "0.1.0"
 edition = "2021"
 description = "Atomic remediation engine using crop rope byte-offsets, similar diffs, and tempfile atomic writes"
+rust-version = "1.70"
 
 [[bench]]
 name = "remediate"

@@ -14,11 +14,11 @@ use anyhow::{anyhow, Context, Result};
 use clap::{Parser, Subcommand};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::fmt::Write as FmtWrite;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::time::Instant;
-use std::fmt::Write as FmtWrite;
 
 // ── Output Types ───────────────────────────────────────────────────────────
 
@@ -35,12 +35,12 @@ pub struct ScanViolation {
 /// Receipt from a full scan (integrates all 4 layers).
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScanReceipt {
-    pub status: String,           // "GREEN" or "RED"
-    pub message: String,          // Human-readable status
-    pub elapsed_ms: f64,          // Total elapsed time in milliseconds
+    pub status: String,  // "GREEN" or "RED"
+    pub message: String, // Human-readable status
+    pub elapsed_ms: f64, // Total elapsed time in milliseconds
     pub violation_count: usize,
     pub violations: Vec<ScanViolation>,
-    pub data: ScanReceiptData,    // Structured data payload
+    pub data: ScanReceiptData, // Structured data payload
 }
 
 /// Detailed scan data payload.
@@ -89,7 +89,7 @@ impl ScanReceipt {
 /// Receipt from observe operation.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObserveReceipt {
-    pub status: String,           // "SUCCESS" or "FAILED"
+    pub status: String, // "SUCCESS" or "FAILED"
     pub message: String,
     pub elapsed_ms: f64,
     pub data: ObserveReceiptData,
@@ -105,12 +105,7 @@ pub struct ObserveReceiptData {
 }
 
 impl ObserveReceipt {
-    fn new(
-        root: PathBuf,
-        output_dir: PathBuf,
-        facts_count: usize,
-        elapsed: f64,
-    ) -> Self {
+    fn new(root: PathBuf, output_dir: PathBuf, facts_count: usize, elapsed: f64) -> Self {
         Self {
             status: "SUCCESS".to_string(),
             message: format!("Observed {} facts", facts_count),
@@ -128,7 +123,7 @@ impl ObserveReceipt {
 /// Receipt from remediation operation.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RemediationReceipt {
-    pub status: String,           // "SUCCESS" or "FAILED"
+    pub status: String, // "SUCCESS" or "FAILED"
     pub message: String,
     pub elapsed_ms: f64,
     pub data: RemediationReceiptData,
@@ -143,12 +138,7 @@ pub struct RemediationReceiptData {
 }
 
 impl RemediationReceipt {
-    fn new(
-        file: PathBuf,
-        edits_applied: usize,
-        edits_planned: usize,
-        elapsed: f64,
-    ) -> Self {
+    fn new(file: PathBuf, edits_applied: usize, edits_planned: usize, elapsed: f64) -> Self {
         let status = if edits_applied == edits_planned {
             "SUCCESS".to_string()
         } else {
@@ -389,7 +379,13 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) ->
         sorted.into_iter().map(|(v, _)| v).collect()
     };
 
-    let receipt = ScanReceipt::new(violations.clone(), java_files.len(), 0, priority_elapsed, elapsed_ms);
+    let receipt = ScanReceipt::new(
+        violations.clone(),
+        java_files.len(),
+        0,
+        priority_elapsed,
+        elapsed_ms,
+    );
 
     // OPTIMIZATION: Output buffering — collect all output before single write
     // This avoids multiple small writes to stderr/stdout
@@ -400,7 +396,14 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) ->
         // Human-readable mode: buffer all text output
         let mut buf = String::with_capacity(1024 * 4);
         for v in &receipt.violations {
-            let _ = writeln!(buf, "{}:{}: [{}] {}", v.file.display(), v.line, v.pattern, v.matched);
+            let _ = writeln!(
+                buf,
+                "{}:{}: [{}] {}",
+                v.file.display(),
+                v.line,
+                v.pattern,
+                v.matched
+            );
             let _ = writeln!(buf, "  Fix: {}", v.fix);
         }
         if receipt.violations.is_empty() {
@@ -409,7 +412,8 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) ->
             let _ = writeln!(
                 buf,
                 "✗ {} violation(s) in {} file(s)",
-                receipt.violation_count, java_files.len()
+                receipt.violation_count,
+                java_files.len()
             );
         }
         let _ = writeln!(
@@ -420,7 +424,10 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) ->
 
         // Show warmup recommendation
         if warmup {
-            let _ = writeln!(buf, "  [WARMUP PHASE] Cache and oracle trained. Next run will be ~10x faster.");
+            let _ = writeln!(
+                buf,
+                "  [WARMUP PHASE] Cache and oracle trained. Next run will be ~10x faster."
+            );
         } else {
             let _ = writeln!(buf, "  [HOT PHASE] Using cached state. Run with --warmup on first scan for best results.");
         }
@@ -479,28 +486,45 @@ fn cmd_remediate(plan_path: &Path) -> Result<()> {
     let start = Instant::now();
     eprintln!("[cct remediate] Loading plan from {}", plan_path.display());
 
-    let plan_json = fs::read_to_string(plan_path)
-        .context("Reading remediation plan")?;
+    let plan_json = fs::read_to_string(plan_path).context("Reading remediation plan")?;
 
-    let plan: RemediationPlan = serde_json::from_str(&plan_json)
-        .context("Parsing remediation plan JSON")?;
+    let plan: RemediationPlan =
+        serde_json::from_str(&plan_json).context("Parsing remediation plan JSON")?;
 
-    eprintln!("[cct remediate] Applying {} edits to {}", plan.edits.len(), plan.file.display());
+    eprintln!(
+        "[cct remediate] Applying {} edits to {}",
+        plan.edits.len(),
+        plan.file.display()
+    );
 
     // Validate file exists
     if !plan.file.exists() {
-        return Err(anyhow!("Remediation target does not exist: {}", plan.file.display()));
+        return Err(anyhow!(
+            "Remediation target does not exist: {}",
+            plan.file.display()
+        ));
     }
 
     // TODO: Integrate cct-remediate layer for atomic writes
-    eprintln!("[cct remediate] Stub: would apply edits to {}", plan.file.display());
+    eprintln!(
+        "[cct remediate] Stub: would apply edits to {}",
+        plan.file.display()
+    );
 
     for edit in &plan.edits {
-        eprintln!("  - Line {}: replace {} with {}", edit.line, edit.pattern, edit.replacement);
+        eprintln!(
+            "  - Line {}: replace {} with {}",
+            edit.line, edit.pattern, edit.replacement
+        );
     }
 
     let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
-    let receipt = RemediationReceipt::new(plan.file.clone(), plan.edits.len(), plan.edits.len(), elapsed_ms);
+    let receipt = RemediationReceipt::new(
+        plan.file.clone(),
+        plan.edits.len(),
+        plan.edits.len(),
+        elapsed_ms,
+    );
 
     eprintln!("✓ Remediation plan processed (stub mode)");
     println!("{}", serde_json::to_string_pretty(&receipt)?);
@@ -552,24 +576,14 @@ mod tests {
 
     #[test]
     fn test_remediation_receipt_success() {
-        let receipt = RemediationReceipt::new(
-            PathBuf::from("Test.java"),
-            3,
-            3,
-            100.0,
-        );
+        let receipt = RemediationReceipt::new(PathBuf::from("Test.java"), 3, 3, 100.0);
         assert_eq!(receipt.status, "SUCCESS");
         assert_eq!(receipt.data.edits_applied, 3);
     }
 
     #[test]
     fn test_remediation_receipt_partial() {
-        let receipt = RemediationReceipt::new(
-            PathBuf::from("Test.java"),
-            2,
-            3,
-            100.0,
-        );
+        let receipt = RemediationReceipt::new(PathBuf::from("Test.java"), 2, 3, 100.0);
         assert_eq!(receipt.status, "PARTIAL");
         assert_eq!(receipt.data.edits_applied, 2);
         assert_eq!(receipt.data.edits_planned, 3);
@@ -584,7 +598,10 @@ mod tests {
         cmd_observe(root, Some(output.clone()))?;
 
         assert!(output.exists(), "Output directory should be created");
-        assert!(output.join("_scan.json").exists(), "Facts file should exist");
+        assert!(
+            output.join("_scan.json").exists(),
+            "Facts file should exist"
+        );
 
         Ok(())
     }
@@ -593,13 +610,11 @@ mod tests {
     fn test_remediate_plan_parsing() -> Result<()> {
         let plan = RemediationPlan {
             file: PathBuf::from("Test.java"),
-            edits: vec![
-                RemediationEdit {
-                    pattern: "H_TODO".to_string(),
-                    line: 42,
-                    replacement: "throw new UnsupportedOperationException()".to_string(),
-                },
-            ],
+            edits: vec![RemediationEdit {
+                pattern: "H_TODO".to_string(),
+                line: 42,
+                replacement: "throw new UnsupportedOperationException()".to_string(),
+            }],
         };
 
         let json = serde_json::to_string(&plan)?;
@@ -679,12 +694,7 @@ public class Clean {
 
     #[test]
     fn test_remediation_receipt_json_serialization() -> Result<()> {
-        let receipt = RemediationReceipt::new(
-            PathBuf::from("Target.java"),
-            2,
-            2,
-            75.0,
-        );
+        let receipt = RemediationReceipt::new(PathBuf::from("Target.java"), 2, 2, 75.0);
         let json_str = serde_json::to_string_pretty(&receipt)?;
 
         assert!(json_str.contains("\"status\""));
@@ -821,13 +831,11 @@ public class Clean {
         // Create a remediation plan
         let plan = RemediationPlan {
             file: target_file.clone(),
-            edits: vec![
-                RemediationEdit {
-                    pattern: "TODO".to_string(),
-                    line: 3,
-                    replacement: "DONE".to_string(),
-                },
-            ],
+            edits: vec![RemediationEdit {
+                pattern: "TODO".to_string(),
+                line: 3,
+                replacement: "DONE".to_string(),
+            }],
         };
 
         // Write plan to a file
@@ -903,12 +911,7 @@ public class Clean {
 
     #[test]
     fn test_remediation_receipt_json_format_complete() -> Result<()> {
-        let receipt = RemediationReceipt::new(
-            PathBuf::from("app.java"),
-            3,
-            3,
-            100.0,
-        );
+        let receipt = RemediationReceipt::new(PathBuf::from("app.java"), 3, 3, 100.0);
         let json = serde_json::to_string_pretty(&receipt)?;
 
         // Verify JSON structure

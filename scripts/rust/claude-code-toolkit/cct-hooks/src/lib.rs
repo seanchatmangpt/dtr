@@ -48,6 +48,9 @@ pub struct PreToolUsePayload {
 
 impl PreToolUsePayload {
     /// Deserialize the hook payload from stdin.
+    ///
+    /// # Errors
+    /// Returns an error if reading from stdin fails (though parsing errors are treated as default payloads).
     pub fn from_stdin() -> Result<Self> {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf)?;
@@ -57,16 +60,12 @@ impl PreToolUsePayload {
 
     /// Extract `file_path` from tool_input (for Write/Edit tools).
     pub fn file_path(&self) -> Option<&str> {
-        self.tool_input
-            .get("file_path")
-            .and_then(|v| v.as_str())
+        self.tool_input.get("file_path").and_then(|v| v.as_str())
     }
 
     /// Extract `command` from tool_input (for Bash tool).
     pub fn command(&self) -> Option<&str> {
-        self.tool_input
-            .get("command")
-            .and_then(|v| v.as_str())
+        self.tool_input.get("command").and_then(|v| v.as_str())
     }
 
     /// Extract proposed file content (for Write tool: `content`; Edit tool: `new_string`).
@@ -100,6 +99,9 @@ pub struct StopPayload {
 
 impl StopPayload {
     /// Deserialize the hook payload from stdin.
+    ///
+    /// # Errors
+    /// Returns an error if reading from stdin fails (though parsing errors are treated as default payloads).
     pub fn from_stdin() -> Result<Self> {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf)?;
@@ -120,6 +122,10 @@ pub struct SessionStartPayload {
 }
 
 impl SessionStartPayload {
+    /// Deserialize the hook payload from stdin.
+    ///
+    /// # Errors
+    /// Returns an error if reading from stdin fails (though parsing errors are treated as default payloads).
     pub fn from_stdin() -> Result<Self> {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf)?;
@@ -156,6 +162,9 @@ impl BlockDecision {
     }
 
     /// Print the decision JSON to stdout. Call before exit 0.
+    ///
+    /// # Panics
+    /// Panics if JSON serialization of the decision fails.
     pub fn emit(&self) {
         println!("{}", serde_json::to_string(self).unwrap());
     }
@@ -189,7 +198,8 @@ mod tests {
 
     #[test]
     fn deserialize_pre_tool_use_write() {
-        let json = r#"{"tool_name":"Write","tool_input":{"file_path":"Foo.java","content":"// TODO"}}"#;
+        let json =
+            r#"{"tool_name":"Write","tool_input":{"file_path":"Foo.java","content":"// TODO"}}"#;
         let p: PreToolUsePayload = serde_json::from_str(json).unwrap();
         assert_eq!(p.file_path(), Some("Foo.java"));
         assert_eq!(p.proposed_content(), Some("// TODO"));

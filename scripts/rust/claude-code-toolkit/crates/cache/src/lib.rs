@@ -55,7 +55,10 @@ pub mod hasher {
             let body2 = b"public void bar() { return null; }";
             let hash1 = hash_method_body(body1);
             let hash2 = hash_method_body(body2);
-            assert_ne!(hash1, hash2, "different inputs should produce different hashes");
+            assert_ne!(
+                hash1, hash2,
+                "different inputs should produce different hashes"
+            );
         }
 
         #[test]
@@ -135,6 +138,9 @@ pub mod store {
 
     impl Store {
         /// Open or create a cache database at `db_path`.
+        ///
+        /// # Errors
+        /// Returns an error if the database cannot be created or initialized.
         pub fn new(db_path: &Path) -> Result<Self> {
             let db = Database::create(db_path)?;
             // Initialize tables on creation
@@ -156,6 +162,12 @@ pub mod store {
         /// Call `flush_batch()` explicitly to commit pending writes.
         ///
         /// Target: <5µs for buffered inserts, <50µs amortized when batch commits.
+        ///
+        /// # Errors
+        /// Returns an error if serialization fails or if flushing the batch fails.
+        ///
+        /// # Panics
+        /// Panics if the write buffer lock is poisoned.
         #[inline(always)]
         pub fn insert(&self, hash: &[u8; 32], result: &CachedScanResult) -> Result<()> {
             // Encode once, reuse in both direct and batched paths
@@ -179,6 +191,12 @@ pub mod store {
         }
 
         /// Flush accumulated batch writes to disk in a single transaction.
+        ///
+        /// # Errors
+        /// Returns an error if opening a write transaction, inserting records, or committing fails.
+        ///
+        /// # Panics
+        /// Panics if the write buffer lock is poisoned.
         pub fn flush_batch(&self) -> Result<()> {
             let mut buffer = self.write_buffer.lock().unwrap();
             if buffer.is_empty() {
@@ -200,6 +218,9 @@ pub mod store {
         /// Query a scan result by hash with zero-copy deserialization.
         ///
         /// Target: <2µs on L1 cache hit (via manager), <50µs on L2 miss.
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction or deserializing the cached result fails.
         pub fn query(&self, hash: &[u8; 32]) -> Result<Option<CachedScanResult>> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(SCAN_RESULTS_TABLE)?;
@@ -215,6 +236,9 @@ pub mod store {
         }
 
         /// Store method name metadata for a hash.
+        ///
+        /// # Errors
+        /// Returns an error if opening a write transaction, inserting the metadata, or committing fails.
         pub fn insert_method_metadata(&self, hash: &[u8; 32], method_name: &str) -> Result<()> {
             let write_txn = self.db.begin_write()?;
             {
@@ -226,6 +250,9 @@ pub mod store {
         }
 
         /// Retrieve method name metadata by hash.
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction fails.
         pub fn query_method_metadata(&self, hash: &[u8; 32]) -> Result<Option<String>> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(METHOD_METADATA_TABLE)?;
@@ -236,6 +263,9 @@ pub mod store {
         }
 
         /// Check if a hash exists in the cache.
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction fails.
         pub fn contains(&self, hash: &[u8; 32]) -> Result<bool> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(SCAN_RESULTS_TABLE)?;
@@ -243,6 +273,9 @@ pub mod store {
         }
 
         /// Get the number of cached results (for testing/stats).
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction fails.
         pub fn count(&self) -> Result<usize> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(SCAN_RESULTS_TABLE)?;
@@ -406,6 +439,9 @@ pub mod manager {
 
     impl CacheManager {
         /// Create a new cache manager with a database at `db_path`.
+        ///
+        /// # Errors
+        /// Returns an error if the database cannot be created or initialized.
         pub fn new(db_path: &Path) -> Result<Self> {
             let store = Store::new(db_path)?;
             Ok(CacheManager {
@@ -420,6 +456,9 @@ pub mod manager {
         ///
         /// Optimization: Uses Arc-wrapped results to avoid cloning on L1 hits.
         /// L2 misses promote to L1 with zero-copy Arc sharing.
+        ///
+        /// # Errors
+        /// Returns an error if querying the disk store fails.
         #[inline(always)]
         pub fn query(&self, method_body: &[u8]) -> Result<Option<CachedScanResult>> {
             let hash = hash_method_body(method_body);
@@ -447,6 +486,9 @@ pub mod manager {
         /// L2 write is buffered and may auto-flush after 100 accumulated inserts.
         ///
         /// Target: <5µs for L1 only, <50µs amortized for L2 batch commit.
+        ///
+        /// # Errors
+        /// Returns an error if inserting to the disk store fails.
         #[inline(always)]
         pub fn insert(&self, method_body: &[u8], result: &CachedScanResult) -> Result<()> {
             let hash = hash_method_body(method_body);
@@ -462,11 +504,17 @@ pub mod manager {
         }
 
         /// Insert method metadata by pre-computed hash.
+        ///
+        /// # Errors
+        /// Returns an error if the underlying store operation fails.
         pub fn insert_method_metadata(&self, hash: &[u8; 32], method_name: &str) -> Result<()> {
             self.store.insert_method_metadata(hash, method_name)
         }
 
         /// Query method metadata by pre-computed hash.
+        ///
+        /// # Errors
+        /// Returns an error if the underlying store operation fails.
         pub fn query_method_metadata(&self, hash: &[u8; 32]) -> Result<Option<String>> {
             self.store.query_method_metadata(hash)
         }
@@ -474,6 +522,9 @@ pub mod manager {
         /// Check if a method body is in the cache (L1 first, then L2).
         ///
         /// L1 check is lock-free and constant time.
+        ///
+        /// # Errors
+        /// Returns an error if querying the disk store fails.
         pub fn contains(&self, method_body: &[u8]) -> Result<bool> {
             let hash = hash_method_body(method_body);
 
@@ -487,6 +538,9 @@ pub mod manager {
         }
 
         /// Get count of cached entries from L2 disk store.
+        ///
+        /// # Errors
+        /// Returns an error if querying the disk store fails.
         pub fn count(&self) -> Result<usize> {
             self.store.count()
         }
@@ -497,6 +551,9 @@ pub mod manager {
         }
 
         /// Flush pending batch writes to disk (explicit control for testing/shutdown).
+        ///
+        /// # Errors
+        /// Returns an error if the underlying store flush operation fails.
         pub fn flush(&self) -> Result<()> {
             self.store.flush_batch()
         }
@@ -620,7 +677,7 @@ pub mod manager {
             let db_path = tmp.path().join("test.db");
             let manager = CacheManager::new(&db_path).unwrap();
 
-            let bodies = vec![
+            let bodies = [
                 b"public int method1() { return 0; }".to_vec(),
                 b"public void method2() { }".to_vec(),
                 b"public boolean method3() { return false; }".to_vec(),
@@ -633,11 +690,7 @@ pub mod manager {
 
             manager.flush().unwrap(); // Flush buffered writes
 
-            assert_eq!(
-                manager.count().unwrap(),
-                3,
-                "should have cached 3 entries"
-            );
+            assert_eq!(manager.count().unwrap(), 3, "should have cached 3 entries");
 
             for body in bodies.iter() {
                 assert!(manager.contains(body).unwrap());
@@ -654,7 +707,11 @@ pub mod manager {
             let result = test_result("Test.java", 1);
 
             manager.insert(body, &result).unwrap();
-            assert_eq!(manager.memory_cache_size(), 1, "L1 cache should have 1 entry");
+            assert_eq!(
+                manager.memory_cache_size(),
+                1,
+                "L1 cache should have 1 entry"
+            );
 
             // Second query should hit L1 cache
             let retrieved = manager.query(body).unwrap();
@@ -680,11 +737,19 @@ pub mod manager {
             // New instance: L1 is empty, should promote from L2
             {
                 let manager = CacheManager::new(&db_path).unwrap();
-                assert_eq!(manager.memory_cache_size(), 0, "L1 should be empty on new instance");
+                assert_eq!(
+                    manager.memory_cache_size(),
+                    0,
+                    "L1 should be empty on new instance"
+                );
 
                 let retrieved = manager.query(body).unwrap();
                 assert!(retrieved.is_some());
-                assert_eq!(manager.memory_cache_size(), 1, "L1 should be populated from L2");
+                assert_eq!(
+                    manager.memory_cache_size(),
+                    1,
+                    "L1 should be populated from L2"
+                );
             }
         }
 

@@ -7,7 +7,7 @@
 //!   0  — all files clean
 //!   2  — one or more H-Guard violations found
 //!
-//! Designed to run as a Claude Code PreToolUse hook and as a Makefile build gate.
+//! Designed to run as a Claude Code `PreToolUse` hook and as a Makefile build gate.
 
 use anyhow::Result;
 use dtr_guard::{scan_content, scan_file, GuardPatterns, Violation};
@@ -23,6 +23,7 @@ fn main() {
     }
 }
 
+#[allow(clippy::case_sensitive_file_extension_comparisons, clippy::map_unwrap_or)]
 fn run() -> Result<()> {
     let args: Vec<String> = env::args().collect();
 
@@ -63,7 +64,7 @@ fn run() -> Result<()> {
 
     // Scan content from a temp file (used by hook to scan proposed writes)
     if let Some(ref content_path) = content_file {
-        let label = files.first().map(|s| s.as_str()).unwrap_or("<stdin>");
+        let label = files.first().map(String::as_str).unwrap_or("<stdin>");
         if label.ends_with(".java") || label == "<stdin>" {
             let content = fs::read_to_string(content_path)?;
             if !exclude_tests || !dtr_guard::is_test_path(label) {
@@ -121,7 +122,7 @@ fn print_human(violations: &[Violation]) {
     for v in violations {
         if v.file != current_file {
             eprintln!("  📄 {}", v.file);
-            current_file = v.file.clone();
+            current_file.clone_from(&v.file);
         }
         eprintln!("     ❌ Line {:>4}  [{}]  {}", v.line, v.code, v.matched);
         eprintln!("            Fix: {}", v.fix);
@@ -129,7 +130,11 @@ fn print_human(violations: &[Violation]) {
     }
 
     let count = violations.len();
-    eprintln!("  {} violation{} found.", count, if count == 1 { "" } else { "s" });
+    eprintln!(
+        "  {} violation{} found.",
+        count,
+        if count == 1 { "" } else { "s" }
+    );
     eprintln!();
     eprintln!("  H-Guard enforces: no TODOs, no mocks in production, no stub returns,");
     eprintln!("  no empty bodies, no silent fallbacks, no logging instead of throwing.");

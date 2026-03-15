@@ -37,7 +37,7 @@ fn main() -> anyhow::Result<()> {
         eprintln!("║  TPS VIOLATION — MISSING JAVADOC (stop the line / Jidoka)       ║");
         eprintln!("╠══════════════════════════════════════════════════════════════════╣");
         for v in &violations {
-            eprintln!("{}", v);
+            eprintln!("{v}");
         }
         eprintln!("╠══════════════════════════════════════════════════════════════════╣");
         eprintln!(

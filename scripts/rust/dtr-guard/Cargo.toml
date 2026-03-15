@@ -2,6 +2,7 @@
 name = "dtr-guard"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.70"
 description = "H-Guard enforcement scanner for DTR Java projects — blocks semantic lies at write time"
 
 [lib]

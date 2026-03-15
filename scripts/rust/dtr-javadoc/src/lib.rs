@@ -94,7 +94,11 @@ impl std::fmt::Display for DocViolation {
                 write!(f, "  MISSING CLASS DOC   {}  ({})", self.fqcn, file)
             }
             ViolationKind::MissingMethodDoc { method } => {
-                write!(f, "  MISSING METHOD DOC  {}#{}  ({})", self.fqcn, method, file)
+                write!(
+                    f,
+                    "  MISSING METHOD DOC  {}#{}  ({})",
+                    self.fqcn, method, file
+                )
             }
         }
     }
@@ -171,13 +175,18 @@ pub const JAVA_CLASS_QUERY: &str = r#"
 
 /// Process all `.java` files under `source_dir` in parallel.
 /// Returns `(method_docs, module_docs, violations)`.
+#[must_use]
 pub fn process_all(
     source_dir: &Path,
-) -> (HashMap<String, JavadocEntry>, Vec<ModuleDoc>, Vec<DocViolation>) {
+) -> (
+    HashMap<String, JavadocEntry>,
+    Vec<ModuleDoc>,
+    Vec<DocViolation>,
+) {
     let files: Vec<PathBuf> = WalkDir::new(source_dir)
         .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().map_or(false, |ext| ext == "java"))
+        .filter_map(Result::ok)
+        .filter(|e| e.path().extension().is_some_and(|ext| ext == "java"))
         .map(|e| e.path().to_owned())
         .collect();
 
@@ -210,6 +219,7 @@ pub fn process_all(
 }
 
 /// Kept for backward compatibility and tests.
+#[must_use]
 pub fn extract_all(source_dir: &Path) -> HashMap<String, JavadocEntry> {
     let (method_docs, _, _) = process_all(source_dir);
     method_docs
@@ -220,27 +230,27 @@ pub fn extract_all(source_dir: &Path) -> HashMap<String, JavadocEntry> {
 // ============================================================================
 
 /// Process a single file from disk.
+#[must_use]
 pub fn extract_from_file(path: &Path) -> Vec<(String, JavadocEntry)> {
-    let source = match std::fs::read(path) {
-        Ok(b) => b,
-        Err(_) => return vec![],
-    };
+    let Ok(source) = std::fs::read(path) else { return vec![] };
     extract_from_source(&source, path)
 }
 
 /// Extract method-level docs from an in-memory source buffer (used by tests).
+#[must_use]
 pub fn extract_from_source(source: &[u8], path: &Path) -> Vec<(String, JavadocEntry)> {
     process_file_source(source, path).method_docs
 }
 
 /// Full per-file processing: module doc + method docs + violations.
+#[must_use]
 pub fn process_file_source(source: &[u8], path: &Path) -> FileDocResult {
     let package = derive_package(source);
     let class_name = class_name_from_path(path);
     let fqcn = if package.is_empty() {
         class_name.to_string()
     } else {
-        format!("{}.{}", package, class_name)
+        format!("{package}.{class_name}")
     };
 
     let mut java_parser = tree_sitter::Parser::new();
@@ -248,12 +258,19 @@ pub fn process_file_source(source: &[u8], path: &Path) -> FileDocResult {
         .set_language(&tree_sitter_java::LANGUAGE.into())
         .is_err()
     {
-        return FileDocResult { module_doc: None, method_docs: vec![], violations: vec![] };
+        return FileDocResult {
+            module_doc: None,
+            method_docs: vec![],
+            violations: vec![],
+        };
     }
 
-    let java_tree = match java_parser.parse(source, None) {
-        Some(t) => t,
-        None => return FileDocResult { module_doc: None, method_docs: vec![], violations: vec![] },
+    let Some(java_tree) = java_parser.parse(source, None) else {
+        return FileDocResult {
+            module_doc: None,
+            method_docs: vec![],
+            violations: vec![],
+        }
     };
 
     let root = java_tree.root_node();
@@ -267,7 +284,11 @@ pub fn process_file_source(source: &[u8], path: &Path) -> FileDocResult {
     // --- Violation detection (TPS Jidoka) ---
     let violations = find_violations(source, root, &fqcn, path);
 
-    FileDocResult { module_doc, method_docs, violations }
+    FileDocResult {
+        module_doc,
+        method_docs,
+        violations,
+    }
 }
 
 // ============================================================================
@@ -279,11 +300,10 @@ fn extract_method_docs(
     root: tree_sitter::Node,
     fqcn: &str,
 ) -> Vec<(String, JavadocEntry)> {
-    let java_query =
-        match tree_sitter::Query::new(&tree_sitter_java::LANGUAGE.into(), JAVA_METHOD_QUERY) {
-            Ok(q) => q,
-            Err(_) => return vec![],
-        };
+    let Ok(java_query) =
+        tree_sitter::Query::new(&tree_sitter_java::LANGUAGE.into(), JAVA_METHOD_QUERY) else {
+        return vec![]
+    };
 
     let capture_names = java_query.capture_names();
     let doc_idx = capture_names.iter().position(|n| *n == "doc").unwrap_or(0);
@@ -301,15 +321,9 @@ fn extract_method_docs(
         let name_node = m.captures.iter().find(|c| c.index as usize == name_idx);
 
         if let (Some(doc), Some(name)) = (doc_node, name_node) {
-            let comment_text = match doc.node.utf8_text(source) {
-                Ok(t) => t,
-                Err(_) => continue,
-            };
-            let method_name = match name.node.utf8_text(source) {
-                Ok(t) => t,
-                Err(_) => continue,
-            };
-            let key = format!("{}#{}", fqcn, method_name);
+            let Ok(comment_text) = doc.node.utf8_text(source) else { continue };
+            let Ok(method_name) = name.node.utf8_text(source) else { continue };
+            let key = format!("{fqcn}#{method_name}");
             if let Some(entry) = parse_javadoc_comment(comment_text) {
                 results.push((key, entry));
             }
@@ -331,11 +345,10 @@ fn extract_module_doc(
     class_name: &str,
     method_docs: &[(String, JavadocEntry)],
 ) -> Option<ModuleDoc> {
-    let java_query =
-        match tree_sitter::Query::new(&tree_sitter_java::LANGUAGE.into(), JAVA_CLASS_QUERY) {
-            Ok(q) => q,
-            Err(_) => return None,
-        };
+    let Ok(java_query) =
+        tree_sitter::Query::new(&tree_sitter_java::LANGUAGE.into(), JAVA_CLASS_QUERY) else {
+        return None
+    };
 
     let capture_names = java_query.capture_names();
     let doc_idx = capture_names.iter().position(|n| *n == "doc").unwrap_or(0);
@@ -349,19 +362,20 @@ fn extract_module_doc(
         let decl_node = m.captures.iter().find(|c| c.index as usize == decl_idx);
 
         if let (Some(doc), Some(decl)) = (doc_node, decl_node) {
-            let comment_text = match doc.node.utf8_text(source) {
-                Ok(t) => t,
-                Err(_) => continue,
-            };
+            let Ok(comment_text) = doc.node.utf8_text(source) else { continue };
 
             let entry = parse_javadoc_comment(comment_text);
             let signature = extract_type_signature(decl.node, source);
-            let kind = decl.node.kind().trim_end_matches("_declaration").to_string();
+            let kind = decl
+                .node
+                .kind()
+                .trim_end_matches("_declaration")
+                .to_string();
 
             // Collect method names for the code block summary
             let method_names: Vec<String> = method_docs
                 .iter()
-                .filter(|(k, _)| k.starts_with(&format!("{}#", fqcn)))
+                .filter(|(k, _)| k.starts_with(&format!("{fqcn}#")))
                 .map(|(k, _)| k.split('#').nth(1).unwrap_or("").to_string())
                 .collect();
 
@@ -369,7 +383,9 @@ fn extract_module_doc(
                 fqcn: fqcn.to_string(),
                 simple_name: class_name.to_string(),
                 package: package.to_string(),
-                description: entry.as_ref().map_or(String::new(), |e| e.description.clone()),
+                description: entry
+                    .as_ref()
+                    .map_or(String::new(), |e| e.description.clone()),
                 since: entry.as_ref().and_then(|e| e.since.clone()),
                 deprecated: entry.as_ref().and_then(|e| e.deprecated.clone()),
                 see: entry.as_ref().map_or(vec![], |e| e.see.clone()),
@@ -387,15 +403,16 @@ fn extract_module_doc(
 }
 
 /// Extract the type declaration header (everything before the `{` body).
+#[must_use]
 pub fn extract_type_signature(decl_node: tree_sitter::Node, source: &[u8]) -> String {
     let body_kinds = ["class_body", "interface_body", "record_body", "enum_body"];
     let body_start = {
         let mut cursor = decl_node.walk();
-        decl_node
+        let result = decl_node
             .children(&mut cursor)
             .find(|n| body_kinds.contains(&n.kind()))
-            .map(|n| n.start_byte())
-            .unwrap_or(decl_node.end_byte())
+            .map_or(decl_node.end_byte(), |n| n.start_byte());
+        result
     };
 
     let sig_bytes = &source[decl_node.start_byte()..body_start];
@@ -417,6 +434,7 @@ pub fn extract_type_signature(decl_node: tree_sitter::Node, source: &[u8]) -> St
 ///
 /// TPS rule: stop the line on every missing doc. The binary exits 1 if this
 /// list is non-empty.
+#[must_use]
 pub fn find_violations(
     source: &[u8],
     root: tree_sitter::Node,
@@ -476,7 +494,9 @@ fn find_method_violations(
                             violations.push(DocViolation {
                                 file: path.to_path_buf(),
                                 fqcn: fqcn.to_string(),
-                                kind: ViolationKind::MissingMethodDoc { method: method_name },
+                                kind: ViolationKind::MissingMethodDoc {
+                                    method: method_name,
+                                },
                             });
                         }
                     }
@@ -487,9 +507,12 @@ fn find_method_violations(
                     | "enum_declaration" => {
                         let inner_name = child_text_by_kind(&member, source, "identifier")
                             .unwrap_or_else(|| "Inner".to_string());
-                        let inner_fqcn = format!("{}.{}", fqcn, inner_name);
+                        let inner_fqcn = format!("{fqcn}.{inner_name}");
                         violations.extend(find_method_violations(
-                            source, member, &inner_fqcn, path,
+                            source,
+                            member,
+                            &inner_fqcn,
+                            path,
                         ));
                     }
                     _ => {}
@@ -503,6 +526,7 @@ fn find_method_violations(
 
 /// Returns true if the node's previous named sibling is a `block_comment`
 /// starting with `/**`.
+#[must_use]
 pub fn has_javadoc_predecessor(node: &tree_sitter::Node, source: &[u8]) -> bool {
     if let Some(prev) = node.prev_named_sibling() {
         if prev.kind() == "block_comment" {
@@ -516,6 +540,7 @@ pub fn has_javadoc_predecessor(node: &tree_sitter::Node, source: &[u8]) -> bool 
 }
 
 /// Returns true if the method/constructor node has a `public` modifier.
+#[must_use]
 pub fn is_public(node: &tree_sitter::Node, source: &[u8]) -> bool {
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
@@ -528,6 +553,7 @@ pub fn is_public(node: &tree_sitter::Node, source: &[u8]) -> bool {
 }
 
 /// Returns true if the method node has `@Override` in its modifiers.
+#[must_use]
 pub fn has_override_annotation(node: &tree_sitter::Node, source: &[u8]) -> bool {
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
@@ -556,6 +582,7 @@ fn method_name_of(node: &tree_sitter::Node, source: &[u8]) -> String {
 // ============================================================================
 
 /// Render a module's documentation as a markdown string.
+#[must_use]
 pub fn render_module_markdown(
     module: &ModuleDoc,
     method_docs: &HashMap<String, JavadocEntry>,
@@ -567,11 +594,11 @@ pub fn render_module_markdown(
     writeln!(out).unwrap();
     writeln!(out, "> **Package:** `{}`  ", module.package).unwrap();
     if let Some(since) = &module.since {
-        writeln!(out, "> **Since:** `{}`  ", since).unwrap();
+        writeln!(out, "> **Since:** `{since}`  ").unwrap();
     }
     if let Some(dep) = &module.deprecated {
         writeln!(out, "> [!WARNING]  ").unwrap();
-        writeln!(out, "> **Deprecated:** {}  ", dep).unwrap();
+        writeln!(out, "> **Deprecated:** {dep}  ").unwrap();
     }
     writeln!(out).unwrap();
 
@@ -597,7 +624,7 @@ pub fn render_module_markdown(
         } else {
             String::new()
         };
-        writeln!(out, "    // {}{}", names_preview, suffix).unwrap();
+        writeln!(out, "    // {names_preview}{suffix}").unwrap();
     }
     writeln!(out, "}}").unwrap();
     writeln!(out, "```").unwrap();
@@ -619,7 +646,7 @@ pub fn render_module_markdown(
         writeln!(out).unwrap();
 
         for (method_name, entry) in methods {
-            writeln!(out, "### `{}`", method_name).unwrap();
+            writeln!(out, "### `{method_name}`").unwrap();
             writeln!(out).unwrap();
 
             if !entry.description.is_empty() {
@@ -637,7 +664,7 @@ pub fn render_module_markdown(
             }
 
             if let Some(ret) = &entry.returns {
-                writeln!(out, "> **Returns:** {}", ret).unwrap();
+                writeln!(out, "> **Returns:** {ret}").unwrap();
                 writeln!(out).unwrap();
             }
 
@@ -651,13 +678,13 @@ pub fn render_module_markdown(
             }
 
             if let Some(since) = &entry.since {
-                writeln!(out, "> **Since:** {}", since).unwrap();
+                writeln!(out, "> **Since:** {since}").unwrap();
                 writeln!(out).unwrap();
             }
 
             if let Some(dep) = &entry.deprecated {
                 writeln!(out, "> [!WARNING]").unwrap();
-                writeln!(out, "> **Deprecated:** {}", dep).unwrap();
+                writeln!(out, "> **Deprecated:** {dep}").unwrap();
                 writeln!(out).unwrap();
             }
 
@@ -671,6 +698,9 @@ pub fn render_module_markdown(
 
 /// Write one markdown file per module doc to `docs/api/`, using the FQCN as
 /// the path (`io/github/.../ClassName.md`).
+///
+/// # Errors
+/// Returns an error if creating directories or writing files fails.
 pub fn write_api_docs(
     module_docs: &[ModuleDoc],
     method_docs: &HashMap<String, JavadocEntry>,
@@ -706,6 +736,7 @@ pub fn write_api_docs(
 /// not embedded in Java source.
 ///
 /// Returns `None` if the comment has no description, params, returns, or throws.
+#[must_use]
 pub fn parse_javadoc_comment(comment: &str) -> Option<JavadocEntry> {
     let mut jd_parser = tree_sitter::Parser::new();
     jd_parser
@@ -734,9 +765,7 @@ pub fn parse_javadoc_comment(comment: &str) -> Option<JavadocEntry> {
                 if let Some(name) = name {
                     entry.params.push(ParamDoc {
                         name,
-                        description: desc
-                            .map(|d| clean_comment_text(&d))
-                            .unwrap_or_default(),
+                        description: desc.map(|d| clean_comment_text(&d)).unwrap_or_default(),
                     });
                 }
             }
@@ -753,21 +782,23 @@ pub fn parse_javadoc_comment(comment: &str) -> Option<JavadocEntry> {
                 // Grammar: throws_tag → tag_name, type { identifier }, description
                 let exc = {
                     let mut c = child.walk();
-                    child
+                    let outer_result = child
                         .children(&mut c)
                         .find(|n| n.kind() == "type")
                         .and_then(|type_node| {
                             let mut tc = type_node.walk();
-                            type_node
+                            let inner_result = type_node
                                 .children(&mut tc)
                                 .find(|n| n.kind() == "identifier")
                                 .and_then(|id_node| id_node.utf8_text(src).ok())
-                                .map(|s| s.trim().to_string())
+                                .map(|s| s.trim().to_string());
+                            inner_result
                         })
                         .or_else(|| {
                             child_text_by_kind(&child, src, "identifier")
                                 .map(|s| s.trim().to_string())
-                        })
+                        });
+                    outer_result
                 };
                 let desc = child_text_by_kind(&child, src, "description");
                 if let Some(exc) = exc {
@@ -775,9 +806,7 @@ pub fn parse_javadoc_comment(comment: &str) -> Option<JavadocEntry> {
                     if !exc_trimmed.is_empty() {
                         entry.throws.push(ThrowsDoc {
                             exception: exc_trimmed,
-                            description: desc
-                                .map(|d| clean_comment_text(&d))
-                                .unwrap_or_default(),
+                            description: desc.map(|d| clean_comment_text(&d)).unwrap_or_default(),
                         });
                     }
                 }
@@ -827,11 +856,8 @@ pub fn parse_javadoc_comment(comment: &str) -> Option<JavadocEntry> {
 // ============================================================================
 
 /// Find the first named child of `node` with the given kind and return its text.
-pub fn child_text_by_kind(
-    node: &tree_sitter::Node,
-    source: &[u8],
-    kind: &str,
-) -> Option<String> {
+#[must_use]
+pub fn child_text_by_kind(node: &tree_sitter::Node, source: &[u8], kind: &str) -> Option<String> {
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if child.kind() == kind {
@@ -842,6 +868,7 @@ pub fn child_text_by_kind(
 }
 
 /// Extract the `package foo.bar;` declaration from Java source bytes.
+#[must_use]
 pub fn derive_package(source: &[u8]) -> String {
     let text = std::str::from_utf8(source).unwrap_or("");
     for line in text.lines() {
@@ -856,6 +883,7 @@ pub fn derive_package(source: &[u8]) -> String {
 }
 
 /// Return the file stem (expected class name) from a path.
+#[must_use]
 pub fn class_name_from_path(path: &Path) -> &str {
     path.file_stem()
         .and_then(|s| s.to_str())
@@ -868,6 +896,7 @@ pub fn class_name_from_path(path: &Path) -> &str {
 /// because the Javadoc grammar places them in the description when they appear
 /// at the top of a file-level comment. We detect them by presence of
 /// "Licensed under the Apache License" or "Copyright" and return empty.
+#[must_use]
 pub fn clean_comment_text(text: &str) -> String {
     // Strip license headers
     if text.contains("Licensed under the Apache License")
@@ -880,8 +909,8 @@ pub fn clean_comment_text(text: &str) -> String {
     text.lines()
         .map(|line| {
             let t = line.trim();
-            if t.starts_with("* ") {
-                &t[2..]
+            if let Some(stripped) = t.strip_prefix("* ") {
+                stripped
             } else if t == "*" {
                 ""
             } else if t.starts_with("/**") {
@@ -953,7 +982,10 @@ mod tests {
     fn clean_inline_tags_preserved() {
         let input = "* Use {@code System.nanoTime()} for timing.";
         let result = clean_comment_text(input);
-        assert!(result.contains("{@code System.nanoTime()}"), "got: {}", result);
+        assert!(
+            result.contains("{@code System.nanoTime()}"),
+            "got: {result}"
+        );
     }
 
     #[test]
@@ -1067,14 +1099,14 @@ mod tests {
 
     #[test]
     fn parse_multiple_params() {
-        let comment = r#"/**
+        let comment = r"/**
      * Benchmark.
      *
      * @param label  label
      * @param task   task
      * @param warmupRounds warmup
      * @param measureRounds measure
-     */"#;
+     */";
         let entry = parse_javadoc_comment(comment).expect("should parse");
         assert_eq!(entry.params.len(), 4);
         assert_eq!(entry.params[0].name, "label");
@@ -1090,11 +1122,11 @@ mod tests {
 
     #[test]
     fn parse_throws_tag() {
-        let comment = r#"/**
+        let comment = r"/**
      * Risky operation.
      *
      * @throws IllegalStateException if not ready
-     */"#;
+     */";
         let entry = parse_javadoc_comment(comment).expect("should parse");
         assert_eq!(entry.throws.len(), 1);
         assert_eq!(entry.throws[0].exception, "IllegalStateException");
@@ -1122,7 +1154,7 @@ mod tests {
 
     #[test]
     fn parse_all_tags_combined() {
-        let comment = r#"/**
+        let comment = r"/**
      * Full-featured method.
      *
      * @param input the input value
@@ -1130,7 +1162,7 @@ mod tests {
      * @throws NullPointerException if input is null
      * @since 2.0.0
      * @deprecated use betterMethod() instead
-     */"#;
+     */";
         let entry = parse_javadoc_comment(comment).expect("should parse");
         assert!(!entry.description.is_empty());
         assert_eq!(entry.params.len(), 1);
@@ -1244,7 +1276,7 @@ public class MyService {
 
     #[test]
     fn module_doc_extracted_for_interface() {
-        let src = br#"
+        let src = br"
 package com.example;
 
 /**
@@ -1256,33 +1288,41 @@ public interface MyApi {
     /** Does something. @param x input */
     void doThing(String x);
 }
-"#;
+";
         let result = process_file_source(src, Path::new("MyApi.java"));
         let module = result.module_doc.expect("should have module doc");
         assert_eq!(module.simple_name, "MyApi");
         assert_eq!(module.package, "com.example");
         assert_eq!(module.kind, "interface");
-        assert!(module.description.contains("core documentation API"), "desc: {}", module.description);
+        assert!(
+            module.description.contains("core documentation API"),
+            "desc: {}",
+            module.description
+        );
         assert_eq!(module.since.as_deref(), Some("1.0"));
-        assert!(module.signature.contains("interface MyApi"), "sig: {}", module.signature);
+        assert!(
+            module.signature.contains("interface MyApi"),
+            "sig: {}",
+            module.signature
+        );
     }
 
     #[test]
     fn module_doc_missing_returns_none() {
-        let src = br#"
+        let src = br"
 package com.example;
 
 public interface NoDoc {
     void doThing();
 }
-"#;
+";
         let result = process_file_source(src, Path::new("NoDoc.java"));
         assert!(result.module_doc.is_none());
     }
 
     #[test]
     fn module_doc_signature_strips_body() {
-        let src = br#"
+        let src = br"
 package com.example;
 
 /**
@@ -1292,12 +1332,20 @@ public record Point(int x, int y) {
     /** Gets distance. @return distance */
     public double distance() { return Math.sqrt(x*x + y*y); }
 }
-"#;
+";
         let result = process_file_source(src, Path::new("Point.java"));
         let module = result.module_doc.expect("should have module doc");
-        assert!(module.signature.contains("record Point"), "sig: {}", module.signature);
+        assert!(
+            module.signature.contains("record Point"),
+            "sig: {}",
+            module.signature
+        );
         // Body should NOT be in signature
-        assert!(!module.signature.contains("distance"), "sig should not have body: {}", module.signature);
+        assert!(
+            !module.signature.contains("distance"),
+            "sig should not have body: {}",
+            module.signature
+        );
     }
 
     // -----------------------------------------------------------------------
@@ -1306,13 +1354,13 @@ public record Point(int x, int y) {
 
     #[test]
     fn violation_missing_class_doc() {
-        let src = br#"
+        let src = br"
 package com.example;
 
 public class NoDocs {
     public void doThing() {}
 }
-"#;
+";
         let result = process_file_source(src, Path::new("NoDocs.java"));
         let class_violations: Vec<_> = result
             .violations
@@ -1324,7 +1372,7 @@ public class NoDocs {
 
     #[test]
     fn violation_missing_method_doc() {
-        let src = br#"
+        let src = br"
 package com.example;
 
 /**
@@ -1336,7 +1384,7 @@ public class WellDocs {
 
     public void notDocumented() {}
 }
-"#;
+";
         let result = process_file_source(src, Path::new("WellDocs.java"));
         let method_violations: Vec<_> = result
             .violations
@@ -1351,7 +1399,7 @@ public class WellDocs {
 
     #[test]
     fn no_violation_for_override_methods() {
-        let src = br#"
+        let src = br"
 package com.example;
 
 /**
@@ -1361,19 +1409,22 @@ public class Impl implements Runnable {
     @Override
     public void run() {}
 }
-"#;
+";
         let result = process_file_source(src, Path::new("Impl.java"));
         let method_violations: Vec<_> = result
             .violations
             .iter()
             .filter(|v| matches!(v.kind, ViolationKind::MissingMethodDoc { .. }))
             .collect();
-        assert!(method_violations.is_empty(), "Override methods should not be violations: {:?}", method_violations);
+        assert!(
+            method_violations.is_empty(),
+            "Override methods should not be violations: {method_violations:?}"
+        );
     }
 
     #[test]
     fn no_violation_for_private_methods() {
-        let src = br#"
+        let src = br"
 package com.example;
 
 /**
@@ -1383,14 +1434,17 @@ public class Private {
     private void hidden() {}
     protected void alsoHidden() {}
 }
-"#;
+";
         let result = process_file_source(src, Path::new("Private.java"));
         let violations: Vec<_> = result
             .violations
             .iter()
             .filter(|v| matches!(v.kind, ViolationKind::MissingMethodDoc { .. }))
             .collect();
-        assert!(violations.is_empty(), "private/protected should not be violations");
+        assert!(
+            violations.is_empty(),
+            "private/protected should not be violations"
+        );
     }
 
     #[test]
@@ -1424,11 +1478,11 @@ public class Private {
         };
         let methods = HashMap::new();
         let md = render_module_markdown(&module, &methods);
-        assert!(md.contains("# `MyApi`"), "md: {}", md);
-        assert!(md.contains("The core API."), "md: {}", md);
-        assert!(md.contains("```java"), "md: {}", md);
-        assert!(md.contains("public interface MyApi {"), "md: {}", md);
-        assert!(md.contains("doThing"), "md: {}", md);
+        assert!(md.contains("# `MyApi`"), "md: {md}");
+        assert!(md.contains("The core API."), "md: {md}");
+        assert!(md.contains("```java"), "md: {md}");
+        assert!(md.contains("public interface MyApi {"), "md: {md}");
+        assert!(md.contains("doThing"), "md: {md}");
     }
 
     #[test]
@@ -1458,10 +1512,10 @@ public class Private {
             },
         );
         let md = render_module_markdown(&module, &methods);
-        assert!(md.contains("### `doThing`"), "md: {}", md);
-        assert!(md.contains("Does a thing."), "md: {}", md);
-        assert!(md.contains("| `x` |"), "md: {}", md);
-        assert!(md.contains("**Returns:**"), "md: {}", md);
+        assert!(md.contains("### `doThing`"), "md: {md}");
+        assert!(md.contains("Does a thing."), "md: {md}");
+        assert!(md.contains("| `x` |"), "md: {md}");
+        assert!(md.contains("**Returns:**"), "md: {md}");
     }
 
     // -----------------------------------------------------------------------
@@ -1480,14 +1534,14 @@ public class Private {
             .join("dtr-core/src/main/java");
 
         if !source_dir.exists() {
-            eprintln!("Skipping integration test: {:?} not found", source_dir);
+            eprintln!("Skipping integration test: {source_dir:?} not found");
             return;
         }
 
         let (_, _, violations) = process_all(&source_dir);
 
         if !violations.is_empty() {
-            let msg: String = violations.iter().map(|v| format!("\n{}", v)).collect();
+            let msg: String = violations.iter().map(|v| format!("\n{v}")).collect();
             panic!(
                 "\n\nTPS VIOLATION: {} missing doc(s) found in dtr-core:\n{}\n",
                 violations.len(),
@@ -1508,7 +1562,7 @@ public class Private {
             .join("dtr-core/src/main/java");
 
         if !source_dir.exists() {
-            eprintln!("Skipping integration test: {:?} not found", source_dir);
+            eprintln!("Skipping integration test: {source_dir:?} not found");
             return;
         }
 
@@ -1529,12 +1583,19 @@ public class Private {
             "desc: {}",
             rmc.description
         );
-        assert!(rmc.signature.contains("interface RenderMachineCommands"), "sig: {}", rmc.signature);
+        assert!(
+            rmc.signature.contains("interface RenderMachineCommands"),
+            "sig: {}",
+            rmc.signature
+        );
         assert!(rmc.method_count > 0);
 
         // Spot-check markdown output
         let md = render_module_markdown(rmc, &method_docs);
-        assert!(md.contains("# `RenderMachineCommands`"), "md header missing");
+        assert!(
+            md.contains("# `RenderMachineCommands`"),
+            "md header missing"
+        );
         assert!(md.contains("```java"), "code block missing");
         assert!(md.contains("### `say`"), "method section missing");
     }

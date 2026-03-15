@@ -3,6 +3,7 @@ name = "cct-git"
 version = "0.1.0"
 edition = "2021"
 description = "Git state utilities for Claude Code hooks and pipeline phases"
+rust-version = "1.70"
 
 [dependencies]
 anyhow = { workspace = true }

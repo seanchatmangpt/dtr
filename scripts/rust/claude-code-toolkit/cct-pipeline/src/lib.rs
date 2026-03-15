@@ -64,16 +64,36 @@ pub struct PhaseResult {
 
 impl PhaseResult {
     pub fn green(msg: impl Into<String>) -> Self {
-        Self { status: Status::Green, message: msg.into(), elapsed_ms: None, violations: None }
+        Self {
+            status: Status::Green,
+            message: msg.into(),
+            elapsed_ms: None,
+            violations: None,
+        }
     }
     pub fn red(msg: impl Into<String>) -> Self {
-        Self { status: Status::Red, message: msg.into(), elapsed_ms: None, violations: None }
+        Self {
+            status: Status::Red,
+            message: msg.into(),
+            elapsed_ms: None,
+            violations: None,
+        }
     }
     pub fn red_with_violations(msg: impl Into<String>, count: u32) -> Self {
-        Self { status: Status::Red, message: msg.into(), elapsed_ms: None, violations: Some(count) }
+        Self {
+            status: Status::Red,
+            message: msg.into(),
+            elapsed_ms: None,
+            violations: Some(count),
+        }
     }
     pub fn skip(msg: impl Into<String>) -> Self {
-        Self { status: Status::Skip, message: msg.into(), elapsed_ms: None, violations: None }
+        Self {
+            status: Status::Skip,
+            message: msg.into(),
+            elapsed_ms: None,
+            violations: None,
+        }
     }
 }
 
@@ -105,7 +125,11 @@ impl Pipeline {
     }
 
     /// Register a named phase function.
-    pub fn phase(mut self, name: impl Into<String>, f: impl Fn(&PipelineContext) -> PhaseResult + 'static) -> Self {
+    pub fn phase(
+        mut self,
+        name: impl Into<String>,
+        f: impl Fn(&PipelineContext) -> PhaseResult + 'static,
+    ) -> Self {
         self.phases.push((name.into(), Box::new(f)));
         self
     }
@@ -183,6 +207,9 @@ impl PipelineReceipt {
     }
 
     /// Write the receipt as minified JSON.
+    ///
+    /// # Errors
+    /// Returns an error if creating the parent directory, serializing JSON, or writing the file fails.
     pub fn write_receipt(&self, path: &Path) -> Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
@@ -205,21 +232,34 @@ impl PipelineReceipt {
                 Status::Red => ("✗", red),
                 Status::Skip => ("—", yellow),
             };
-            let elapsed = result.elapsed_ms.map(|ms| format!(" ({}ms)", ms)).unwrap_or_default();
-            eprintln!("  {color}{sym}{reset} Phase {name}: {}{elapsed}", result.message);
+            let elapsed = result
+                .elapsed_ms
+                .map(|ms| format!(" ({}ms)", ms))
+                .unwrap_or_default();
+            eprintln!(
+                "  {color}{sym}{reset} Phase {name}: {}{elapsed}",
+                result.message
+            );
         }
 
         eprintln!();
         if self.is_green() {
             eprintln!("  {green}● ALL PHASES GREEN{reset} ({}ms)", self.elapsed_ms);
         } else {
-            eprintln!("  {red}● RED — one or more phases failed{reset} ({}ms)", self.elapsed_ms);
+            eprintln!(
+                "  {red}● RED — one or more phases failed{reset} ({}ms)",
+                self.elapsed_ms
+            );
         }
     }
 
     /// Exit code: 0 if green, 2 if red (matches dx.sh convention).
     pub fn exit_code(&self) -> i32 {
-        if self.is_green() { 0 } else { 2 }
+        if self.is_green() {
+            0
+        } else {
+            2
+        }
     }
 }
 

@@ -94,10 +94,10 @@ fn bench_ten_files() {
 
     // Sequential baseline
     let start = Instant::now();
-    let mut violations = 0;
+    let mut _violations = 0;
     for file in &files {
         if let Ok(result) = scanner.scan_file(file) {
-            violations += result.violations.len();
+            _violations += result.violations.len();
         }
     }
     let sequential_elapsed = start.elapsed();
@@ -138,10 +138,10 @@ fn bench_hundred_files() {
 
     // Sequential baseline
     let start = Instant::now();
-    let mut violations = 0;
+    let mut _violations = 0;
     for file in &files {
         if let Ok(result) = scanner.scan_file(file) {
-            violations += result.violations.len();
+            _violations += result.violations.len();
         }
     }
     let sequential_elapsed = start.elapsed();
@@ -182,15 +182,15 @@ fn bench_thousand_files() {
     // Sequential baseline (sample first 100 for reasonable benchmark time)
     let sample_size = 100;
     let start = Instant::now();
-    let mut violations = 0;
+    let mut _violations = 0;
     for file in files.iter().take(sample_size) {
         if let Ok(result) = scanner.scan_file(file) {
-            violations += result.violations.len();
+            _violations += result.violations.len();
         }
     }
     let sequential_sample_elapsed = start.elapsed();
-    let sequential_estimated = sequential_sample_elapsed.as_secs_f64()
-        * (1000.0 / sample_size as f64);
+    let sequential_estimated =
+        sequential_sample_elapsed.as_secs_f64() * (1000.0 / sample_size as f64);
 
     // Parallel scan (full 1000 files)
     let start = Instant::now();
