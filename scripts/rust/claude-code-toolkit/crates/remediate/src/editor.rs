@@ -139,4 +139,18 @@ mod tests {
         bad_plan.add_edit(Edit::new(20, 10, "bad"));
         assert!(!bad_plan.all_edits_valid());
     }
+
+    #[test]
+    fn test_remediation_plan_with_capacity() {
+        let mut plan = RemediationPlan::with_capacity("/tmp/test.java", 10);
+        // Verify capacity is at least 10 (no guarantee from Vec, but typical)
+        let initial_capacity = plan.edits.capacity();
+        assert!(initial_capacity >= 10, "capacity should be at least 10");
+
+        // Add edits within initial capacity without reallocation
+        for i in 0..10 {
+            plan.add_edit(Edit::new(i as usize * 10, (i + 1) as usize * 10, "fix"));
+        }
+        assert_eq!(plan.edits.len(), 10);
+    }
 }

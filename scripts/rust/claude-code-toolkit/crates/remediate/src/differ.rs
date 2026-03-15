@@ -7,9 +7,6 @@ use crate::editor::RemediationPlan;
 use anyhow::{anyhow, Result};
 use similar::TextDiff;
 
-/// Context lines to include around changes in unified diff (for readability).
-const DIFF_CONTEXT_LINES: usize = 3;
-
 /// Apply edits from a remediation plan to source bytes.
 /// Returns the modified source and a unified diff string.
 ///
