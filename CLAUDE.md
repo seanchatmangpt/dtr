@@ -280,78 +280,64 @@ Both are configured in `.mvn/maven.config` and `maven-surefire-plugin`.
 
 ## 🎭 ACT - LOCAL GITHUB ACTIONS TESTING
 
-**What is act?** Run GitHub Actions workflows locally on macOS/Linux/Windows
+**Full Guide:** [docs/devops/act-testing-guide.md](docs/devops/act-testing-guide.md)
 
 ### Quick Start
 ```bash
-# Install act
-brew install act  # macOS
-# or: curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
-
-# List workflows
-act -l
-
-# Run CI gate workflow
-act -j quality-check
-act -j test-coverage
-
-# Run all jobs in workflow
-act -W .github/workflows/ci-gate.yml
-
-# Dry run (show what would execute)
-act -n
+brew install act                           # Install act
+act -l                                     # List workflows
+act -j quality-check                       # Run specific job
+act -W .github/workflows/quality-gates.yml # Run full workflow
+act -n                                     # Dry run
 ```
 
-### Secret Management for act
+### Act Environment Detection
+The `.actrc` sets `ACT=true`. Workflows use this to skip GitHub API-dependent steps:
+
+```yaml
+- name: Deploy to Maven Central
+  if: ${{ !env.ACT }}
+  run: ./mvnw deploy -Prelease
+
+- name: Skip deployment (act)
+  if: ${{ env.ACT }}
+  run: echo "🎭 Running in act - skipping"
+```
+
+### Workflow Compatibility
+
+| Workflow | Status | Notes |
+|----------|--------|-------|
+| `quality-gates.yml` | ✅ Fully Compatible | No secrets required |
+| `ci-gate.yml` | ✅ Compatible | Trivy skipped in act |
+| `publish.yml` | ✅ Compatible | Deploy skipped in act |
+| `publish-rc.yml` | ✅ Compatible | Deploy skipped in act |
+| `deployment-automation.yml` | ✅ Compatible | GitHub API skipped |
+| `gpg-key-management.yml` | ✅ Compatible | PR creation skipped |
+
+### Secret Management
+Create `.secrets` file (never commit):
 ```bash
-# Create .secrets file (NEVER commit this)
-cat > .secrets << EOF
+cat > .secrets << 'EOF'
 CENTRAL_USERNAME=your-username
 CENTRAL_TOKEN=your-token
 GPG_PRIVATE_KEY=$(cat ~/.gnupg/private.key | base64)
 GPG_PASSPHRASE=your-passphrase
 GPG_KEY_ID=your-key-id
 EOF
-
-# Use secrets file
-act --secret-file .secrets
-
-# Or pass individual secrets
-act -s GPG_PRIVATE_KEY="$(cat ~/.gnupg/private.key | base64)"
 ```
 
-### Common Workflows
+### Common Commands
 ```bash
-# Test Java 26 matrix build
-act -j build-verification --matrix java-version:26
-
-# Test specific job with secrets
-act -j deployment-ready --secret-file .secrets
-
-# Run with custom container
-act -j quality-check -P ubuntu-latest=catthehacker/ubuntu:act-latest
-
-# Debug mode (verbose output)
-act -j test-coverage -v
-
-# Use specific GitHub event (push, pull_request, etc.)
-act push --secret-file .secrets
+act -j quality-check                                # Test quality gates
+act -j build-verification --matrix java-version:26  # Test matrix build
+act -W .github/workflows/publish.yml -n             # Dry run publish
+act --secret-file .secrets                          # Run with secrets
+act pull                                            # Pull latest Docker images
+docker system prune -f                              # Clear cache if jobs fail
 ```
 
-### Troubleshooting act
-```bash
-# Pull latest Docker images first
-act pull
-
-# Clear Docker cache if jobs fail
-docker system prune -f
-
-# Check act version
-act --version
-
-# Test workflow syntax
-act -n -j <job-name>
-```
+See [docs/devops/act-testing-guide.md](docs/devops/act-testing-guide.md) for full documentation
 
 ---
 

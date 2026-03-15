@@ -1,5 +1,7 @@
 -P ubuntu-latest=catthehacker/ubuntu:act-latest
 --container-architecture linux/amd64
---secret GITHUB_TOKEN=
---env JAVA_VERSION=25
+--secret-file .secrets
+--env JAVA_VERSION=26
+--env MAVEN_OPTS="-Xmx4g -Xms2g"
+--env ACT=true
 -W .github/workflows/
