@@ -429,4 +429,55 @@ public interface RenderMachineCommands {
      * @param method the method whose Javadoc to render (must not be null)
      */
     void sayJavadoc(java.lang.reflect.Method method);
+
+    /**
+     * Documents the Java security environment — security manager presence,
+     * installed security providers, and available cryptographic algorithms.
+     *
+     * <p>Blue ocean innovation: automatically captures the security landscape of the JVM,
+     * including which crypto providers are available (e.g., SunJCE, SunRsaSign), their versions,
+     * and what cryptographic algorithms are supported. Essential for documenting security-sensitive
+     * code, FIPS compliance, and cryptographic operations.</p>
+     *
+     * <p>Renders three tables:</p>
+     * <ol>
+     *   <li>Security Manager Status (present/absent)</li>
+     *   <li>Security Providers (name, version, info)</li>
+     *   <li>Available Cryptographic Algorithms (sample from KeyPairGenerator, Cipher, MessageDigest)</li>
+     * </ol>
+     */
+    void saySecurityManager();
+
+    /**
+     * Documents Java 9+ module (JPMS) dependencies and exports for the given classes.
+     *
+     * <p>Blue ocean innovation: renders the complete JPMS module graph — showing each module's
+     * name, automatic status, required modules (with modifiers like TRANSITIVE, STATIC),
+     * exported packages (qualified or unqualified), opened packages, services used, and services
+     * provided. Essential for documenting modular applications and troubleshooting module access issues.</p>
+     *
+     * <p>Uses {@link Class#getModule()} to retrieve the module for each class, then extracts
+     * the module descriptor via {@link java.lang.Module#getDescriptor()}. Handles named modules
+     * and unnamed modules (the classpath) differently — for unnamed modules, renders a note
+     * that JPMS descriptors are not available.</p>
+     *
+     * <p>Example output:</p>
+     * <pre>{@code
+     * sayModuleDependencies(String.class, List.class);
+     * // Renders:
+     * // ### Module Dependencies
+     * //
+     * // #### java.base (named module)
+     * // - **Automatic:** No
+     * // - **Packages:** 500+ packages
+     * // - **Requires:** (none — java.base is the base module)
+     * // - **Exports:** java.lang, java.util, java.io, ...
+     * // - **Opens:** (none)
+     * // - **Uses:** java.lang.System$LoggerFinder
+     * // - **Provides:** (none)
+     * }</pre>
+     *
+     * @param classes the classes whose modules to document (may be from different modules)
+     */
+    void sayModuleDependencies(Class<?>... classes);
 }
