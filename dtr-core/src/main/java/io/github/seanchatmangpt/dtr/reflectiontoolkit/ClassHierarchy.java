@@ -54,7 +54,7 @@ import java.util.Objects;
  * @param superclassChainNames           Ordered list of superclass names from direct parent to Object
  * @param implementedInterfaceNames      List of directly implemented interface names
  *
- * @since Java 25
+ * @since Java 26
  */
 public record ClassHierarchy(
         List<String> superclassChainNames,

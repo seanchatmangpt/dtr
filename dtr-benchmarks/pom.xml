@@ -21,7 +21,7 @@
     <parent>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr</artifactId>
-        <version>2026.1.0</version>
+        <version>2026.1.1-rc.1</version>
     </parent>
 
     <artifactId>dtr-benchmarks</artifactId>
@@ -131,5 +131,32 @@
             </plugin>
         </plugins>
     </build>
+
+    <!--
+        central-publishing-maven-plugin is only active during release builds (-Prelease).
+        With extensions=true in the root release profile, it intercepts deploy for ALL
+        modules in the reactor. This profile adds a module-level skip so benchmarks
+        are not included in the Central upload bundle.
+        Placing this inside the release profile (not top-level build) prevents the
+        extension from registering during verify or snapshot builds.
+    -->
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.10.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <skipPublishing>true</skipPublishing>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

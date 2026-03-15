@@ -222,7 +222,7 @@ ctx.sayCite("JEP 444: Virtual Threads", "https://openjdk.org/jeps/444");
 Renders a footnote.
 
 ```java
-ctx.sayFootnote("Measured on Java 25.0.2, 10M iterations, Intel i9-12900K.");
+ctx.sayFootnote("Measured on Java 26.0.2, 10M iterations, Intel i9-12900K.");
 ```
 
 ---

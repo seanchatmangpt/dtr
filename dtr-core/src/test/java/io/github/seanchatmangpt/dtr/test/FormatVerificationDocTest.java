@@ -115,7 +115,7 @@ public class FormatVerificationDocTest extends DtrTest {
         // sayOrderedList
         sayNextSection("Test Execution Pipeline");
         sayOrderedList(Arrays.asList(
-            "Compile Java source with Java 25 --enable-preview",
+            "Compile Java source with Java 26 --enable-preview",
             "Execute unit tests in parallel (32 virtual threads)",
             "Run property-based tests (50,000 generated cases per property)",
             "Execute fuzz tests (1M random input variants)",
@@ -267,7 +267,7 @@ public class FormatVerificationDocTest extends DtrTest {
 
         // Concurrency testing
         sayNextSection("Concurrency & Race Condition Testing");
-        say("Using Java 25 virtual threads, we execute concurrent workloads to detect race conditions, " +
+        say("Using Java 26 virtual threads, we execute concurrent workloads to detect race conditions, " +
             "deadlocks, and memory visibility issues.");
         sayCode("@Test\nvoid testConcurrentRaceConditionFreedom() throws Exception {\n" +
                 "    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {\n" +

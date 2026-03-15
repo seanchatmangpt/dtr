@@ -329,7 +329,7 @@ public final class RenderMachineImpl extends RenderMachine {
      * signatures derived directly from the bytecode. The documentation cannot drift
      * from the implementation because it IS the implementation.</p>
      *
-     * <p>Demonstrates Java 25/26 features:</p>
+     * <p>Demonstrates Java 26/26 features:</p>
      * <ul>
      *   <li>Guarded switch expression for class kind detection</li>
      *   <li>{@code Class.getPermittedSubclasses()} for sealed hierarchies</li>
@@ -708,7 +708,7 @@ public final class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
 
         if (!analysis.hasModel()) {
-            markdownDocument.add("*(Code model not available — method not annotated with `@CodeReflection` or runtime < Java 25)*");
+            markdownDocument.add("*(Code model not available — method not annotated with `@CodeReflection` or runtime < Java 26)*");
             markdownDocument.add("");
             markdownDocument.add("**Signature:** `" + analysis.methodSig() + "`");
             return;
@@ -750,7 +750,7 @@ public final class RenderMachineImpl extends RenderMachine {
 
         String dsl = ControlFlowGraphBuilder.build(method);
         if (dsl.isEmpty()) {
-            markdownDocument.add("*(Control flow graph not available — method requires `@CodeReflection` annotation and Java 25+)*");
+            markdownDocument.add("*(Control flow graph not available — method requires `@CodeReflection` annotation and Java 26+)*");
             return;
         }
 
@@ -771,7 +771,7 @@ public final class RenderMachineImpl extends RenderMachine {
 
         String dsl = CallGraphBuilder.build(clazz);
         if (dsl.isEmpty()) {
-            markdownDocument.add("*(Call graph not available — methods require `@CodeReflection` annotation and Java 25+)*");
+            markdownDocument.add("*(Call graph not available — methods require `@CodeReflection` annotation and Java 26+)*");
             return;
         }
 
@@ -794,7 +794,7 @@ public final class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("");
 
         if (!analysis.hasModel()) {
-            markdownDocument.add("*(Op profile not available — method requires `@CodeReflection` annotation and Java 25+)*");
+            markdownDocument.add("*(Op profile not available — method requires `@CodeReflection` annotation and Java 26+)*");
             return;
         }
 
@@ -832,7 +832,7 @@ public final class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("| Min | `" + result.minNs() + " ns` |");
         markdownDocument.add("| Max | `" + result.maxNs() + " ns` |");
         markdownDocument.add("| p99 | `" + result.p99Ns() + " ns` |");
-        markdownDocument.add("| Ops/sec | `" + String.format("%,d", result.opsPerSec()) + "` |");
+        markdownDocument.add("| Ops/sec | `" + "%,d".formatted(result.opsPerSec()) + "` |");
         markdownDocument.add("| Warmup rounds | `" + warmupRounds + "` |");
         markdownDocument.add("| Measure rounds | `" + measureRounds + "` |");
         markdownDocument.add("| Java | `" + System.getProperty("java.version") + "` |");

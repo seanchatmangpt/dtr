@@ -3,7 +3,7 @@
 Learn how DTR 2.6.0 turns git history and reflection into living documentation. This tutorial shows how `sayEvolutionTimeline` generates a timeline from `git log`, how `sayClassDiagram` auto-generates Mermaid class diagrams, and how `sayOpProfile` documents the operation profile of a class.
 
 **Time:** ~30 minutes
-**Prerequisites:** Java 25, DTR 2.6.0, a git repository (the project's own repo is fine)
+**Prerequisites:** Java 26, DTR 2.6.0, a git repository (the project's own repo is fine)
 **What you'll learn:** How to embed git history timelines, auto-generated class diagrams, and operation-count tables in your living documentation
 
 ---

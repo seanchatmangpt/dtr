@@ -19,11 +19,11 @@ Explanation is **understanding-oriented**. These documents discuss concepts, des
 | [Documentation Philosophy](documentation-philosophy.md) | Living documentation, drift-proof accuracy, Blue Ocean innovation, and why HTTP testing was removed |
 | [Drift-Proof Documentation via JVM Introspection](realtime-protocols-philosophy.md) | How reflection-based methods eliminate documentation drift; the provenance problem and its solution |
 
-### Java 25 Design Philosophy
+### Java 26 Design Philosophy
 
 | Document | What it explains |
 |---|---|
-| [Java 25 Design Philosophy](java25-design-philosophy.md) | How records, sealed classes, virtual threads, pattern matching, and `--enable-preview` work together in DTR |
+| [Java 26 Design Philosophy](java25-design-philosophy.md) | How records, sealed classes, virtual threads, pattern matching, and `--enable-preview` work together in DTR |
 | [Why Virtual Threads Matter](virtual-threads-philosophy.md) | The design philosophy behind virtual threads; how DTR uses them in MultiRenderMachine and sayBenchmark |
 | [Why Records and Sealed Classes](records-sealed-philosophy.md) | Why SayEvent is sealed (exhaustiveness), why RenderMachine is abstract (extensibility), and how sayRecordComponents works |
 

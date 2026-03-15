@@ -12,7 +12,7 @@ Tutorials are **learning-oriented**. They take you through a series of steps to 
 |---|---|
 | [Your First DocTest](your-first-doctest.md) | Set up DTR 2.6.0, write a test, read the generated Markdown output |
 
-### Java 25 Fundamentals with DTR
+### Java 26 Fundamentals with DTR
 
 | Tutorial | What you'll learn |
 |---|---|
@@ -39,7 +39,7 @@ Tutorials are **learning-oriented**. They take you through a series of steps to 
 
 **Prerequisites:**
 
-- Java 25 installed (`java -version` shows `openjdk 25.x.x`)
+- Java 26 installed (`java -version` shows `openjdk 25.x.x`)
 - Maven 4 or Maven Daemon available (`mvnd --version`)
 - A Maven project with DTR 2.6.0 on the test classpath
 

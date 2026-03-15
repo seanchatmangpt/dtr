@@ -8,7 +8,7 @@ Visualize the internal call structure of a class using DTR 2.6.0's `sayCallGraph
 
 ## What sayCallGraph Does
 
-`sayCallGraph(Class<?>)` analyzes the given class via reflection and Code Reflection IR (Java 25 preview) to produce a Mermaid `flowchart` diagram showing which methods call which other methods within the class. The diagram is embedded as a fenced Mermaid block in the output.
+`sayCallGraph(Class<?>)` analyzes the given class via reflection and Code Reflection IR (Java 26 preview) to produce a Mermaid `flowchart` diagram showing which methods call which other methods within the class. The diagram is embedded as a fenced Mermaid block in the output.
 
 ---
 

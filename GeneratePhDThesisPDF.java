@@ -128,8 +128,8 @@ public class GeneratePhDThesisPDF {
             - Efficient resource utilization
             - Easy scalability across multiple machines
 
-            > **Note:** This thesis leverages Java 25+ preview features to address these challenges.
-            > All code examples use Java 25 with `--enable-preview` flag.
+            > **Note:** This thesis leverages Java 26+ preview features to address these challenges.
+            > All code examples use Java 26 with `--enable-preview` flag.
 
             ---
 
@@ -208,7 +208,7 @@ public class GeneratePhDThesisPDF {
                 });
             }
 
-            // Java 25+ approach: Virtual threads (scalable)
+            // Java 26+ approach: Virtual threads (scalable)
             try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
                 for (int i = 0; i < 1000000; i++) {
                     executor.submit(() -> {
@@ -381,7 +381,7 @@ public class GeneratePhDThesisPDF {
               \\item Easy scalability across multiple machines
             \\end{itemize}
 
-            \\textbf{Note:} This thesis leverages Java 25+ preview features to address these challenges. All code examples use Java 25 with \\texttt{--enable-preview} flag.
+            \\textbf{Note:} This thesis leverages Java 26+ preview features to address these challenges. All code examples use Java 26 with \\texttt{--enable-preview} flag.
 
             \\section{Literature Review}
 
@@ -424,7 +424,7 @@ public class GeneratePhDThesisPDF {
             Java 21+ virtual threads enable writing concurrent code without explicit thread management:
 
             \\begin{lstlisting}
-            // Java 25+ approach: Virtual threads
+            // Java 26+ approach: Virtual threads
             try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
                 for (int i = 0; i < 1000000; i++) {
                     executor.submit(() -> {

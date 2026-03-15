@@ -3,7 +3,7 @@ TOOLCHAIN VERIFICATION REPORT
 ================================================================================
 
 Date: 2026-03-12T05:57:42Z
-Purpose: Verify Maven 4 + mvnd + Java 25 toolchain readiness for Maven Central
+Purpose: Verify Maven 4 + mvnd + Java 26 toolchain readiness for Maven Central
 
 ================================================================================
 1. JAVA VERIFICATION
@@ -18,11 +18,11 @@ Output:
 Check List:
   [✓] Version: 25.0.2 (minimum 25 required)
   [✓] Vendor: OpenJDK (compatible)
-  [✓] Release: LTS-ready Java 25
+  [✓] Release: LTS-ready Java 26
   [✓] 64-bit: Yes
   [✓] Module support: Yes (mixed mode)
 
-Path: /usr/lib/jvm/java-25-openjdk-amd64
+Path: /usr/lib/jvm/java-26-openjdk-amd64
 Status: READY
 
 ================================================================================
@@ -74,7 +74,7 @@ Current Content:
 Analysis:
   [✓] --no-transfer-progress: Suppress Maven download progress (CI-friendly)
   [✓] --batch-mode: Non-interactive mode (CI-friendly)
-  [✗] --enable-preview: MISSING (required for Java 25 preview features)
+  [✗] --enable-preview: MISSING (required for Java 26 preview features)
   [✓] -Dmaven.compiler.enablePreview=true: Property set (but flag recommended)
 
 Issue: Missing --enable-preview flag on command line
@@ -126,13 +126,13 @@ Requirement: Maven 4.0.0+
 Provided: 4.0.0-rc-5
 Status: [✓] EXCEEDS
 
-Requirement: Java 25+
+Requirement: Java 26+
 Provided: 25.0.2
 Status: [✓] MEETS
 
 Requirement: Maven enforcer plugin
 Status: [✓] Configured (3.6.2)
-  - Requires Java 25+
+  - Requires Java 26+
   - Requires Maven 4.0.0-rc-3+
   - Currently commented out (temporary workaround)
 
@@ -253,7 +253,7 @@ Notes:
 MAVEN CENTRAL READINESS SUMMARY
 ================================================================================
 
-Toolchain: READY (Maven 4.0.0-rc-5 + Java 25.0.2 + mvnd 2.x)
+Toolchain: READY (Maven 4.0.0-rc-5 + Java 26.0.2 + mvnd 2.x)
 Configuration: ALMOST READY (needs --enable-preview flag)
 Code: NOT READY (3 sealed class compilation errors)
 Dependencies: READY (all from Maven Central)

@@ -11,7 +11,7 @@ You are a Maven 4 + mvnd expert for the DTR project.
 This project uses **only**:
 - **Maven 4.0.0+** — enforced by `maven-enforcer-plugin`
 - **mvnd 2.x** (Maven Daemon) — installed at `/opt/mvnd/bin/mvnd`
-- **Java 25** — enforced by `maven-enforcer-plugin`
+- **Java 26** — enforced by `maven-enforcer-plugin`
 
 Do NOT suggest Maven 3.x commands or syntax. Do NOT use system `mvn` if it points to Maven 3.
 
@@ -47,7 +47,7 @@ cat ~/.m2/mvnd.properties
 
 ### mvnd.properties Template
 ```properties
-mvnd.javaHome=/usr/lib/jvm/java-25-openjdk-amd64
+mvnd.javaHome=/usr/lib/jvm/java-26-openjdk-amd64
 mvnd.jvmArgs=-Xmx2g --enable-preview -Dfile.encoding=UTF-8
 mvnd.minHeapSize=256m
 mvnd.maxHeapSize=2g
@@ -101,7 +101,7 @@ mvnd dependency:tree -Dincludes=groupId:artifactId
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.14.0</version>
     <configuration>
-        <release>25</release>
+        <release>26</release>
         <enablePreview>true</enablePreview>
         <compilerArgs>
             <arg>--enable-preview</arg>
@@ -136,7 +136,7 @@ mvnd dependency:tree -Dincludes=groupId:artifactId
             <configuration>
                 <rules>
                     <requireJavaVersion>
-                        <version>[25,)</version>
+                        <version>[26,)</version>
                     </requireJavaVersion>
                     <requireMavenVersion>
                         <version>[4.0.0,)</version>
@@ -154,7 +154,7 @@ mvnd dependency:tree -Dincludes=groupId:artifactId
 |---------|-----|
 | `--enable-preview` errors | Ensure both compiler plugin AND surefire have it |
 | Daemon not starting | `mvnd --stop && mvnd compile` to restart |
-| Java version wrong | `export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64` |
+| Java version wrong | `export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64` |
 | Maven version wrong | Ensure `/opt/maven` or `/usr/local/bin/mvn` points to Maven 4 |
 | Dependency conflict | Run `mvnd dependency:tree` and use `<exclusions>` |
 

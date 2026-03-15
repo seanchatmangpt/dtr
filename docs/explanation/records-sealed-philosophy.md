@@ -143,7 +143,7 @@ The current design gives each type exactly the constraint it needs: `SayEvent` s
 
 ## Pattern Matching on Sealed Hierarchies
 
-Pattern matching in Java 25 destructures values inline. Combined with sealed types, this becomes exhaustive — a powerful combination for dispatch.
+Pattern matching in Java 26 destructures values inline. Combined with sealed types, this becomes exhaustive — a powerful combination for dispatch.
 
 When a `RenderMachine` implementation dispatches a `SayEvent`, it pattern-matches on the sealed hierarchy:
 

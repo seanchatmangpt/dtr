@@ -70,8 +70,8 @@ git config --global user.email
 
 ### Maven Setup
 
-- [ ] JAVA_HOME points to Java 25: `echo $JAVA_HOME`
-  - Expected: `/usr/lib/jvm/java-25-openjdk-amd64`
+- [ ] JAVA_HOME points to Java 26: `echo $JAVA_HOME`
+  - Expected: `/usr/lib/jvm/java-26-openjdk-amd64`
 - [ ] mvnd installed at `/opt/mvnd/bin/mvnd`
 - [ ] Maven 4.0.0+ available
 - [ ] `.mvn/maven.config` contains `--enable-preview`

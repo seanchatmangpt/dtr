@@ -25,7 +25,7 @@ mvnd verify --enable-preview --no-transfer-progress -B 2>&1
    - Read `target/surefire-reports/*.txt` for the failing test details
    - Identify the root cause (compilation error vs test failure vs enforcer violation)
    - Suggest the fix based on the error type:
-     - Compilation: check Java 25 preview syntax, `--enable-preview` flag
+     - Compilation: check Java 26 preview syntax, `--enable-preview` flag
      - Test failure: read the test class, check assertion messages
      - Enforcer: check Java/Maven version constraints
 

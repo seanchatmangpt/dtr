@@ -192,7 +192,6 @@ class {class_name} {{
             """, "java");
 
         ctx.sayNextSection("Results");
-        // TODO: Replace with real benchmark measurements
         List<String[]> rows = new ArrayList<>();
         rows.add(new String[]{{"Operation", "Avg (ns)", "Iterations", "Notes"}});
         rows.add(new String[]{{"placeholder.operation()", "0", String.valueOf(MEASURE_ITERATIONS), "Replace with real data"}});

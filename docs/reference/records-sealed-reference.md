@@ -1,6 +1,6 @@
 # Reference: Records and Sealed Classes
 
-Complete API reference for Java 25 records and sealed class hierarchies.
+Complete API reference for Java 26 records and sealed class hierarchies.
 
 **v2.6.0 note:** `RenderMachine` was changed from `sealed` to plain `abstract` in v2.5.0. The new `sayRecordComponents` method (v2.6.0) introspects records and renders their components.
 
@@ -309,6 +309,6 @@ if (user instanceof User(String name, _, _)) {
 ## See also
 
 - [say* Core API Reference](request-api.md) — `sayRecordComponents`, `sayReflectiveDiff`
-- [Java 25 Features Reference](java25-features-reference.md) — records and sealed in broader context
+- [Java 26 Features Reference](java25-features-reference.md) — records and sealed in broader context
 - [JVM Introspection API Reference](realtime-protocols-reference.md) — `sayReflectiveDiff` usage
 - [RenderMachine API](rendermachine-api.md) — RenderMachine hierarchy (abstract, not sealed)

@@ -14,7 +14,7 @@ the specific language governing permissions and limitations under the License. -
     <parent>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr</artifactId>
-        <version>2026.1.0</version>
+        <version>2026.1.1-rc.1</version>
     </parent>
     
 
@@ -201,7 +201,7 @@ the specific language governing permissions and limitations under the License. -
             </exclusions>
         </dependency>
 
-        <!-- Mockito 5.x for Java 25 compatibility (replaces transitive 1.9.5 from ninja-test-utilities) -->
+        <!-- Mockito 5.x for Java 26 compatibility (replaces transitive 1.9.5 from ninja-test-utilities) -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -230,6 +230,29 @@ the specific language governing permissions and limitations under the License. -
 
     </dependencies>
 
-
+    <!--
+        central-publishing-maven-plugin is only active during release builds (-Prelease).
+        With extensions=true in the root release profile, it intercepts deploy for ALL
+        modules in the reactor. This profile adds a module-level skip so the integration
+        test WAR is not included in the Central upload bundle.
+    -->
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.10.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <skipPublishing>true</skipPublishing>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

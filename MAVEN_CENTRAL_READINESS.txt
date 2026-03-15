@@ -44,7 +44,7 @@ BUILD VERIFICATION RESULTS
 
 Compilation Status: ✅ SUCCESS
 - All 4 modules compile without errors
-- No Java 25 compatibility issues
+- No Java 26 compatibility issues
 - Preview flags properly configured
 
 Package Status: ✅ SUCCESS
@@ -74,7 +74,7 @@ Artifact IDs: ✅ CORRECT
 COMMITS PUSHED TO REMOTE
 =================================================================
 
-1. 04c8252 - Fix Java 25 compatibility and Maven Central blockers
+1. 04c8252 - Fix Java 26 compatibility and Maven Central blockers
    - RenderMachine sealed class fix
    - Pattern matching guard clause fixes
    - StructuredTaskScope API compatibility

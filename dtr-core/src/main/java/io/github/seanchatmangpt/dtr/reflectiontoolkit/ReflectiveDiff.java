@@ -68,7 +68,7 @@ package io.github.seanchatmangpt.dtr.reflectiontoolkit;
  * @param afterValueString     String representation of the field value after change
  * @param changed              Flag indicating whether the field values differ
  *
- * @since Java 25
+ * @since Java 26
  */
 public record ReflectiveDiff(
         String fieldName,

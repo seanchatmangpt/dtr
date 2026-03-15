@@ -3,7 +3,7 @@
 Learn how DTR 2.6.0's `sayContractVerification` method proves that your concrete classes fully implement an interface contract and documents the coverage matrix in your living documentation.
 
 **Time:** ~25 minutes
-**Prerequisites:** Java 25, DTR 2.6.0, completion of [Your First DocTest](your-first-doctest.md)
+**Prerequisites:** Java 26, DTR 2.6.0, completion of [Your First DocTest](your-first-doctest.md)
 **What you'll learn:** How to define interface contracts, verify multiple implementations in one call, and read the coverage table DTR generates
 
 ---

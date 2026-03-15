@@ -1,6 +1,6 @@
 # How-to: Text Blocks for Multiline Strings
 
-Use Java 25 text blocks to write multiline strings naturally — perfect for JSON, SQL, HTML, Mermaid DSL, and documentation content. No escape sequences needed; indentation is automatically managed.
+Use Java 26 text blocks to write multiline strings naturally — perfect for JSON, SQL, HTML, Mermaid DSL, and documentation content. No escape sequences needed; indentation is automatically managed.
 
 **DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
@@ -209,7 +209,7 @@ The text block version is clearly superior for readability and maintenance.
 
 ## Comparison Table
 
-| Scenario | Old Way | Java 25 Way |
+| Scenario | Old Way | Java 26 Way |
 |----------|---------|------------|
 | Multiline string | `"line1\nline2\n..."` | `"""\nline1\nline2\n"""` |
 | Embedded quotes | `\"quoted\"` | `"quoted"` (no escape) |

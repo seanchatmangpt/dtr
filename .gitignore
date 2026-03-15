@@ -14,9 +14,11 @@ nb-configuration.xml
 *~
 *.h2.db
 
-# Generated documentation from DTR test runs (not committed)
+# Generated test output from DocTester runs (not versioned artifacts)
 docs/test/
 doctester-core/docs/test/
 
-# Release version temp file (written by scripts/bump.sh, deleted by release.sh)
+# Temp file written by scripts/bump.sh, consumed by scripts/release.sh
 .release-version
+dtr-core/docs/test/io.github.seanchatmangpt.dtr.Stress*.md
+.claude/session-log.md

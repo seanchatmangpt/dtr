@@ -274,7 +274,7 @@ class ExtendedSayApiDocTest extends DtrTest {
         ));
 
         sayWarning(
-            "Java 25 is NOT sufficient. DTR 2.5 uses sealed class record deconstruction " +
+            "Java 26 is required. DTR uses sealed class record deconstruction " +
             "(JEP 440/441) and unnamed patterns (JEP 456), which are only stable in Java 22+. " +
             "The `--enable-preview` flag is required for Code Model (JEP 494) support. " +
             "CI pipelines that pin to Java 21 LTS will fail."

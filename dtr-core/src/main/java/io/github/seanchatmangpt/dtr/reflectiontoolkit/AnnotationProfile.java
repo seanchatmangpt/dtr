@@ -51,7 +51,7 @@ import java.util.Objects;
  * @param className        The fully-qualified class name being annotated
  * @param annotationNames  List of fully-qualified annotation class names applied to the class
  *
- * @since Java 25
+ * @since Java 26
  */
 public record AnnotationProfile(String className, List<String> annotationNames) {
 

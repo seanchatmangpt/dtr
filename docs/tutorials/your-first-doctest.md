@@ -45,7 +45,7 @@ Open your `pom.xml` and add DTR to the test dependencies:
 </dependencies>
 ```
 
-Configure the compiler plugin for Java 25 with preview features enabled:
+Configure the compiler plugin for Java 26 with preview features enabled:
 
 ```xml
 <build>

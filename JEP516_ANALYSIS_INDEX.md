@@ -136,7 +136,7 @@ JEP516_ANALYSIS_INDEX.md               THIS FILE
 ```
 DocMetadata.java
 - Location: dtr-core/src/main/java/org/r10r/dtr/metadata/
-- Type: Java 25 record
+- Type: Java 26 record
 - Pattern: Eager static initialization (JEP 516)
 - Status: Production-ready
 ```

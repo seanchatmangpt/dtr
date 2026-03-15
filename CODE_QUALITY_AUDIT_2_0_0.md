@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-DTR's core module is **production-ready** for a 2.0.0 release. The codebase demonstrates excellent adoption of Java 25 features, complete Apache license headers, comprehensive Javadoc coverage, and zero TODOs/FIXMEs. Minor optimizations around Guava usage and string formatting are recommended but not blocking.
+DTR's core module is **production-ready** for a 2.0.0 release. The codebase demonstrates excellent adoption of Java 26 features, complete Apache license headers, comprehensive Javadoc coverage, and zero TODOs/FIXMEs. Minor optimizations around Guava usage and string formatting are recommended but not blocking.
 
 **Overall Quality Score: A (95/100)**
 
@@ -101,11 +101,11 @@ None identified in public APIs. All public classes, interfaces, records, enums, 
 
 ---
 
-## 3. Java 25 Modernization Review
+## 3. Java 26 Modernization Review
 
-### Overall Java 25 Adoption: EXCELLENT (95% Coverage)
+### Overall Java 26 Adoption: EXCELLENT (95% Coverage)
 
-DTR demonstrates sophisticated use of modern Java idioms. This codebase is a **reference implementation** for Java 25 best practices.
+DTR demonstrates sophisticated use of modern Java idioms. This codebase is a **reference implementation** for Java 26 best practices.
 
 #### Records (Stable Feature) — Fully Adopted ✓
 
@@ -247,7 +247,7 @@ markdownDocument.add(String.format("- **%s**: `%s` (path: %s, domain: %s)",
 ```
 
 **Recommendation for 2.0.0:**
-These should migrate to `String.formatted()` for Java 25 idiom consistency:
+These should migrate to `String.formatted()` for Java 26 idiom consistency:
 ```java
 toc.add("- [%s](#%s)".formatted(heading, anchorId));
 markdownDocument.add("- **%s**: `%s` (path: %s, domain: %s)".formatted(
@@ -285,7 +285,7 @@ Replace Guava factory methods with Java 9+ built-ins:
 - `Lists.newArrayList()` → `new ArrayList<>()`
 - `Sets.newHashSet(...)` → `Set.of(...)`
 
-**Impact:** Reduces external dependency, improves Java 25 idiom score, no behavioral change.
+**Impact:** Reduces external dependency, improves Java 26 idiom score, no behavioral change.
 
 ### HttpConstants Interface — Good Design ✓
 
@@ -300,7 +300,7 @@ public interface HttpConstants {
 
 This is a clean static-import pattern. No change needed.
 
-### Java 25 Feature Scorecard
+### Java 26 Feature Scorecard
 
 | Feature | Status | Score | Notes |
 |---------|--------|-------|-------|
@@ -314,7 +314,7 @@ This is a clean static-import pattern. No change needed.
 | **Text Blocks** | ✓ N/A | — | Not needed; Jackson handles payloads |
 | **Guava Cleanup** | ⚠ Minor | 8/10 | 9 locations using legacy Guava factory methods |
 
-**Java 25 Overall Score: 90/100**
+**Java 26 Overall Score: 90/100**
 
 ---
 
@@ -369,10 +369,10 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 
 This is **future-proof** and removes legacy servlet dependencies.
 
-### Java 25 Compatibility
+### Java 26 Compatibility
 
 ✓ **No Java 24 preview features used**
-✓ **Only stable Java 25 features used** (records, sealed, pattern matching, var, sequenced collections)
+✓ **Only stable Java 26 features used** (records, sealed, pattern matching, var, sequenced collections)
 ✓ **`--enable-preview` is properly configured** in pom.xml
 
 ---
@@ -416,7 +416,7 @@ This is **future-proof** and removes legacy servlet dependencies.
 ### Recommendation: Label as "2.0.0" for Feature Parity, Not Breaking Changes
 
 The release should be positioned as:
-- **Feature-rich upgrade** to Java 25 idioms
+- **Feature-rich upgrade** to Java 26 idioms
 - **Additive only** (no removal of APIs)
 - **JUnit 4 users:** May safely upgrade; existing DTR subclasses continue to work
 - **JUnit 5 users:** New extension-based API available (recommended)
@@ -430,7 +430,7 @@ The release should be positioned as:
 | TODOs/FIXMEs | 0 | 0 | ✓ PASS |
 | Javadoc Coverage (Public API) | 100% | ≥95% | ✓ PASS |
 | Apache License Headers | 100% | 100% | ✓ PASS |
-| Java 25 Feature Adoption | 90% | ≥80% | ✓ PASS |
+| Java 26 Feature Adoption | 90% | ≥80% | ✓ PASS |
 | Deprecated API Usage (prod) | 0 | 0 | ✓ PASS |
 | Compilation Errors | 0 | 0 | ✓ PASS |
 | Test Execution | PASS | PASS | ✓ PASS |
@@ -442,14 +442,14 @@ The release should be positioned as:
 ### Must-Do (Blocking)
 - [x] Zero TODOs/FIXMEs
 - [x] Apache license headers on all files
-- [x] Successful compilation with Java 25
+- [x] Successful compilation with Java 26
 - [x] Test suite passes
 - [x] No critical deprecations in production code
 
 ### Should-Do (Recommended for v2.0.0)
 - [ ] **Migrate String.format() → String.formatted()** (8 locations, 30 min effort)
   - Files: RenderMachineImpl.java (6 locations), OpenApiCollector.java (2 locations)
-  - Impact: Improved Java 25 idiom score, no behavioral change
+  - Impact: Improved Java 26 idiom score, no behavioral change
 
 - [ ] **Migrate Guava → Java 9+ Collections** (9 locations, 20 min effort)
   - Files: Request.java (4 locations), Url.java (1 location), TestBrowserImpl.java (4 locations)
@@ -464,7 +464,7 @@ The release should be positioned as:
   - Does not affect production JAR
 
 ### Nice-To-Have
-- [ ] Update CHANGELOG.md documenting Java 25 feature adoption
+- [ ] Update CHANGELOG.md documenting Java 26 feature adoption
 - [ ] Add upgrade guide for JUnit 4 → JUnit 5 extension
 - [ ] Expand example documentation on OpenAPI generation
 - [ ] Add performance benchmarks for WebSocket/SSE
@@ -481,7 +481,7 @@ The release should be positioned as:
 
 ### Priority 2: Release Notes
 Document:
-- Java 25 as minimum requirement
+- Java 26 as minimum requirement
 - New JUnit 5 extension support
 - WebSocket and SSE capabilities
 - OpenAPI integration features
@@ -500,7 +500,7 @@ Document:
 
 ### Strengths
 1. **Zero technical debt** — no TODOs, FIXMEs, or broken references
-2. **Exemplary Java 25 adoption** — records, sealed classes, pattern matching used correctly
+2. **Exemplary Java 26 adoption** — records, sealed classes, pattern matching used correctly
 3. **Complete documentation** — comprehensive Javadoc with usage examples
 4. **License compliance** — 100% Apache 2.0 headers
 5. **Modern HTTP stack** — upgraded to HttpClient 5.x, async-ready

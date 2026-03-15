@@ -1,6 +1,6 @@
-# Reference: Java 25 Features
+# Reference: Java 26 Features
 
-Complete reference for Java 25 language features, idioms, and APIs. Includes v2.6.0 usage examples.
+Complete reference for Java 26 language features, idioms, and APIs. Includes v2.6.0 usage examples.
 
 ---
 
@@ -220,7 +220,7 @@ void benchmarkVirtualThread(DtrContext ctx) {
 
 ---
 
-## Code Reflection — JEP 516 (Java 25 preview)
+## Code Reflection — JEP 516 (Java 26 preview)
 
 JEP 516 provides structured access to the code model of a method: operations, control flow, and data flow, without bytecode parsing.
 

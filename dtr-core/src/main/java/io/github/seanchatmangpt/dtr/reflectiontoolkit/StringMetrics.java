@@ -55,7 +55,7 @@ package io.github.seanchatmangpt.dtr.reflectiontoolkit;
  * @param letterCount        Number of alphabetic characters (a-zA-Z)
  * @param nonAsciiCount      Number of non-ASCII characters (codepoint > 127)
  *
- * @since Java 25
+ * @since Java 26
  */
 public record StringMetrics(
         long wordCount,

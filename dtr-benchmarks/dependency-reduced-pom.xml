@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dtr</artifactId>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
-    <version>2.5.0</version>
+    <version>2026.1.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dtr-benchmarks</artifactId>
@@ -15,7 +15,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
-          <release>25</release>
+          <release>26</release>
           <compilerArgs>
             <arg>--enable-preview</arg>
           </compilerArgs>
@@ -61,6 +61,24 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.10.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <skipPublishing>true</skipPublishing>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <dependencies>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>

@@ -74,7 +74,7 @@ Key Highlights:
   ✓ WebSocket/SSE protocol support
   ✓ Advanced authentication providers (Bearer, API Key, Basic Auth)
   ✓ OpenAPI 3.0 generation
-  ✓ Java 25 modernization (records, sealed classes, virtual threads)
+  ✓ Java 26 modernization (records, sealed classes, virtual threads)
   ✓ Maven 4 + Maven Daemon (mvnd) support
 
 ================================================================================
@@ -97,7 +97,7 @@ COMMIT MESSAGE:
   - WebSocket/SSE protocol support
   - Advanced authentication providers
   - OpenAPI generation
-  - Java 25 + Maven 4 toolchain
+  - Java 26 + Maven 4 toolchain
   
   See CHANGELOG_2.0.0.md for full details and migration guide.
 
@@ -268,7 +268,7 @@ Project:
 Build Tools:
   Maven 4: https://maven.apache.org/maven-4/
   Maven Daemon: https://maven.apache.org/daemon/
-  Java 25: https://openjdk.org/projects/jdk/25/
+  Java 26: https://openjdk.org/projects/jdk/25/
 
 Documentation:
   SemVer: https://semver.org/

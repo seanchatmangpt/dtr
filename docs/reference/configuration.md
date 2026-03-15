@@ -42,7 +42,7 @@ This path is the default in `RenderMachineImpl`. To change it, supply a custom `
 
 ## Compiler settings
 
-Required Maven compiler configuration for Java 25 with preview features:
+Required Maven compiler configuration for Java 26 with preview features:
 
 ```xml
 <plugin>
@@ -156,7 +156,7 @@ Add `slf4j-simple` as a test-scoped dependency to suppress this:
 ## Maven enforcer rules
 
 The parent `pom.xml` includes Maven Enforcer rules that require:
-- Java 25 or higher
+- Java 26 or higher
 - Maven 4.0.0-rc-3 or higher
 
 Run `mvnd validate` to check these rules without building.
@@ -176,13 +176,13 @@ Verify your environment:
 ```bash
 java -version           # should be 25+
 mvnd --version          # should be 2.0.0+
-echo $JAVA_HOME         # should point to Java 25
+echo $JAVA_HOME         # should point to Java 26
 ```
 
 Set `JAVA_HOME` if needed:
 
 ```bash
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 ```
 
 ---

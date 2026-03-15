@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0
 **Release Date:** 2026-03-10
-**Java Requirement:** Java 25 (LTS)
+**Java Requirement:** Java 26 (LTS)
 
 ---
 
@@ -16,7 +16,7 @@ DTR 2.0.0 is a major release with **breaking changes** that modernize the framew
 |--------|-----|-------|-----------|
 | Output Format | Bootstrap HTML | Markdown (portable) | **YES** |
 | Output Location | `target/site/dtr/` | `docs/test/` | **YES** |
-| Java Version | 1.8+ | **25 (LTS only)** | **YES** |
+| Java Version | 1.8+ | **26 (LTS only)** | **YES** |
 | Annotations | Manual method calls | `@DocSection`, `@DocDescription`, etc. | No (optional) |
 | WebSocket Support | None | Full support | No (new) |
 | Server-Sent Events | None | Full support | No (new) |
@@ -56,16 +56,16 @@ docs/test/
 ### 2. Java Version: 1.8+ → 25 (LTS)
 
 **Version 1.x:** Supports Java 1.8 through 21
-**Version 2.0.0:** **Requires Java 25 (LTS)**
+**Version 2.0.0:** **Requires Java 26 (LTS)**
 
 **Migration:**
 ```bash
 # Verify your Java installation
 java -version
-# Must output: openjdk 25.x.x (or later 25 release)
+# Must output: openjdk 26.x.x (or later 26 release)
 
 # Update JAVA_HOME if needed
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 
 # Update pom.xml (compiler plugin)
 # OLD:
@@ -73,13 +73,13 @@ export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 <target>11</target>
 
 # NEW:
-<release>25</release>
+<release>26</release>
 <compilerArgs>
   <arg>--enable-preview</arg>
 </compilerArgs>
 ```
 
-**Why:** Java 25 enables record-based DTOs, sealed hierarchies, pattern matching, and virtual threads for better concurrency.
+**Why:** Java 26 enables record-based DTOs, sealed hierarchies, pattern matching, and virtual threads for better concurrency.
 
 ### 3. Output Directory Structure
 
@@ -322,7 +322,7 @@ Request.GET()
     <maven.compiler.target>11</maven.compiler.target>
 
     <!-- NEW -->
-    <maven.compiler.release>25</maven.compiler.release>
+    <maven.compiler.release>26</maven.compiler.release>
 </properties>
 ```
 
@@ -334,7 +334,7 @@ Request.GET()
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.13.0</version>
     <configuration>
-        <release>25</release>
+        <release>26</release>
         <compilerArgs>
             <arg>--enable-preview</arg>
         </compilerArgs>
@@ -509,8 +509,8 @@ mkdocs build  # Static HTML in site/
 ### Quick Validation
 
 ```bash
-# 1. Verify Java 25
-java -version  # Must show "openjdk 25.x.x"
+# 1. Verify Java 26
+java -version  # Must show "openjdk 26.x.x"
 
 # 2. Verify Maven 4
 mvn --version  # Must show "Apache Maven 4.0.0-rc-5" or higher
@@ -596,25 +596,25 @@ docs/test/
 
 ## Troubleshooting
 
-### Problem: "Java 25 not found"
+### Problem: "Java 26 not found"
 
 **Error:**
 ```
 [ERROR] COMPILATION ERROR
-[ERROR] Java 25 or higher is required.
+[ERROR] Java 26 or higher is required.
 ```
 
 **Solution:**
 ```bash
-# Install Java 25 (if not present)
-sudo apt install openjdk-25-jdk  # Ubuntu/Debian
-brew install openjdk@25           # macOS
+# Install Java 26 (if not present)
+sudo apt install openjdk-26-jdk  # Ubuntu/Debian
+brew install openjdk@26           # macOS
 
 # Set JAVA_HOME
-export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
 
 # Verify
-java -version  # Must show "openjdk 25.x.x"
+java -version  # Must show "openjdk 26.x.x"
 ```
 
 ### Problem: "Markdown output is not generating"
@@ -626,7 +626,7 @@ Tests pass, but no docs/test/ directory appears.
 
 **Solution:**
 1. Ensure tests actually run (not skipped)
-2. Check for compile errors (Java 25 preview features)
+2. Check for compile errors (Java 26 preview features)
 3. Verify `@AfterClass finishDocTest()` is called:
 
 ```java
@@ -650,8 +650,8 @@ public static void afterTests() {
 
 ## Migration Checklist
 
-- [ ] Java 25 installed and `JAVA_HOME` set
-- [ ] `pom.xml` updated with `<release>25</release>` and `--enable-preview`
+- [ ] Java 26 installed and `JAVA_HOME` set
+- [ ] `pom.xml` updated with `<release>26</release>` and `--enable-preview`
 - [ ] DTR dependency updated to 2.0.0
 - [ ] Test classes compile without preview warnings
 - [ ] Tests run and output Markdown to `docs/test/`
@@ -670,7 +670,7 @@ public static void afterTests() {
 2. **Generate OpenAPI** — Enable `OpenApiCollector` for API specs
 3. **Test WebSockets** — Add WebSocket tests to your suite
 4. **Test SSE** — Document Server-Sent Events endpoints
-5. **Try Java 25 Features** — Use records for DTOs, sealed hierarchies, etc.
+5. **Try Java 26 Features** — Use records for DTOs, sealed hierarchies, etc.
 
 ### Upgrade Your Documentation Pipeline
 
@@ -696,7 +696,7 @@ public static void afterTests() {
 - ✅ Server-Sent Events (SSE) support
 - ✅ OpenAPI 3.0 specification generation
 - ✅ JUnit 5 support (backward compatible with JUnit 4)
-- ✅ Java 25 with `--enable-preview`
+- ✅ Java 26 with `--enable-preview`
 - ✅ Advanced authentication providers
 
 ### Minor Improvements
@@ -709,7 +709,7 @@ public static void afterTests() {
 ### Removed
 - ❌ HTML/Bootstrap output (replaced with Markdown)
 - ❌ jQuery/Bootstrap assets (no longer needed)
-- ❌ Support for Java < 25
+- ❌ Support for Java < 26
 
 ---
 

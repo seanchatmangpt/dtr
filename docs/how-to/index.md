@@ -12,7 +12,7 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 |---|---|
 | [80/20 Essentials](80-20-essentials.md) | Master the core say* API in 45 minutes — start here if you're new |
 
-### Java 25 Language Features
+### Java 26 Language Features
 
 | Guide | Task |
 |---|---|

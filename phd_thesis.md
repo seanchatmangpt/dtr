@@ -52,8 +52,8 @@ Modern workloads demand:
 - Efficient resource utilization
 - Easy scalability across multiple machines
 
-> **Note:** This thesis leverages Java 25+ preview features to address these challenges.
-> All code examples use Java 25 with `--enable-preview` flag.
+> **Note:** This thesis leverages Java 26+ preview features to address these challenges.
+> All code examples use Java 26 with `--enable-preview` flag.
 
 ---
 
@@ -132,7 +132,7 @@ for (int i = 0; i < 1000000; i++) {
     });
 }
 
-// Java 25+ approach: Virtual threads (scalable)
+// Java 26+ approach: Virtual threads (scalable)
 try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
     for (int i = 0; i < 1000000; i++) {
         executor.submit(() -> {
