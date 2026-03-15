@@ -194,9 +194,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "cct-cache",
- "cct-patterns",
- "cct-pipeline",
+ "cct-oracle",
+ "cct-remediate",
  "cct-scanner",
+ "chrono",
  "clap",
  "serde",
  "serde_json",
