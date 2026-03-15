@@ -1,12 +1,10 @@
 pub mod model;
 pub mod naive_bayes;
 pub mod scorer;
-pub mod cache;
 
 pub use model::{FileStats, ViolationRecord};
 pub use naive_bayes::NaiveBayesOracle;
 pub use scorer::RiskScorer;
-pub use cache::ModelCache;
 
 #[cfg(test)]
 mod tests {
