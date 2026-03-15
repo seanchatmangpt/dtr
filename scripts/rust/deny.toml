@@ -12,3 +12,10 @@ deny = ["GPL-2.0", "GPL-2.0-only", "GPL-3.0", "AGPL-3.0"]
 # Prevent dependency bloat
 multiple-versions = "warn"
 wildcards = "warn"
+
+[sources]
+# Deny crates from unknown sources
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
