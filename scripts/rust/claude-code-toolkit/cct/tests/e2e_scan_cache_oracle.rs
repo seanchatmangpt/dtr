@@ -7,7 +7,7 @@
 //! 4. Results are consistent across multiple runs
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use tempfile::TempDir;
 
 /// Helper: Create a temporary Java project with multiple source files
@@ -363,7 +363,8 @@ fn test_e2e_cache_deduplication() {
     }
 
     // Verify we can retrieve the cached result
-    let retrieved = store.lookup(&hash).expect("Lookup should work");
+    store.flush_batch().expect("Flush cache");
+    let retrieved = store.query(&hash).expect("Query cache");
     assert!(
         retrieved.is_some(),
         "Should retrieve cached result for known hash"
