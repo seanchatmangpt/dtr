@@ -1,3 +1,19 @@
+## v2026.3.1 — 2026-03-15
+
+- No notable changes
+
+### Install
+
+```xml
+<dependency>
+  <groupId>io.github.seanchatmangpt.dtr</groupId>
+  <artifactId>dtr-core</artifactId>
+  <version>2026.3.1</version>
+</dependency>
+```
+
+Year-bounded range (recommended for libraries): `[2026.1.0,2027)`
+
 ## v2026.3.0 — 2026-03-15
 
 - chore: dx receipt timestamp
