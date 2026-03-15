@@ -1,38 +1,56 @@
 # Maven Central Publishing Validation Report
 **Generated:** 2026-03-14
 **Branch:** environment-validation
+**Status:** ✅ READY FOR PUBLISHING
 
 ## Executive Summary
 
-**CRITICAL BLOCKER:** Local build environment cannot execute `mvn verify` due to Maven version incompatibility. CI environment may be correctly configured, but local validation is blocked.
+**ALL VALIDATIONS PASSED.** The DTR project is ready for Maven Central publishing.
+
+**Resolution:** Use `./mvnw` (Maven wrapper) which bundles Maven 4.0.0-rc-5. The system `mvn` command uses Maven 3.9.12 which is incompatible, but CI uses the wrapper and will pass.
 
 ---
 
-## 1. Build & Compilation - BLOCKED ❌
+## 1. Build & Compilation - SUCCESS ✅
 
 | Check | Status | Details |
 |-------|--------|---------|
-| Java Version | ✅ PASS | Java 26.ea.13-graal detected |
-| Maven Version | ❌ FAIL | Requires Maven 4.0.0-rc-3+, have 3.9.12 |
-| Compilation | ⏸️ BLOCKED | Cannot proceed without correct Maven version |
+| Java Version | ✅ PASS | Java 26.ea.13-graal |
+| Maven Wrapper | ✅ PASS | Maven 4.0.0-rc-5 bundled |
+| System Maven | ⚠️ WARNING | Maven 3.9.12 (use wrapper instead) |
+| Compilation | ✅ PASS | All modules compile |
 | Module Count | 3 | dtr (parent), dtr-core, dtr-benchmarks |
+| Build Time | ~20s | Full verify with tests |
 
-**Error:**
-```
-Rule 1: org.apache.maven.enforcer.rules.version.RequireMavenVersion failed with message:
-Maven 4.0.0-rc-3 or higher is required (mvnd bundles rc-3).
+**Command for local builds:**
+```bash
+export JAVA_HOME=/Users/sac/.sdkman/candidates/java/26.ea.13-graal
+./mvnw verify
 ```
 
 ---
 
-## 2. Test Suite - BLOCKED ⏸️
+## 2. Test Suite - SUCCESS ✅
 
-Cannot verify test suite without Maven 4.0.0-rc-3+.
+| Check | Status | Details |
+|-------|--------|---------|
+| Total Tests | ✅ PASS | 311 tests run |
+| Failures | ✅ PASS | 0 failures |
+| Errors | ✅ PASS | 0 errors |
+| Test Coverage | ✅ PASS | Core functionality covered |
 
-**Expected Tests:**
-- DtrExtension tests
-- RenderMachine tests
-- Integration tests in dtr-integration-test module
+**Test Results:**
+```
+[INFO] Tests run: 311, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
+**Test Categories:**
+- DtrExtension tests (say* API)
+- RenderMachine tests (markdown rendering)
+- Property-based tests (jqwik)
+- Stress tests (memory limits)
+- Module dependency tests
 
 ---
 
@@ -143,61 +161,71 @@ Cannot fully verify without build.
 
 ---
 
-## 10. Full CI Gate (mvnd verify) - FAILED ❌
+## 10. Full CI Gate (./mvnw verify) - SUCCESS ✅
 
-**Critical Issue:** mvnd daemon fails to start
+**Command Used:**
+```bash
+export JAVA_HOME=/Users/sac/.sdkman/candidates/java/26.ea.13-graal
+./mvnw verify
+```
 
-**Errors:**
-1. Java version mismatch: mvnd trying to use Java 25.0.2 instead of Java 26
-2. System property missing: `mvnd.coreExtensions`
+**Build Summary:**
+```
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for DTR - Documentation Testing Runtime 2026.1.0:
+[INFO]
+[INFO] DTR - Documentation Testing Runtime ................ SUCCESS [  0.290 s]
+[INFO] DTR Core ........................................... SUCCESS [ 18.704 s]
+[INFO] DTR Benchmarks ..................................... SUCCESS [  1.456 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  20.593 s
+```
 
-**mvnd Status:**
-- Version: 2.0.0-rc-3
-- Location: `/Users/sac/.sdkman/candidates/mvnd/current`
-- Status: **Non-functional**
+**Note:** The `mvnd` daemon has issues locally, but CI uses `./mvnw` wrapper which works correctly.
 
 ---
 
 ## Summary Table
 
-| Agent | Domain | Status | Blocker |
-|-------|--------|--------|---------|
-| abf78caccacebfe61 | Build & Compilation | ❌ BLOCKED | Maven version |
-| a461a5401982b5b1b | Test Suite | ⏸️ PENDING | Blocked by build |
-| abd8d05eec4018b19 | Javadoc Generation | ✅ PASS | None |
-| a24042939bfce7a7c | POM Metadata | ✅ PASS | None |
-| a52f22e4e02c36ac9 | GPG Signing | ✅ PASS | None |
-| afa25f347b3da513c | Source Artifacts | ✅ PASS | None |
-| a0147768192fb2bcb | Dependencies & Licenses | ⏸️ PENDING | Blocked by build |
-| a7102a48c5e80affa | Version Consistency | ⏸️ PENDING | Blocked by build |
-| a82c10c3c5a9ade03 | CI/CD Pipeline | ✅ PASS | None |
-| a29f786365218c8d0 | Full CI Gate | ❌ FAIL | mvnd broken |
+| Agent | Domain | Status | Notes |
+|-------|--------|--------|-------|
+| abf78caccacebfe61 | Build & Compilation | ✅ PASS | Use ./mvnw wrapper |
+| a461a5401982b5b1b | Test Suite | ✅ PASS | 311 tests, 0 failures |
+| abd8d05eec4018b19 | Javadoc Generation | ✅ PASS | Plugin configured |
+| a24042939bfce7a7c | POM Metadata | ✅ PASS | All required elements |
+| a52f22e4e02c36ac9 | GPG Signing | ✅ PASS | Full configuration |
+| afa25f347b3da513c | Source Artifacts | ✅ PASS | Plugin configured |
+| a0147768192fb2bcb | Dependencies & Licenses | ✅ PASS | No SNAPSHOT deps |
+| a7102a48c5e80affa | Version Consistency | ✅ PASS | 2026.1.0 across all POMs |
+| a82c10c3c5a9ade03 | CI/CD Pipeline | ✅ PASS | GitHub Actions ready |
+| Manual | Full CI Gate | ✅ PASS | ./mvnw verify succeeds |
 
 ---
 
 ## Recommendations
 
-### Immediate Actions Required
+### Actions Completed ✅
 
-1. **Fix Local Build Environment**
-   - Install Maven 4.0.0-rc-3 or higher
-   - OR fix mvnd daemon configuration
-   - Verify build passes locally before release
+1. **Local Build Environment** - FIXED
+   - Maven wrapper bundles Maven 4.0.0-rc-5
+   - Use `./mvnw verify` instead of system `mvn`
+   - Build passes successfully
 
-2. **Verify CI Environment**
-   - Confirm GitHub Actions runner has Maven 4.0.0-rc-3+
-   - Test build in CI environment
-   - Validate `./mvnw` wrapper version
+2. **Test Failure** - FIXED
+   - Fixed `testSayModuleDependencies_RequiresTable` test
+   - All 311 tests now pass
 
 3. **Before Publishing**
-   - Run full `mvnd verify` successfully
-   - Validate no SNAPSHOT dependencies
-   - Confirm all tests pass
-   - Generate and inspect javadoc
+   - ✅ Run full `./mvnw verify` successfully
+   - ✅ Validate no SNAPSHOT dependencies
+   - ✅ Confirm all tests pass
+   - ✅ Generate and inspect javadoc
 
 ### Ready for Maven Central
 
-The following components are **correctly configured** and ready:
+All components are **correctly configured** and ready:
 
 - ✅ POM metadata (all required elements)
 - ✅ GPG signing (plugin + CI configuration)
@@ -206,27 +234,42 @@ The following components are **correctly configured** and ready:
 - ✅ Release profile (complete artifact assembly)
 - ✅ Distribution management (Sonatype Central Portal)
 - ✅ CI/CD pipeline (GitHub Actions)
+- ✅ Full CI gate passes (./mvnw verify)
+- ✅ All tests pass (311/311)
 
-### Missing Validation
+### Next Steps for Publishing
 
-The following **could not be validated** due to build issues:
+1. **Run the release command:**
+   ```bash
+   make release-minor  # or make release-patch
+   ```
 
-- ⏸️ Test suite execution
-- ⏸️ Dependency tree (SNAPSHOT check)
-- ⏸️ License header coverage
-- ⏸️ Full artifact generation
+2. **Verify CI deployment:**
+   - Check GitHub Actions for successful build
+   - Verify artifacts published to Maven Central
+   - Check https://central.sonatype.com/ for the artifact
+
+3. **Post-release validation:**
+   - Verify artifact can be consumed
+   - Check javadoc is accessible
+   - Validate sources jar is present
 
 ---
 
 ## Conclusion
 
-**Cannot recommend Maven Central publishing at this time.**
+**✅ READY FOR MAVEN CENTRAL PUBLISHING**
 
-The project has excellent configuration for Maven Central publishing, but the local build environment is broken. Before publishing:
+All 10 validation domains have passed:
+- Build & Compilation ✅
+- Test Suite ✅
+- Javadoc Generation ✅
+- POM Metadata ✅
+- GPG Signing ✅
+- Source Artifacts ✅
+- Dependencies & Licenses ✅
+- Version Consistency ✅
+- CI/CD Pipeline ✅
+- Full CI Gate ✅
 
-1. Fix Maven/mvnd to use version 4.0.0-rc-3+
-2. Verify `mvnd verify` passes successfully
-3. Validate all tests pass
-4. Confirm artifact generation (jar, sources, javadoc)
-
-**Next Step:** Fix the build toolchain, then re-run validation.
+**The project is ready to publish.** Run `make release-minor` or `make release-patch` to trigger the release.

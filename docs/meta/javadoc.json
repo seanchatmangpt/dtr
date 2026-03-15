@@ -2825,6 +2825,126 @@
     "throws": [],
     "see": []
   },
+  "io.github.seanchatmangpt.dtr.DtrTest#saySpeakerNote": {
+    "description": "Renders speaker notes for slides (visible only to presenters). Ignored by documentation and blog renderers.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the speaker note text"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayTweetable": {
+    "description": "Renders a social media quote box for blog posts and slides.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the tweetable quote text"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayTldr": {
+    "description": "Renders a TL;DR (Too Long; Didn't Read) summary box.",
+    "params": [
+      {
+        "name": "text",
+        "description": "the summary text"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayCallToAction": {
+    "description": "Renders a call-to-action button with a link.",
+    "params": [
+      {
+        "name": "url",
+        "description": "the URL for the call to action"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayAndAssertThat": {
+    "description": "Generic assert + document method with Hamcrest Matcher support. Asserts that actual value matches expected condition and documents the assertion result.",
+    "params": [
+      {
+        "name": "label",
+        "description": "assertion label for documentation"
+      },
+      {
+        "name": "actual",
+        "description": "actual value to test"
+      },
+      {
+        "name": "matcher",
+        "description": "Hamcrest matcher defining expected condition"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayAndAssertThat": {
+    "description": "Primitive long version: assert + document in one call. Documents both the assertion check and result in a table.",
+    "params": [
+      {
+        "name": "label",
+        "description": "assertion label for documentation"
+      },
+      {
+        "name": "actual",
+        "description": "actual long value to test"
+      },
+      {
+        "name": "matcher",
+        "description": "Hamcrest matcher for long values"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayAndAssertThat": {
+    "description": "Primitive int version: assert + document in one call. Creates documentation entry showing both check and result.",
+    "params": [
+      {
+        "name": "label",
+        "description": "assertion label for documentation"
+      },
+      {
+        "name": "actual",
+        "description": "actual int value to test"
+      },
+      {
+        "name": "matcher",
+        "description": "Hamcrest matcher for int values"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
+  "io.github.seanchatmangpt.dtr.DtrTest#sayAndAssertThat": {
+    "description": "Primitive boolean version: assert + document in one call. Documents the boolean assertion with clear pass/fail indication.",
+    "params": [
+      {
+        "name": "label",
+        "description": "assertion label for documentation"
+      },
+      {
+        "name": "actual",
+        "description": "actual boolean value to test"
+      },
+      {
+        "name": "matcher",
+        "description": "Hamcrest matcher for boolean values"
+      }
+    ],
+    "throws": [],
+    "see": []
+  },
   "io.github.seanchatmangpt.dtr.bibliography.BibTeXRenderer#renderMarkdownInline": {
     "description": "Renders a single citation in markdown inline format.",
     "params": [
