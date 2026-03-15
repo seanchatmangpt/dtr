@@ -22,3 +22,4 @@ doctester-core/docs/test/
 .release-version
 dtr-core/docs/test/io.github.seanchatmangpt.dtr.Stress*.md
 .claude/session-log.md
+.claude/worktrees/
