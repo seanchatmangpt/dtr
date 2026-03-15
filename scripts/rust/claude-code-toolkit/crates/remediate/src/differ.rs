@@ -66,6 +66,7 @@ pub fn apply_edits(source: &[u8], plan: &RemediationPlan) -> Result<(Vec<u8>, St
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::Edit;
 
     #[test]
     fn test_apply_single_edit() {
