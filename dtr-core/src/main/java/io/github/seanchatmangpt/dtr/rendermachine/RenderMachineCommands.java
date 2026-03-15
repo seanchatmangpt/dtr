@@ -769,6 +769,50 @@ public interface RenderMachineCommands {
     }
 
     /**
+     * Documents a {@link io.github.seanchatmangpt.dtr.erlang.LetItCrashRunner.SupervisionReport}
+     * as a structured table plus a summary line following Joe Armstrong's
+     * "Let It Crash" supervision philosophy.
+     *
+     * <p>Renders a 5-column table (Process | Action | Outcome | Elapsed | Restarts)
+     * with one row per {@link io.github.seanchatmangpt.dtr.erlang.LetItCrashRunner.CrashResult},
+     * followed by a bold summary: "N crashes, M total restarts — Let It Crash ✓".</p>
+     *
+     * @param report the supervision report produced by
+     *               {@link io.github.seanchatmangpt.dtr.erlang.LetItCrashRunner#supervise}
+     */
+    default void sayLetItCrash(
+            io.github.seanchatmangpt.dtr.erlang.LetItCrashRunner.SupervisionReport report) {
+
+        var results = report.results();
+        String[][] table = new String[results.size() + 1][5];
+        table[0] = new String[]{"Process", "Action", "Outcome", "Elapsed", "Restarts"};
+
+        // Count restarts per process name for the Restarts column
+        java.util.Map<String, Integer> restartsByProcess = new java.util.LinkedHashMap<>();
+        for (var r : results) {
+            if (r.action().startsWith("restart-")) {
+                restartsByProcess.merge(r.processName(), 1, Integer::sum);
+            }
+        }
+
+        for (int i = 0; i < results.size(); i++) {
+            var r = results.get(i);
+            int processRestarts = restartsByProcess.getOrDefault(r.processName(), 0);
+            table[i + 1] = new String[]{
+                r.processName(),
+                r.action(),
+                r.outcome(),
+                io.github.seanchatmangpt.dtr.erlang.LetItCrashRunner.humanNs(r.elapsedNs()),
+                r.action().equals("start") ? String.valueOf(processRestarts) : ""
+            };
+        }
+
+        sayTable(table);
+        say("**" + report.totalCrashes() + " crashes**, **"
+                + report.totalRestarts() + " total restarts** — Let It Crash ✓");
+    }
+
+    /**
      * Generates {@code samples} random inputs, categorizes each, and renders
      * a distribution table with counts, percentages, and Unicode bar chart.
      */
