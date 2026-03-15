@@ -20,15 +20,15 @@
 
 ## Overview
 
-This guide helps you migrate between DTR versions. DTR uses **calendar versioning** (CalVer) starting from 2026.2.0, which corresponds to semantic version 2.6.0.
+This guide helps you migrate between DTR versions. DTR uses **calendar versioning** (CalVer) starting from 2026.3.0, which corresponds to semantic version 2.6.0.
 
 ### Version Mapping
 
 | CalVer | Semantic | Status | Key Changes |
 |--------|----------|--------|-------------|
-| 2026.2.0 | 2.6.0 | Current | HTTP client removed, 14 new say* methods |
-| 2026.2.0 | 2.5.0 | Stable | Maven Central ready, RenderMachine unsealed |
-| 2026.2.0 | 2.4.0 | Stable | Introspection methods added |
+| 2026.3.0 | 2.6.0 | Current | HTTP client removed, 14 new say* methods |
+| 2026.3.0 | 2.5.0 | Stable | Maven Central ready, RenderMachine unsealed |
+| 2026.3.0 | 2.4.0 | Stable | Introspection methods added |
 | 2.0.0 | 2.0.0 | Legacy | Java 26 migration, Markdown-first |
 
 ### Migration Impact Assessment
@@ -55,7 +55,7 @@ The following migration guides are archived for historical reference:
 
 ### What Changed
 
-DTR 2.6.0 (2026.2.0) is a **breaking release** that removes the entire HTTP client layer. DTR is now a pure documentation-generation library with no HTTP testing responsibilities.
+DTR 2.6.0 (2026.3.0) is a **breaking release** that removes the entire HTTP client layer. DTR is now a pure documentation-generation library with no HTTP testing responsibilities.
 
 **Key Principle:** DTR focuses on documentation generation only. HTTP testing should use standard Java libraries or dedicated testing frameworks.
 
@@ -115,7 +115,7 @@ In exchange for the removed HTTP stack, v2.6.0 adds **14 new `say*` methods** fo
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.2.0</version>
+    <version>2026.3.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -450,7 +450,7 @@ If the migration to v2.6.0 fails or you need more time:
 1. **Revert to v2.5.x** in your `pom.xml`:
 
 ```xml
-<version>2026.2.0</version>  <!-- This is v2.5.x -->
+<version>2026.3.0</version>  <!-- This is v2.5.x -->
 ```
 
 2. **Restore your test code** from version control:
@@ -469,7 +469,7 @@ mvnd clean install
 
 After migrating to v2.6.0, verify:
 
-- [ ] `pom.xml` uses version `2026.2.0` (or later)
+- [ ] `pom.xml` uses version `2026.3.0` (or later)
 - [ ] All test classes use `@ExtendWith(DtrExtension.class)`
 - [ ] All test methods accept `DtrContext ctx` parameter
 - [ ] No references to `sayAndMakeRequest`, `sayAndAssertThat`, `Request`, `Response`
@@ -485,7 +485,7 @@ After migrating to v2.6.0, verify:
 
 ### What Changed
 
-This migration covers versions from v2.0.0 through v2.5.x (2026.2.0). Most changes are backward compatible.
+This migration covers versions from v2.0.0 through v2.5.x (2026.3.0). Most changes are backward compatible.
 
 ### Key Changes
 
@@ -527,7 +527,7 @@ public final class MyCustomRenderer extends RenderMachine {
 1. **Update dependency:**
 
 ```xml
-<version>2026.2.0</version>
+<version>2026.3.0</version>
 ```
 
 2. **No code changes required** for 99% of users
@@ -853,7 +853,7 @@ If you need to rollback quickly:
 
 ```xml
 <!-- In pom.xml -->
-<version>2026.2.0</version>  <!-- v2.5.x, before HTTP client removal -->
+<version>2026.3.0</version>  <!-- v2.5.x, before HTTP client removal -->
 ```
 
 Then restore your test code from git:
@@ -888,9 +888,9 @@ When reporting issues, include:
 
 | DTR Version | Java Required | Maven Required | JUnit | HTTP Client | Status |
 |-------------|---------------|----------------|-------|-------------|--------|
-| 2026.2.0 (v2.6.0) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | None (use your own) | ✅ Current |
-| 2026.2.0 (v2.5.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in (deprecated) | ✅ Stable |
-| 2026.2.0 (v2.4.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in | ✅ Stable |
+| 2026.3.0 (v2.6.0) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | None (use your own) | ✅ Current |
+| 2026.3.0 (v2.5.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in (deprecated) | ✅ Stable |
+| 2026.3.0 (v2.4.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in | ✅ Stable |
 | v2.0.0 | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in | ⚠️ Legacy |
 | v1.x | 8-21 | 3.x | JUnit 4 | Built-in | ❌ Deprecated |
 
@@ -914,6 +914,6 @@ Are you upgrading from v2.5.x to v2.6.0+?
 
 **Last Updated:** March 14, 2026
 
-**DTR Version:** 2026.2.0 (v2.6.0)
+**DTR Version:** 2026.3.0 (v2.6.0)
 
 **For the latest version of this guide, see:** https://github.com/seanchatmangpt/dtr/docs/MIGRATING.md

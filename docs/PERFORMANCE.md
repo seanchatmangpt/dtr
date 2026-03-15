@@ -1,6 +1,6 @@
 # DTR Performance Guide
 
-**Version:** 2026.2.0 | **Last Updated:** 2026-03-14
+**Version:** 2026.3.0 | **Last Updated:** 2026-03-14
 
 ---
 
@@ -424,4 +424,4 @@ Use this checklist before optimizing:
 
 ---
 
-**Version:** 2026.2.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+
+**Version:** 2026.3.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+

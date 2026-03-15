@@ -2,7 +2,7 @@
 
 DTR (Documentation Testing Runtime) is a Java 26 library that generates rich Markdown, LaTeX, HTML, and blog documentation directly from JUnit Jupiter 6 tests via a declarative `say*` API.
 
-**Version:** 2026.2.0 | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core:2026.2.0` | **Java:** 26 + `--enable-preview`
+**Version:** 2026.3.0 | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core:2026.3.0` | **Java:** 26 + `--enable-preview`
 
 ---
 
@@ -77,9 +77,9 @@ Join the DTR project:
 
 ---
 
-## Key Changes in 2026.2.0
+## Key Changes in 2026.3.0
 
-DTR 2026.2.0 focuses on documentation generation and testing:
+DTR 2026.3.0 focuses on documentation generation and testing:
 
 **50+ `say*` methods** for comprehensive documentation coverage:
 - Core methods: `say()`, `sayCode()`, `sayTable()`, `sayKeyValue()`
@@ -120,7 +120,7 @@ Most documentation uses just 8 methods:
 | `sayWarning(message)` | Critical warnings |
 | `sayKeyValue(pairs)` | Metadata, configuration, key facts |
 
-### Version: 2026.2.0
+### Version: 2026.3.0
 
 **CalVer versioning:** `YYYY.MINOR.PATCH`
 - **Year:** Calendar year of release

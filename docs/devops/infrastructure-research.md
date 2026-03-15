@@ -149,13 +149,13 @@ RC builds go to **GitHub Packages only**. Maven Central receives final versions 
 
 ```bash
 # Create first RC
-make release-rc-minor          # → v2026.2.0-rc.1
+make release-rc-minor          # → v2026.3.0-rc.1
 
 # If RC needs fixes, push code changes, then:
-make release-rc-minor          # → v2026.2.0-rc.2 (N auto-increments)
+make release-rc-minor          # → v2026.3.0-rc.2 (N auto-increments)
 
 # Promote to final when RC is good:
-make release-minor             # → v2026.2.0 (strips -rc.N, publishes to Maven Central)
+make release-minor             # → v2026.3.0 (strips -rc.N, publishes to Maven Central)
 ```
 
 **RC Promotion**: When promoting from `-rc.N` to final, the minor number is **not** incremented again — it was already bumped when the RC was created.
@@ -470,7 +470,7 @@ act -j quality-check
 
 **Last Updated:** March 14, 2026
 **Branch:** feat/java-26-with-calver
-**Version:** 2026.2.0 (CalVer YYYY.MINOR.PATCH)
+**Version:** 2026.3.0 (CalVer YYYY.MINOR.PATCH)
 
 ---
 

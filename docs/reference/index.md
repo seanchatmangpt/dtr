@@ -2,7 +2,7 @@
 
 Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DTR's API. Use it when you need to look up a specific method, class, or configuration option.
 
-**Version:** 2026.2.0 | **Maven:** `io.github.seanchatmangpt:dtr-core:2026.2.0` | **Java:** 26+ with `--enable-preview`
+**Version:** 2026.3.0 | **Maven:** `io.github.seanchatmangpt:dtr-core:2026.3.0` | **Java:** 26+ with `--enable-preview`
 
 > **See also:** [Architecture](../architecture.md) | [Tutorials](../tutorials/)
 

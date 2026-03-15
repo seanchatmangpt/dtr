@@ -1,8 +1,8 @@
 # DTR 80/20 Essentials: The Minimal Path to Productivity
 
-**Goal:** Master the core DTR 2026.2.0 `say*` API in 30 minutes — covering the 8 essential methods that handle 80% of documentation scenarios.
+**Goal:** Master the core DTR 2026.3.0 `say*` API in 30 minutes — covering the 8 essential methods that handle 80% of documentation scenarios.
 
-**DTR Version:** 2026.2.0 | **Java:** 26+ with `--enable-preview`
+**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
@@ -145,7 +145,7 @@ ctx.sayWarning("Deleting a user is irreversible and cannot be undone.");
 ```java
 ctx.sayKeyValue(Map.of(
     "Java Version", "26.ea.13",
-    "DTR Version", "2026.2.0",
+    "DTR Version", "2026.3.0",
     "Build Status", "Passing ✓",
     "Coverage", "87%"
 ));

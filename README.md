@@ -8,7 +8,7 @@
 [![Java 26](https://img.shields.io/badge/Java-26-orange.svg)](https://openjdk.org/projects/jdk/26/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**Version:** 2026.2.0 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
+**Version:** 2026.3.0 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
 
 ---
 
@@ -36,7 +36,7 @@ Documentation stays in sync with code because it's generated from live test exec
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.2.0</version>
+    <version>2026.3.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -276,9 +276,9 @@ mvnd verify -DskipTests
 
 DTR uses **CalVer** versioning: `YYYY.MINOR.PATCH`
 
-- **`2026.2.0`** — First release of 2026, minor version 1
+- **`2026.3.0`** — First release of 2026, minor version 1
 - **`2026.1.1`** — Patch release (bug fix, dependency update)
-- **`2026.2.0`** — Minor release (new features, new `say*` methods)
+- **`2026.3.0`** — Minor release (new features, new `say*` methods)
 - **`2027.1.0`** — Year boundary (January 1st, new calendar year)
 
 **Release types:**

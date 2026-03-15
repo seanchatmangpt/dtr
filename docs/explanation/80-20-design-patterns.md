@@ -1,6 +1,6 @@
-# Explanation: The 80/20 Design Patterns of DTR 2026.2.0
+# Explanation: The 80/20 Design Patterns of DTR 2026.3.0
 
-This document explains the reasoning behind DTR's design decisions in version 2026.2.0 — not how to use the features, but why they were designed the way they were.
+This document explains the reasoning behind DTR's design decisions in version 2026.3.0 — not how to use the features, but why they were designed the way they were.
 
 ---
 
@@ -95,7 +95,7 @@ sayWarning("This feature requires Java 26+ with --enable-preview.");
 
 ```java
 sayKeyValue(Map.of(
-    "Version", "2026.2.0",
+    "Version", "2026.3.0",
     "Java", "26.ea.13+",
     "License", "EPL-2.0"
 ));

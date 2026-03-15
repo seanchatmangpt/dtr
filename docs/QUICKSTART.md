@@ -39,7 +39,7 @@ Add this to your `pom.xml`:
     <dependency>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>2026.2.0</version>
+        <version>2026.3.0</version>
         <scope>test</scope>
     </dependency>
 

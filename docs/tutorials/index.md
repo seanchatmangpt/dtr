@@ -2,7 +2,7 @@
 
 Tutorials are **learning-oriented**. They take you through a series of steps to complete a project. When you finish, you will have a working DTR setup and a clear mental model of how it works.
 
-**DTR version:** 2026.2.0 | **Java:** 26+ with `--enable-preview`
+**DTR version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
@@ -180,7 +180,7 @@ Add DTR to your `pom.xml`:
     <dependency>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>2026.2.0</version>
+        <version>2026.3.0</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -268,4 +268,4 @@ After completing the tutorial series:
 
 ---
 
-**Version:** DTR 2026.2.0 | **Last Updated:** March 2026 | **Java:** 26+
+**Version:** DTR 2026.3.0 | **Last Updated:** March 2026 | **Java:** 26+
