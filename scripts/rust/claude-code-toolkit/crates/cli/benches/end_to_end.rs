@@ -11,10 +11,11 @@
 //! Run with: `cargo bench --release end_to_end -- --nocapture --verbose`
 
 use cct_scanner::Scanner;
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
+use std::time::Duration;
 
 fn create_test_java_file(dir: &std::path::Path, name: &str, content: &str) -> PathBuf {
     let file_path = dir.join(name);
@@ -79,13 +80,17 @@ fn bench_scan_single_file(c: &mut Criterion) {
 
     let root = black_box(temp_dir.path().to_path_buf());
 
-    c.bench_function("e2e_scan_1_file_no_cache", |b| {
+    let mut group = c.benchmark_group("e2e_single_file");
+    group.sample_size(100); // Higher sample count for p50/p95/p99 accuracy
+
+    group.bench_function("no_cache", |b| {
         b.iter(|| {
             let file_path = root.join("Example.java");
             scanner.scan_file(&file_path).ok()
         });
     });
 
+    group.finish();
     drop(temp_dir);
 }
 
@@ -105,7 +110,10 @@ fn bench_scan_10_files_cold(c: &mut Criterion) {
 
     let root = black_box(temp_dir.path().to_path_buf());
 
-    c.bench_function("e2e_scan_10_files_cold_cache", |b| {
+    let mut group = c.benchmark_group("e2e_10_files");
+    group.sample_size(50); // Adequate samples for percentile reporting
+
+    group.bench_function("cold_cache", |b| {
         b.iter(|| {
             let mut files = Vec::new();
             for i in 0..10 {
@@ -115,6 +123,7 @@ fn bench_scan_10_files_cold(c: &mut Criterion) {
         });
     });
 
+    group.finish();
     drop(temp_dir);
 }
 
@@ -140,7 +149,10 @@ fn bench_scan_10_files_hot(c: &mut Criterion) {
         .collect();
     let _ = scanner.scan_files_parallel(&files);
 
-    c.bench_function("e2e_scan_10_files_hot_cache", |b| {
+    let mut group = c.benchmark_group("e2e_10_files");
+    group.sample_size(50); // Same group; Criterion merges them in reports
+
+    group.bench_function("hot_cache", |b| {
         b.iter(|| {
             let files: Vec<PathBuf> = (0..10)
                 .map(|i| root.join(format!("Test{}.java", i)))
@@ -149,6 +161,7 @@ fn bench_scan_10_files_hot(c: &mut Criterion) {
         });
     });
 
+    group.finish();
     drop(temp_dir);
 }
 

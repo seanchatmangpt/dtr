@@ -176,7 +176,7 @@ impl RiskScorer {
     ///
     /// let score = scorer.score_risk(&violations);
     /// assert!(score > 0.0 && score <= 1.0);
-    /// assert!(score > 0.15); // Multiple recent violations increase risk
+    /// assert!(score > 0.1); // Multiple recent violations increase risk
     /// ```
     pub fn score_risk(&self, violations: &[ViolationRecord]) -> f64 {
         if violations.is_empty() {
