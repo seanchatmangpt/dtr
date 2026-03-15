@@ -1640,6 +1640,280 @@ public final class RenderMachineImpl extends RenderMachine {
         markdownDocument.add("| Tool calls | `" + (tools == null ? 0 : tools.size()) + "` |");
     }
 
+    // ── Toyota Production System + Joe Armstrong Blue Ocean innovations ────────
+
+    @Override
+    public void saySupervisionTree(String title,
+                                   java.util.Map<String, java.util.List<String>> supervisors) {
+        if (title == null || supervisors == null || supervisors.isEmpty()) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Supervision Tree: " + title);
+        markdownDocument.add("");
+        markdownDocument.add("```mermaid");
+        markdownDocument.add("graph TD");
+        for (var entry : supervisors.entrySet()) {
+            String sup = sanitizeId(entry.getKey());
+            markdownDocument.add("    " + sup + "([🔵 " + entry.getKey() + "])");
+            for (String child : entry.getValue()) {
+                String childId = sanitizeId(child);
+                markdownDocument.add("    " + childId + "[⚙️ " + child + "]");
+                markdownDocument.add("    " + sup + " --> " + childId);
+            }
+        }
+        markdownDocument.add("```");
+        markdownDocument.add("");
+        int workerCount = supervisors.values().stream().mapToInt(java.util.List::size).sum();
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Supervisors | `" + supervisors.size() + "` |");
+        markdownDocument.add("| Workers | `" + workerCount + "` |");
+        markdownDocument.add("| Supervision ratio | `1:" + (supervisors.isEmpty() ? 0 : workerCount / supervisors.size()) + "` |");
+    }
+
+    @Override
+    public void sayActorMessages(String title,
+                                 java.util.List<String> actors,
+                                 java.util.List<String[]> messages) {
+        if (title == null || actors == null || messages == null) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Actor Messages: " + title);
+        markdownDocument.add("");
+        markdownDocument.add("```mermaid");
+        markdownDocument.add("sequenceDiagram");
+        for (String actor : actors) {
+            markdownDocument.add("    participant " + sanitizeId(actor) + " as " + actor);
+        }
+        for (String[] msg : messages) {
+            if (msg.length >= 3) {
+                String sender = sanitizeId(msg[0]);
+                String receiver = sanitizeId(msg[1]);
+                String text = truncate(msg[2].replace("\"", "'"), 50);
+                markdownDocument.add("    " + sender + "->>" + receiver + ": " + text);
+            }
+        }
+        markdownDocument.add("```");
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Actors | `" + actors.size() + "` |");
+        markdownDocument.add("| Messages | `" + messages.size() + "` |");
+    }
+
+    @Override
+    public void sayFaultTolerance(String scenario,
+                                  java.util.List<String> failures,
+                                  java.util.List<String> recoveries) {
+        if (scenario == null || failures == null || recoveries == null) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Fault Tolerance: " + scenario);
+        markdownDocument.add("");
+        markdownDocument.add("| # | Failure | Supervisor Recovery |");
+        markdownDocument.add("| --- | --- | --- |");
+        int rows = Math.min(failures.size(), recoveries.size());
+        for (int i = 0; i < rows; i++) {
+            markdownDocument.add("| " + (i + 1) + " | " + failures.get(i) + " | " + recoveries.get(i) + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Failures documented | `" + failures.size() + "` |");
+        markdownDocument.add("| Recovery actions | `" + recoveries.size() + "` |");
+        double ratio = failures.isEmpty() ? 0.0 : (double) recoveries.size() / failures.size() * 100.0;
+        markdownDocument.add("| Recovery coverage | `" + String.format("%.0f", ratio) + "%` |");
+    }
+
+    @Override
+    public void sayKaizen(String metric, long[] before, long[] after, String unit) {
+        if (metric == null || before == null || after == null || before.length == 0 || after.length == 0) return;
+        long avgBefore = java.util.Arrays.stream(before).sum() / before.length;
+        long avgAfter  = java.util.Arrays.stream(after).sum()  / after.length;
+        long delta = avgBefore - avgAfter;
+        double pct = avgBefore == 0 ? 0.0 : (double) delta / avgBefore * 100.0;
+        String u = unit == null ? "" : " " + unit;
+        markdownDocument.add("");
+        markdownDocument.add("### Kaizen: " + metric);
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Before | After | Delta | Improvement |");
+        markdownDocument.add("| --- | --- | --- | --- | --- |");
+        markdownDocument.add("| " + metric + " (avg) | `" + avgBefore + u + "` | `" + avgAfter + u + "` | `" + delta + u + "` | `" + String.format("%.1f", pct) + "%` |");
+        markdownDocument.add("| Samples | `" + before.length + "` | `" + after.length + "` | — | — |");
+        markdownDocument.add("| Min | `" + java.util.Arrays.stream(before).min().orElse(0) + u + "` | `" + java.util.Arrays.stream(after).min().orElse(0) + u + "` | — | — |");
+        markdownDocument.add("| Max | `" + java.util.Arrays.stream(before).max().orElse(0) + u + "` | `" + java.util.Arrays.stream(after).max().orElse(0) + u + "` | — | — |");
+    }
+
+    @Override
+    public void sayKanban(String board,
+                          java.util.List<String> backlog,
+                          java.util.List<String> wip,
+                          java.util.List<String> done) {
+        if (board == null) return;
+        java.util.List<String> bl = backlog == null ? java.util.List.of() : backlog;
+        java.util.List<String> wp = wip    == null ? java.util.List.of() : wip;
+        java.util.List<String> dn = done   == null ? java.util.List.of() : done;
+        markdownDocument.add("");
+        markdownDocument.add("### Kanban Board: " + board);
+        markdownDocument.add("");
+        markdownDocument.add("| 📋 Backlog | 🔄 In Progress (WIP) | ✅ Done |");
+        markdownDocument.add("| --- | --- | --- |");
+        int rows = Math.max(Math.max(bl.size(), wp.size()), dn.size());
+        for (int i = 0; i < rows; i++) {
+            String b = i < bl.size() ? bl.get(i) : "";
+            String w = i < wp.size() ? wp.get(i) : "";
+            String d = i < dn.size() ? dn.get(i) : "";
+            markdownDocument.add("| " + b + " | " + w + " | " + d + " |");
+        }
+        markdownDocument.add("");
+        int total = bl.size() + wp.size() + dn.size();
+        double eff = total == 0 ? 0.0 : (double) dn.size() / total * 100.0;
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| WIP count | `" + wp.size() + "` |");
+        markdownDocument.add("| Flow efficiency | `" + String.format("%.0f", eff) + "%` (" + dn.size() + "/" + total + " done) |");
+    }
+
+    @Override
+    public void sayPatternMatch(String title,
+                                java.util.List<String> patterns,
+                                java.util.List<String> values,
+                                java.util.List<Boolean> matches) {
+        if (title == null || patterns == null || values == null || matches == null) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Pattern Match: " + title);
+        markdownDocument.add("");
+        markdownDocument.add("| # | Pattern | Value | Result |");
+        markdownDocument.add("| --- | --- | --- | --- |");
+        int rows = Math.min(patterns.size(), Math.min(values.size(), matches.size()));
+        long matched = 0;
+        for (int i = 0; i < rows; i++) {
+            boolean m = matches.get(i);
+            if (m) matched++;
+            markdownDocument.add("| " + (i + 1) + " | `" + patterns.get(i) + "` | `" + values.get(i) + "` | " + (m ? "✅ match" : "❌ no_match") + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Patterns tested | `" + rows + "` |");
+        markdownDocument.add("| Matched | `" + matched + "` |");
+        markdownDocument.add("| No-match | `" + (rows - matched) + "` |");
+    }
+
+    @Override
+    public void sayAndon(String system,
+                         java.util.List<String> stations,
+                         java.util.List<String> statuses) {
+        if (system == null || stations == null || statuses == null) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Andon Board: " + system);
+        markdownDocument.add("");
+        markdownDocument.add("| Station | Status |");
+        markdownDocument.add("| --- | --- |");
+        int rows = Math.min(stations.size(), statuses.size());
+        long normal = 0, caution = 0, stopped = 0;
+        for (int i = 0; i < rows; i++) {
+            String raw = statuses.get(i).toUpperCase();
+            String icon = switch (raw) {
+                case "NORMAL"  -> "✅ NORMAL";
+                case "CAUTION" -> "⚠️ CAUTION";
+                case "STOPPED" -> "❌ STOPPED";
+                default        -> raw;
+            };
+            if (raw.equals("NORMAL"))  normal++;
+            else if (raw.equals("CAUTION")) caution++;
+            else if (raw.equals("STOPPED")) stopped++;
+            markdownDocument.add("| " + stations.get(i) + " | " + icon + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("| Status | Count |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| ✅ Normal | `" + normal + "` |");
+        markdownDocument.add("| ⚠️ Caution | `" + caution + "` |");
+        markdownDocument.add("| ❌ Stopped | `" + stopped + "` |");
+    }
+
+    @Override
+    public void sayMuda(String process,
+                        java.util.List<String> wastes,
+                        java.util.List<String> improvements) {
+        if (process == null || wastes == null || improvements == null) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Muda Analysis: " + process);
+        markdownDocument.add("");
+        markdownDocument.add("| # | Waste (Muda) | Improvement Action |");
+        markdownDocument.add("| --- | --- | --- |");
+        int rows = Math.min(wastes.size(), improvements.size());
+        for (int i = 0; i < rows; i++) {
+            markdownDocument.add("| " + (i + 1) + " | " + wastes.get(i) + " | " + improvements.get(i) + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Wastes identified | `" + wastes.size() + "` |");
+        markdownDocument.add("| Improvements defined | `" + improvements.size() + "` |");
+        double coverage = wastes.isEmpty() ? 0.0 : (double) improvements.size() / wastes.size() * 100.0;
+        markdownDocument.add("| Elimination coverage | `" + String.format("%.0f", coverage) + "%` |");
+    }
+
+    @Override
+    public void sayValueStream(String product,
+                               java.util.List<String> steps,
+                               long[] cycleTimeMs) {
+        if (product == null || steps == null || cycleTimeMs == null || steps.isEmpty()) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Value Stream: " + product);
+        markdownDocument.add("");
+        int rows = Math.min(steps.size(), cycleTimeMs.length);
+        long total = 0;
+        for (int i = 0; i < rows; i++) total += cycleTimeMs[i];
+        long maxTime = rows == 0 ? 1 : java.util.Arrays.stream(cycleTimeMs).limit(rows).max().orElse(1);
+        if (maxTime == 0) maxTime = 1;
+        markdownDocument.add("| Step | Cycle Time | Relative |");
+        markdownDocument.add("| --- | --- | --- |");
+        int bottleneckIdx = 0;
+        long bottleneckVal = 0;
+        for (int i = 0; i < rows; i++) {
+            long t = cycleTimeMs[i];
+            if (t > bottleneckVal) { bottleneckVal = t; bottleneckIdx = i; }
+            int barLen = (int) (t * 20 / maxTime);
+            String bar = "█".repeat(Math.max(0, barLen));
+            markdownDocument.add("| " + steps.get(i) + " | `" + t + " ms` | " + bar + " |");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Total lead time | `" + total + " ms` |");
+        markdownDocument.add("| Steps | `" + rows + "` |");
+        markdownDocument.add("| Avg cycle time | `" + (rows == 0 ? 0 : total / rows) + " ms` |");
+        if (rows > 0) {
+            markdownDocument.add("| Bottleneck step | `" + steps.get(bottleneckIdx) + "` |");
+        }
+    }
+
+    @Override
+    public void sayPokaYoke(String operation,
+                            java.util.List<String> mistakeProofs,
+                            java.util.List<Boolean> verified) {
+        if (operation == null || mistakeProofs == null || verified == null) return;
+        markdownDocument.add("");
+        markdownDocument.add("### Poka-yoke: " + operation);
+        markdownDocument.add("");
+        markdownDocument.add("| # | Mistake-Proof Mechanism | Verified |");
+        markdownDocument.add("| --- | --- | --- |");
+        int rows = Math.min(mistakeProofs.size(), verified.size());
+        long ok = 0;
+        for (int i = 0; i < rows; i++) {
+            boolean v = verified.get(i);
+            if (v) ok++;
+            markdownDocument.add("| " + (i + 1) + " | " + mistakeProofs.get(i) + " | " + (v ? "✅" : "❌") + " |");
+        }
+        markdownDocument.add("");
+        double eff = rows == 0 ? 0.0 : (double) ok / rows * 100.0;
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Mechanisms | `" + rows + "` |");
+        markdownDocument.add("| Verified effective | `" + ok + "` |");
+        markdownDocument.add("| Effectiveness | `" + String.format("%.0f", eff) + "%` |");
+    }
+
     // ── helpers ────────────────────────────────────────────────────────────────
 
     private String sanitizeId(String s) {

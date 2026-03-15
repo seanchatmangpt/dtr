@@ -648,6 +648,77 @@ public abstract class DtrTest implements RenderMachineCommands {
         renderMachine.sayAgentLoop(agentName, observations, decisions, tools);
     }
 
+    // ── Toyota Production System + Joe Armstrong Blue Ocean innovations ────────
+
+    /** Documents an Erlang/OTP supervision tree as a Mermaid graph. */
+    public final void saySupervisionTree(String title,
+                                         java.util.Map<String, java.util.List<String>> supervisors) {
+        renderMachine.saySupervisionTree(title, supervisors);
+    }
+
+    /** Documents actor-model message passing as a sequence diagram. */
+    public final void sayActorMessages(String title,
+                                       java.util.List<String> actors,
+                                       java.util.List<String[]> messages) {
+        renderMachine.sayActorMessages(title, actors, messages);
+    }
+
+    /** Documents a "let it crash" fault-tolerance scenario. */
+    public final void sayFaultTolerance(String scenario,
+                                        java.util.List<String> failures,
+                                        java.util.List<String> recoveries) {
+        renderMachine.sayFaultTolerance(scenario, failures, recoveries);
+    }
+
+    /** Documents a Kaizen continuous-improvement event with before/after metrics. */
+    public final void sayKaizen(String metric, long[] before, long[] after, String unit) {
+        renderMachine.sayKaizen(metric, before, after, unit);
+    }
+
+    /** Documents a Kanban board snapshot. */
+    public final void sayKanban(String board,
+                                java.util.List<String> backlog,
+                                java.util.List<String> wip,
+                                java.util.List<String> done) {
+        renderMachine.sayKanban(board, backlog, wip, done);
+    }
+
+    /** Documents Erlang-style pattern matching results. */
+    public final void sayPatternMatch(String title,
+                                      java.util.List<String> patterns,
+                                      java.util.List<String> values,
+                                      java.util.List<Boolean> matches) {
+        renderMachine.sayPatternMatch(title, patterns, values, matches);
+    }
+
+    /** Documents a Toyota Andon-cord production-status board. */
+    public final void sayAndon(String system,
+                               java.util.List<String> stations,
+                               java.util.List<String> statuses) {
+        renderMachine.sayAndon(system, stations, statuses);
+    }
+
+    /** Documents a Muda waste-elimination analysis. */
+    public final void sayMuda(String process,
+                              java.util.List<String> wastes,
+                              java.util.List<String> improvements) {
+        renderMachine.sayMuda(process, wastes, improvements);
+    }
+
+    /** Documents a Value Stream Map with measured cycle times. */
+    public final void sayValueStream(String product,
+                                     java.util.List<String> steps,
+                                     long[] cycleTimeMs) {
+        renderMachine.sayValueStream(product, steps, cycleTimeMs);
+    }
+
+    /** Documents Poka-yoke mistake-proofing mechanisms and their verification. */
+    public final void sayPokaYoke(String operation,
+                                  java.util.List<String> mistakeProofs,
+                                  java.util.List<Boolean> verified) {
+        renderMachine.sayPokaYoke(operation, mistakeProofs, verified);
+    }
+
     /**
      * Runs a Hamcrest assertion and documents the result as a table row.
      * Passes a {@code ✓ PASS} label on success; rethrows on failure.

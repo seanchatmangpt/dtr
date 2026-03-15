@@ -349,6 +349,77 @@ public class DtrContext implements RenderMachineCommands {
         renderMachine.sayAgentLoop(agentName, observations, decisions, tools);
     }
 
+    // ── Toyota Production System + Joe Armstrong Blue Ocean innovations ────────
+
+    @Override
+    public void saySupervisionTree(String title,
+                                   java.util.Map<String, java.util.List<String>> supervisors) {
+        renderMachine.saySupervisionTree(title, supervisors);
+    }
+
+    @Override
+    public void sayActorMessages(String title,
+                                 java.util.List<String> actors,
+                                 java.util.List<String[]> messages) {
+        renderMachine.sayActorMessages(title, actors, messages);
+    }
+
+    @Override
+    public void sayFaultTolerance(String scenario,
+                                  java.util.List<String> failures,
+                                  java.util.List<String> recoveries) {
+        renderMachine.sayFaultTolerance(scenario, failures, recoveries);
+    }
+
+    @Override
+    public void sayKaizen(String metric, long[] before, long[] after, String unit) {
+        renderMachine.sayKaizen(metric, before, after, unit);
+    }
+
+    @Override
+    public void sayKanban(String board,
+                          java.util.List<String> backlog,
+                          java.util.List<String> wip,
+                          java.util.List<String> done) {
+        renderMachine.sayKanban(board, backlog, wip, done);
+    }
+
+    @Override
+    public void sayPatternMatch(String title,
+                                java.util.List<String> patterns,
+                                java.util.List<String> values,
+                                java.util.List<Boolean> matches) {
+        renderMachine.sayPatternMatch(title, patterns, values, matches);
+    }
+
+    @Override
+    public void sayAndon(String system,
+                         java.util.List<String> stations,
+                         java.util.List<String> statuses) {
+        renderMachine.sayAndon(system, stations, statuses);
+    }
+
+    @Override
+    public void sayMuda(String process,
+                        java.util.List<String> wastes,
+                        java.util.List<String> improvements) {
+        renderMachine.sayMuda(process, wastes, improvements);
+    }
+
+    @Override
+    public void sayValueStream(String product,
+                               java.util.List<String> steps,
+                               long[] cycleTimeMs) {
+        renderMachine.sayValueStream(product, steps, cycleTimeMs);
+    }
+
+    @Override
+    public void sayPokaYoke(String operation,
+                            java.util.List<String> mistakeProofs,
+                            java.util.List<Boolean> verified) {
+        renderMachine.sayPokaYoke(operation, mistakeProofs, verified);
+    }
+
     // ========================================================================
     // Accessors for internal components
     // ========================================================================

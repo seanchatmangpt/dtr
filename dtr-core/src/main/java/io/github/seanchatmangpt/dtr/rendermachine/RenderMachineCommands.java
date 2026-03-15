@@ -592,4 +592,167 @@ public interface RenderMachineCommands {
                       java.util.List<String> observations,
                       java.util.List<String> decisions,
                       java.util.List<String> tools);
+
+    // ── Toyota Production System + Joe Armstrong Blue Ocean innovations ────────
+
+    /**
+     * Documents an Erlang/OTP-style supervision tree showing which supervisors
+     * manage which workers. Renders as a Mermaid {@code graph TD} with
+     * supervisor → child edges, restart strategies, and worker counts.
+     *
+     * <p>Blue ocean: surfaces fault-tolerance topology that is implicit in OTP
+     * app files but never visualised in documentation.</p>
+     *
+     * @param title       diagram title (e.g. "Payment Service Supervision Tree")
+     * @param supervisors map of supervisor name → list of child names
+     */
+    void saySupervisionTree(String title,
+                            java.util.Map<String, java.util.List<String>> supervisors);
+
+    /**
+     * Documents actor-model message passing: which actors send what messages
+     * to which targets. Renders a Mermaid sequence diagram showing concurrent
+     * asynchronous communication without shared state.
+     *
+     * <p>Blue ocean: Joe Armstrong's "share nothing" discipline made visible —
+     * every message hop is explicit, auditable, and always up to date.</p>
+     *
+     * @param title    diagram title
+     * @param actors   actor names in order of appearance
+     * @param messages list of {@code [sender, receiver, message]} triples
+     */
+    void sayActorMessages(String title,
+                          java.util.List<String> actors,
+                          java.util.List<String[]> messages);
+
+    /**
+     * Documents a "let it crash" fault-tolerance scenario: a list of failures
+     * paired with supervisor-driven recoveries. Renders a two-column table plus
+     * a recovery-ratio metric (recoveries / failures).
+     *
+     * <p>Blue ocean: makes the implicit restart contract explicit — reviewers
+     * can audit fault coverage without reading OTP supervisor specs.</p>
+     *
+     * @param scenario   scenario name (e.g. "Database connection pool exhausted")
+     * @param failures   failure descriptions in order
+     * @param recoveries supervisor recovery actions in corresponding order
+     */
+    void sayFaultTolerance(String scenario,
+                           java.util.List<String> failures,
+                           java.util.List<String> recoveries);
+
+    /**
+     * Documents a Kaizen continuous-improvement event: measures a metric before
+     * and after the improvement, renders a comparison table with absolute delta
+     * and percentage improvement, and calls out the improvement ratio.
+     *
+     * <p>Blue ocean: Toyota's improvement discipline applied to software metrics
+     * — latency, throughput, defect rate — with machine-verified numbers.</p>
+     *
+     * @param metric name of the metric (e.g. "P99 latency", "Build time")
+     * @param before measurement samples before the improvement
+     * @param after  measurement samples after the improvement
+     * @param unit   unit label (e.g. "ms", "s", "defects/kloc")
+     */
+    void sayKaizen(String metric, long[] before, long[] after, String unit);
+
+    /**
+     * Documents a Kanban board snapshot: items in backlog, in progress (WIP),
+     * and done. Renders as a three-column markdown table and reports the
+     * WIP count and flow efficiency (done / total).
+     *
+     * <p>Blue ocean: living documentation of work state — the board IS the
+     * documentation, auto-generated from your tracking data.</p>
+     *
+     * @param board   board name (e.g. "Sprint 42", "Q2 Infrastructure")
+     * @param backlog items not yet started
+     * @param wip     items currently in progress
+     * @param done    completed items
+     */
+    void sayKanban(String board,
+                   java.util.List<String> backlog,
+                   java.util.List<String> wip,
+                   java.util.List<String> done);
+
+    /**
+     * Documents Erlang-style pattern matching: a set of patterns, the values
+     * they are matched against, and whether each match succeeds. Renders a
+     * three-column table with ✅ / ❌ match indicators.
+     *
+     * <p>Blue ocean: pattern-matching logic is tested but never documented —
+     * this surfaces the full match matrix as executable specification.</p>
+     *
+     * @param title    section title
+     * @param patterns pattern strings (e.g. "{ok, Value}", "_")
+     * @param values   value strings tested against corresponding patterns
+     * @param matches  true if the pattern matched, false if it did not
+     */
+    void sayPatternMatch(String title,
+                         java.util.List<String> patterns,
+                         java.util.List<String> values,
+                         java.util.List<Boolean> matches);
+
+    /**
+     * Documents a Toyota Andon-cord production-status board: each workstation
+     * and its current status. Renders a table with status-coded rows
+     * (✅ Normal / ⚠️ Caution / ❌ Stopped) and a station-health summary.
+     *
+     * <p>Blue ocean: production dashboards are ephemeral; this generates a
+     * point-in-time snapshot in the documentation record.</p>
+     *
+     * @param system   system or line name (e.g. "Payment Processing Line")
+     * @param stations station / service names
+     * @param statuses status strings: "NORMAL", "CAUTION", or "STOPPED"
+     */
+    void sayAndon(String system,
+                  java.util.List<String> stations,
+                  java.util.List<String> statuses);
+
+    /**
+     * Documents a Muda (waste) analysis: identifies the seven TPS wastes present
+     * in a process and the corresponding improvement actions. Renders a
+     * waste-type → description → action table and a waste-elimination ratio.
+     *
+     * <p>Blue ocean: waste is identified in retrospectives but rarely committed
+     * to documentation — this makes the analysis a first-class artefact.</p>
+     *
+     * @param process      process name (e.g. "Manual deployment pipeline")
+     * @param wastes       waste descriptions (what waste was found)
+     * @param improvements improvement actions for each waste
+     */
+    void sayMuda(String process,
+                 java.util.List<String> wastes,
+                 java.util.List<String> improvements);
+
+    /**
+     * Documents a Value Stream Map: the sequence of process steps from demand
+     * to delivery, each with a measured cycle time. Renders a bar chart of
+     * cycle times and reports total lead time, value-adding time, and efficiency.
+     *
+     * <p>Blue ocean: value stream mapping is a whiteboard exercise; this
+     * generates a measurable, always-current version from real data.</p>
+     *
+     * @param product     product or feature name (e.g. "Feature → Production")
+     * @param steps       process step names in flow order
+     * @param cycleTimeMs measured cycle time for each step in milliseconds
+     */
+    void sayValueStream(String product,
+                        java.util.List<String> steps,
+                        long[] cycleTimeMs);
+
+    /**
+     * Documents Poka-yoke (mistake-proofing) devices: each mistake-proof
+     * mechanism and whether it was verified as effective. Renders a
+     * mechanism → verified table with ✅ / ❌ indicators and an effectiveness %.
+     *
+     * <p>Blue ocean: error-prevention mechanisms are described in runbooks
+     * but never tested and documented together — this unifies both.</p>
+     *
+     * @param operation     operation name (e.g. "Production deployment")
+     * @param mistakeProofs mistake-proofing mechanism descriptions
+     * @param verified      true if the mechanism was confirmed effective
+     */
+    void sayPokaYoke(String operation,
+                     java.util.List<String> mistakeProofs,
+                     java.util.List<Boolean> verified);
 }
