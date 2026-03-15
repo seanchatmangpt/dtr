@@ -516,6 +516,9 @@ pub mod manager {
         /// Check if a method body is in the cache (L1 first, then L2).
         ///
         /// L1 check is lock-free and constant time.
+        ///
+        /// # Errors
+        /// Returns an error if querying the disk store fails.
         pub fn contains(&self, method_body: &[u8]) -> Result<bool> {
             let hash = hash_method_body(method_body);
 
@@ -529,6 +532,9 @@ pub mod manager {
         }
 
         /// Get count of cached entries from L2 disk store.
+        ///
+        /// # Errors
+        /// Returns an error if querying the disk store fails.
         pub fn count(&self) -> Result<usize> {
             self.store.count()
         }
