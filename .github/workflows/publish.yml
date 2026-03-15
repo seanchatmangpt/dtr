@@ -1,73 +1,47 @@
-name: Publish
+name: Publish to Maven Central
 
-# Final release (v2026.3.0)         → verify → Maven Central → GitHub Release
-# Release candidate (v2026.3.0-rc.1) → verify → GitHub Packages only
-#
-# Triggered by: scripts/release.sh or scripts/release-rc.sh via the Makefile.
-# The human runs: make release-minor  (or patch / year / rc-*)
-# The script tags and pushes. This workflow fires on the tag.
-
+# Triggered ONLY by final version tags (no -rc.) created via `make release-*`
+# RC tags are handled by publish-rc.yml
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'           # final:  v2026.3.0
-      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+' # RC:     v2026.3.0-rc.1
+      - 'v*'
 
 env:
   JAVA_VERSION: '26'
   MAVEN_OPTS: >-
     -Xmx2g
-    -Xms512m
+    -Xms1g
     -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
     -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
 
 jobs:
-  # ── Classify the tag ──────────────────────────────────────────────────────
-  classify:
-    name: Classify Tag
-    runs-on: ubuntu-latest
-    outputs:
-      is_final: ${{ steps.classify.outputs.is_final }}
-      is_rc: ${{ steps.classify.outputs.is_rc }}
-      version: ${{ steps.classify.outputs.version }}
-    steps:
-      - name: Classify
-        id: classify
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          VERSION="${TAG#v}"
-          if echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$'; then
-            echo "is_final=false" >> "$GITHUB_OUTPUT"
-            echo "is_rc=true"     >> "$GITHUB_OUTPUT"
-          else
-            echo "is_final=true"  >> "$GITHUB_OUTPUT"
-            echo "is_rc=false"    >> "$GITHUB_OUTPUT"
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-  # ── Gate: verify must pass before any publish ─────────────────────────────
+  # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
     name: Build & Test
-    needs: classify
+    # Final releases only — RC tags are routed to publish-rc.yml via job condition
+    if: "!contains(github.ref_name, '-rc.')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Cache Maven
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/.m2/repository
+          path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
-      - name: Verify
+      - name: Build and test
         run: ./mvnw clean verify --no-transfer-progress
 
       - name: Upload test results on failure
@@ -79,36 +53,34 @@ jobs:
             **/target/surefire-reports/
             **/target/failsafe-reports/
 
-  # ── Publish final release to Maven Central ────────────────────────────────
+  # ── 2. Deploy to Maven Central ─────────────────────────────────────────────
   deploy:
     name: Deploy to Maven Central
-    needs: [classify, build]
+    needs: build
     runs-on: ubuntu-latest
-    if: needs.classify.outputs.is_final == 'true'
     environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Cache Maven
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/.m2/repository
+          path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
       - name: Import GPG key
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
-          mkdir -p ~/.gnupg
-          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
-          gpgconf --kill gpg-agent
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
 
       - name: Configure Maven settings
         run: |
@@ -140,7 +112,7 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Deploy to Maven Central
+      - name: Deploy
         run: ./mvnw clean deploy -Prelease -DskipTests --no-transfer-progress
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
@@ -148,83 +120,11 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-  # ── Publish RC to GitHub Packages ─────────────────────────────────────────
-  deploy-rc:
-    name: Deploy RC to GitHub Packages
-    needs: [classify, build]
-    runs-on: ubuntu-latest
-    if: needs.classify.outputs.is_rc == 'true'
-    permissions:
-      packages: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Java ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-
-      - name: Cache Maven
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
-
-      - name: Import GPG key
-        run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
-          mkdir -p ~/.gnupg
-          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
-          gpgconf --kill gpg-agent
-
-      - name: Configure Maven settings for GitHub Packages
-        run: |
-          mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml << 'EOF'
-          <settings>
-            <servers>
-              <server>
-                <id>github</id>
-                <username>${env.GITHUB_ACTOR}</username>
-                <password>${env.GITHUB_TOKEN}</password>
-              </server>
-            </servers>
-            <profiles>
-              <profile>
-                <id>gpg</id>
-                <activation><activeByDefault>true</activeByDefault></activation>
-                <properties>
-                  <gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
-                  <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
-                </properties>
-              </profile>
-            </profiles>
-          </settings>
-          EOF
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Deploy RC to GitHub Packages
-        run: |
-          ./mvnw deploy -Prelease-rc \
-            -DaltDeploymentRepository=github::https://maven.pkg.github.com/${{ github.repository }} \
-            -DskipTests --no-transfer-progress
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-  # ── Create GitHub Release (final only) ───────────────────────────────────
+  # ── 3. Create GitHub Release ───────────────────────────────────────────────
   release:
     name: Create GitHub Release
-    needs: [classify, deploy]
+    needs: deploy
     runs-on: ubuntu-latest
-    if: needs.classify.outputs.is_final == 'true'
     permissions:
       contents: write
     steps:
@@ -233,20 +133,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create GitHub Release
+      - name: Create release
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "DTR ${{ github.ref_name }}" \
+            --generate-notes \
+            --verify-tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.classify.outputs.version }}
-        run: |
-          NOTES_FILE="docs/releases/${VERSION}.md"
-          if [ -f "$NOTES_FILE" ]; then
-            gh release create "v${VERSION}" \
-              --title "DTR ${VERSION}" \
-              --notes-file "$NOTES_FILE" \
-              --verify-tag
-          else
-            gh release create "v${VERSION}" \
-              --title "DTR ${VERSION}" \
-              --generate-notes \
-              --verify-tag
-          fi
