@@ -834,4 +834,153 @@ public interface RenderMachineCommands {
                 + "Least common: **" + result.leastCommon() + "** | "
                 + "Total samples: " + result.sampleCount());
     }
+
+    // =========================================================================
+    // Blue Ocean: Actor Mailbox (Joe Armstrong Message-Passing Concurrency)
+    // =========================================================================
+
+    /**
+     * Documents a Joe Armstrong-style actor-model simulation run as a structured
+     * table plus a summary sentence.
+     *
+     * <p>Renders one row per actor showing: actor name, messages received count,
+     * messages sent (replies) count, and processing time. Follows the row table
+     * with a bold summary: total messages and actor count.</p>
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * ActorMailbox.ActorReport report = ActorMailbox.simulate(
+     *     "Counter System", actors, initialMessages);
+     * sayActorMailbox(report);
+     * // | Actor | Messages Received | Messages Sent | Processing Time |
+     * // | counter | 3 | 2 | 42us |
+     * // **5 total messages** across **2 actors** -- Actor Model check
+     * }</pre>
+     *
+     * @param report the actor system report produced by
+     *               {@link io.github.seanchatmangpt.dtr.actor.ActorMailbox#simulate}
+     */
+    default void sayActorMailbox(
+            io.github.seanchatmangpt.dtr.actor.ActorMailbox.ActorReport report) {
+        var traces = report.actors();
+        String[][] table = new String[traces.size() + 1][4];
+        table[0] = new String[]{"Actor", "Messages Received", "Messages Sent", "Processing Time"};
+        for (int i = 0; i < traces.size(); i++) {
+            var t = traces.get(i);
+            table[i + 1] = new String[]{
+                t.actorName(),
+                String.valueOf(t.received().size()),
+                String.valueOf(t.sent().size()),
+                io.github.seanchatmangpt.dtr.actor.ActorMailbox.humanNs(t.processingNs())
+            };
+        }
+        sayTable(table);
+        say("**" + report.totalMessages() + " total messages** across **"
+                + traces.size() + " actors** \u2014 Actor Model \u2713");
+    }
+
+    // =========================================================================
+    // Blue Ocean: Toyota Value Stream Mapping
+    // =========================================================================
+
+    /**
+     * Documents a Toyota Value Stream Map — classifies each pipeline step as
+     * value-add or one of four waste categories, then renders a step-by-step
+     * table and a Process Cycle Efficiency (PCF) summary line.
+     *
+     * <p>PCF = valueAddNs / totalNs × 100. Toyota targets PCF ≥ 80%.
+     * A warning is emitted when PCF &lt; 50%; a note is emitted when PCF ≥ 80%.</p>
+     *
+     * @param stream the {@link io.github.seanchatmangpt.dtr.toyota.ValueStreamMapper.StreamAnalysis}
+     *               produced by {@link io.github.seanchatmangpt.dtr.toyota.ValueStreamMapper#map}
+     */
+    default void sayValueStream(
+            io.github.seanchatmangpt.dtr.toyota.ValueStreamMapper.StreamAnalysis stream) {
+
+        var steps = stream.steps();
+        long totalNs = stream.totalNs();
+
+        String[][] table = new String[steps.size() + 1][5];
+        table[0] = new String[]{"Step", "Kind", "Time", "% of Total", "Description"};
+        for (int i = 0; i < steps.size(); i++) {
+            var s = steps.get(i);
+            String pct = totalNs > 0
+                    ? String.format("%.1f%%", (s.actualNs() * 100.0) / totalNs)
+                    : "n/a";
+            table[i + 1] = new String[]{
+                s.name(),
+                s.kind().name(),
+                io.github.seanchatmangpt.dtr.toyota.ValueStreamMapper.humanNs(s.actualNs()),
+                pct,
+                s.description()
+            };
+        }
+        sayTable(table);
+
+        double pcf      = stream.pcfEfficiency();
+        double wastePct = 100.0 - pcf;
+        say(String.format(
+                "PCF: **%.1f%%** value-add | Waste: **%.1f%%** | Total: **%s**",
+                pcf, wastePct,
+                io.github.seanchatmangpt.dtr.toyota.ValueStreamMapper.humanNs(totalNs)));
+
+        if (pcf < 50.0) {
+            sayWarning("PCF < 50% \u2014 majority of time is waste. Apply kaizen.");
+        } else if (pcf >= 80.0) {
+            sayNote("PCF \u2265 80% \u2014 lean stream. Toyota target achieved.");
+        }
+    }
+
+    // =========================================================================
+    // Blue Ocean: Toyota Kanban Pull-System Visualization
+    // =========================================================================
+
+    /**
+     * Renders a Toyota Production System kanban board snapshot as structured
+     * documentation: a column stats table, flow efficiency summary, blocked card
+     * count, and a WIP-limit warning when any column is over its limit.
+     *
+     * <p>Flow efficiency is the percentage of cards in the DONE state.
+     * WIP (Work In Progress) limits enforce the pull-system discipline:
+     * no new work enters a column until existing work exits it.</p>
+     *
+     * @param board the board snapshot to render (computed via
+     *              {@link io.github.seanchatmangpt.dtr.toyota.KanbanBoard#snapshot})
+     */
+    default void sayKanbanBoard(
+            io.github.seanchatmangpt.dtr.toyota.KanbanBoard.BoardSnapshot board) {
+
+        say("# Kanban Board: " + board.boardName());
+
+        var columns = board.columns();
+        String[][] table = new String[columns.size() + 1][5];
+        table[0] = new String[]{"Column", "Cards", "WIP Limit", "Over WIP?", "Avg Cycle"};
+        for (int i = 0; i < columns.size(); i++) {
+            var col = columns.get(i);
+            String wipLabel = col.wipLimit() == 0 ? "\u2014" : String.valueOf(col.wipLimit());
+            String overWip = col.overWip() ? "YES" : "no";
+            String avgCycle = col.avgCycleMs() == 0.0 ? "\u2014"
+                    : String.format("%.1f ms", col.avgCycleMs());
+            table[i + 1] = new String[]{
+                col.name(),
+                String.valueOf(col.count()),
+                wipLabel,
+                overWip,
+                avgCycle
+            };
+        }
+        sayTable(table);
+
+        say(String.format(
+                "Flow efficiency: **%.1f%%** | Blocked: **%d** | Total: **%d**",
+                board.flowEfficiency(), board.blockedCount(), board.totalCards()));
+
+        long overWipCount = columns.stream().filter(
+                io.github.seanchatmangpt.dtr.toyota.KanbanBoard.ColumnStats::overWip).count();
+        if (overWipCount > 0) {
+            sayWarning("WIP limit exceeded in " + overWipCount
+                    + " column" + (overWipCount == 1 ? "" : "s")
+                    + " \u2014 pull, don\u2019t push!");
+        }
+    }
 }
