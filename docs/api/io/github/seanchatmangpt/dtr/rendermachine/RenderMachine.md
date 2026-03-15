@@ -6,7 +6,7 @@ Abstract base class for render machines that convert test execution into documen
 
 ```java
 public abstract class RenderMachine implements RenderMachineCommands {
-    // setFileName, saySlideOnly, sayDocOnly, saySpeakerNote, sayHeroImage, sayTweetable, sayTldr, sayCallToAction, ... (41 total)
+    // setFileName, saySlideOnly, sayDocOnly, saySpeakerNote, sayHeroImage, sayTweetable, sayTldr, sayCallToAction, ... (51 total)
 }
 ```
 
@@ -20,9 +20,21 @@ Finishes documentation generation and writes output to disk.
 
 ---
 
+### `sayActorMessages`
+
+Actor model message passing — no-op in base class. */
+
+---
+
 ### `sayAgentLoop`
 
 AI agent loop sequence diagram — no-op in base class. */
+
+---
+
+### `sayAndon`
+
+Toyota Andon production status board — no-op in base class. */
 
 ---
 
@@ -158,6 +170,12 @@ Exception chain documentation — no-op in base class. */
 
 ---
 
+### `sayFaultTolerance`
+
+Let-it-crash fault-tolerance scenario — no-op in base class. */
+
+---
+
 ### `sayHeatmap`
 
 2-D ASCII heatmap — no-op in base class. */
@@ -180,9 +198,27 @@ Javadoc documentation from dtr-javadoc index — no-op in base class. */
 
 ---
 
+### `sayKaizen`
+
+Kaizen continuous-improvement before/after — no-op in base class. */
+
+---
+
+### `sayKanban`
+
+Kanban WIP board snapshot — no-op in base class. */
+
+---
+
 ### `sayMermaid`
 
 Raw Mermaid diagram — no-op in base class. */
+
+---
+
+### `sayMuda`
+
+Muda waste-elimination analysis — no-op in base class. */
 
 ---
 
@@ -195,6 +231,18 @@ Op profile — no-op in base class. */
 ### `sayParallelTrace`
 
 Parallel execution Gantt trace — no-op in base class. */
+
+---
+
+### `sayPatternMatch`
+
+Erlang-style pattern match results — no-op in base class. */
+
+---
+
+### `sayPokaYoke`
+
+Poka-yoke mistake-proofing verification — no-op in base class. */
 
 ---
 
@@ -248,6 +296,12 @@ Documents string profile — no-op in base class. */
 
 ---
 
+### `saySupervisionTree`
+
+Erlang OTP supervision tree — no-op in base class. */
+
+---
+
 ### `sayTimeSeries`
 
 Time-series sparkline + trend — no-op in base class. */
@@ -271,6 +325,12 @@ Renders a tweetable (≤280 chars) for social media queue.
 | Parameter | Description |
 | --- | --- |
 | `text` | the text to tweet (will be truncated to 280 chars) |
+
+---
+
+### `sayValueStream`
+
+Value stream map with cycle times — no-op in base class. */
 
 ---
 

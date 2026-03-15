@@ -16,6 +16,7 @@
 package io.github.seanchatmangpt.dtr.test;
 
 import io.github.seanchatmangpt.dtr.DtrTest;
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;

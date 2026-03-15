@@ -354,4 +354,18 @@ public final class BlogRenderMachine extends RenderMachine {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void sayPokaYoke(String operation,
+                            java.util.List<String> mistakeProofs,
+                            java.util.List<Boolean> verified) {
+        // Blog rendering: emit a brief prose summary of the poka-yoke analysis
+        if (operation == null || mistakeProofs == null || verified == null) return;
+        buffer.append("\n\n**Mistake-proofing: ").append(operation).append("**\n\n");
+        int rows = Math.min(mistakeProofs.size(), verified.size());
+        for (int i = 0; i < rows; i++) {
+            String tick = Boolean.TRUE.equals(verified.get(i)) ? "✅" : "❌";
+            buffer.append("- ").append(tick).append(" ").append(mistakeProofs.get(i)).append("\n");
+        }
+    }
 }

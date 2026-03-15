@@ -392,4 +392,20 @@ public final class RenderMachineLatex extends RenderMachine {
                 .replaceAll("-+", "-")
                 .replaceAll("^-|-$", "");
     }
+
+    @Override
+    public void sayPokaYoke(String operation,
+                            java.util.List<String> mistakeProofs,
+                            java.util.List<Boolean> verified) {
+        // LaTeX rendering: emit a description-list environment for the poka-yoke analysis
+        if (operation == null || mistakeProofs == null || verified == null) return;
+        texDocument.add("\\paragraph{Mistake-Proofing: " + operation + "}");
+        texDocument.add("\\begin{description}");
+        int rows = Math.min(mistakeProofs.size(), verified.size());
+        for (int i = 0; i < rows; i++) {
+            String label = Boolean.TRUE.equals(verified.get(i)) ? "Verified" : "Unverified";
+            texDocument.add("  \\item[" + label + "] " + mistakeProofs.get(i));
+        }
+        texDocument.add("\\end{description}");
+    }
 }

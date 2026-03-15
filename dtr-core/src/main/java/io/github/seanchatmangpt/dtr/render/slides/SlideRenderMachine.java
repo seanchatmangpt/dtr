@@ -324,4 +324,19 @@ public final class SlideRenderMachine extends RenderMachine {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void sayPokaYoke(String operation,
+                            java.util.List<String> mistakeProofs,
+                            java.util.List<Boolean> verified) {
+        // Slides rendering: add a bullet slide for the poka-yoke analysis
+        if (operation == null || mistakeProofs == null || verified == null) return;
+        currentTitle = "Mistake-Proofing: " + operation;
+        currentBullets = new ArrayList<>();
+        int rows = Math.min(mistakeProofs.size(), verified.size());
+        for (int i = 0; i < rows; i++) {
+            String tick = Boolean.TRUE.equals(verified.get(i)) ? "✅" : "❌";
+            currentBullets.add(tick + " " + mistakeProofs.get(i));
+        }
+    }
 }
