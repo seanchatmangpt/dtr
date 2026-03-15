@@ -441,27 +441,8 @@ public class AgiNativeDocTest extends DtrTest {
                 + "This is not metaphor — each principle maps directly to a concrete "
                 + "mechanism in the DTR codebase, verifiable by the implementation below.");
 
-        // ---- Sealed TPS principle hierarchy ----
-        sealed interface TpsPrinciple
-                permits TpsPrinciple.Jidoka, TpsPrinciple.JustInTime,
-                        TpsPrinciple.Kaizen, TpsPrinciple.Heijunka, TpsPrinciple.PokaYoke {
-            String name();
-            String dtrImpl();
-            String java26Feature();
-            String benefit();
-        }
-
-        record Jidoka(String name, String dtrImpl, String java26Feature, String benefit)
-                implements TpsPrinciple {}
-        record JustInTime(String name, String dtrImpl, String java26Feature, String benefit)
-                implements TpsPrinciple {}
-        record Kaizen(String name, String dtrImpl, String java26Feature, String benefit)
-                implements TpsPrinciple {}
-        record Heijunka(String name, String dtrImpl, String java26Feature, String benefit)
-                implements TpsPrinciple {}
-        record PokaYoke(String name, String dtrImpl, String java26Feature, String benefit)
-                implements TpsPrinciple {}
-
+        // TpsPrinciple sealed hierarchy is declared at class level (local sealed interfaces
+        // are not permitted by the Java Language Specification).
         var principles = List.<TpsPrinciple>of(
                 new Jidoka(
                         "Jidoka (Built-in Quality)",
