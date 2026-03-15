@@ -90,14 +90,14 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `155 ns` |
-| Min | `119 ns` |
-| Max | `6032 ns` |
-| p99 | `693 ns` |
-| Ops/sec | `6,451,612` |
+| Avg | `227 ns` |
+| Min | `115 ns` |
+| Max | `39782 ns` |
+| p99 | `691 ns` |
+| Ops/sec | `4,405,286` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
-| Java | `26` |
+| Java | `25.0.2` |
 
 String concatenation benchmark — shows allocation cost:
 
@@ -105,17 +105,17 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `336 ns` |
-| Min | `232 ns` |
-| Max | `5251 ns` |
-| p99 | `4328 ns` |
-| Ops/sec | `2,976,190` |
+| Avg | `1136 ns` |
+| Min | `236 ns` |
+| Max | `103160 ns` |
+| p99 | `54116 ns` |
+| Ops/sec | `880,281` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
-| Java | `26` |
+| Java | `25.0.2` |
 
 > [!NOTE]
-> All numbers are real `System.nanoTime()` measurements on Java 26. No simulation.
+> All numbers are real `System.nanoTime()` measurements on Java 25.0.2. No simulation.
 
 ## B2: sayMermaid() + sayClassDiagram() — Mermaid Diagrams
 
@@ -148,27 +148,27 @@ classDiagram
     RenderMachine <|-- RenderMachineImpl
     class RenderMachine {
         +finishAndWriteOut()
+        +sayAgentLoop(String, List, List, List)
         +sayAnnotationProfile(Class)
+        +sayApiDiff(Class, Class)
         +sayAsciiChart(String, double[], String[])
         +sayBenchmark(String, Runnable, int, int)
-        +sayBenchmark(String, Runnable)
-        +sayCallGraph(Class)
     }
     class RenderMachineImpl {
         +convertTextToId(String)
         +finishAndWriteOut()
         +say(String)
+        +sayAgentLoop(String, List, List, List)
         +sayAnnotationProfile(Class)
-        +sayAsciiChart(String, double[], String[])
-        +sayAssertions(Map)
+        +sayApiDiff(Class, Class)
     }
     class RenderMachineCommands {
         +say(String)
+        +sayAgentLoop(String, List, List, List)
         +sayAnnotationProfile(Class)
+        +sayApiDiff(Class, Class)
         +sayAsciiChart(String, double[], String[])
         +sayAssertions(Map)
-        +sayBenchmark(String, Runnable, int, int)
-        +sayBenchmark(String, Runnable)
     }
 ```
 
@@ -202,14 +202,14 @@ One-liner that documents the complete runtime environment. No parameters — rea
 
 | Property | Value |
 | --- | --- |
-| Java Version | `26` |
-| Java Vendor | `Oracle Corporation` |
+| Java Version | `25.0.2` |
+| Java Vendor | `Ubuntu` |
 | OS | `Linux amd64` |
 | Processors | `4` |
 | Max Heap | `4022 MB` |
 | Timezone | `Etc/UTC` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-14T20:24:47.621266495Z` |
+| Timestamp | `2026-03-15T10:29:44.515874740Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -262,11 +262,13 @@ Documents interface contract coverage across implementation classes. For each pu
 | Method | RenderMachineImpl |
 | --- | --- |
 | `void say(String)` | ✅ direct |
+| `void sayAgentLoop(String, List, List, List)` | ✅ direct |
 | `void sayAnnotationProfile(Class)` | ✅ direct |
+| `void sayApiDiff(Class, Class)` | ✅ direct |
 | `void sayAsciiChart(String, double[], String[])` | ✅ direct |
 | `void sayAssertions(Map)` | ✅ direct |
-| `void sayBenchmark(String, Runnable, int, int)` | ✅ direct |
 | `void sayBenchmark(String, Runnable)` | ✅ direct |
+| `void sayBenchmark(String, Runnable, int, int)` | ✅ direct |
 | `void sayCallGraph(Class)` | ✅ direct |
 | `void sayCallSite()` | ✅ direct |
 | `void sayCite(String)` | ✅ direct |
@@ -276,13 +278,17 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayCode(String, String)` | ✅ direct |
 | `void sayCodeModel(Class)` | ✅ direct |
 | `void sayCodeModel(Method)` | ✅ direct |
+| `void sayComplexityProfile(String, IntFunction, int[])` | ✅ direct |
 | `void sayContractVerification(Class, Class[])` | ✅ direct |
 | `void sayControlFlowGraph(Method)` | ✅ direct |
+| `void sayDataFlow(String, List, List, Object)` | ✅ direct |
+| `void sayDecisionTree(String, Map)` | ✅ direct |
 | `void sayDocCoverage(Class[])` | ✅ direct |
 | `void sayEnvProfile()` | ✅ direct |
 | `void sayEvolutionTimeline(Class, int)` | ✅ direct |
 | `void sayException(Throwable)` | ✅ direct |
 | `void sayFootnote(String)` | ✅ direct |
+| `void sayHeatmap(String, double[][], String[], String[])` | ✅ direct |
 | `void sayJavadoc(Method)` | ✅ direct |
 | `void sayJson(Object)` | ✅ direct |
 | `void sayKeyValue(Map)` | ✅ direct |
@@ -291,12 +297,16 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayNote(String)` | ✅ direct |
 | `void sayOpProfile(Method)` | ✅ direct |
 | `void sayOrderedList(List)` | ✅ direct |
+| `void sayParallelTrace(String, List, List)` | ✅ direct |
+| `void sayPropertyBased(String, Predicate, List)` | ✅ direct |
 | `void sayRaw(String)` | ✅ direct |
 | `void sayRecordComponents(Class)` | ✅ direct |
 | `void sayRef(DocTestRef)` | ✅ direct |
 | `void sayReflectiveDiff(Object, Object)` | ✅ direct |
+| `void sayStateMachine(String, Map)` | ✅ direct |
 | `void sayStringProfile(String)` | ✅ direct |
 | `void sayTable(String[][])` | ✅ direct |
+| `void sayTimeSeries(String, long[], String[])` | ✅ direct |
 | `void sayUnorderedList(List)` | ✅ direct |
 | `void sayWarning(String)` | ✅ direct |
 
@@ -313,6 +323,9 @@ Derives the git commit history for the source file of the given class using `git
 
 | Commit | Date | Author | Summary |
 | --- | --- | --- | --- |
+| `5268058` | 2026-03-15 | Claude | feat: 10 blue ocean innovations via 10-agent swarm (v2.7.0) |
+| `6a3ab6f` | 2026-03-14 | Claude | chore: eradicate all remaining Java 25 references (80/20 gaps) |
+| `2155e33` | 2026-03-14 | Claude | Close 80/20 gaps: LICENSE, String.formatted, license plugin, TODO |
 | `e6d8943` | 2026-03-14 | Claude | feat: TPS enforcement — fail build on missing Javadoc, generate docs/api/ |
 | `45f1390` | 2026-03-14 | Claude | feat: add dtr-javadoc Rust extraction tool and sayJavadoc API |
 | `4fd505d` | 2026-03-14 | Claude | refactor: strip HTTP methods from DtrTest, DtrContext, DtrExtension, MultiRenderMachine, RenderMachineImpl |
@@ -320,9 +333,6 @@ Derives the git commit history for the source file of the given class using `git
 | `dd1c236` | 2026-03-14 | Claude | feat: DTR v2.6.0 Blue Ocean 80/20 innovation — 13 new say* methods |
 | `f8aa8d6` | 2026-03-12 | Claude | fix: close remaining audit gaps for Fortune 500 readiness |
 | `d749c3f` | 2026-03-12 | Claude | Remove all DocTester references; rename to DTR branding |
-| `bab8177` | 2026-03-12 | Claude | Complete doctester → dtr rename (Document Testing Runtime) |
-| `d4be652` | 2026-03-12 | Claude | docs: Enhance documentation with javadoc, guides, and release notes |
-| `24a83e6` | 2026-03-12 | Claude | fix: Resolve sealed class violations and Java 25 API compatibility issues |
 
 *10 most recent commits touching `RenderMachineImpl.java`*
 
@@ -351,14 +361,14 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `109 ns` |
-| Min | `88 ns` |
-| Max | `1965 ns` |
-| p99 | `1965 ns` |
-| Ops/sec | `9,174,311` |
+| Avg | `91 ns` |
+| Min | `86 ns` |
+| Max | `380 ns` |
+| p99 | `380 ns` |
+| Ops/sec | `10,989,010` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
-| Java | `26` |
+| Java | `25.0.2` |
 
 ---
 *Generated by [DTR](http://www.dtr.org)*

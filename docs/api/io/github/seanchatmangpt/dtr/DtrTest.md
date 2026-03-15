@@ -7,7 +7,7 @@ Abstract base class for documentation testing framework using JUnit 5. <p>DtrTes
 
 ```java
 public abstract class DtrTest implements RenderMachineCommands {
-    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (40 total)
+    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (50 total)
 }
 ```
 
@@ -45,6 +45,12 @@ Inspects the test method for doc annotations and emits the corresponding render-
 
 ---
 
+### `sayAgentLoop`
+
+Documents an AI agent's reasoning loop as a sequence diagram. */
+
+---
+
 ### `sayAndAssertThat`
 
 Overload for {@code boolean} primitives. */
@@ -58,6 +64,12 @@ Documents all annotations on a class and its methods using reflection.
 | Parameter | Description |
 | --- | --- |
 | `clazz` | the class to inspect for annotations |
+
+---
+
+### `sayApiDiff`
+
+Computes the semantic diff between two API class versions. */
 
 ---
 
@@ -121,6 +133,12 @@ Documents a method's structure using Project Babylon CodeReflection API. <p>On J
 
 ---
 
+### `sayComplexityProfile`
+
+Empirically profiles algorithmic complexity at increasing input sizes. */
+
+---
+
 ### `sayContractVerification`
 
 Documents interface contract coverage across implementation classes. */
@@ -130,6 +148,18 @@ Documents interface contract coverage across implementation classes. */
 ### `sayControlFlowGraph`
 
 Renders a control flow graph via Java 26 Code Reflection (JEP 516). */
+
+---
+
+### `sayDataFlow`
+
+Documents a data transformation pipeline by running samples through stages. */
+
+---
+
+### `sayDecisionTree`
+
+Documents a decision algorithm as a Mermaid flowchart. */
 
 ---
 
@@ -167,6 +197,12 @@ Documents an exception chain in a structured table. */
 
 ---
 
+### `sayHeatmap`
+
+Renders a 2-D ASCII heatmap for matrix data. */
+
+---
+
 ### `sayHeroImage`
 
 Renders a hero image for blogs and slides (ignored by other formats).
@@ -192,6 +228,18 @@ Renders a raw Mermaid diagram as a fenced code block. */
 ### `sayOpProfile`
 
 Renders an op-profile table via Java 26 Code Reflection. */
+
+---
+
+### `sayParallelTrace`
+
+Renders a parallel execution trace as a Mermaid Gantt chart. */
+
+---
+
+### `sayPropertyBased`
+
+Documents a property-based invariant with verification across sample inputs. */
 
 ---
 
@@ -243,6 +291,12 @@ Renders speaker notes for slides (ignored by doc/blog render machines).
 
 ---
 
+### `sayStateMachine`
+
+Renders a finite state machine as a Mermaid stateDiagram-v2. */
+
+---
+
 ### `sayStringProfile`
 
 Analyzes a string and renders its structural profile using Java string APIs.
@@ -250,6 +304,12 @@ Analyzes a string and renders its structural profile using Java string APIs.
 | Parameter | Description |
 | --- | --- |
 | `text` | the string to profile |
+
+---
+
+### `sayTimeSeries`
+
+Documents a metric time-series with ASCII sparkline and trend summary. */
 
 ---
 

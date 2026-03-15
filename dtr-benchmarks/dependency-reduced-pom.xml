@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dtr</artifactId>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
-    <version>2026.1.0</version>
+    <version>2026.1.1-rc.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dtr-benchmarks</artifactId>

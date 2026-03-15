@@ -6,7 +6,7 @@ Abstract base class for render machines that convert test execution into documen
 
 ```java
 public abstract class RenderMachine implements RenderMachineCommands {
-    // setFileName, saySlideOnly, sayDocOnly, saySpeakerNote, sayHeroImage, sayTweetable, sayTldr, sayCallToAction, ... (31 total)
+    // setFileName, saySlideOnly, sayDocOnly, saySpeakerNote, sayHeroImage, sayTweetable, sayTldr, sayCallToAction, ... (41 total)
 }
 ```
 
@@ -20,9 +20,21 @@ Finishes documentation generation and writes output to disk.
 
 ---
 
+### `sayAgentLoop`
+
+AI agent loop sequence diagram — no-op in base class. */
+
+---
+
 ### `sayAnnotationProfile`
 
 Documents annotation profile — no-op in base class. */
+
+---
+
+### `sayApiDiff`
+
+Semantic API diff between two class versions — no-op in base class. */
 
 ---
 
@@ -82,6 +94,12 @@ Documents a method's structure using reflection/CodeReflection API. <p>Default n
 
 ---
 
+### `sayComplexityProfile`
+
+Empirical complexity profile — no-op in base class. */
+
+---
+
 ### `sayContractVerification`
 
 Contract verification — no-op in base class. */
@@ -91,6 +109,18 @@ Contract verification — no-op in base class. */
 ### `sayControlFlowGraph`
 
 Control flow graph — no-op in base class. */
+
+---
+
+### `sayDataFlow`
+
+Data transformation pipeline flowchart — no-op in base class. */
+
+---
+
+### `sayDecisionTree`
+
+Decision tree flowchart — no-op in base class. */
 
 ---
 
@@ -128,6 +158,12 @@ Exception chain documentation — no-op in base class. */
 
 ---
 
+### `sayHeatmap`
+
+2-D ASCII heatmap — no-op in base class. */
+
+---
+
 ### `sayHeroImage`
 
 Renders a hero image for blogs and slides (ignored by other formats).
@@ -153,6 +189,18 @@ Raw Mermaid diagram — no-op in base class. */
 ### `sayOpProfile`
 
 Op profile — no-op in base class. */
+
+---
+
+### `sayParallelTrace`
+
+Parallel execution Gantt trace — no-op in base class. */
+
+---
+
+### `sayPropertyBased`
+
+Property-based invariant documentation — no-op in base class. */
 
 ---
 
@@ -188,9 +236,21 @@ Renders speaker notes for slides (ignored by doc/blog render machines).
 
 ---
 
+### `sayStateMachine`
+
+State machine Mermaid stateDiagram-v2 — no-op in base class. */
+
+---
+
 ### `sayStringProfile`
 
 Documents string profile — no-op in base class. */
+
+---
+
+### `sayTimeSeries`
+
+Time-series sparkline + trend — no-op in base class. */
 
 ---
 
