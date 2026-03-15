@@ -23,3 +23,6 @@ doctester-core/docs/test/
 dtr-core/docs/test/io.github.seanchatmangpt.dtr.Stress*.md
 .claude/session-log.md
 .claude/dx-receipt.json
+
+# Observatory-generated codebase facts (regenerated on every dx run)
+docs/facts/*.json
