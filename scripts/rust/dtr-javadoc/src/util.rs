@@ -1,7 +1,7 @@
-/// Utility functions for Java source processing.
-///
-/// This module provides helpers for extracting package names, class names,
-/// cleaning comment text, and navigating tree-sitter ASTs.
+//! Utility functions for Java source processing.
+//!
+//! This module provides helpers for extracting package names, class names,
+//! cleaning comment text, and navigating tree-sitter ASTs.
 
 use std::path::Path;
 

@@ -1,7 +1,7 @@
-/// Markdown generation and file output.
-///
-/// This module handles rendering extracted documentation to Markdown format
-/// and writing API docs to disk.
+//! Markdown generation and file output.
+//!
+//! This module handles rendering extracted documentation to Markdown format
+//! and writing API docs to disk.
 
 use std::collections::HashMap;
 use std::fmt::Write as FmtWrite;

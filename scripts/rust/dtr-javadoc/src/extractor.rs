@@ -199,10 +199,10 @@ fn extract_method_docs(
         .unwrap_or(1);
 
     let mut cursor = tree_sitter::QueryCursor::new();
-    let qmatches = cursor.matches(&java_query, root, source);
+    let mut qmatches = cursor.matches(&java_query, root, source);
     let mut results = Vec::new();
 
-    for m in qmatches {
+    while let Some(m) = <_ as StreamingIterator>::next(&mut qmatches) {
         let doc_node = m.captures.iter().find(|c| c.index as usize == doc_idx);
         let name_node = m.captures.iter().find(|c| c.index as usize == name_idx);
 
@@ -238,9 +238,9 @@ fn extract_module_doc(
     let decl_idx = capture_names.iter().position(|n| *n == "decl").unwrap_or(2);
 
     let mut cursor = tree_sitter::QueryCursor::new();
-    let qmatches = cursor.matches(&java_query, root, source);
+    let mut qmatches = cursor.matches(&java_query, root, source);
 
-    for m in qmatches {
+    while let Some(m) = <_ as StreamingIterator>::next(&mut qmatches) {
         let doc_node = m.captures.iter().find(|c| c.index as usize == doc_idx);
         let decl_node = m.captures.iter().find(|c| c.index as usize == decl_idx);
 

@@ -1,8 +1,8 @@
-/// TPS Jidoka violation detection.
-///
-/// This module enforces the TPS rule "stop the line on every missing doc"
-/// by detecting public types and methods that lack an immediately preceding
-/// Javadoc comment.
+//! TPS Jidoka violation detection.
+//!
+//! This module enforces the TPS rule "stop the line on every missing doc"
+//! by detecting public types and methods that lack an immediately preceding
+//! Javadoc comment.
 
 use std::path::Path;
 use super::error::{DocViolation, ViolationKind};
