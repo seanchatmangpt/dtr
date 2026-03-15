@@ -11,7 +11,7 @@
 //! Run with: `cargo bench --release end_to_end -- --nocapture --verbose`
 
 use cct_scanner::Scanner;
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -187,7 +187,11 @@ fn bench_scan_100_files_warm(c: &mut Criterion) {
         .collect();
     let _ = scanner.scan_files_parallel(&warmup_files);
 
-    c.bench_function("e2e_scan_100_files_warm_cache", |b| {
+    let mut group = c.benchmark_group("e2e_100_files");
+    group.sample_size(25); // 25 samples for p50/p95/p99 on larger workload
+    group.measurement_time(Duration::from_secs(20));
+
+    group.bench_function("warm_cache", |b| {
         b.iter(|| {
             let all_files: Vec<PathBuf> = (0..100)
                 .map(|i| root.join(format!("Test{}.java", i)))
@@ -196,6 +200,7 @@ fn bench_scan_100_files_warm(c: &mut Criterion) {
         });
     });
 
+    group.finish();
     drop(temp_dir);
 }
 
@@ -216,7 +221,11 @@ fn bench_scan_1000_small_files(c: &mut Criterion) {
 
     let root = black_box(temp_dir.path().to_path_buf());
 
-    c.bench_function("e2e_scan_1000_files_many_small", |b| {
+    let mut group = c.benchmark_group("e2e_1000_files");
+    group.sample_size(12); // 12 samples for production-scale latency percentiles
+    group.measurement_time(Duration::from_secs(60));
+
+    group.bench_function("many_small", |b| {
         b.iter(|| {
             let all_files: Vec<PathBuf> = (0..1000)
                 .map(|i| root.join(format!("Test{}.java", i)))
@@ -225,6 +234,7 @@ fn bench_scan_1000_small_files(c: &mut Criterion) {
         });
     });
 
+    group.finish();
     drop(temp_dir);
 }
 
@@ -253,13 +263,18 @@ fn bench_scan_large_file_with_methods(c: &mut Criterion) {
 
     let root = black_box(temp_dir.path().to_path_buf());
 
-    c.bench_function("e2e_scan_large_file_500_methods", |b| {
+    let mut group = c.benchmark_group("e2e_large_file");
+    group.sample_size(60); // Higher sample count for single-file latency percentiles
+    group.measurement_time(Duration::from_secs(15));
+
+    group.bench_function("500_methods", |b| {
         b.iter(|| {
             let file_path = root.join("LargeClass.java");
             scanner.scan_file(&file_path).ok()
         });
     });
 
+    group.finish();
     drop(temp_dir);
 }
 
