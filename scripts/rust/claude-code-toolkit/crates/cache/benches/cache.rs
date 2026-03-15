@@ -1,139 +1,194 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use cct_cache::hasher::hash_method_body;
-use cct_cache::store::{Store, CachedScanResult};
-use dashmap::DashMap;
+use cct_cache::manager::CacheManager;
+use cct_cache::store::CachedScanResult;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tempfile::TempDir;
 
-fn bench_blake3_hash(c: &mut Criterion) {
-    // 1KB method body
-    let method_body = black_box(
+fn bench_blake3_hash_micro(c: &mut Criterion) {
+    let mut group = c.benchmark_group("blake3_hash");
+    group.measurement_time(std::time::Duration::from_secs(30));
+
+    // Small method (128 bytes) — target <5µs
+    let small_body = black_box(b"public void foo() { return null; }");
+    group.throughput(Throughput::Bytes(small_body.len() as u64));
+    group.bench_function("method_128b", |b| {
+        b.iter(|| hash_method_body(small_body))
+    });
+
+    // Medium method (512 bytes) — target <8µs
+    let medium_body = black_box(
         b"public void processData(String input) {
-            if (input == null) {
-                return null;
-            }
-            String mockData = \"mock\";
-            List<String> items = Collections.emptyList();
+            if (input == null) return null;
+            List<String> items = new ArrayList<>();
             for (String item : items) {
                 System.out.println(item);
             }
-            try {
-                // More code to reach 1KB
-                for (int i = 0; i < 100; i++) {
-                    System.out.println(i);
-                    System.out.println(i);
-                    System.out.println(i);
-                    System.out.println(i);
-                    System.out.println(i);
-                }
-            } catch (Exception e) {
-                System.out.println(e);
-            }
-        }".repeat(2).as_bytes()
+        }".repeat(4).as_bytes()
     );
-
-    c.bench_function("blake3_hash_1kb", |b| {
-        b.iter(|| {
-            hash_method_body(method_body)
-        });
+    group.throughput(Throughput::Bytes(medium_body.len() as u64));
+    group.bench_function("method_512b", |b| {
+        b.iter(|| hash_method_body(medium_body))
     });
+
+    // Large method (1KB+) — target <10µs
+    let large_body = black_box(
+        b"public void largeMethod() {
+            for (int i = 0; i < 1000; i++) {
+                System.out.println(i);
+            }
+        }".repeat(8).as_bytes()
+    );
+    group.throughput(Throughput::Bytes(large_body.len() as u64));
+    group.bench_function("method_1kb", |b| {
+        b.iter(|| hash_method_body(large_body))
+    });
+
+    group.finish();
 }
 
-fn bench_redb_insert(c: &mut Criterion) {
+fn bench_cache_manager_l1_hit(c: &mut Criterion) {
+    let mut group = c.benchmark_group("cache_l1_hit");
+    group.measurement_time(std::time::Duration::from_secs(30));
+
     let temp_dir = TempDir::new().expect("create temp dir");
-    let db_path = temp_dir.path().join("test.redb");
-    let store = Store::new(&db_path).expect("create store");
+    let db_path = temp_dir.path().join("l1_hit.db");
+    let manager = CacheManager::new(&db_path).expect("create manager");
 
-    let mut hash = [0u8; 32];
-    hash[0] = 1;
-
-    let result = black_box(CachedScanResult {
-        path: "src/test/Example.java".to_string(),
-        violation_count: 3,
+    let body = black_box(b"public void cached() { }");
+    let result = CachedScanResult {
+        path: "Test.java".to_string(),
+        violation_count: 0,
         cached_at: SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs(),
-    });
+    };
 
-    c.bench_function("redb_insert_scan_result", |b| {
-        let mut counter = 0;
-        b.iter(|| {
-            counter += 1;
-            let mut hash_mut = hash;
-            hash_mut[31] = (counter % 256) as u8;
-            store.insert(&hash_mut, &result).ok()
-        });
+    manager.insert(body, &result).expect("insert");
+
+    // L1 cache hit: target <2µs
+    group.throughput(Throughput::Bytes(body.len() as u64));
+    group.bench_function("l1_hit_memory_cache", |b| {
+        b.iter(|| manager.query(black_box(body)))
     });
 
     drop(temp_dir);
 }
 
-fn bench_redb_lookup(c: &mut Criterion) {
-    let temp_dir = TempDir::new().expect("create temp dir");
-    let db_path = temp_dir.path().join("test.redb");
-    let store = Store::new(&db_path).expect("create store");
+fn bench_cache_manager_l2_miss(c: &mut Criterion) {
+    let mut group = c.benchmark_group("cache_l2_miss");
+    group.measurement_time(std::time::Duration::from_secs(30));
 
-    // Pre-populate with some values
+    let temp_dir = TempDir::new().expect("create temp dir");
+    let db_path = temp_dir.path().join("l2_miss.db");
+    let manager = CacheManager::new(&db_path).expect("create manager");
+
+    // Pre-populate L2 with 100 entries
     for i in 0..100 {
-        let mut hash = [0u8; 32];
-        hash[0] = i as u8;
+        let body = format!("public void method{}() {{ }}", i).into_bytes();
         let result = CachedScanResult {
-            path: format!("src/test/Test{}.java", i),
-            violation_count: i,
+            path: format!("File{}.java", i),
+            violation_count: i % 5,
             cached_at: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
                 .as_secs(),
         };
-        store.insert(&hash, &result).ok();
+        manager.insert(&body, &result).expect("insert");
     }
 
-    let mut lookup_hash = [0u8; 32];
-    lookup_hash[0] = 42;
+    // Flush batch writes to ensure L2 persistence
+    manager.flush().expect("flush");
 
-    c.bench_function("redb_lookup_by_hash", |b| {
-        b.iter(|| {
-            store.query(&black_box(lookup_hash)).ok()
-        });
+    // Create new manager instance to clear L1 cache
+    let manager2 = CacheManager::new(&db_path).expect("create manager");
+    let lookup_body = b"public void method50() { }";
+
+    // L2 miss (promotes to L1): target <50µs
+    group.throughput(Throughput::Bytes(lookup_body.len() as u64));
+    group.bench_function("l2_miss_disk_promotion", |b| {
+        b.iter(|| manager2.query(black_box(lookup_body)))
     });
 
     drop(temp_dir);
 }
 
-fn bench_concurrent_dashmap(c: &mut Criterion) {
-    let map = Arc::new(DashMap::<[u8; 32], String>::new());
+fn bench_cache_manager_insert_l1(c: &mut Criterion) {
+    let mut group = c.benchmark_group("cache_insert");
+    group.measurement_time(std::time::Duration::from_secs(30));
 
-    c.bench_function("dashmap_8threads_concurrent_writes_100_ops", |b| {
+    let temp_dir = TempDir::new().expect("create temp dir");
+    let db_path = temp_dir.path().join("insert.db");
+    let manager = Arc::new(CacheManager::new(&db_path).expect("create manager"));
+
+    let result = CachedScanResult {
+        path: "Insert.java".to_string(),
+        violation_count: 1,
+        cached_at: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs(),
+    };
+
+    let mut counter = 0;
+
+    // Single-threaded L1 insert: target <5µs
+    group.throughput(Throughput::Bytes(32)); // hash size
+    group.bench_function("insert_l1_buffered", |b| {
         b.iter(|| {
-            let threads: Vec<_> = (0..8)
-                .map(|thread_id| {
-                    let map_clone = Arc::clone(&map);
-                    std::thread::spawn(move || {
-                        for i in 0..100 {
-                            let mut key = [0u8; 32];
-                            key[0] = thread_id as u8;
-                            key[1] = (i % 256) as u8;
-                            map_clone.insert(key, format!("value_{}", i));
-                        }
-                    })
-                })
-                .collect();
-
-            for t in threads {
-                t.join().ok();
-            }
-        });
+            counter += 1;
+            let body = format!("public void method{}() {{ }}", counter).into_bytes();
+            manager.insert(black_box(&body), &result)
+        })
     });
+
+    drop(temp_dir);
+}
+
+fn bench_concurrent_writes(c: &mut Criterion) {
+    let mut group = c.benchmark_group("concurrent_writes");
+    group.measurement_time(std::time::Duration::from_secs(30));
+
+    let temp_dir = TempDir::new().expect("create temp dir");
+    let db_path = temp_dir.path().join("concurrent.db");
+    let manager = Arc::new(CacheManager::new(&db_path).expect("create manager"));
+
+    let result = CachedScanResult {
+        path: "Concurrent.java".to_string(),
+        violation_count: 2,
+        cached_at: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs(),
+    };
+
+    // 32-thread concurrent writes: target <100µs total
+    group.throughput(Throughput::Elements(32 * 10)); // 32 threads × 10 ops each
+    group.bench_function("concurrent_32threads_10ops_each", |b| {
+        b.iter(|| {
+            use rayon::prelude::*;
+
+            (0..32).into_par_iter().for_each(|thread_id| {
+                for i in 0..10 {
+                    let body = format!("public void t{}m{}() {{ }}", thread_id, i).into_bytes();
+                    let _ = manager.insert(&body, &result);
+                }
+            });
+        })
+    });
+
+    drop(temp_dir);
 }
 
 criterion_group!(
     benches,
-    bench_blake3_hash,
-    bench_redb_insert,
-    bench_redb_lookup,
-    bench_concurrent_dashmap
+    bench_blake3_hash_micro,
+    bench_cache_manager_l1_hit,
+    bench_cache_manager_l2_miss,
+    bench_cache_manager_insert_l1,
+    bench_concurrent_writes
 );
 
 criterion_main!(benches);

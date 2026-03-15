@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use cct_scanner::{extract_methods, PatternSet, Scanner, walk_java_files};
 use std::fs;
 use std::path::Path;

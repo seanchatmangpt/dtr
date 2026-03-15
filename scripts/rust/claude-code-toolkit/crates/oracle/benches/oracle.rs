@@ -1,7 +1,8 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId, Throughput};
 use cct_oracle::{RiskScorer, NaiveBayesOracle, ViolationRecord};
 use chrono::Utc;
 use rayon::prelude::*;
+use std::time::Instant;
 
 fn create_test_violation(pattern: &str, days_ago: i64) -> ViolationRecord {
     let timestamp = Utc::now() - chrono::Duration::days(days_ago);
@@ -45,14 +46,50 @@ fn bench_score_batch_100(c: &mut Criterion) {
 
     let files = black_box(files);
 
-    c.bench_function("score_batch_100_files_parallel", |b| {
-        b.iter(|| {
-            files
-                .par_iter()
-                .map(|violations| scorer.score_risk(violations))
-                .collect::<Vec<_>>()
-        });
-    });
+    c.bench_with_input(
+        BenchmarkId::new("score_batch_parallel", "100_files"),
+        &100,
+        |b, &_n| {
+            b.iter(|| {
+                files
+                    .par_iter()
+                    .map(|violations| scorer.score_risk(violations))
+                    .collect::<Vec<_>>()
+            });
+        },
+    );
+}
+
+fn bench_score_batch_scaling(c: &mut Criterion) {
+    let scorer = RiskScorer::new();
+
+    for batch_size in [1, 10, 100].iter() {
+        let files: Vec<Vec<ViolationRecord>> = (0..*batch_size)
+            .map(|i| {
+                vec![
+                    create_test_violation("H_TODO", 5 + (i % 10) as i64),
+                    create_test_violation("H_STUB_NULL", 10 + (i % 20) as i64),
+                    create_test_violation("H_MOCK", 3 + (i % 5) as i64),
+                ]
+            })
+            .collect();
+
+        let files = black_box(files);
+        let scorer = black_box(&scorer);
+
+        c.bench_with_input(
+            BenchmarkId::new("score_batch_scaling", format!("{}_files", batch_size)),
+            batch_size,
+            |b, _| {
+                b.iter(|| {
+                    files
+                        .par_iter()
+                        .map(|violations| scorer.score_risk(violations))
+                        .collect::<Vec<_>>()
+                });
+            },
+        );
+    }
 }
 
 fn bench_model_training(c: &mut Criterion) {
@@ -106,6 +143,7 @@ criterion_group!(
     benches,
     bench_score_single_file,
     bench_score_batch_100,
+    bench_score_batch_scaling,
     bench_model_training,
     bench_predict_after_training
 );

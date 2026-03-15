@@ -11,12 +11,14 @@
 
 use aho_corasick::AhoCorasick;
 use anyhow::Result;
+use memchr::memchr;
 use memmap2::Mmap;
 use rayon::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor};
 
@@ -72,23 +74,39 @@ const METHOD_QUERY: &str = "(method_declaration
   name: (identifier) @method_name
   body: (block) @method_body)";
 
+/// Cached tree-sitter parser — reused across multiple files to reduce overhead.
+fn get_cached_parser() -> &'static std::sync::Mutex<Parser> {
+    static PARSER: OnceLock<std::sync::Mutex<Parser>> = OnceLock::new();
+    PARSER.get_or_init(|| {
+        let mut parser = Parser::new();
+        let language = tree_sitter_java::LANGUAGE;
+        parser
+            .set_language(&language.into())
+            .expect("tree-sitter-java language load");
+        std::sync::Mutex::new(parser)
+    })
+}
+
+/// Cached tree-sitter query for method extraction.
+fn get_cached_method_query() -> &'static Query {
+    static QUERY: OnceLock<Query> = OnceLock::new();
+    QUERY.get_or_init(|| {
+        let lang: tree_sitter::Language = tree_sitter_java::LANGUAGE.into();
+        Query::new(&lang, METHOD_QUERY).expect("tree-sitter method query")
+    })
+}
+
 /// Parse `source` with tree-sitter-java and return all method bodies found.
 ///
 /// Returns an empty vec on parse failure (e.g. fragment, not a full compilation unit).
 pub fn extract_methods(source: &[u8]) -> Vec<MethodBody> {
-    let mut parser = Parser::new();
-    let language = tree_sitter_java::LANGUAGE;
-    parser
-        .set_language(&language.into())
-        .expect("tree-sitter-java language load");
-
+    let mut parser = get_cached_parser().lock().unwrap();
     let tree = match parser.parse(source, None) {
         Some(t) => t,
         None => return vec![],
     };
 
-    let lang: tree_sitter::Language = language.into();
-    let query = Query::new(&lang, METHOD_QUERY).expect("tree-sitter method query");
+    let query = get_cached_method_query();
 
     let name_idx = query
         .capture_index_for_name("method_name")
@@ -156,27 +174,38 @@ struct RegexPattern {
 
 /// Compiled pattern set: aho-corasick for literals, regex for structural patterns.
 pub struct PatternSet {
-    todo_ac: AhoCorasick,
-    mock_ac: AhoCorasick,
-    structural: Vec<RegexPattern>,
+    todo_ac: &'static AhoCorasick,
+    mock_ac: &'static AhoCorasick,
+    structural: &'static [RegexPattern],
 }
 
 /// A single match hit from [`PatternSet::match_body`].
 #[derive(Debug)]
 pub struct PatternHit {
-    pub pattern: String,
+    pub pattern: &'static str,
     pub matched: String,
-    pub fix: String,
+    pub fix: &'static str,
     /// Line offset within the method body (1-based).
     pub body_line: usize,
 }
 
-impl PatternSet {
-    pub fn new() -> Self {
-        let todo_ac = AhoCorasick::new(TODO_LITERALS).expect("aho-corasick TODO build");
-        let mock_ac = AhoCorasick::new(MOCK_PREFIXES).expect("aho-corasick mock-prefix build");
+/// Cached aho-corasick TODO literals automaton.
+fn get_cached_todo_ac() -> &'static AhoCorasick {
+    static AC: OnceLock<AhoCorasick> = OnceLock::new();
+    AC.get_or_init(|| AhoCorasick::new(TODO_LITERALS).expect("aho-corasick TODO build"))
+}
 
-        let structural = vec![
+/// Cached aho-corasick MOCK prefix automaton.
+fn get_cached_mock_ac() -> &'static AhoCorasick {
+    static AC: OnceLock<AhoCorasick> = OnceLock::new();
+    AC.get_or_init(|| AhoCorasick::new(MOCK_PREFIXES).expect("aho-corasick mock-prefix build"))
+}
+
+/// Cached structural regex patterns.
+fn get_cached_structural_patterns() -> &'static [RegexPattern] {
+    static PATTERNS: OnceLock<Vec<RegexPattern>> = OnceLock::new();
+    PATTERNS.get_or_init(|| {
+        vec![
             RegexPattern {
                 name: "H_STUB_NULL",
                 re: Regex::new(r"\breturn\s+null\s*;").unwrap(),
@@ -216,26 +245,43 @@ impl PatternSet {
                 .unwrap(),
                 fix: "Throw UnsupportedOperationException instead of logging.",
             },
-        ];
+        ]
+    }).as_slice()
+}
 
+impl PatternSet {
+    pub fn new() -> Self {
         PatternSet {
-            todo_ac,
-            mock_ac,
-            structural,
+            todo_ac: get_cached_todo_ac(),
+            mock_ac: get_cached_mock_ac(),
+            structural: get_cached_structural_patterns(),
         }
+    }
+
+    /// Count newlines in a slice using memchr for speed.
+    #[inline]
+    fn count_newlines(data: &[u8]) -> usize {
+        let mut count = 0;
+        let mut offset = 0;
+        while let Some(pos) = memchr(b'\n', &data[offset..]) {
+            count += 1;
+            offset += pos + 1;
+        }
+        count
     }
 
     /// Scan a method body string and return all pattern hits.
     pub fn match_body(&self, body: &str) -> Vec<PatternHit> {
+        let body_bytes = body.as_bytes();
         let mut hits = Vec::new();
 
         // ── aho-corasick pass: H_TODO literals ────────────────────────────────
         for mat in self.todo_ac.find_iter(body) {
-            let body_line = body[..mat.start()].bytes().filter(|&b| b == b'\n').count() + 1;
+            let body_line = Self::count_newlines(&body_bytes[..mat.start()]) + 1;
             hits.push(PatternHit {
-                pattern: "H_TODO".to_owned(),
+                pattern: "H_TODO",
                 matched: body[mat.start()..mat.end()].to_owned(),
-                fix: "Implement the method body or remove the placeholder comment.".to_owned(),
+                fix: "Implement the method body or remove the placeholder comment.",
                 body_line,
             });
         }
@@ -245,27 +291,25 @@ impl PatternSet {
         for mat in self.mock_ac.find_iter(body) {
             let after_char = body[mat.end()..].chars().next();
             if after_char.map(|c| c.is_uppercase()).unwrap_or(false) {
-                let body_line =
-                    body[..mat.start()].bytes().filter(|&b| b == b'\n').count() + 1;
+                let body_line = Self::count_newlines(&body_bytes[..mat.start()]) + 1;
+                let end_pos = mat.end() + after_char.map(char::len_utf8).unwrap_or(0);
                 hits.push(PatternHit {
-                    pattern: "H_MOCK".to_owned(),
-                    matched: body[mat.start()
-                        ..mat.end() + after_char.map(char::len_utf8).unwrap_or(0)]
-                        .to_owned(),
-                    fix: "Use real objects instead of mocks in production code.".to_owned(),
+                    pattern: "H_MOCK",
+                    matched: body[mat.start()..end_pos].to_owned(),
+                    fix: "Use real objects instead of mocks in production code.",
                     body_line,
                 });
             }
         }
 
         // ── Regex pass: structural patterns ──────────────────────────────────
-        for pat in &self.structural {
+        for pat in self.structural {
             if let Some(m) = pat.re.find(body) {
-                let body_line = body[..m.start()].bytes().filter(|&b| b == b'\n').count() + 1;
+                let body_line = Self::count_newlines(&body_bytes[..m.start()]) + 1;
                 hits.push(PatternHit {
-                    pattern: pat.name.to_owned(),
+                    pattern: pat.name,
                     matched: m.as_str().to_owned(),
-                    fix: pat.fix.to_owned(),
+                    fix: pat.fix,
                     body_line,
                 });
             }
@@ -379,9 +423,9 @@ impl Scanner {
                     path: path.to_path_buf(),
                     method: method.name.clone(),
                     line: abs_line,
-                    pattern: hit.pattern,
-                    matched: hit.matched,
-                    fix: hit.fix,
+                    pattern: hit.pattern.to_string(),
+                    matched: hit.matched.clone(),
+                    fix: hit.fix.to_string(),
                 });
             }
         }
@@ -502,7 +546,7 @@ public class MockUserRepository {
         assert!(
             hits.iter().any(|h| h.pattern == "H_TODO"),
             "H_TODO should be detected in TODO comment, got: {:?}",
-            hits.iter().map(|h| &h.pattern).collect::<Vec<_>>()
+            hits.iter().map(|h| h.pattern).collect::<Vec<_>>()
         );
     }
 
@@ -525,7 +569,7 @@ public class MockUserRepository {
         assert!(
             hits.is_empty(),
             "clean body should produce no hits, got: {:?}",
-            hits.iter().map(|h| &h.pattern).collect::<Vec<_>>()
+            hits.iter().map(|h| h.pattern).collect::<Vec<_>>()
         );
     }
 

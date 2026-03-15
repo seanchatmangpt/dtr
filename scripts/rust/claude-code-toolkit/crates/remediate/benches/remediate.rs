@@ -1,6 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
 use cct_remediate::{Edit, RemediationPlan, apply_edits, atomic_write};
-use std::fs;
 use tempfile::TempDir;
 
 fn sample_java_source() -> Vec<u8> {
@@ -70,7 +69,6 @@ fn bench_apply_10_edits(c: &mut Criterion) {
 
 fn bench_atomic_write(c: &mut Criterion) {
     let temp_dir = TempDir::new().expect("create temp dir");
-    let file_path = temp_dir.path().join("output.java");
 
     // 100KB file
     let large_data = vec![b'x'; 100 * 1024];

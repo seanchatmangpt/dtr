@@ -204,7 +204,6 @@ dependencies = [
  "anyhow",
  "bincode",
  "blake3",
- "cct-scanner",
  "criterion",
  "dashmap",
  "rayon",

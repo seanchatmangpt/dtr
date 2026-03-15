@@ -50,6 +50,15 @@ impl RemediationPlan {
         }
     }
 
+    /// Create a remediation plan with pre-allocated capacity for N edits.
+    /// Reduces allocator pressure when the edit count is known in advance.
+    pub fn with_capacity(path: impl Into<std::path::PathBuf>, capacity: usize) -> Self {
+        RemediationPlan {
+            path: path.into(),
+            edits: Vec::with_capacity(capacity),
+        }
+    }
+
     /// Add an edit to the plan. Does not validate overlap; caller is responsible.
     pub fn add_edit(&mut self, edit: Edit) {
         self.edits.push(edit);

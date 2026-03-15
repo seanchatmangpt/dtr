@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "AST-based Java scanner using tree-sitter + aho-corasick for H-Guard pattern detection"
 
+[[bench]]
+name = "scanner"
+harness = false
+
 [dependencies]
 aho-corasick    = { workspace = true }
 regex           = { workspace = true }

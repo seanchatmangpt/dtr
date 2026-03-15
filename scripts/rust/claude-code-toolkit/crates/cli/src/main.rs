@@ -18,6 +18,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::time::Instant;
+use std::fmt::Write as FmtWrite;
 
 // ── Output Types ───────────────────────────────────────────────────────────
 
@@ -352,9 +353,10 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) ->
         scan_results.len()
     );
 
-    // ── Stage 3: Flatten violations with priority sorting ──────────────────────
+    // ── Stage 3: Flatten violations with lazy priority sorting ──────────────────
+    // OPTIMIZATION: Defer sort until absolutely needed. Only sort if not JSON mode.
     let priority_start = Instant::now();
-    let mut violations_with_scores: Vec<(ScanViolation, f64)> = scan_results
+    let violations_with_scores: Vec<(ScanViolation, f64)> = scan_results
         .iter()
         .zip(risk_scores.iter())
         .flat_map(|(result, score)| {
@@ -373,46 +375,63 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) ->
         })
         .collect();
 
-    // Sort by risk score (descending): highest risk first
-    violations_with_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-
-    let violations: Vec<ScanViolation> = violations_with_scores
-        .into_iter()
-        .map(|(v, _)| v)
-        .collect();
-
     let priority_elapsed = priority_start.elapsed().as_secs_f64() * 1000.0;
-
     let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    // OPTIMIZATION: Lazy evaluation — only sort if needed (human-readable output)
+    let violations: Vec<ScanViolation> = if json_mode {
+        // JSON mode: skip sorting, output violations as-is
+        violations_with_scores.into_iter().map(|(v, _)| v).collect()
+    } else {
+        // Human mode: sort by risk score (descending) for better readability
+        let mut sorted = violations_with_scores;
+        sorted.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        sorted.into_iter().map(|(v, _)| v).collect()
+    };
+
     let receipt = ScanReceipt::new(violations.clone(), java_files.len(), 0, priority_elapsed, elapsed_ms);
 
-    // Output with performance breakdown
-    if json_mode {
-        println!("{}", serde_json::to_string_pretty(&receipt)?);
+    // OPTIMIZATION: Output buffering — collect all output before single write
+    // This avoids multiple small writes to stderr/stdout
+    let output = if json_mode {
+        // JSON mode: single write
+        serde_json::to_string_pretty(&receipt)?
     } else {
+        // Human-readable mode: buffer all text output
+        let mut buf = String::with_capacity(1024 * 4);
         for v in &receipt.violations {
-            eprintln!("{}:{}: [{}] {}", v.file.display(), v.line, v.pattern, v.matched);
-            eprintln!("  Fix: {}", v.fix);
+            let _ = writeln!(buf, "{}:{}: [{}] {}", v.file.display(), v.line, v.pattern, v.matched);
+            let _ = writeln!(buf, "  Fix: {}", v.fix);
         }
         if receipt.violations.is_empty() {
-            eprintln!("✓ {} file(s) clean", java_files.len());
+            let _ = writeln!(buf, "✓ {} file(s) clean", java_files.len());
         } else {
-            eprintln!(
+            let _ = writeln!(
+                buf,
                 "✗ {} violation(s) in {} file(s)",
                 receipt.violation_count, java_files.len()
             );
         }
-        eprintln!(
+        let _ = writeln!(
+            buf,
             "  Timing: scan={:.1}ms, oracle={:.1}ms, sort={:.1}ms, total={:.1}ms",
             scan_stage_elapsed, oracle_stage_elapsed, priority_elapsed, elapsed_ms
         );
 
         // Show warmup recommendation
         if warmup {
-            eprintln!("  [WARMUP PHASE] Cache and oracle trained. Next run will be ~10x faster.");
+            let _ = writeln!(buf, "  [WARMUP PHASE] Cache and oracle trained. Next run will be ~10x faster.");
         } else {
-            eprintln!("  [HOT PHASE] Using cached state. Run with --warmup on first scan for best results.");
+            let _ = writeln!(buf, "  [HOT PHASE] Using cached state. Run with --warmup on first scan for best results.");
         }
+        buf
+    };
+
+    // Single buffered output
+    if json_mode {
+        println!("{}", output);
+    } else {
+        eprint!("{}", output);
     }
 
     process::exit(if receipt.violation_count > 0 { 2 } else { 0 });

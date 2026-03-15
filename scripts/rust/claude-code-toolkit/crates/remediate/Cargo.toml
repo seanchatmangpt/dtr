@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "Atomic remediation engine using crop rope byte-offsets, similar diffs, and tempfile atomic writes"
 
+[[bench]]
+name = "remediate"
+harness = false
+
 [dependencies]
 crop = "0.1"
 similar = "2"

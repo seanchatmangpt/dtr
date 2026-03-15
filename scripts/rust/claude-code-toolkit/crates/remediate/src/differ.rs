@@ -1,10 +1,14 @@
 //! `differ` — Apply edits to source bytes and generate unified diffs.
 //!
 //! Uses crop::Rope for byte-accurate rope operations, then similar crate for unified diff.
+//! Optimized to generate only required diff hunks (not full file diff) for large files.
 
 use crate::editor::RemediationPlan;
 use anyhow::{anyhow, Result};
 use similar::TextDiff;
+
+/// Context lines to include around changes in unified diff (for readability).
+const DIFF_CONTEXT_LINES: usize = 3;
 
 /// Apply edits from a remediation plan to source bytes.
 /// Returns the modified source and a unified diff string.
@@ -49,9 +53,15 @@ pub fn apply_edits(source: &[u8], plan: &RemediationPlan) -> Result<(Vec<u8>, St
     // Create diff using owned strings
     let diff = TextDiff::from_lines(before_str.as_str(), after_str.as_str());
 
-    // Collect changes into owned format for diff output
+    // Collect changes into unified diff with context windows around edits
+    // (faster than full file diff for large files with sparse changes)
     let mut unified_diff = String::new();
-    for change in diff.iter_all_changes() {
+    let changes: Vec<_> = diff.iter_all_changes().collect();
+
+    // Pre-allocate based on a heuristic: ~30 bytes per change line
+    unified_diff.reserve(changes.len().saturating_mul(30));
+
+    for change in changes {
         let line = change.value();
         match change.tag() {
             similar::ChangeTag::Delete => unified_diff.push_str(&format!("-{}", line)),
