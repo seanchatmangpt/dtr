@@ -155,6 +155,9 @@ pub fn gather_git_info(root: &Path) -> Result<Value> {
 }
 
 /// Gather Maven project metadata from pom.xml.
+///
+/// # Errors
+/// Returns an error if reading or parsing the pom.xml file fails, or if JSON serialization fails.
 pub fn gather_maven(root: &Path) -> Result<Value> {
     let pom = std::fs::read_to_string(root.join("pom.xml"))?;
 
@@ -193,6 +196,9 @@ pub fn gather_maven(root: &Path) -> Result<Value> {
 }
 
 /// Gather Cargo workspace metadata from root Cargo.toml.
+///
+/// # Errors
+/// Returns an error if reading the Cargo.toml file fails, or if JSON serialization fails.
 pub fn gather_cargo(root: &Path) -> Result<Value> {
     let cargo_toml = std::fs::read_to_string(root.join("Cargo.toml"))?;
 
@@ -224,6 +230,9 @@ pub fn gather_cargo(root: &Path) -> Result<Value> {
 }
 
 /// Gather npm package metadata from package.json.
+///
+/// # Errors
+/// Returns an error if reading or parsing the package.json file fails, or if JSON serialization fails.
 pub fn gather_npm(root: &Path) -> Result<Value> {
     let content = std::fs::read_to_string(root.join("package.json"))?;
     let pkg: Value = serde_json::from_str(&content)?;
@@ -238,6 +247,9 @@ pub fn gather_npm(root: &Path) -> Result<Value> {
 // ─── Writer ──────────────────────────────────────────────────────────────────
 
 /// Write fact files to `output_dir` as minified JSON.
+///
+/// # Errors
+/// Returns an error if creating the output directory, serializing JSON, or writing files fails.
 pub fn write_facts(output_dir: &Path, facts: &[(&str, Value)]) -> Result<()> {
     std::fs::create_dir_all(output_dir)?;
     for (name, value) in facts {
