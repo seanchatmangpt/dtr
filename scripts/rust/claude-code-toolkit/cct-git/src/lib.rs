@@ -49,6 +49,9 @@ impl GitState {
 }
 
 /// Collect the current git state from the given project root.
+///
+/// # Errors
+/// Returns an error if git operations fail (though non-git directories return a default state).
 pub fn git_state(root: &Path) -> Result<GitState> {
     if !is_git_repo(root) {
         return Ok(GitState::default());
