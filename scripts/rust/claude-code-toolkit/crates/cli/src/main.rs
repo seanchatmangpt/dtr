@@ -167,14 +167,14 @@ impl RemediationReceipt {
 }
 
 /// Remediation plan (read from JSON).
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct RemediationPlan {
     pub file: PathBuf,
     pub edits: Vec<RemediationEdit>,
 }
 
 /// Single edit in a remediation plan.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct RemediationEdit {
     pub pattern: String,
     pub line: usize,
