@@ -24,6 +24,33 @@
     <description>Core library for DTR: HTTP test browser and Markdown documentation generator for JUnit tests.</description>
     <packaging>jar</packaging>
 
+    <url>https://github.com/seanchatmangpt/dtr</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/seanchatmangpt/dtr</url>
+        <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
+        <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
+        <tag>v2026.2.0</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>seanchatmangpt</id>
+            <name>Sean Chatman</name>
+            <url>https://github.com/seanchatmangpt</url>
+            <organization>seanchatmangpt</organization>
+            <organizationUrl>https://github.com/seanchatmangpt</organizationUrl>
+        </developer>
+    </developers>
+
     <!-- Deploy to Maven Central via the Sonatype Central Publisher Portal -->
     <parent>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
@@ -72,6 +99,33 @@
                             </arguments>
                             <workingDirectory>${project.basedir}/..</workingDirectory>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Flatten POM to resolve property variables for Central Portal validation -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
