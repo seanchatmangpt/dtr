@@ -21,10 +21,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
@@ -32,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Slide deck render machine generating presentation decks.
+ * Slide deck render machine generating presentation slides.
  *
  * Converts test execution into presentation slides (Reveal.js HTML, etc.).
  * Maps say* methods to slide content: sayNextSection → new slide, say → bullets, etc.
@@ -208,146 +213,333 @@ public final class SlideRenderMachine extends RenderMachine {
 
     @Override
     public void sayCodeModel(Class<?> clazz) {
-        // Not applicable for slides - skipped
+        if (clazz == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Class: " + clazz.getSimpleName()));
+        currentBullets.add("Package: `" + clazz.getPackageName() + "`");
+        currentBullets.add("Type: " + (clazz.isInterface() ? "Interface" : clazz.isRecord() ? "Record" : "Class"));
+        flushCurrentSlide();
     }
 
     @Override
     public void sayCodeModel(java.lang.reflect.Method method) {
-        // Not applicable for slides - skipped
+        if (method == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Method: " + method.getName()));
+        currentBullets.add("Return: `" + method.getReturnType().getSimpleName() + "`");
+        currentBullets.add("Parameters: " + method.getParameterCount());
+        flushCurrentSlide();
     }
 
     @Override
     public void sayCallSite() {
-        // Not applicable for slides - skipped
+        var walker = java.lang.StackWalker.getInstance(java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        walker.walk(frames -> {
+            frames.skip(2).findFirst().ifPresent(frame -> {
+                currentBullets.add("📍 " + frame.getClassName() + "#" + frame.getMethodName());
+            });
+            return null;
+        });
     }
 
     @Override
     public void sayAnnotationProfile(Class<?> clazz) {
-        // Not applicable for slides - skipped
+        if (clazz == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Annotations: " + clazz.getSimpleName()));
+        for (var a : clazz.getAnnotations()) {
+            currentBullets.add("`@" + a.annotationType().getSimpleName() + "`");
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayClassHierarchy(Class<?> clazz) {
-        // Not applicable for slides - skipped
+        if (clazz == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Hierarchy: " + clazz.getSimpleName()));
+        List<String> hierarchy = new ArrayList<>();
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            hierarchy.add(current.getSimpleName());
+            current = current.getSuperclass();
+        }
+        currentBullets.add(String.join(" → ", hierarchy));
+        flushCurrentSlide();
     }
 
     @Override
     public void sayStringProfile(String text) {
-        // Not applicable for slides - skipped
+        if (text == null || text.isEmpty()) return;
+        currentBullets.add("String: " + text.length() + " chars, " + text.split("\\s+").length + " words");
     }
 
     @Override
     public void sayReflectiveDiff(Object before, Object after) {
-        // Not applicable for slides - skipped
+        if (before == null || after == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Diff"));
+        currentBullets.add("Comparing " + before.getClass().getSimpleName());
+        flushCurrentSlide();
     }
 
     @Override
     public void sayControlFlowGraph(java.lang.reflect.Method method) {
-        // Not applicable for slides - skipped
+        if (method == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("CFG: " + method.getName()));
+        currentBullets.add("Requires @CodeReflection annotation");
+        flushCurrentSlide();
     }
 
     @Override
     public void sayCallGraph(Class<?> clazz) {
-        // Not applicable for slides - skipped
+        if (clazz == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Call Graph: " + clazz.getSimpleName()));
+        currentBullets.add("Requires @CodeReflection annotation");
+        flushCurrentSlide();
     }
 
     @Override
     public void sayOpProfile(java.lang.reflect.Method method) {
-        // Not applicable for slides - skipped
+        if (method == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Op Profile: " + method.getName()));
+        currentBullets.add("Requires @CodeReflection annotation");
+        flushCurrentSlide();
     }
 
     @Override
     public void sayBenchmark(String label, Runnable task) {
-        // Not applicable for slides - skipped
+        sayBenchmark(label, task, 50, 500);
     }
 
     @Override
     public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
-        // Not applicable for slides - skipped
+        if (label == null || task == null) return;
+
+        // Warmup
+        for (int i = 0; i < warmupRounds; i++) {
+            task.run();
+        }
+
+        // Measure
+        long[] times = new long[measureRounds];
+        for (int i = 0; i < measureRounds; i++) {
+            long start = System.nanoTime();
+            task.run();
+            times[i] = System.nanoTime() - start;
+        }
+
+        Arrays.sort(times);
+        double avg = Arrays.stream(times).average().orElse(0);
+
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Benchmark: " + label));
+        currentBullets.add(String.format("Average: %.0f ns", avg));
+        currentBullets.add(String.format("P99: %d ns", times[(int)(measureRounds * 0.99)]));
+        flushCurrentSlide();
     }
 
     @Override
     public void sayMermaid(String diagramDsl) {
-        // Not applicable for slides - skipped
+        if (diagramDsl == null || diagramDsl.isEmpty()) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatCodeSlide(diagramDsl, "mermaid"));
     }
 
     @Override
     public void sayClassDiagram(Class<?>... classes) {
-        // Not applicable for slides - skipped
+        if (classes == null || classes.length == 0) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Class Diagram"));
+        for (Class<?> c : classes) {
+            if (c != null) currentBullets.add(c.getSimpleName());
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayDocCoverage(Class<?>... classes) {
-        // Not applicable for slides - skipped
+        if (classes == null || classes.length == 0) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Doc Coverage"));
+        for (Class<?> c : classes) {
+            if (c != null) currentBullets.add(c.getSimpleName());
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayEnvProfile() {
-        // Not applicable for slides - skipped
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Environment"));
+        currentBullets.add("Java: `" + System.getProperty("java.version") + "`");
+        currentBullets.add("OS: `" + System.getProperty("os.name") + "`");
+        currentBullets.add("Processors: `" + Runtime.getRuntime().availableProcessors() + "`");
+        flushCurrentSlide();
     }
 
     @Override
     public void sayRecordComponents(Class<? extends Record> recordClass) {
-        // Not applicable for slides - skipped
+        if (recordClass == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Record: " + recordClass.getSimpleName()));
+        var components = recordClass.getRecordComponents();
+        if (components != null) {
+            for (var comp : components) {
+                currentBullets.add(comp.getName() + ": `" + comp.getType().getSimpleName() + "`");
+            }
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayException(Throwable t) {
-        if (t != null) {
-            flushCurrentSlide();
-            slideBuffer.append(template.formatNoteSlide(
-                t.getClass().getSimpleName() + ": " + t.getMessage(), "error"));
-        }
+        if (t == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatNoteSlide(
+            t.getClass().getSimpleName() + ": " + t.getMessage(), "error"));
     }
 
     @Override
     public void sayAsciiChart(String label, double[] values, String[] xLabels) {
-        // Not applicable for slides - skipped
+        if (label == null || values == null || values.length == 0) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide(label));
+
+        double max = Arrays.stream(values).max().orElse(1.0);
+        if (max == 0) max = 1.0;
+        int barWidth = 15;
+
+        for (int i = 0; i < values.length; i++) {
+            String rowLabel = (xLabels != null && i < xLabels.length) ? xLabels[i] : ("" + i);
+            int filled = (int) Math.round((values[i] / max) * barWidth);
+            String bar = "█".repeat(filled) + "░".repeat(barWidth - filled);
+            currentBullets.add(rowLabel + ": " + bar);
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
-        // Not applicable for slides - skipped
+        if (contract == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Contract: " + contract.getSimpleName()));
+        if (implementations != null) {
+            for (Class<?> impl : implementations) {
+                if (impl != null) currentBullets.add(impl.getSimpleName());
+            }
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
-        // Not applicable for slides - skipped
+        if (clazz == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Evolution: " + clazz.getSimpleName()));
+        currentBullets.add("Git history requires primary markdown output");
+        flushCurrentSlide();
     }
 
     @Override
     public void sayJavadoc(java.lang.reflect.Method method) {
-        // Not applicable for slides - skipped
+        if (method == null) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Javadoc: " + method.getName()));
+        currentBullets.add("Javadoc requires primary markdown output");
+        flushCurrentSlide();
     }
 
     @Override
     public void saySystemProperties() {
-        // Not applicable for slides - skipped
+        saySystemProperties(null);
     }
 
     @Override
     public void saySystemProperties(String regexFilter) {
-        // Not applicable for slides - skipped
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("System Properties"));
+
+        var props = System.getProperties();
+        var entryStream = props.entrySet().stream();
+        if (regexFilter != null && !regexFilter.isBlank()) {
+            var pattern = java.util.regex.Pattern.compile(regexFilter);
+            var predicate = pattern.asPredicate();
+            entryStream = entryStream.filter(e -> predicate.test(e.getKey().toString()));
+        }
+
+        var sortedEntries = entryStream
+                .sorted(Comparator.comparing(e -> e.getKey().toString()))
+                .limit(10)
+                .toList();
+
+        for (var entry : sortedEntries) {
+            currentBullets.add("`" + entry.getKey() + "`");
+        }
+        if (props.size() > 10) {
+            currentBullets.add("... " + (props.size() - 10) + " more");
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void saySecurityManager() {
-        // Not applicable for slides - skipped
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Security"));
+
+        var sm = System.getSecurityManager();
+        currentBullets.add("Security Manager: " + (sm != null ? "Present" : "Absent"));
+
+        var providers = java.security.Security.getProviders();
+        for (int i = 0; i < Math.min(3, providers.length); i++) {
+            currentBullets.add(providers[i].getName());
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayModuleDependencies(Class<?>... classes) {
-        // Not applicable for slides - skipped
+        if (classes == null || classes.length == 0) return;
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Module Dependencies"));
+
+        Map<Module, List<Class<?>>> moduleMap = Arrays.stream(classes)
+                .filter(clazz -> clazz != null)
+                .collect(Collectors.groupingBy(Class::getModule, LinkedHashMap::new, Collectors.toList()));
+
+        for (var entry : moduleMap.entrySet()) {
+            Module module = entry.getKey();
+            String moduleName = module.isNamed() ? module.getName() : "Unnamed";
+            currentBullets.add(moduleName);
+        }
+        flushCurrentSlide();
     }
 
     @Override
     public void sayThreadDump() {
-        // Not applicable for slides - skipped
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Threads"));
+
+        var threadMXBean = ManagementFactory.getThreadMXBean();
+        currentBullets.add("Thread Count: " + threadMXBean.getThreadCount());
+        currentBullets.add("Daemon Threads: " + threadMXBean.getDaemonThreadCount());
+        currentBullets.add("Peak Threads: " + threadMXBean.getPeakThreadCount());
+        flushCurrentSlide();
     }
 
     @Override
     public void sayOperatingSystem() {
-        // Not applicable for slides - skipped
+        flushCurrentSlide();
+        slideBuffer.append(template.formatSectionSlide("Operating System"));
+
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        currentBullets.add("OS: " + osBean.getName() + " " + osBean.getVersion());
+        currentBullets.add("Arch: " + osBean.getArch());
+        currentBullets.add("Processors: " + osBean.getAvailableProcessors());
+        flushCurrentSlide();
     }
 
     @Override

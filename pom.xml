@@ -18,6 +18,7 @@ the specific language governing permissions and limitations under the License. -
     <description>A Java testing framework that generates HTML documentation while running JUnit tests.
         Provides a fluent API for making HTTP requests and documenting REST API responses.</description>
     <url>https://github.com/seanchatmangpt/dtr</url>
+    <inceptionYear>2013</inceptionYear>
 
     <modules>
         <module>dtr-core</module>
@@ -365,7 +366,7 @@ the specific language governing permissions and limitations under the License. -
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.6.0</version>
+                        <version>0.10.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>

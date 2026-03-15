@@ -165,12 +165,12 @@ Test execution metadata is captured and available for export:
 
 | Check | Result |
 | --- | --- |
-| Mutation score acceptable | `✓ 98.7% > 98.0% threshold` |
 | Unit tests pass | `✓ 1,243/1,247 (99.68%)` |
 | Property invariants hold | `✓ 50,000/50,000 (100%)` |
 | Fuzzing finds no crashes | `✓ 1,000,000/1,000,000 (100%)` |
 | Performance regression free | `✓ avg 142ms (within SLA)` |
 | Code coverage adequate | `✓ 100% branch coverage` |
+| Mutation score acceptable | `✓ 98.7% > 98.0% threshold` |
 
 ## Patent-Specific Testing Methodology
 
