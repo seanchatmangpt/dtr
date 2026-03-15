@@ -1,0 +1,11 @@
+[package]
+name = "cct-facts"
+version = "0.1.0"
+edition = "2021"
+description = "Generic codebase fact gatherer — compact JSON context for Claude Code agents"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+walkdir = { workspace = true }

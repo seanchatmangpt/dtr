@@ -26,7 +26,8 @@ CURRENT_VERSION := $(shell scripts/current-version.sh)
         build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs \
         build-guard guard-scan guard-scan-json guard-test clean-guard \
         build-observatory observe observe-test clean-observatory \
-        dx dx-fast
+        dx dx-fast \
+        build-cct cct-test clean-cct
 
 help:
 	@echo ""
@@ -215,4 +216,15 @@ dx: ## Run full five-phase validation pipeline (Ψ→H→Λ→Ω)
 
 dx-fast: ## Run dx.sh without mvnd verify (phases Ψ+H+Ω only — faster iteration)
 	bash scripts/dx.sh --skip-verify
+
+# ─── Claude Code Toolkit ──────────────────────────────────────────────────────
+
+build-cct: ## Build the cct Claude Code Toolkit binary
+	cd scripts/rust/claude-code-toolkit && cargo build --release
+
+cct-test: ## Run cct toolkit unit tests
+	cd scripts/rust/claude-code-toolkit && cargo test
+
+clean-cct: ## Clean cct toolkit build artifacts
+	cd scripts/rust/claude-code-toolkit && cargo clean
 

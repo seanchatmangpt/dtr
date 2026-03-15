@@ -1,0 +1,10 @@
+[package]
+name = "cct-git"
+version = "0.1.0"
+edition = "2021"
+description = "Git state utilities for Claude Code hooks and pipeline phases"
+
+[dependencies]
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

@@ -1,0 +1,35 @@
+# Rust honesty patterns — semantic lie enforcement
+# Blocks panic-as-stub and TODO macros in production Rust code.
+
+extensions = [".rs"]
+exclude_paths = ["/tests/", "_test.rs", "test_"]
+
+# ─── R_TODO ──────────────────────────────────────────────────────────────────
+[[patterns]]
+name = "R_TODO"
+regex = 'todo!\s*\('
+fix = "Implement the function body. Replace todo!() with real code."
+severity = "error"
+
+# ─── R_UNIMPLEMENTED ─────────────────────────────────────────────────────────
+[[patterns]]
+name = "R_UNIMPLEMENTED"
+regex = 'unimplemented!\s*\('
+fix = "Implement the function. Replace unimplemented!() with real code."
+severity = "error"
+
+# ─── R_UNWRAP_STUB ───────────────────────────────────────────────────────────
+# .unwrap() in non-test code = silent panic = H_SILENT equivalent
+[[patterns]]
+name = "R_UNWRAP"
+regex = '\.unwrap\s*\(\s*\)'
+fix = "Use ? operator, match, or .expect(\"descriptive message\") instead of .unwrap()."
+severity = "warn"
+
+# ─── R_PANIC ─────────────────────────────────────────────────────────────────
+# panic!() as a stub instead of returning an error
+[[patterns]]
+name = "R_PANIC"
+regex = 'panic!\s*\(\s*"[Nn]ot\s+impl'
+fix = "Return an Err(anyhow::anyhow!(\"Not implemented\")) instead of panicking."
+severity = "error"
