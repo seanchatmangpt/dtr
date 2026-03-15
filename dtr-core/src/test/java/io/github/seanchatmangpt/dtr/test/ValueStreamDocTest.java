@@ -386,12 +386,16 @@ public class ValueStreamDocTest extends DtrTest {
             "in microseconds (μs) to preserve meaningful precision."
         );
 
+        // ── Use an isolated RenderMachineImpl for all measurement loops ────────
+        // All warmup and benchmark iterations write into this throwaway instance
+        // so that the shared document (renderMachine) stays clean.
+        final RenderMachineImpl probe = new RenderMachineImpl();
+
         // ── Warm up the JIT before taking measurements ────────────────────────
-        // Discard first few iterations to avoid cold-start distortion
         for (int w = 0; w < 5; w++) {
-            renderMachine.sayNextSection("warmup-" + w);
-            renderMachine.sayCode("// warmup", "java");
-            renderMachine.say("warmup paragraph " + w);
+            probe.sayNextSection("warmup-" + w);
+            probe.sayCode("// warmup", "java");
+            probe.say("warmup paragraph " + w);
         }
 
         // ── Stage 0: sayNextSection invocation overhead ───────────────────────
@@ -399,7 +403,7 @@ public class ValueStreamDocTest extends DtrTest {
 
         long t0 = System.nanoTime();
         for (int i = 0; i < SAMPLE_ROUNDS; i++) {
-            renderMachine.sayNextSection("Measured section " + i);
+            probe.sayNextSection("Measured section " + i);
         }
         long sectionUs = (System.nanoTime() - t0) / SAMPLE_ROUNDS / 1_000L;
         // Clamp to at least 1μs to avoid a zero bar in the chart
@@ -408,7 +412,7 @@ public class ValueStreamDocTest extends DtrTest {
         // ── Stage 1: sayCode (single block) invocation overhead ───────────────
         long t1 = System.nanoTime();
         for (int i = 0; i < SAMPLE_ROUNDS; i++) {
-            renderMachine.sayCode("// block " + i, "java");
+            probe.sayCode("// block " + i, "java");
         }
         long codeUs = (System.nanoTime() - t1) / SAMPLE_ROUNDS / 1_000L;
         if (codeUs < 1) codeUs = 1;
@@ -416,24 +420,23 @@ public class ValueStreamDocTest extends DtrTest {
         // ── Stage 2: sayCode x3 (simulate three-block pattern in a1/a2) ───────
         long t2 = System.nanoTime();
         for (int i = 0; i < SAMPLE_ROUNDS; i++) {
-            renderMachine.sayCode("// block-a " + i, "java");
-            renderMachine.sayCode("// block-b " + i, "java");
-            renderMachine.sayCode("// block-c " + i, "java");
+            probe.sayCode("// block-a " + i, "java");
+            probe.sayCode("// block-b " + i, "java");
+            probe.sayCode("// block-c " + i, "java");
         }
         long code3Us = (System.nanoTime() - t2) / SAMPLE_ROUNDS / 1_000L;
         if (code3Us < 1) code3Us = 1;
 
         // ── Stage 3: sayBenchmark (50 warmup + 500 measure rounds) overhead ──
-        // We measure the overhead of the sayBenchmark *call* itself, not the task.
-        // A trivial no-op task isolates framework overhead from task cost.
+        // A no-op task isolates framework scheduling and timing cost from task cost.
         long t3 = System.nanoTime();
         for (int i = 0; i < 10; i++) {
-            renderMachine.sayBenchmark("noop-bench-" + i, () -> { /* intentional no-op */ }, 50, 500);
+            probe.sayBenchmark("noop-bench-" + i, () -> { /* intentional no-op */ }, 50, 500);
         }
         long benchUs = (System.nanoTime() - t3) / 10L / 1_000L;
         if (benchUs < 1) benchUs = 1;
 
-        // ── Stage 4: sayTable (8-column header + 8 data rows) overhead ────────
+        // ── Stage 4: sayTable (header row + 7 data rows) overhead ─────────────
         String[][] tableData = {
             {"Step", "Time (ms)", "Hours", "% of total"},
             {"Row1", "1000", "1h", "10%"},
@@ -446,17 +449,16 @@ public class ValueStreamDocTest extends DtrTest {
         };
         long t4 = System.nanoTime();
         for (int i = 0; i < SAMPLE_ROUNDS; i++) {
-            renderMachine.sayTable(tableData);
+            probe.sayTable(tableData);
         }
         long tableUs = (System.nanoTime() - t4) / SAMPLE_ROUNDS / 1_000L;
         if (tableUs < 1) tableUs = 1;
 
-        // ── Stage 5: finishAndWriteOut is called once per test class — measure
-        // a proxy: sayWarning + sayNote (the two most common "flush-adjacent" ops)
+        // ── Stage 5: proxy for flush — sayNote + sayWarning cost combined ─────
         long t5 = System.nanoTime();
         for (int i = 0; i < SAMPLE_ROUNDS; i++) {
-            renderMachine.sayNote("note " + i);
-            renderMachine.sayWarning("warning " + i);
+            probe.sayNote("note " + i);
+            probe.sayWarning("warning " + i);
         }
         long writeAdjacentUs = (System.nanoTime() - t5) / SAMPLE_ROUNDS / 1_000L;
         if (writeAdjacentUs < 1) writeAdjacentUs = 1;

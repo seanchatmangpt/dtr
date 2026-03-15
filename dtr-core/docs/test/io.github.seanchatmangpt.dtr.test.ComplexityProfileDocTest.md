@@ -36,9 +36,9 @@ sayComplexityProfile("ArrayList.contains() worst-case", factory, new int[]{100, 
 
 | n | Time (ns) | Ratio vs n[0] | Inferred |
 | --- | --- | --- | --- |
-| `100` | `5278` | `1.00x` | baseline |
-| `1000` | `32324` | `6.12x` | O(n) |
-| `10000` | `63621` | `12.05x` | O(n) |
+| `100` | `7119` | `1.00x` | baseline |
+| `1000` | `42053` | `5.91x` | O(n) |
+| `10000` | `67257` | `9.45x` | O(n) |
 
 | Property | Value |
 | --- | --- |
@@ -74,9 +74,9 @@ sayComplexityProfile("HashMap.get() amortised", factory, new int[]{1000, 10000, 
 
 | n | Time (ns) | Ratio vs n[0] | Inferred |
 | --- | --- | --- | --- |
-| `1000` | `91` | `1.00x` | baseline |
-| `10000` | `121` | `1.33x` | O(1) |
-| `100000` | `98` | `1.08x` | O(1) |
+| `1000` | `130` | `1.00x` | baseline |
+| `10000` | `128` | `0.98x` | O(1) |
+| `100000` | `132` | `1.02x` | O(1) |
 
 | Property | Value |
 | --- | --- |
@@ -125,9 +125,9 @@ sayComplexityProfile("Bubble sort worst-case", factory, new int[]{100, 500, 1000
 
 | n | Time (ns) | Ratio vs n[0] | Inferred |
 | --- | --- | --- | --- |
-| `100` | `161541` | `1.00x` | baseline |
-| `500` | `306055` | `1.89x` | O(n) |
-| `1000` | `344326` | `2.13x` | O(n) |
+| `100` | `176587` | `1.00x` | baseline |
+| `500` | `327723` | `1.86x` | O(n) |
+| `1000` | `388953` | `2.20x` | O(n) |
 
 | Property | Value |
 | --- | --- |

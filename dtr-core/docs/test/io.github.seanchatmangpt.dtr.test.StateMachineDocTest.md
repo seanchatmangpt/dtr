@@ -55,11 +55,11 @@ stateDiagram-v2
 
 | Check | Result |
 | --- | --- |
-| Transition count matches map size (5) | `✓ PASS` |
-| DELIVERED and CANCELLED are terminal states | `✓ PASS` |
 | sayStateMachine renders without throwing | `✓ PASS` |
 | LinkedHashMap preserves insertion order | `✓ PASS` |
 | PENDING is the declared initial state | `✓ PASS` |
+| Transition count matches map size (5) | `✓ PASS` |
+| DELIVERED and CANCELLED are terminal states | `✓ PASS` |
 
 ## sayStateMachine — Circuit Breaker Pattern
 
@@ -97,25 +97,25 @@ stateDiagram-v2
 
 | Key | Value |
 | --- | --- |
-| `State count` | `3 (CLOSED, OPEN, HALF_OPEN)` |
-| `Recovery trigger` | `HALF_OPEN:success → CLOSED` |
-| `Fail-fast state` | `OPEN — requests rejected without attempting call` |
-| `Re-trip trigger` | `HALF_OPEN:failure → OPEN` |
 | `Healthy steady state` | `CLOSED — all requests proceed normally` |
 | `Initial state` | `CLOSED (inferred from first map entry source)` |
 | `Transition count` | `4` |
 | `Probe state` | `HALF_OPEN — exactly one request allowed through` |
+| `State count` | `3 (CLOSED, OPEN, HALF_OPEN)` |
+| `Recovery trigger` | `HALF_OPEN:success → CLOSED` |
+| `Fail-fast state` | `OPEN — requests rejected without attempting call` |
+| `Re-trip trigger` | `HALF_OPEN:failure → OPEN` |
 
 > [!NOTE]
 > The timeout event on OPEN:timeout is typically a wall-clock timer (e.g. 30 seconds), not a request event. The map key still uses the same 'FROM:EVENT' format — the event name 'timeout' is a documentation label, not a Java enum. The transition semantics are determined by the implementation, not by sayStateMachine itself.
 
 | Check | Result |
 | --- | --- |
-| CLOSED:failure leads to OPEN | `✓ PASS` |
-| OPEN:timeout leads to HALF_OPEN | `✓ PASS` |
 | No direct CLOSED → HALF_OPEN path | `✓ PASS` |
 | HALF_OPEN:failure leads back to OPEN | `✓ PASS` |
 | HALF_OPEN:success leads to CLOSED | `✓ PASS` |
+| CLOSED:failure leads to OPEN | `✓ PASS` |
+| OPEN:timeout leads to HALF_OPEN | `✓ PASS` |
 
 ## sayStateMachine — Connection Pool State
 

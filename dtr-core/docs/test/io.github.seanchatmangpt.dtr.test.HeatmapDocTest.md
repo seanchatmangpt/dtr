@@ -46,7 +46,7 @@ The ░ ▒ ▓ █ encoding maps the normalised value range into four equal int
 | `Matrix dimensions` | `4 x 4` |
 | `Value range` | `[-1.0, 1.0]` |
 | `Intensity bands` | `░ ▒ ▓ █  (4 bands, normalised to matrix min/max)` |
-| `sayHeatmap() overhead` | `571279 ns (Java 25.0.2)` |
+| `sayHeatmap() overhead` | `542303 ns (Java 25.0.2)` |
 
 > [!NOTE]
 > A correlation coefficient is not a causal claim. The 0.85 latency-CPU figure means the two metrics move together, not that CPU causes latency. Documenting this matrix with sayHeatmap() rather than a prose description makes the claim measurable and falsifiable on the next test run.
@@ -189,7 +189,7 @@ The heatmap above exposes three actionable findings at a glance: (1) Payment has
 | `Matrix dimensions` | `3 rows x 4 columns` |
 | `Value range` | `[0, 100]  (coverage percentage)` |
 | `Intensity bands` | `░ ▒ ▓ █  (normalised to 28 min / 94 max)` |
-| `sayHeatmap() avg overhead` | `124091 ns avg (10 iterations, Java 25.0.2)` |
+| `sayHeatmap() avg overhead` | `179800 ns avg (10 iterations, Java 25.0.2)` |
 
 > [!NOTE]
 > Coverage percentages are computed by JaCoCo at the class-loader level and reported per-module. The values here are representative of a mid-size Java 26 microservice suite. In a real pipeline, they would be read from jacoco.xml and fed into sayHeatmap() as a double[][] derived at test time.
@@ -244,7 +244,7 @@ The heatmap surfaces three structural patterns without any prose annotation: (1)
 | `SLA threshold` | `500 ms (p99)` |
 | `SLA breaches in matrix` | `0` |
 | `Intensity bands` | `░ ▒ ▓ █  (normalised to 140 min / 470 max)` |
-| `sayHeatmap() overhead` | `207956 ns (Java 25.0.2)` |
+| `sayHeatmap() overhead` | `227483 ns (Java 25.0.2)` |
 
 > [!NOTE]
 > The ░ band (lowest intensity) maps to the fastest response times. In a latency matrix, low intensity is desirable — the visual grammar is inverted relative to coverage or correlation matrices where high intensity represents the strongest signal. Callers should label axes accordingly so readers know whether dark or light cells are the goal.

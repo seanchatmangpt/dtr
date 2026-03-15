@@ -42,8 +42,8 @@ sayApiDiff(UserServiceV1.class, UserServiceV2.class);
 
 | Method |
 | --- |
-| ✅ `void updateUser(String, String)` |
 | ✅ `String findUserByEmail(String)` |
+| ✅ `void updateUser(String, String)` |
 
 **Removed (1):**
 

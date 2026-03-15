@@ -76,7 +76,7 @@ sayAndon(
 | `NORMAL` | `6` |
 | `CAUTION` | `2` |
 | `STOPPED` | `0` |
-| `sayAndon() overhead` | `1609887 ns (Java 25.0.2)` |
+| `sayAndon() overhead` | `1577096 ns (Java 25.0.2)` |
 
 > [!NOTE]
 > CAUTION status means degraded performance (p99 > SLA) but no outage. On-call has been notified and is investigating. Traffic is still being served; no customer-facing error rate increase has been observed.
@@ -324,7 +324,7 @@ sayAndon(
 | `NORMAL` | `7` |
 | `CAUTION` | `0` |
 | `STOPPED` | `1` |
-| `sayAndon() avg overhead` | `35900 ns avg (10 iterations, Java 25.0.2)` |
+| `sayAndon() avg overhead` | `38323 ns avg (10 iterations, Java 25.0.2)` |
 
 > [!NOTE]
 > STOPPED does not mean FAILED. The Production Deploy station is waiting for explicit human approval. This is an intentional Poka-yoke: no automated deployment to production without a human pull on the cord. The station will return to NORMAL the moment a release engineer issues the approval via 'gh workflow run deploy.yml'.
@@ -395,7 +395,7 @@ sayAndon(
 | `STOPPED` | `1` |
 | `Read-pool capacity` | `Reduced: us-east-2 replica offline` |
 | `Disk evacuation` | `Active: eu-west-1 replica` |
-| `sayAndon() overhead` | `62941 ns (Java 25.0.2)` |
+| `sayAndon() overhead` | `33968 ns (Java 25.0.2)` |
 
 > [!NOTE]
 > db-replica-us-east-2 STOPPED: the node is alive and replicating — it was removed from the application read pool because lag exceeded the 60-second SLA. Reads that were routed to this replica are now served entirely by db-replica-us-east-1 and db-primary-us-east. The primary is absorbing additional read load until the replica catches up and is reinstated by the replication-lag runbook.

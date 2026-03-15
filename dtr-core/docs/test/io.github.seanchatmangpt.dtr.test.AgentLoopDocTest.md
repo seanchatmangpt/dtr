@@ -79,7 +79,7 @@ sequenceDiagram
 | observations | 4 | Inputs the agent perceived from the environment |
 | decisions | 4 | Actions the agent chose in response |
 | tools | 4 | External file-system operations the agent issued |
-| render time | 648157 ns | sayAgentLoop overhead on Java 25.0.2 |
+| render time | 856600 ns | sayAgentLoop overhead on Java 25.0.2 |
 
 > [!WARNING]
 > sayAgentLoop documents a single reasoning cycle. If the agent runs multiple iterations before completing its task, each iteration should be documented with a separate sayAgentLoop call, typically in a separate test method. Collapsing multiple cycles into one call loses the temporal structure that makes the sequence diagram useful.
@@ -224,12 +224,12 @@ sequenceDiagram
 
 | Key | Value |
 | --- | --- |
-| `Agent iteration` | `1 of 1 (single-shot evaluation cycle)` |
-| `Java version` | `25.0.2` |
 | `Observations count` | `3` |
-| `Decisions count` | `3` |
-| `sayAgentLoop render time` | `61102 ns` |
+| `Java version` | `25.0.2` |
+| `Agent iteration` | `1 of 1 (single-shot evaluation cycle)` |
 | `Tools count` | `3` |
+| `sayAgentLoop render time` | `34591 ns` |
+| `Decisions count` | `3` |
 
 > [!NOTE]
 > The CPU reading (78%) does not breach a hard threshold in this runbook — it is a leading indicator that informs the circuit breaker decision rather than triggering an independent response. This is an example of an observation that participates in a decision without being its sole cause. sayAgentLoop renders all observations and decisions as parallel sequences in the diagram; the causal relationships are expressed in the surrounding say() narrative, not in the list structure itself.

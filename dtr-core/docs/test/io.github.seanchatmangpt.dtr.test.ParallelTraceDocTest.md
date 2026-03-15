@@ -89,11 +89,11 @@ gantt
 
 | Key | Value |
 | --- | --- |
-| `Java version` | `Java 25.0.2` |
-| `CI budget` | `600ms — swarm completes within budget` |
 | `Peak concurrency` | `4 agents (T+150ms to T+200ms)` |
 | `Fully parallel window` | `T+0ms to T+50ms — 3 agents concurrent` |
 | `Total wall-clock time` | `560ms (Agent-Integration finishes last)` |
+| `Java version` | `Java 25.0.2` |
+| `CI budget` | `600ms — swarm completes within budget` |
 
 ## sayParallelTrace — Parallel HTTP Request-Processing Pipeline
 
@@ -153,11 +153,11 @@ gantt
 
 | Key | Value |
 | --- | --- |
+| `Parallel stages` | `AuthFilter + RateLimiter (T+0ms to T+15ms)` |
+| `Critical path` | `AuthFilter -> BusinessLogic -> DBQuery -> CacheWrite` |
 | `Java version` | `Java 25.0.2` |
 | `Total request latency (p50)` | `90ms (CacheWrite completes last)` |
 | `Virtual threads` | `One per stage — no OS thread blocking on I/O` |
-| `Parallel stages` | `AuthFilter + RateLimiter (T+0ms to T+15ms)` |
-| `Critical path` | `AuthFilter -> BusinessLogic -> DBQuery -> CacheWrite` |
 
 ## sayParallelTrace — CI Build Pipeline (Fork-Join)
 
@@ -218,12 +218,12 @@ gantt
 
 | Key | Value |
 | --- | --- |
+| `CI runner` | `GitHub Actions ubuntu-latest (4 vCPU)` |
+| `Total CI wall-clock time` | `620ms (Compile 200ms + IntegrationTests 420ms)` |
 | `Critical path` | `Compile -> IntegrationTests` |
 | `Fastest parallel phase` | `StaticAnalysis at 95ms` |
 | `Java version` | `Java 25.0.2` |
 | `Slowest parallel phase` | `IntegrationTests at 420ms — optimisation target` |
-| `CI runner` | `GitHub Actions ubuntu-latest (4 vCPU)` |
-| `Total CI wall-clock time` | `620ms (Compile 200ms + IntegrationTests 420ms)` |
 
 1. Compile must always run first — it is the only serial phase and produces the bytecode that all parallel phases consume.
 2. UnitTests, IntegrationTests, StaticAnalysis, and PackageBuild start at the same instant (T+200ms) because none depends on any other.

@@ -21,6 +21,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
@@ -418,38 +420,49 @@ public class PokaYokeDocTest extends DtrTest {
         );
 
         sayCode("""
-                // Poka-yoke #1: Null guard — verify by invoking say(null) and
-                // confirming no exception propagates to the calling test.
+                // Poka-yoke #1: Null guard — verify by invoking say(null) on an
+                // isolated RenderMachineImpl instance so any stored null never
+                // reaches the live document writer.  A real null guard would throw
+                // immediately; absence of a guard means no exception at call time
+                // (null is silently buffered and would crash the writer later).
+                RenderMachineImpl probe = new RenderMachineImpl();
                 boolean nullGuard;
                 try {
-                    say(null);          // DTR say() must absorb null gracefully
-                    nullGuard = true;   // no exception — null guard fired correctly
+                    probe.say(null);    // isolated call — live render machine is unaffected
+                    nullGuard = false;  // no exception — null was silently buffered (guard absent)
                 } catch (Exception e) {
-                    nullGuard = false;  // exception escaped — null guard is broken
+                    nullGuard = true;   // exception thrown at call time — null guard is present
                 }
                 """, "java");
 
         say(
-            "The remaining four Booleans reflect structural invariants of the DTR " +
-            "rendering pipeline that are verified by source review and architectural " +
-            "design rather than runtime checks. The one-file-per-class guarantee " +
-            "follows from the {@code @AfterAll} lifecycle: {@code renderMachine} is " +
-            "set to {@code null} in {@code finishDocTest()}, which prevents a stale " +
-            "instance from being reused by the next test class. UTF-8 enforcement is " +
-            "a property of the {@code BufferedWriter} constructor call in " +
-            "{@code finishAndWriteOut()}. The sanitized section-ID invariant is " +
-            "a property of the {@code sanitizeId()} utility method. Atomic write " +
-            "is guaranteed by try-with-resources, which closes the writer even when " +
-            "an exception is thrown mid-write."
+            "The probe approach above isolates the null-guard check from the live " +
+            "render machine: {@code probe.say(null)} cannot corrupt the document " +
+            "being written by this test. If {@code say()} has a null guard it will " +
+            "throw immediately and {@code nullGuard} will be {@code true}. If it " +
+            "does not, null is silently stored in the probe's buffer and " +
+            "{@code nullGuard} will be {@code false} — honest documentation of an " +
+            "absent guard that a future fix should address. The remaining four " +
+            "Booleans reflect structural invariants of the DTR rendering pipeline " +
+            "verified by source review: the one-file-per-class guarantee follows " +
+            "from {@code renderMachine = null} in {@code finishDocTest()}, UTF-8 " +
+            "enforcement follows from the {@code StandardCharsets.UTF_8} argument " +
+            "to {@code BufferedWriter}, idempotent section IDs follow from " +
+            "{@code sanitizeId()}, and atomic write follows from try-with-resources."
         );
 
-        // Poka-yoke #1: verify null guard by making a real say(null) call.
+        // Poka-yoke #1: verify null guard on an isolated RenderMachineImpl instance.
+        // Using a probe avoids storing null in the live render machine's buffer,
+        // which would cause the document writer to crash in @AfterAll.
+        // A genuine null guard throws at call time; absence of a guard silently
+        // buffers the null (no call-time exception, but writer fails later).
+        RenderMachineImpl probe = new RenderMachineImpl();
         boolean nullGuard;
         try {
-            say(null);
-            nullGuard = true;
+            probe.say(null);
+            nullGuard = false;  // no exception at call time — null silently buffered (guard absent)
         } catch (Exception e) {
-            nullGuard = false;
+            nullGuard = true;   // exception at call time — null guard is present
         }
 
         List<String> mistakeProofs = List.of(
@@ -491,14 +504,16 @@ public class PokaYokeDocTest extends DtrTest {
         });
 
         sayNote(
-            "This test is self-referential: {@code sayPokaYoke} is one of the " +
-            "say* methods subject to Poka-yoke #1 (null guard). The call " +
-            "{@code say(null)} earlier in this test therefore also validates that " +
-            "{@code sayPokaYoke} itself would survive a null operation argument — " +
-            "the null guard fires in the same {@code say()} delegation chain that " +
-            "every say* method goes through. The self-referential structure is not " +
-            "a gimmick: it proves that the null-guard Poka-yoke is applied " +
-            "uniformly across the entire say* API, not just to selected methods."
+            "The probe technique used for Poka-yoke #1 is itself a Poka-yoke: it " +
+            "prevents the null-guard verification from corrupting the live document. " +
+            "If the verification were performed on {@code this} (via {@code say(null)}), " +
+            "a missing null guard would store null in the document buffer and crash " +
+            "the writer in {@code @AfterAll} — contaminating the test report with " +
+            "an infrastructure error rather than a documentation signal. Using an " +
+            "isolated {@code RenderMachineImpl} probe separates the verification " +
+            "concern from the documentation concern: the probe absorbs the null, " +
+            "the live document remains clean, and the Boolean faithfully reports " +
+            "whether the guard is present."
         );
 
         sayWarning(
@@ -519,7 +534,7 @@ public class PokaYokeDocTest extends DtrTest {
         metrics.put("Mechanisms total",            String.valueOf(total));
         metrics.put("Verified",                    String.valueOf(verifiedCount));
         metrics.put("Effectiveness",               effectivenessPercent + "%");
-        metrics.put("Null guard (runtime check)",  nullGuard ? "confirmed (say(null) absorbed without exception)" : "BROKEN");
+        metrics.put("Null guard (runtime check)",  nullGuard ? "present (exception thrown at call time)" : "absent (null silently buffered — guard missing)");
         metrics.put("sayPokaYoke render time",     renderNs + " ns");
         metrics.put("Java version",                System.getProperty("java.version"));
         sayKeyValue(metrics);

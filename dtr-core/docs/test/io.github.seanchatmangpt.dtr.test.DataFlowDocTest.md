@@ -53,9 +53,9 @@ flowchart LR
 
 | Key | Value |
 | --- | --- |
-| `Sample input` | `" hello world "` |
+| `Pipeline overhead` | `2401889 ns` |
 | `Stages` | `Trim -> Uppercase -> Split` |
-| `Pipeline overhead` | `2528633 ns` |
+| `Sample input` | `" hello world "` |
 | `Java version` | `25.0.2` |
 
 > [!NOTE]
@@ -116,9 +116,9 @@ flowchart LR
 
 | Key | Value |
 | --- | --- |
-| `Sample input` | `21` |
+| `Pipeline overhead` | `143651 ns` |
 | `Expected output` | `Result: 42` |
-| `Pipeline overhead` | `105984 ns` |
+| `Sample input` | `21` |
 | `Java version` | `25.0.2` |
 
 > [!NOTE]
@@ -189,8 +189,8 @@ flowchart LR
 | --- | --- |
 | Input | `{type=order, id=42}` |
 | Validate | `{type=order, id=42}` |
-| Enrich | `{processedAt=1773570591787, correlationId=corr-42, id=42,...` |
-| Serialize | `{correlationId=corr-42, id=42, processedAt=1773570591787,...` |
+| Enrich | `{processedAt=1773573439475, correlationId=corr-42, id=42,...` |
+| Serialize | `{correlationId=corr-42, id=42, processedAt=1773573439475,...` |
 
 | Stage | Role | Input shape | Output shape |
 | --- | --- | --- | --- |
@@ -200,9 +200,9 @@ flowchart LR
 
 | Key | Value |
 | --- | --- |
-| `Sample input` | `{type=order, id=42}` |
+| `Pipeline overhead` | `467778 ns` |
 | `Java version` | `25.0.2` |
-| `Pipeline overhead` | `455477 ns` |
+| `Sample input` | `{type=order, id=42}` |
 
 > [!NOTE]
 > Keys are sorted with `TreeMap` inside the Serialize stage to produce deterministic documentation output across JVM runs. Without explicit ordering, `HashMap` iteration order is undefined in Java and the serialized string would differ between runs, undermining the reproducibility guarantee that DTR documentation provides.

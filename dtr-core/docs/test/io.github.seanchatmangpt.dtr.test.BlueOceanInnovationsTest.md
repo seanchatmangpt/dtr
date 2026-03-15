@@ -90,11 +90,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `227 ns` |
-| Min | `115 ns` |
-| Max | `39782 ns` |
-| p99 | `691 ns` |
-| Ops/sec | `4,405,286` |
+| Avg | `340 ns` |
+| Min | `160 ns` |
+| Max | `28127 ns` |
+| p99 | `1195 ns` |
+| Ops/sec | `2,941,176` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `25.0.2` |
@@ -105,11 +105,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `1136 ns` |
-| Min | `236 ns` |
-| Max | `103160 ns` |
-| p99 | `54116 ns` |
-| Ops/sec | `880,281` |
+| Avg | `648 ns` |
+| Min | `346 ns` |
+| Max | `21555 ns` |
+| p99 | `10275 ns` |
+| Ops/sec | `1,543,209` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `25.0.2` |
@@ -148,27 +148,27 @@ classDiagram
     RenderMachine <|-- RenderMachineImpl
     class RenderMachine {
         +finishAndWriteOut()
+        +sayActorMessages(String, List, List)
         +sayAgentLoop(String, List, List, List)
+        +sayAndon(String, List, List)
         +sayAnnotationProfile(Class)
         +sayApiDiff(Class, Class)
-        +sayAsciiChart(String, double[], String[])
-        +sayBenchmark(String, Runnable, int, int)
     }
     class RenderMachineImpl {
         +convertTextToId(String)
         +finishAndWriteOut()
         +say(String)
+        +sayActorMessages(String, List, List)
         +sayAgentLoop(String, List, List, List)
-        +sayAnnotationProfile(Class)
-        +sayApiDiff(Class, Class)
+        +sayAndon(String, List, List)
     }
     class RenderMachineCommands {
         +say(String)
+        +sayActorMessages(String, List, List)
         +sayAgentLoop(String, List, List, List)
+        +sayAndon(String, List, List)
         +sayAnnotationProfile(Class)
         +sayApiDiff(Class, Class)
-        +sayAsciiChart(String, double[], String[])
-        +sayAssertions(Map)
     }
 ```
 
@@ -209,7 +209,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `4022 MB` |
 | Timezone | `Etc/UTC` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-15T10:29:44.515874740Z` |
+| Timestamp | `2026-03-15T11:17:06.888147734Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -262,7 +262,9 @@ Documents interface contract coverage across implementation classes. For each pu
 | Method | RenderMachineImpl |
 | --- | --- |
 | `void say(String)` | ✅ direct |
+| `void sayActorMessages(String, List, List)` | ✅ direct |
 | `void sayAgentLoop(String, List, List, List)` | ✅ direct |
+| `void sayAndon(String, List, List)` | ✅ direct |
 | `void sayAnnotationProfile(Class)` | ✅ direct |
 | `void sayApiDiff(Class, Class)` | ✅ direct |
 | `void sayAsciiChart(String, double[], String[])` | ✅ direct |
@@ -271,8 +273,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayBenchmark(String, Runnable, int, int)` | ✅ direct |
 | `void sayCallGraph(Class)` | ✅ direct |
 | `void sayCallSite()` | ✅ direct |
-| `void sayCite(String)` | ✅ direct |
 | `void sayCite(String, String)` | ✅ direct |
+| `void sayCite(String)` | ✅ direct |
 | `void sayClassDiagram(Class[])` | ✅ direct |
 | `void sayClassHierarchy(Class)` | ✅ direct |
 | `void sayCode(String, String)` | ✅ direct |
@@ -287,17 +289,23 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayEnvProfile()` | ✅ direct |
 | `void sayEvolutionTimeline(Class, int)` | ✅ direct |
 | `void sayException(Throwable)` | ✅ direct |
+| `void sayFaultTolerance(String, List, List)` | ✅ direct |
 | `void sayFootnote(String)` | ✅ direct |
 | `void sayHeatmap(String, double[][], String[], String[])` | ✅ direct |
 | `void sayJavadoc(Method)` | ✅ direct |
 | `void sayJson(Object)` | ✅ direct |
+| `void sayKaizen(String, long[], long[], String)` | ✅ direct |
+| `void sayKanban(String, List, List, List)` | ✅ direct |
 | `void sayKeyValue(Map)` | ✅ direct |
 | `void sayMermaid(String)` | ✅ direct |
+| `void sayMuda(String, List, List)` | ✅ direct |
 | `void sayNextSection(String)` | ✅ direct |
 | `void sayNote(String)` | ✅ direct |
 | `void sayOpProfile(Method)` | ✅ direct |
 | `void sayOrderedList(List)` | ✅ direct |
 | `void sayParallelTrace(String, List, List)` | ✅ direct |
+| `void sayPatternMatch(String, List, List, List)` | ✅ direct |
+| `void sayPokaYoke(String, List, List)` | ✅ direct |
 | `void sayPropertyBased(String, Predicate, List)` | ✅ direct |
 | `void sayRaw(String)` | ✅ direct |
 | `void sayRecordComponents(Class)` | ✅ direct |
@@ -305,9 +313,11 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayReflectiveDiff(Object, Object)` | ✅ direct |
 | `void sayStateMachine(String, Map)` | ✅ direct |
 | `void sayStringProfile(String)` | ✅ direct |
+| `void saySupervisionTree(String, Map)` | ✅ direct |
 | `void sayTable(String[][])` | ✅ direct |
 | `void sayTimeSeries(String, long[], String[])` | ✅ direct |
 | `void sayUnorderedList(List)` | ✅ direct |
+| `void sayValueStream(String, List, long[])` | ✅ direct |
 | `void sayWarning(String)` | ✅ direct |
 
 **All contract methods covered across all implementations.**
@@ -323,6 +333,7 @@ Derives the git commit history for the source file of the given class using `git
 
 | Commit | Date | Author | Summary |
 | --- | --- | --- | --- |
+| `a76a8d7` | 2026-03-15 | Claude | feat: add 10 TPS/Armstrong blue ocean say* methods (wip — agents completing) |
 | `5268058` | 2026-03-15 | Claude | feat: 10 blue ocean innovations via 10-agent swarm (v2.7.0) |
 | `6a3ab6f` | 2026-03-14 | Claude | chore: eradicate all remaining Java 25 references (80/20 gaps) |
 | `2155e33` | 2026-03-14 | Claude | Close 80/20 gaps: LICENSE, String.formatted, license plugin, TODO |
@@ -332,7 +343,6 @@ Derives the git commit history for the source file of the given class using `git
 | `6279901` | 2026-03-14 | Claude | feat: add sayContractVerification and sayEvolutionTimeline + fix MultiRenderMachine |
 | `dd1c236` | 2026-03-14 | Claude | feat: DTR v2.6.0 Blue Ocean 80/20 innovation — 13 new say* methods |
 | `f8aa8d6` | 2026-03-12 | Claude | fix: close remaining audit gaps for Fortune 500 readiness |
-| `d749c3f` | 2026-03-12 | Claude | Remove all DocTester references; rename to DTR branding |
 
 *10 most recent commits touching `RenderMachineImpl.java`*
 
@@ -361,11 +371,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `91 ns` |
-| Min | `86 ns` |
-| Max | `380 ns` |
-| p99 | `380 ns` |
-| Ops/sec | `10,989,010` |
+| Avg | `115 ns` |
+| Min | `110 ns` |
+| Max | `402 ns` |
+| p99 | `402 ns` |
+| Ops/sec | `8,695,652` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `25.0.2` |
