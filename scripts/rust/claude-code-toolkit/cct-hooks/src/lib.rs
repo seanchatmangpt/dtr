@@ -48,6 +48,9 @@ pub struct PreToolUsePayload {
 
 impl PreToolUsePayload {
     /// Deserialize the hook payload from stdin.
+    ///
+    /// # Errors
+    /// Returns an error if reading from stdin fails (though parsing errors are treated as default payloads).
     pub fn from_stdin() -> Result<Self> {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf)?;
@@ -96,6 +99,9 @@ pub struct StopPayload {
 
 impl StopPayload {
     /// Deserialize the hook payload from stdin.
+    ///
+    /// # Errors
+    /// Returns an error if reading from stdin fails (though parsing errors are treated as default payloads).
     pub fn from_stdin() -> Result<Self> {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf)?;
@@ -116,6 +122,10 @@ pub struct SessionStartPayload {
 }
 
 impl SessionStartPayload {
+    /// Deserialize the hook payload from stdin.
+    ///
+    /// # Errors
+    /// Returns an error if reading from stdin fails (though parsing errors are treated as default payloads).
     pub fn from_stdin() -> Result<Self> {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf)?;
@@ -152,6 +162,9 @@ impl BlockDecision {
     }
 
     /// Print the decision JSON to stdout. Call before exit 0.
+    ///
+    /// # Panics
+    /// Panics if JSON serialization of the decision fails.
     pub fn emit(&self) {
         println!("{}", serde_json::to_string(self).unwrap());
     }

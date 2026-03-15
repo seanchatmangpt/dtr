@@ -172,6 +172,9 @@ impl Scanner {
     ///
     /// # Errors
     /// Returns an error if scanning any file fails.
+    ///
+    /// # Panics
+    /// Panics if comparing float scores fails (NaN comparison).
     pub fn scan_files_prioritized(&mut self, paths: &[&Path]) -> Result<Vec<Violation>> {
         // Simple prior: order by filename heuristic (longer paths often = deeper = more complex)
         // A real implementation would persist a violation-count histogram per path prefix.

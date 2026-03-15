@@ -99,6 +99,9 @@ fn get_cached_method_query() -> &'static Query {
 /// Parse `source` with tree-sitter-java and return all method bodies found.
 ///
 /// Returns an empty vec on parse failure (e.g. fragment, not a full compilation unit).
+///
+/// # Panics
+/// Panics if the parser lock is poisoned.
 pub fn extract_methods(source: &[u8]) -> Vec<MethodBody> {
     let mut parser = get_cached_parser().lock().unwrap();
     let tree = match parser.parse(source, None) {

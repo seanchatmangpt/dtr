@@ -165,6 +165,9 @@ pub mod store {
         ///
         /// # Errors
         /// Returns an error if serialization fails or if flushing the batch fails.
+        ///
+        /// # Panics
+        /// Panics if the write buffer lock is poisoned.
         #[inline(always)]
         pub fn insert(&self, hash: &[u8; 32], result: &CachedScanResult) -> Result<()> {
             // Encode once, reuse in both direct and batched paths
@@ -191,6 +194,9 @@ pub mod store {
         ///
         /// # Errors
         /// Returns an error if opening a write transaction, inserting records, or committing fails.
+        ///
+        /// # Panics
+        /// Panics if the write buffer lock is poisoned.
         pub fn flush_batch(&self) -> Result<()> {
             let mut buffer = self.write_buffer.lock().unwrap();
             if buffer.is_empty() {
@@ -545,6 +551,9 @@ pub mod manager {
         }
 
         /// Flush pending batch writes to disk (explicit control for testing/shutdown).
+        ///
+        /// # Errors
+        /// Returns an error if the underlying store flush operation fails.
         pub fn flush(&self) -> Result<()> {
             self.store.flush_batch()
         }
