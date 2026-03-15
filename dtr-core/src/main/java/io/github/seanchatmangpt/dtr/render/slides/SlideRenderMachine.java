@@ -207,6 +207,150 @@ public final class SlideRenderMachine extends RenderMachine {
     }
 
     @Override
+    public void sayCodeModel(Class<?> clazz) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayCallSite() {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayAnnotationProfile(Class<?> clazz) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayClassHierarchy(Class<?> clazz) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayStringProfile(String text) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayReflectiveDiff(Object before, Object after) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayCallGraph(Class<?> clazz) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayOpProfile(java.lang.reflect.Method method) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayMermaid(String diagramDsl) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayClassDiagram(Class<?>... classes) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayDocCoverage(Class<?>... classes) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayEnvProfile() {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayRecordComponents(Class<? extends Record> recordClass) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayException(Throwable t) {
+        if (t != null) {
+            flushCurrentSlide();
+            slideBuffer.append(template.formatNoteSlide(
+                t.getClass().getSimpleName() + ": " + t.getMessage(), "error"));
+        }
+    }
+
+    @Override
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayJavadoc(java.lang.reflect.Method method) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void saySystemProperties() {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void saySystemProperties(String regexFilter) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void saySecurityManager() {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayModuleDependencies(Class<?>... classes) {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayThreadDump() {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
+    public void sayOperatingSystem() {
+        // Not applicable for slides - skipped
+    }
+
+    @Override
     public void sayTweetable(String text) {
         // Ignored for slides
     }

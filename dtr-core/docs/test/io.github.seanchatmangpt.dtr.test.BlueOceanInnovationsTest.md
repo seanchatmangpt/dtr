@@ -15,6 +15,8 @@
 - [C4: sayContractVerification() — Interface Contract Coverage](#c4saycontractverificationinterfacecontractcoverage)
 - [C5: sayEvolutionTimeline() — Git Evolution Timeline](#c5sayevolutiontimelinegitevolutiontimeline)
 - [C5: sayAsciiChart() — Inline ASCII Bar Chart](#c5sayasciichartinlineasciibarchart)
+- [C7: saySecurityManager() — Java Security Environment](#c7saysecuritymanagerjavasecurityenvironment)
+- [C8: sayThreadDump() — JVM Thread State](#c8saythreaddumpjvmthreadstate)
 
 
 ## A1: sayCodeModel(Method) — Java 26 Code Reflection
@@ -90,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `155 ns` |
-| Min | `119 ns` |
-| Max | `6032 ns` |
-| p99 | `693 ns` |
-| Ops/sec | `6,451,612` |
+| Avg | `154 ns` |
+| Min | `42 ns` |
+| Max | `5834 ns` |
+| p99 | `625 ns` |
+| Ops/sec | `6,493,506` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -105,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `336 ns` |
-| Min | `232 ns` |
-| Max | `5251 ns` |
-| p99 | `4328 ns` |
-| Ops/sec | `2,976,190` |
+| Avg | `583 ns` |
+| Min | `250 ns` |
+| Max | `52041 ns` |
+| p99 | `2750 ns` |
+| Ops/sec | `1,715,265` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -204,12 +206,12 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | --- | --- |
 | Java Version | `26` |
 | Java Vendor | `Oracle Corporation` |
-| OS | `Linux amd64` |
-| Processors | `4` |
-| Max Heap | `4022 MB` |
-| Timezone | `Etc/UTC` |
+| OS | `Mac OS X aarch64` |
+| Processors | `16` |
+| Max Heap | `12288 MB` |
+| Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-14T20:24:47.621266495Z` |
+| Timestamp | `2026-03-15T03:25:33.371619Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -287,16 +289,22 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayJson(Object)` | ✅ direct |
 | `void sayKeyValue(Map)` | ✅ direct |
 | `void sayMermaid(String)` | ✅ direct |
+| `void sayModuleDependencies(Class[])` | ✅ direct |
 | `void sayNextSection(String)` | ✅ direct |
 | `void sayNote(String)` | ✅ direct |
 | `void sayOpProfile(Method)` | ✅ direct |
+| `void sayOperatingSystem()` | ✅ direct |
 | `void sayOrderedList(List)` | ✅ direct |
 | `void sayRaw(String)` | ✅ direct |
 | `void sayRecordComponents(Class)` | ✅ direct |
 | `void sayRef(DocTestRef)` | ✅ direct |
 | `void sayReflectiveDiff(Object, Object)` | ✅ direct |
+| `void saySecurityManager()` | ✅ direct |
 | `void sayStringProfile(String)` | ✅ direct |
+| `void saySystemProperties()` | ✅ direct |
+| `void saySystemProperties(String)` | ✅ direct |
 | `void sayTable(String[][])` | ✅ direct |
+| `void sayThreadDump()` | ✅ direct |
 | `void sayUnorderedList(List)` | ✅ direct |
 | `void sayWarning(String)` | ✅ direct |
 
@@ -313,6 +321,8 @@ Derives the git commit history for the source file of the given class using `git
 
 | Commit | Date | Author | Summary |
 | --- | --- | --- | --- |
+| `6a3ab6f` | 2026-03-14 | Claude | chore: eradicate all remaining Java 25 references (80/20 gaps) |
+| `2155e33` | 2026-03-14 | Claude | Close 80/20 gaps: LICENSE, String.formatted, license plugin, TODO |
 | `e6d8943` | 2026-03-14 | Claude | feat: TPS enforcement — fail build on missing Javadoc, generate docs/api/ |
 | `45f1390` | 2026-03-14 | Claude | feat: add dtr-javadoc Rust extraction tool and sayJavadoc API |
 | `4fd505d` | 2026-03-14 | Claude | refactor: strip HTTP methods from DtrTest, DtrContext, DtrExtension, MultiRenderMachine, RenderMachineImpl |
@@ -321,8 +331,6 @@ Derives the git commit history for the source file of the given class using `git
 | `f8aa8d6` | 2026-03-12 | Claude | fix: close remaining audit gaps for Fortune 500 readiness |
 | `d749c3f` | 2026-03-12 | Claude | Remove all DocTester references; rename to DTR branding |
 | `bab8177` | 2026-03-12 | Claude | Complete doctester → dtr rename (Document Testing Runtime) |
-| `d4be652` | 2026-03-12 | Claude | docs: Enhance documentation with javadoc, guides, and release notes |
-| `24a83e6` | 2026-03-12 | Claude | fix: Resolve sealed class violations and Java 25 API compatibility issues |
 
 *10 most recent commits touching `RenderMachineImpl.java`*
 
@@ -351,14 +359,148 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `109 ns` |
-| Min | `88 ns` |
-| Max | `1965 ns` |
-| p99 | `1965 ns` |
-| Ops/sec | `9,174,311` |
+| Avg | `84 ns` |
+| Min | `41 ns` |
+| Max | `333 ns` |
+| p99 | `333 ns` |
+| Ops/sec | `11,904,761` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
+
+## C7: saySecurityManager() — Java Security Environment
+
+Documents the complete Java security environment — security manager presence, installed security providers, available cryptographic algorithms, and SecureRandom implementation details. Essential for security-sensitive code documentation and FIPS compliance verification.
+
+**Example usage:**
+
+```java
+// One-liner to document security environment
+saySecurityManager();
+
+// Renders:
+// 1. Security Manager Status (present/absent)
+// 2. Security Providers (name, version, info)
+// 3. Available Cryptographic Algorithms
+// 4. SecureRandom implementation details
+```
+
+**Current JVM security landscape:**
+
+### Security Manager
+
+| Property | Status |
+| --- | --- |
+| Security Manager | `ABSENT` |
+| Class | — |
+
+### Security Providers
+
+| Provider | Version | Info |
+| --- | --- | --- |
+| `SUN` | `26.0` | SUN (DSA key/parameter generation; DSA signing; SHA-1, MD5 digests; SecureRandom; X.509 certificates; PKCS12, JKS & DKS keystores; PKIX CertPathValidator; PKIX CertPathBuilder; LDAP, Collection CertStores, JavaPolicy Policy; JavaLoginConfig Configuration) |
+| `SunRsaSign` | `26.0` | Sun RSA signature provider |
+| `SunEC` | `26.0` | Sun Elliptic Curve provider |
+| `SunJSSE` | `26.0` | Sun JSSE provider(PKCS12, SunX509/PKIX key/trust factories, SSLv3/TLSv1/TLSv1.1/TLSv1.2/TLSv1.3/DTLSv1.0/DTLSv1.2) |
+| `SunJCE` | `26.0` | SunJCE Provider (implements RSA, DES, Triple DES, AES, Blowfish, ARCFOUR, RC2, PBE, Diffie-Hellman, HMAC, ChaCha20, DHKEM, ML-KEM, and HKDF) |
+| `SunJGSS` | `26.0` | Sun (Kerberos v5, SPNEGO) |
+| `SunSASL` | `26.0` | Sun SASL provider(implements client mechanisms for: DIGEST-MD5, EXTERNAL, PLAIN, CRAM-MD5, NTLM; server mechanisms for: DIGEST-MD5, CRAM-MD5, NTLM) |
+| `XMLDSig` | `26.0` | XMLDSig (DOM XMLSignatureFactory; DOM KeyInfoFactory; C14N 1.0, C14N 1.1, Exclusive C14N, Base64, Enveloped, XPath, XPath2, XSLT TransformServices) |
+| `SunPCSC` | `26.0` | Sun PC/SC provider |
+| `JdkLDAP` | `26.0` | JdkLDAP Provider (implements LDAP CertStore) |
+| `JdkSASL` | `26.0` | JDK SASL provider(implements client and server mechanisms for GSSAPI) |
+| `Apple` | `26.0` | Apple Provider |
+| `SunPKCS11` | `26.0` | Unconfigured and unusable PKCS11 provider |
+
+### Available Cryptographic Algorithms
+
+**KeyPairGenerator:**
+`RSA`, `X25519`, `DIFFIEHELLMAN`, `ML-DSA-65`, `ML-DSA-87`, `X448`, `ML-DSA-44`, `ED25519`, `ML-KEM`, `ML-DSA`, `ML-KEM-512`, `ML-KEM-768`, `ML-KEM-1024`, `DSA`, `ED448`, `RSASSA-PSS`, `XDH`, `EC`, `EDDSA`
+
+**Cipher:**
+`AES_192/GCM/NOPADDING`, `AES_256/CBC/NOPADDING`, `AES_128/KW/NOPADDING`, `AES_128/CBC/NOPADDING`, `AES_256/KW/NOPADDING`, `PBEWITHMD5ANDDES`, `PBEWITHHMACSHA256ANDAES_256`, `PBEWITHHMACSHA512/256ANDAES_256`, `PBEWITHSHA1ANDRC4_128`, `AES_192/OFB/NOPADDING`, `DESEDEWRAP`, `RC2`, `PBEWITHSHA1ANDRC4_40`, `RSA`, `AES_192/CFB/NOPADDING`, `AES_192/KW/PKCS5PADDING`, `AES_256/KWP/NOPADDING`, `AES_128/CFB/NOPADDING`, `DESEDE`, `BLOWFISH` ... (39 more)
+
+**MessageDigest:**
+`SHA3-512`, `SHA-1`, `SHA-384`, `SHAKE128-256`, `SHAKE256-512`, `SHA3-384`, `SHA-224`, `SHA-512/256`, `SHA-256`, `MD2`, `SHA-512/224`, `SHA3-256`, `SHA-512`, `SHA3-224`, `MD5`
+
+### SecureRandom
+
+| Property | Value |
+| --- | --- |
+| Strong Algorithm | `NativePRNGBlocking` |
+| Provider | `SUN` |
+| Default Algorithm | `NativePRNG` |
+| Provider | `SUN` |
+
+> [!NOTE]
+> Security providers vary by JVM vendor and version. Common providers include SUN, SunRsaSign, SunJCE, SunJSSE, and SunPKCS11. The algorithm list shows what crypto operations are available without external libraries.
+
+**Use cases:**
+
+- Documenting FIPS 140-2 compliance crypto providers
+- Verifying security manager is installed in sandboxed environments
+- Checking available algorithms for encryption/hashing operations
+- Auditing JVM security configuration for production deployments
+
+## C8: sayThreadDump() — JVM Thread State
+
+Documents the current JVM thread state with aggregate metrics and per-thread details. Uses {@link java.lang.management.ManagementFactory#getThreadMXBean()} to introspect the JVM's thread state without external tools. Invaluable for concurrency behavior documentation and thread pool sizing decisions.
+
+**Example usage:**
+
+```java
+// One-liner to document thread state
+sayThreadDump();
+
+// Renders:
+// 1. Thread Summary (thread count, daemon count, peak count, total started)
+// 2. Thread Details (ID, name, state, alive, interrupted for each thread)
+```
+
+**Current JVM thread state:**
+
+### Thread Summary
+
+| Metric | Value |
+| --- | --- |
+| Thread Count | `16` |
+| Daemon Thread Count | `15` |
+| Peak Thread Count | `16` |
+| Total Started Thread Count | `16` |
+
+### Thread Details
+
+| Thread ID | Name | State | Alive | Interrupted |
+| --- | --- | --- | --- | --- |
+| `3` | `main` | `RUNNABLE` | `true` | `N/A` |
+| `15` | `Reference Handler` | `RUNNABLE` | `true` | `N/A` |
+| `16` | `Finalizer` | `WAITING` | `true` | `N/A` |
+| `17` | `Signal Dispatcher` | `RUNNABLE` | `true` | `N/A` |
+| `32` | `Notification Thread` | `RUNNABLE` | `true` | `N/A` |
+| `33` | `Common-Cleaner` | `TIMED_WAITING` | `true` | `N/A` |
+| `34` | `surefire-forkedjvm-stream-flusher` | `TIMED_WAITING` | `true` | `N/A` |
+| `36` | `surefire-forkedjvm-command-thread` | `RUNNABLE` | `true` | `N/A` |
+| `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
+| `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
+| `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
+| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
+| `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
+| `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
+| `60` | `ForkJoinPool-1-worker-6` | `TIMED_WAITING` | `true` | `N/A` |
+| `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
+
+*16 live threads*
+
+> [!NOTE]
+> On Java 21+, virtual threads appear alongside platform threads. Thread states include NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, and TERMINATED. The peak thread count shows the maximum concurrent threads since JVM start.
+
+**Use cases:**
+
+- Documenting thread pool sizing decisions (e.g., ForkJoinPool.commonPool)
+- Debugging deadlocks and thread starvation issues
+- Verifying virtual thread usage on Java 21+
+- Auditing thread leaks in long-running applications
+- Showing concurrency behavior in parallel stream documentation
 
 ---
 *Generated by [DTR](http://www.dtr.org)*

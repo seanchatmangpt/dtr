@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 
 import io.github.seanchatmangpt.dtr.benchmark.BenchmarkRunner;
 import io.github.seanchatmangpt.dtr.contract.ContractVerifier;
@@ -936,6 +938,86 @@ public final class RenderMachineImpl extends RenderMachine {
     }
 
     @Override
+    public void sayOperatingSystem() {
+        markdownDocument.add("");
+        markdownDocument.add("### Operating System Metrics");
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+
+        // Get the standard OperatingSystemMXBean
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+
+        // Basic metrics (always available)
+        String osName = osBean.getName();
+        String osVersion = osBean.getVersion();
+        String osArch = osBean.getArch();
+        int availableProcessors = osBean.getAvailableProcessors();
+        double systemLoadAverage = osBean.getSystemLoadAverage();
+
+        markdownDocument.add("| OS Name | `" + osName + "` |");
+        markdownDocument.add("| OS Version | `" + osVersion + "` |");
+        markdownDocument.add("| OS Architecture | `" + osArch + "` |");
+        markdownDocument.add("| Available Processors | `" + availableProcessors + "` |");
+
+        // System load average (may be negative if not supported)
+        if (systemLoadAverage >= 0) {
+            markdownDocument.add("| System Load Average | `" + String.format("%.2f", systemLoadAverage) + "` |");
+        } else {
+            markdownDocument.add("| System Load Average | `N/A (not supported on this platform)` |");
+        }
+
+        // Try to get extended metrics from com.sun.management.OperatingSystemMXBean
+        try {
+            var sunOsBean = (com.sun.management.OperatingSystemMXBean) osBean;
+
+            // CPU metrics
+            double processCpuLoad = sunOsBean.getProcessCpuLoad() * 100;
+            double systemCpuLoad = sunOsBean.getCpuLoad() * 100;
+
+            if (processCpuLoad >= 0) {
+                markdownDocument.add("| Process CPU Load | `" + String.format("%.1f%%", processCpuLoad) + "` |");
+            } else {
+                markdownDocument.add("| Process CPU Load | `N/A (not available)` |");
+            }
+
+            if (systemCpuLoad >= 0) {
+                markdownDocument.add("| System CPU Load | `" + String.format("%.1f%%", systemCpuLoad) + "` |");
+            } else {
+                markdownDocument.add("| System CPU Load | `N/A (not available)` |");
+            }
+
+            // Memory metrics (convert bytes to MB)
+            long totalPhysicalMemory = sunOsBean.getTotalPhysicalMemorySize() / (1024 * 1024);
+            long freePhysicalMemory = sunOsBean.getFreePhysicalMemorySize() / (1024 * 1024);
+            long usedPhysicalMemory = totalPhysicalMemory - freePhysicalMemory;
+
+            long totalSwapSpace = sunOsBean.getTotalSwapSpaceSize() / (1024 * 1024);
+            long freeSwapSpace = sunOsBean.getFreeSwapSpaceSize() / (1024 * 1024);
+            long usedSwapSpace = totalSwapSpace - freeSwapSpace;
+
+            markdownDocument.add("| Total Physical Memory | `" + totalPhysicalMemory + " MB` |");
+            markdownDocument.add("| Free Physical Memory | `" + freePhysicalMemory + " MB` |");
+            markdownDocument.add("| Used Physical Memory | `" + usedPhysicalMemory + " MB` |");
+            markdownDocument.add("| Total Swap Space | `" + totalSwapSpace + " MB` |");
+            markdownDocument.add("| Free Swap Space | `" + freeSwapSpace + " MB` |");
+            markdownDocument.add("| Used Swap Space | `" + usedSwapSpace + " MB` |");
+
+        } catch (ClassCastException e) {
+            // com.sun.management.OperatingSystemMXBean not available
+            // Fallback: render basic metrics only
+            markdownDocument.add("| Process CPU Load | `N/A (extended metrics unavailable)` |");
+            markdownDocument.add("| System CPU Load | `N/A (extended metrics unavailable)` |");
+            markdownDocument.add("| Total Physical Memory | `N/A (extended metrics unavailable)` |");
+            markdownDocument.add("| Free Physical Memory | `N/A (extended metrics unavailable)` |");
+            markdownDocument.add("| Used Physical Memory | `N/A (extended metrics unavailable)` |");
+            markdownDocument.add("| Total Swap Space | `N/A (extended metrics unavailable)` |");
+            markdownDocument.add("| Free Swap Space | `N/A (extended metrics unavailable)` |");
+            markdownDocument.add("| Used Swap Space | `N/A (extended metrics unavailable)` |");
+        }
+    }
+
+    @Override
     public void sayRecordComponents(Class<? extends Record> recordClass) {
         if (recordClass == null) return;
 
@@ -1157,6 +1239,211 @@ public final class RenderMachineImpl extends RenderMachine {
         });
     }
 
+    @Override
+    public void saySecurityManager() {
+        markdownDocument.add("");
+        markdownDocument.add("### Security Manager");
+        markdownDocument.add("");
+
+        // Security Manager Status
+        SecurityManager sm = System.getSecurityManager();
+        markdownDocument.add("| Property | Status |");
+        markdownDocument.add("| --- | --- |");
+        if (sm != null) {
+            markdownDocument.add("| Security Manager | `PRESENT` |");
+            markdownDocument.add("| Class | `" + sm.getClass().getName() + "` |");
+        } else {
+            markdownDocument.add("| Security Manager | `ABSENT` |");
+            markdownDocument.add("| Class | — |");
+        }
+        markdownDocument.add("");
+
+        // Security Providers
+        markdownDocument.add("### Security Providers");
+        markdownDocument.add("");
+        markdownDocument.add("| Provider | Version | Info |");
+        markdownDocument.add("| --- | --- | --- |");
+
+        java.security.Provider[] providers = java.security.Security.getProviders();
+        if (providers == null || providers.length == 0) {
+            markdownDocument.add("| *(No security providers installed)* | — | — |");
+        } else {
+            for (java.security.Provider provider : providers) {
+                String name = provider.getName();
+                double version = provider.getVersion();
+                String info = provider.getInfo();
+                markdownDocument.add("| `" + name + "` | `" + version + "` | " + info + " |");
+            }
+        }
+
+        markdownDocument.add("");
+
+        // Cryptographic Algorithms
+        markdownDocument.add("### Available Cryptographic Algorithms");
+        markdownDocument.add("");
+
+        // KeyPairGenerator algorithms
+        markdownDocument.add("**KeyPairGenerator:**");
+        var kpgAlgos = java.security.Security.getAlgorithms("KeyPairGenerator");
+        if (kpgAlgos.isEmpty()) {
+            markdownDocument.add("*(None available)*");
+        } else {
+            markdownDocument.add("`" + String.join("`, `", kpgAlgos) + "`");
+        }
+
+        markdownDocument.add("");
+
+        // Cipher algorithms
+        markdownDocument.add("**Cipher:**");
+        var cipherAlgos = java.security.Security.getAlgorithms("Cipher");
+        if (cipherAlgos.isEmpty()) {
+            markdownDocument.add("*(None available)*");
+        } else {
+            // Show first 20 to avoid overwhelming output
+            var limited = cipherAlgos.stream()
+                    .limit(20)
+                    .collect(Collectors.toList());
+            markdownDocument.add("`" + String.join("`, `", limited) + "`" +
+                    (cipherAlgos.size() > 20 ? " ... (" + (cipherAlgos.size() - 20) + " more)" : ""));
+        }
+
+        markdownDocument.add("");
+
+        // MessageDigest algorithms
+        markdownDocument.add("**MessageDigest:**");
+        var mdAlgos = java.security.Security.getAlgorithms("MessageDigest");
+        if (mdAlgos.isEmpty()) {
+            markdownDocument.add("*(None available)*");
+        } else {
+            markdownDocument.add("`" + String.join("`, `", mdAlgos) + "`");
+        }
+
+        markdownDocument.add("");
+
+        // SecureRandom info
+        markdownDocument.add("### SecureRandom");
+        markdownDocument.add("");
+        markdownDocument.add("| Property | Value |");
+        markdownDocument.add("| --- | --- |");
+
+        try {
+            java.security.SecureRandom sr = java.security.SecureRandom.getInstanceStrong();
+            markdownDocument.add("| Strong Algorithm | `" + sr.getAlgorithm() + "` |");
+            markdownDocument.add("| Provider | `" + sr.getProvider().getName() + "` |");
+        } catch (Exception e) {
+            markdownDocument.add("| Strong Algorithm | *(Unavailable: " + e.getMessage() + ")* |");
+            markdownDocument.add("| Provider | — |");
+        }
+
+        try {
+            java.security.SecureRandom sr = new java.security.SecureRandom();
+            markdownDocument.add("| Default Algorithm | `" + sr.getAlgorithm() + "` |");
+            markdownDocument.add("| Provider | `" + sr.getProvider().getName() + "` |");
+        } catch (Exception e) {
+            markdownDocument.add("| Default Algorithm | *(Unavailable: " + e.getMessage() + ")* |");
+            markdownDocument.add("| Provider | — |");
+        }
+    }
+
+    @Override
+    public void sayThreadDump() {
+        markdownDocument.add("");
+        markdownDocument.add("### Thread Summary");
+        markdownDocument.add("");
+
+        var threadMXBean = java.lang.management.ManagementFactory.getThreadMXBean();
+
+        // Summary metrics table
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Thread Count | `" + threadMXBean.getThreadCount() + "` |");
+        markdownDocument.add("| Daemon Thread Count | `" + threadMXBean.getDaemonThreadCount() + "` |");
+        markdownDocument.add("| Peak Thread Count | `" + threadMXBean.getPeakThreadCount() + "` |");
+        markdownDocument.add("| Total Started Thread Count | `" + threadMXBean.getTotalStartedThreadCount() + "` |");
+
+        markdownDocument.add("");
+        markdownDocument.add("### Thread Details");
+        markdownDocument.add("");
+
+        // Thread details table
+        markdownDocument.add("| Thread ID | Name | State | Alive | Interrupted |");
+        markdownDocument.add("| --- | --- | --- | --- | --- |");
+
+        // Get all thread IDs
+        long[] threadIds = threadMXBean.getAllThreadIds();
+
+        if (threadIds == null || threadIds.length == 0) {
+            markdownDocument.add("| *(No threads detected)* | — | — | — | — |");
+        } else {
+            for (long threadId : threadIds) {
+                var threadInfo = threadMXBean.getThreadInfo(threadId);
+                if (threadInfo != null) {
+                    String threadName = threadInfo.getThreadName();
+                    Thread.State state = threadInfo.getThreadState();
+                    boolean alive = threadInfo.getThreadState() != Thread.State.TERMINATED;
+
+                    // Escape pipes in thread name to avoid breaking markdown table
+                    String escapedName = threadName != null ? threadName.replace("|", "\\|") : "null";
+
+                    markdownDocument.add("| `" + threadId + "` | `" + escapedName + "` | `" +
+                            state + "` | `" + alive + "` | `N/A` |");
+                }
+            }
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("*" + threadIds.length + " live threads*");
+    }
+
+    @Override
+    public void saySystemProperties() {
+        saySystemProperties(null);
+    }
+
+    @Override
+    public void saySystemProperties(String regexFilter) {
+        var props = System.getProperties();
+
+        // Filter properties if regex is provided
+        var entryStream = props.entrySet().stream();
+        if (regexFilter != null && !regexFilter.isBlank()) {
+            var pattern = java.util.regex.Pattern.compile(regexFilter);
+            var predicate = pattern.asPredicate();
+            entryStream = entryStream.filter(e -> predicate.test(e.getKey().toString()));
+        }
+
+        // Sort by key and collect to list
+        var sortedEntries = entryStream
+                .sorted(Comparator.comparing(e -> e.getKey().toString()))
+                .toList();
+
+        if (sortedEntries.isEmpty()) {
+            markdownDocument.add("");
+            markdownDocument.add("> [!NOTE]");
+            markdownDocument.add("> No system properties found matching filter: `" + regexFilter + "`");
+            return;
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("### JVM System Properties");
+        if (regexFilter != null && !regexFilter.isBlank()) {
+            markdownDocument.add("");
+            markdownDocument.add("*Filter: `" + regexFilter + "`*");
+        }
+        markdownDocument.add("");
+        markdownDocument.add("| Property Key | Property Value |");
+        markdownDocument.add("| --- | --- |");
+
+        for (var entry : sortedEntries) {
+            var key = entry.getKey().toString();
+            var value = entry.getValue().toString();
+            markdownDocument.add("| `" + key + "` | `" + value + "` |");
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("*" + sortedEntries.size() + " properties documented*");
+    }
+
     /**
      * Converts a section heading to a lowercase anchor ID suitable for use
      * in markdown table-of-contents links. Strips all non-alphanumeric characters.
@@ -1182,5 +1469,185 @@ public final class RenderMachineImpl extends RenderMachine {
         }
 
         return sb.toString();
+    }
+
+    // =========================================================================
+    // Blue Ocean: JPMS Module Dependencies
+    // =========================================================================
+
+    @Override
+    public void sayModuleDependencies(Class<?>... classes) {
+        if (classes == null || classes.length == 0) {
+            markdownDocument.add("");
+            markdownDocument.add("> [!NOTE]");
+            markdownDocument.add("> No classes provided for module dependency analysis.");
+            return;
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("### Module Dependencies");
+        markdownDocument.add("");
+
+        // Group classes by module to avoid duplicates
+        Map<Module, List<Class<?>>> moduleMap = Arrays.stream(classes)
+                .filter(clazz -> clazz != null)
+                .collect(Collectors.groupingBy(Class::getModule, LinkedHashMap::new, Collectors.toList()));
+
+        if (moduleMap.isEmpty()) {
+            markdownDocument.add("*(No valid classes provided)*");
+            return;
+        }
+
+        for (var entry : moduleMap.entrySet()) {
+            Module module = entry.getKey();
+            List<Class<?>> moduleClasses = entry.getValue();
+
+            renderModuleInfo(module, moduleClasses);
+        }
+    }
+
+    /**
+     * Renders module information for a single module.
+     *
+     * @param module the module to document
+     * @param classes the classes from this module (for context)
+     */
+    private void renderModuleInfo(Module module, List<Class<?>> classes) {
+        String moduleName = module.getName();
+        boolean isNamed = module.isNamed();
+
+        markdownDocument.add("#### " + (isNamed ? "`" + moduleName + "`" : "**Unnamed Module** (classpath)"));
+        markdownDocument.add("");
+
+        if (!isNamed) {
+            markdownDocument.add("> [!NOTE]");
+            markdownDocument.add("> This class is loaded from the classpath (unnamed module). " +
+                    "JPMS module descriptors are not available for unnamed modules.");
+            markdownDocument.add("");
+
+            // Show which classes are from this unnamed module
+            markdownDocument.add("**Classes from this module:**");
+            for (Class<?> clazz : classes) {
+                markdownDocument.add("- `" + clazz.getName() + "`");
+            }
+            markdownDocument.add("");
+            return;
+        }
+
+        // Named module - extract descriptor
+        var descriptor = module.getDescriptor();
+        if (descriptor == null) {
+            markdownDocument.add("*(Module descriptor unavailable)*");
+            markdownDocument.add("");
+            return;
+        }
+
+        // Module metadata
+        markdownDocument.add("- **Module Name:** `" + descriptor.name() + "`");
+        markdownDocument.add("- **Automatic:** " + (descriptor.isAutomatic() ? "Yes" : "No"));
+        markdownDocument.add("");
+
+        // Packages
+        var packages = descriptor.packages();
+        markdownDocument.add("**Packages** (" + packages.size() + "):");
+        if (packages.isEmpty()) {
+            markdownDocument.add("*(no packages)*");
+        } else {
+            // Show first 10 packages, then count if more
+            int limit = Math.min(10, packages.size());
+            var pkgArray = packages.toArray(new String[0]);
+            for (int i = 0; i < limit; i++) {
+                markdownDocument.add("- `" + pkgArray[i] + "`");
+            }
+            if (packages.size() > 10) {
+                markdownDocument.add("- ... and " + (packages.size() - 10) + " more");
+            }
+        }
+        markdownDocument.add("");
+
+        // Requires (dependencies)
+        var requires = descriptor.requires();
+        markdownDocument.add("**Requires** (" + requires.size() + " module dependencies):");
+        if (requires.isEmpty()) {
+            markdownDocument.add("*(none — this is likely the base module)*");
+        } else {
+            markdownDocument.add("| Module | Modifiers |");
+            markdownDocument.add("| --- | --- |");
+            for (var req : requires) {
+                String modifiers = req.modifiers().stream()
+                        .map(m -> "`" + m + "`")
+                        .collect(Collectors.joining(", "));
+                if (modifiers.isEmpty()) modifiers = "—";
+                markdownDocument.add("| `" + req.name() + "` | " + modifiers + " |");
+            }
+        }
+        markdownDocument.add("");
+
+        // Exports
+        var exports = descriptor.exports();
+        markdownDocument.add("**Exports** (" + exports.size() + "):");
+        if (exports.isEmpty()) {
+            markdownDocument.add("*(none)*");
+        } else {
+            markdownDocument.add("| Package | Target Modules |");
+            markdownDocument.add("| --- | --- |");
+            for (var exp : exports) {
+                String targets = exp.targets().isEmpty()
+                        ? "*(all modules)*"
+                        : exp.targets().stream()
+                                .map(t -> "`" + t + "`")
+                                .collect(Collectors.joining(", "));
+                markdownDocument.add("| `" + exp.source() + "` | " + targets + " |");
+            }
+        }
+        markdownDocument.add("");
+
+        // Opens
+        var opens = descriptor.opens();
+        markdownDocument.add("**Opens** (" + opens.size() + "):");
+        if (opens.isEmpty()) {
+            markdownDocument.add("*(none)*");
+        } else {
+            markdownDocument.add("| Package | Target Modules |");
+            markdownDocument.add("| --- | --- |");
+            for (var open : opens) {
+                String targets = open.targets().isEmpty()
+                        ? "*(all modules)*"
+                        : open.targets().stream()
+                                .map(t -> "`" + t + "`")
+                                .collect(Collectors.joining(", "));
+                markdownDocument.add("| `" + open.source() + "` | " + targets + " |");
+            }
+        }
+        markdownDocument.add("");
+
+        // Uses (service dependencies)
+        var uses = descriptor.uses();
+        markdownDocument.add("**Uses** (service dependencies, " + uses.size() + "):");
+        if (uses.isEmpty()) {
+            markdownDocument.add("*(none)*");
+        } else {
+            for (var service : uses) {
+                markdownDocument.add("- `" + service + "`");
+            }
+        }
+        markdownDocument.add("");
+
+        // Provides (service implementations)
+        var provides = descriptor.provides();
+        markdownDocument.add("**Provides** (service implementations, " + provides.size() + "):");
+        if (provides.isEmpty()) {
+            markdownDocument.add("*(none)*");
+        } else {
+            markdownDocument.add("| Service | Implementations |");
+            markdownDocument.add("| --- | --- |");
+            for (var prov : provides) {
+                String impls = prov.providers().stream()
+                        .map(p -> "`" + p + "`")
+                        .collect(Collectors.joining(", "));
+                markdownDocument.add("| `" + prov.service() + "` | " + impls + " |");
+            }
+        }
+        markdownDocument.add("");
     }
 }

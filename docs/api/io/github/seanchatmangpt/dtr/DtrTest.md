@@ -7,7 +7,7 @@ Abstract base class for documentation testing framework using JUnit 5. <p>DtrTes
 
 ```java
 public abstract class DtrTest implements RenderMachineCommands {
-    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (40 total)
+    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (46 total)
 }
 ```
 
@@ -189,9 +189,21 @@ Renders a raw Mermaid diagram as a fenced code block. */
 
 ---
 
+### `sayModuleDependencies`
+
+Documents Java 9+ module (JPMS) dependencies and exports. */
+
+---
+
 ### `sayOpProfile`
 
 Renders an op-profile table via Java 26 Code Reflection. */
+
+---
+
+### `sayOperatingSystem`
+
+Documents OS-level environment metrics (name, version, arch, processors, memory). */
 
 ---
 
@@ -223,6 +235,12 @@ Compares two objects field-by-field using reflection and renders a diff table.
 
 ---
 
+### `saySecurityManager`
+
+Documents the Java security environment (security manager, providers, crypto algorithms). */
+
+---
+
 ### `saySlideOnly`
 
 Renders content only for slide output (ignored by markdown/blog render machines).
@@ -250,6 +268,18 @@ Analyzes a string and renders its structural profile using Java string APIs.
 | Parameter | Description |
 | --- | --- |
 | `text` | the string to profile |
+
+---
+
+### `saySystemProperties`
+
+Documents JVM system properties matching a regex filter pattern. */
+
+---
+
+### `sayThreadDump`
+
+Documents the current JVM thread state with aggregate metrics and per-thread details. */
 
 ---
 
