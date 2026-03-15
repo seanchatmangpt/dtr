@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `243 ns` |
-| Min | `42 ns` |
-| Max | `43542 ns` |
-| p99 | `500 ns` |
-| Ops/sec | `4,115,226` |
+| Avg | `285 ns` |
+| Min | `83 ns` |
+| Max | `39583 ns` |
+| p99 | `916 ns` |
+| Ops/sec | `3,508,771` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `578 ns` |
-| Min | `84 ns` |
-| Max | `51166 ns` |
-| p99 | `3000 ns` |
-| Ops/sec | `1,730,103` |
+| Avg | `784 ns` |
+| Min | `125 ns` |
+| Max | `89458 ns` |
+| p99 | `7375 ns` |
+| Ops/sec | `1,275,510` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-15T03:32:37.582474Z` |
+| Timestamp | `2026-03-15T03:49:40.283534Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -276,8 +276,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayClassDiagram(Class[])` | ✅ direct |
 | `void sayClassHierarchy(Class)` | ✅ direct |
 | `void sayCode(String, String)` | ✅ direct |
-| `void sayCodeModel(Class)` | ✅ direct |
 | `void sayCodeModel(Method)` | ✅ direct |
+| `void sayCodeModel(Class)` | ✅ direct |
 | `void sayContractVerification(Class, Class[])` | ✅ direct |
 | `void sayControlFlowGraph(Method)` | ✅ direct |
 | `void sayDocCoverage(Class[])` | ✅ direct |
@@ -301,8 +301,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayReflectiveDiff(Object, Object)` | ✅ direct |
 | `void saySecurityManager()` | ✅ direct |
 | `void sayStringProfile(String)` | ✅ direct |
-| `void saySystemProperties()` | ✅ direct |
 | `void saySystemProperties(String)` | ✅ direct |
+| `void saySystemProperties()` | ✅ direct |
 | `void sayTable(String[][])` | ✅ direct |
 | `void sayThreadDump()` | ✅ direct |
 | `void sayUnorderedList(List)` | ✅ direct |
@@ -359,11 +359,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `86 ns` |
+| Avg | `82 ns` |
 | Min | `41 ns` |
-| Max | `834 ns` |
-| p99 | `834 ns` |
-| Ops/sec | `11,627,906` |
+| Max | `291 ns` |
+| p99 | `291 ns` |
+| Ops/sec | `12,195,121` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -483,11 +483,11 @@ sayThreadDump();
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
 | `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
 | `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
-| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
-| `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
+| `56` | `ForkJoinPool-1-worker-3` | `TIMED_WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
-| `64` | `ForkJoinPool-1-worker-7` | `TIMED_WAITING` | `true` | `N/A` |
-| `65` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
+| `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
+| `59` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
+| `65` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
 | `66` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
 
 *17 live threads*
