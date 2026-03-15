@@ -207,6 +207,9 @@ impl PipelineReceipt {
     }
 
     /// Write the receipt as minified JSON.
+    ///
+    /// # Errors
+    /// Returns an error if creating the parent directory, serializing JSON, or writing the file fails.
     pub fn write_receipt(&self, path: &Path) -> Result<()> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
