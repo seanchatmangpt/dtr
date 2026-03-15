@@ -79,6 +79,31 @@ public class AgiNativeDocTest extends DtrTest {
     }
 
     // =========================================================================
+    // Sealed hierarchy: TpsPrinciple — Toyota Production System mapped to DTR
+    // (must be a static nested type; local sealed interfaces are not permitted)
+    // =========================================================================
+
+    sealed interface TpsPrinciple
+            permits AgiNativeDocTest.Jidoka, AgiNativeDocTest.JustInTime,
+                    AgiNativeDocTest.Kaizen, AgiNativeDocTest.Heijunka, AgiNativeDocTest.PokaYoke {
+        String name();
+        String dtrImpl();
+        String java26Feature();
+        String benefit();
+    }
+
+    record Jidoka(String name, String dtrImpl, String java26Feature, String benefit)
+            implements TpsPrinciple {}
+    record JustInTime(String name, String dtrImpl, String java26Feature, String benefit)
+            implements TpsPrinciple {}
+    record Kaizen(String name, String dtrImpl, String java26Feature, String benefit)
+            implements TpsPrinciple {}
+    record Heijunka(String name, String dtrImpl, String java26Feature, String benefit)
+            implements TpsPrinciple {}
+    record PokaYoke(String name, String dtrImpl, String java26Feature, String benefit)
+            implements TpsPrinciple {}
+
+    // =========================================================================
     // Sealed hierarchy: DocumentationEra — models the evolution of docs
     // =========================================================================
 

@@ -652,3 +652,31 @@ Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
 ### Pipeline
 dx pipeline: red | {'Observatory': {'status': 'green', 'message': 'facts refreshed', 'elapsed_ms': 13}, 'Git': {'status': 'red', 'message': 'Uncommitted changes detected. Commit and push before ending the session.', 'elapsed_ms': 12}, 'H-Guards': {'status': 'red', 'message': '98 violations', 'elapsed_ms': 8, 'violations': 98}, 'Build': {'status': 'skip', 'message': "phase 'Build' skipped", 'elapsed_ms': 0}}
 
+
+---
+
+## Session: 2026-03-15T11:12:46Z
+**Session ID:** 0c97cfac-098d-4653-baa6-09ea696afafe
+**Branch:** claude/fix-macos-bash-tools-eQomB
+
+### Last 3 Commits
+```
+d32b20a feat: Cell 2 — ScopedValuesDocTest (JEP 487) with propagation, nesting, and ThreadLocal benchmark
+17df9be feat: add AgiNativeDocTest and any remaining agent outputs
+171339b feat: Cell 6 — SayApiCoverageDocTest covering sayAsciiChart, sayContractVerification, sayEvolutionTimeline, sayMermaid, sayDocCoverage
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: green | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'green'}
+
