@@ -1,5 +1,6 @@
 use crate::model::ViolationRecord;
 use chrono::Utc;
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 /// Risk scorer that computes a normalized [0, 1] risk score.
@@ -121,6 +122,22 @@ impl Default for RiskScorer {
     }
 }
 
+impl RiskScorer {
+    /// Score multiple violation histories in parallel using rayon.
+    ///
+    /// Each element in `histories` is scored independently, enabling
+    /// parallel computation across multiple files. This is ideal for
+    /// batch processing 100+ files from scanner output.
+    ///
+    /// Returns a vector of scores in the same order as input.
+    pub fn score_risks_parallel(&self, histories: &[Vec<ViolationRecord>]) -> Vec<f64> {
+        histories
+            .par_iter()
+            .map(|history| self.score_risk(history))
+            .collect()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -229,5 +246,59 @@ mod tests {
             score_90 > score_30,
             "Longer decay window should weight older violations higher"
         );
+    }
+
+    #[test]
+    fn test_scorer_parallel_scoring() {
+        let scorer = RiskScorer::new();
+
+        let histories = vec![
+            vec![create_violation_days_ago("pattern", 5)],
+            vec![create_violation_days_ago("pattern", 10)],
+            vec![create_violation_days_ago("pattern", 20)],
+            vec![],
+        ];
+
+        let scores = scorer.score_risks_parallel(&histories);
+
+        assert_eq!(scores.len(), 4, "should have 4 scores");
+        assert!(scores[0] > scores[1], "5-day violation should score higher than 10-day");
+        assert!(scores[1] > scores[2], "10-day violation should score higher than 20-day");
+        assert_eq!(scores[3], 0.0, "empty history should score 0");
+    }
+
+    #[test]
+    fn test_scorer_parallel_vs_sequential_equivalence() {
+        let scorer = RiskScorer::new();
+
+        let histories = vec![
+            vec![create_violation_days_ago("p1", 5), create_violation_days_ago("p2", 10)],
+            vec![create_violation_days_ago("p1", 15)],
+            vec![],
+            vec![
+                create_violation_days_ago("p1", 1),
+                create_violation_days_ago("p2", 2),
+                create_violation_days_ago("p3", 3),
+            ],
+        ];
+
+        // Sequential scoring
+        let sequential_scores: Vec<f64> = histories
+            .iter()
+            .map(|h| scorer.score_risk(h))
+            .collect();
+
+        // Parallel scoring
+        let parallel_scores = scorer.score_risks_parallel(&histories);
+
+        assert_eq!(
+            sequential_scores.len(),
+            parallel_scores.len(),
+            "should have same number of scores"
+        );
+
+        for (i, (seq, par)) in sequential_scores.iter().zip(parallel_scores.iter()).enumerate() {
+            assert!((seq - par).abs() < 1e-10, "score {} should match: seq={}, par={}", i, seq, par);
+        }
     }
 }

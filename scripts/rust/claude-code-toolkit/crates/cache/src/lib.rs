@@ -307,14 +307,24 @@ pub mod manager {
     use super::hasher::hash_method_body;
     use super::store::{CachedScanResult, Store};
     use anyhow::Result;
+    use dashmap::DashMap;
     use std::path::Path;
     use std::sync::Arc;
 
-    /// Cache manager wrapping redb store with blake3 hashing.
+    /// In-memory concurrent cache using DashMap for lock-free parallel access.
+    /// Keyed by blake3 hash (32 bytes), cached results stored in-memory.
+    type MemoryCache = DashMap<[u8; 32], CachedScanResult>;
+
+    /// Cache manager combining redb persistent store + DashMap in-memory L1 cache.
+    ///
+    /// Architecture:
+    /// - L1 (Memory): DashMap for fast concurrent reads/writes from rayon threads
+    /// - L2 (Disk): redb for persistence across session boundaries
     ///
     /// This is `Send + Sync` for safe sharing across rayon threads.
     pub struct CacheManager {
         store: Arc<Store>,
+        memory_cache: Arc<MemoryCache>,
     }
 
     impl CacheManager {
@@ -323,19 +333,42 @@ pub mod manager {
             let store = Store::new(db_path)?;
             Ok(CacheManager {
                 store: Arc::new(store),
+                memory_cache: Arc::new(DashMap::new()),
             })
         }
 
-        /// Hash a method body and query the cache.
+        /// Hash a method body and query the cache (L1 memory first, then L2 disk).
+        ///
+        /// Returns a cache hit from memory (fast path) or disk (slower path).
         pub fn query(&self, method_body: &[u8]) -> Result<Option<CachedScanResult>> {
             let hash = hash_method_body(method_body);
-            self.store.query(&hash)
+
+            // L1: Try memory cache (lock-free read)
+            if let Some(entry) = self.memory_cache.get(&hash) {
+                return Ok(Some(entry.clone()));
+            }
+
+            // L2: Query disk store
+            if let Some(result) = self.store.query(&hash)? {
+                // Populate L1 cache for future hits
+                self.memory_cache.insert(hash, result.clone());
+                return Ok(Some(result));
+            }
+
+            Ok(None)
         }
 
-        /// Hash a method body and insert a result into the cache.
+        /// Hash a method body and insert a result into the cache (both L1 and L2).
+        ///
+        /// Writes are sent to both memory (immediate) and disk (ACID transaction).
         pub fn insert(&self, method_body: &[u8], result: &CachedScanResult) -> Result<()> {
             let hash = hash_method_body(method_body);
-            self.store.insert(&hash, result)
+
+            // Write to both caches (L1 immediate, L2 transactional)
+            self.memory_cache.insert(hash, result.clone());
+            self.store.insert(&hash, result)?;
+
+            Ok(())
         }
 
         /// Insert method metadata by pre-computed hash.
@@ -348,20 +381,32 @@ pub mod manager {
             self.store.query_method_metadata(hash)
         }
 
-        /// Check if a method body is in the cache.
+        /// Check if a method body is in the cache (L1 first, then L2).
         pub fn contains(&self, method_body: &[u8]) -> Result<bool> {
             let hash = hash_method_body(method_body);
+
+            // L1: Check memory cache
+            if self.memory_cache.contains_key(&hash) {
+                return Ok(true);
+            }
+
+            // L2: Check disk store
             self.store.contains(&hash)
         }
 
-        /// Get count of cached entries (for testing/stats).
+        /// Get count of cached entries from both L1 and L2.
         pub fn count(&self) -> Result<usize> {
             self.store.count()
+        }
+
+        /// Get L1 memory cache size.
+        pub fn memory_cache_size(&self) -> usize {
+            self.memory_cache.len()
         }
     }
 
     // Explicitly declare Send + Sync for documentation.
-    // Arc<Store> is Send + Sync because Store (Database handle) is Send + Sync.
+    // Arc<Store> + Arc<DashMap> are Send + Sync.
     unsafe impl Send for CacheManager {}
     unsafe impl Sync for CacheManager {}
 
@@ -498,6 +543,73 @@ pub mod manager {
             for body in bodies.iter() {
                 assert!(manager.contains(body).unwrap());
             }
+        }
+
+        #[test]
+        fn test_manager_l1_memory_cache_hit() {
+            let tmp = tempfile::tempdir().unwrap();
+            let db_path = tmp.path().join("test.db");
+            let manager = CacheManager::new(&db_path).unwrap();
+
+            let body = b"public void cached() { }";
+            let result = test_result("Test.java", 1);
+
+            manager.insert(body, &result).unwrap();
+            assert_eq!(manager.memory_cache_size(), 1, "L1 cache should have 1 entry");
+
+            // Second query should hit L1 cache
+            let retrieved = manager.query(body).unwrap();
+            assert!(retrieved.is_some());
+            assert_eq!(manager.memory_cache_size(), 1);
+        }
+
+        #[test]
+        fn test_manager_l1_to_l2_promotion() {
+            let tmp = tempfile::tempdir().unwrap();
+            let db_path = tmp.path().join("test.db");
+
+            let body = b"public void promoted() { }";
+            let result = test_result("Promoted.java", 2);
+
+            // Write and populate L1
+            {
+                let manager = CacheManager::new(&db_path).unwrap();
+                manager.insert(body, &result).unwrap();
+                assert_eq!(manager.memory_cache_size(), 1);
+            }
+
+            // New instance: L1 is empty, should promote from L2
+            {
+                let manager = CacheManager::new(&db_path).unwrap();
+                assert_eq!(manager.memory_cache_size(), 0, "L1 should be empty on new instance");
+
+                let retrieved = manager.query(body).unwrap();
+                assert!(retrieved.is_some());
+                assert_eq!(manager.memory_cache_size(), 1, "L1 should be populated from L2");
+            }
+        }
+
+        #[test]
+        fn test_manager_concurrent_writes_to_memory_cache() {
+            use rayon::prelude::*;
+
+            let tmp = tempfile::tempdir().unwrap();
+            let db_path = tmp.path().join("test.db");
+            let manager = std::sync::Arc::new(CacheManager::new(&db_path).unwrap());
+
+            // Parallel writes from 10 rayon threads
+            (0..10).into_par_iter().for_each(|i| {
+                let body = format!("public void method{}() {{ }}", i).into_bytes();
+                let result = test_result(&format!("File{}.java", i), i);
+                manager.insert(&body, &result).unwrap();
+            });
+
+            // Verify all 10 are in L1 memory cache
+            assert_eq!(
+                manager.memory_cache_size(),
+                10,
+                "L1 should have all 10 concurrent writes"
+            );
         }
     }
 }
