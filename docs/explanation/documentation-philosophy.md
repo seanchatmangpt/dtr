@@ -14,13 +14,40 @@ This is called "documentation rot," and it is endemic. The further documentation
 
 ---
 
+## Documentation IS the Test: No Drift Possible
+
+DTR embodies a radical principle: **Documentation and tests are the same artifact, not separate things that need to be kept in sync.**
+
+When you write a DTR test, you are simultaneously:
+1. **Writing a test** — code that validates behavior
+2. **Writing documentation** — prose that explains what the code does
+
+This eliminates the synchronization problem entirely. There is no "documentation" to update separately. The test runs, the documentation generates. Code changes break the test, you fix the test, the documentation updates automatically.
+
+The invariant is simple: **If the tests pass, the documentation is current. If the tests fail, the documentation is incomplete.** No manual review required.
+
+---
+
 ## DTR's Answer: Documentation Derived from Test Execution
 
 DTR does not ask developers to write documentation about their code. It asks them to write tests — and derives documentation from what those tests actually do.
 
 When a test calls `ctx.sayRecordComponents(MyRecord.class)`, DTR does not accept a developer's description of `MyRecord`'s fields. It calls `getRecordComponents()` on the class itself. The documentation is a fact derived from bytecode, not prose derived from memory.
 
-This distinction — **facts from code structure, not claims from developers** — is the philosophical foundation of DTR 2.6.0.
+This distinction — **facts from code structure, not claims from developers** — is the philosophical foundation of DTR 2026.x.
+
+---
+
+## Single Source, Multiple Outputs
+
+DTR generates documentation from a single test execution and produces multiple output formats:
+
+- **Markdown** — Standard documentation for web and version control
+- **LaTeX** — Publication-quality PDFs for formal documentation
+- **Blog Posts** — Narratives with embedded examples
+- **Slide Decks** — Presentations with speaker notes
+
+All formats derive from the same test execution. There is no duplication, no conversion steps, no "copy-paste and update" manual work. You write the test once, run `mvnd verify`, and all outputs stay synchronized automatically.
 
 ---
 
@@ -30,7 +57,7 @@ Traditional documentation is written once and then diverges from reality. DTR ge
 
 This is what "living documentation" means in DTR's terms: documentation that cannot become stale because it is not stored anywhere as text. It is regenerated from the running program on each execution.
 
-The five introspection methods make this concrete:
+The 44 introspection methods make this concrete (see the [complete API reference](/reference/say-api)):
 
 | Method | Derives From |
 |---|---|
@@ -39,6 +66,9 @@ The five introspection methods make this concrete:
 | `sayAnnotationProfile(Class<?>)` | `Class.getDeclaredAnnotations()` — actual annotation presence |
 | `sayStringProfile(Class<?>)` | `Field.get(null)` on string constants — actual field values |
 | `sayReflectiveDiff(Object, Object)` | Field-by-field comparison — actual runtime values |
+| `sayCodeModel(Class<?>)` | Full class structure via Reflection API |
+| `sayCallSite()` | StackWalker — actual source location |
+| `sayBenchmark(Runnable, int, int)` | `System.nanoTime()` — actual timing measurements |
 
 None of these methods accept developer input about the class. They go directly to the JVM.
 
@@ -66,7 +96,7 @@ The same principle applies to `sayAnnotationProfile`, `sayClassHierarchy`, and t
 
 ## The Provenance Guarantee: `sayCallSite()`
 
-DTR 2.6.0 introduces `sayCallSite()`, which captures the exact source location where documentation was generated — file name, line number, and method name — without a runtime stack walk. This is implemented using the Code Reflection API (JEP 516, Project Babylon), which is why DTR requires `--enable-preview`.
+DTR 2026.x includes `sayCallSite()`, which captures the exact source location where documentation was generated — file name, line number, and method name — via StackWalker. For Java 26+ users, DTR also leverages the Code Reflection API (JEP 516, Project Babylon) for enhanced call graph analysis and control flow visualization when `--enable-preview` is enabled.
 
 Provenance means readers of generated documentation can trace any statement back to the specific test method that produced it. This creates an audit trail: documentation is not just accurate, it is traceable.
 
@@ -84,7 +114,7 @@ The method runs the supplied lambda in virtual thread batches to reduce JIT cold
 
 ## Why HTTP Testing Was Removed
 
-Earlier versions of DTR bundled an HTTP test browser alongside the documentation generator. Version 2.6.0 removes this entirely.
+Earlier versions of DTR bundled an HTTP test browser alongside the documentation generator. Version 2026.x removes this entirely.
 
 The reasons are principled, not expedient:
 
@@ -112,7 +142,7 @@ This documentation site is organized around Diataxis. DTR-generated output is a 
 
 ## Blue Ocean: Maximum Capability, Zero New Dependencies
 
-DTR 2.6.0 adds 14 new capabilities — inline benchmarking, Mermaid diagrams, documentation coverage, ASCII charts, contract verification, git evolution timelines, exception documentation, record schemas, environment snapshots, and more — while adding zero new external dependencies.
+DTR 2026.x provides comprehensive documentation generation capabilities — inline benchmarking, Mermaid diagrams, documentation coverage, ASCII charts, contract verification, git evolution timelines, exception documentation, record schemas, environment snapshots, and more — while adding zero new external dependencies.
 
 This is a deliberate design constraint. Every new capability uses what the JVM already provides:
 - Reflection API for introspection methods
@@ -120,7 +150,69 @@ This is a deliberate design constraint. Every new capability uses what the JVM a
 - `ProcessBuilder` for git log parsing
 - `ConcurrentHashMap` for caching
 
-The constraint forces ingenuity and avoids dependency accumulation. It also means that adopting DTR 2.6.0 does not force dependency resolution conflicts into your build.
+The constraint forces ingenuity and avoids dependency accumulation. It also means that adopting DTR 2026.x does not force dependency resolution conflicts into your build.
+
+---
+
+## Progressive Disclosure: Simple First, Complex Later
+
+DTR's API follows the principle of progressive disclosure: the most common tasks are simple, and advanced features are available when needed but never forced upon you.
+
+**Start simple:**
+```java
+@Test
+void documentBasicUsage() {
+    DtrContext ctx = DtrContext.create();
+    ctx.say("This is a paragraph of documentation.");
+    ctx.sayCode("int x = 42;", "java");
+}
+```
+
+**Add complexity as needed:**
+```java
+@Test
+void documentAdvancedFeatures() {
+    DtrContext ctx = DtrContext.create();
+    ctx.sayRecordComponents(MyRecord.class);  // Introspection
+    ctx.sayBenchmark("Operation", () -> doWork());  // Benchmarking
+    ctx.sayControlFlowGraph(MyClass.class.getMethod("process"));  // Java 26 Code Reflection
+}
+```
+
+The learning path is gradual:
+1. **Basic output** — `say()`, `sayCode()`, `sayTable()` (covers 80% of use cases)
+2. **Structured data** — `sayKeyValue()`, `sayJson()`, `sayUnorderedList()`
+3. **Introspection** — `sayCodeModel()`, `sayRecordComponents()`, `sayClassHierarchy()`
+4. **Advanced analysis** — `sayBenchmark()`, `sayCallGraph()`, `sayControlFlowGraph()`
+
+Each layer builds on the previous one. You never need to understand the complex features to use the simple ones effectively.
+
+---
+
+## The 80/20 Principle: 8 Core Methods
+
+DTR provides 44 `say*` methods, but 8 methods cover 80% of real-world documentation needs:
+
+| Method | Use Case | Frequency |
+|---|---|---|
+| `say(String)` | Paragraphs, explanations | ~40% |
+| `sayCode(String, String)` | Code examples | ~15% |
+| `sayTable(String[][])` | Structured data | ~10% |
+| `sayKeyValue(Map)` | Metadata, configuration | ~8% |
+| `sayWarning(String)` | Important warnings | ~5% |
+| `sayNote(String)` | Additional context | ~5% |
+| `sayUnorderedList(List)` | Bullet points | ~4% |
+| `sayAndAssertThat()` | Test + document | ~3% |
+
+The remaining 36 methods handle specialized scenarios:
+- **Introspection** — `sayCodeModel()`, `sayRecordComponents()`, `sayClassHierarchy()`
+- **Java 26 features** — `sayControlFlowGraph()`, `sayCallGraph()`, `sayOpProfile()`
+- **Cross-references** — `sayRef()`, `sayCite()`, `sayFootnote()`
+- **Presentation** — `saySlideOnly()`, `saySpeakerNote()`, `sayTweetable()`
+- **Benchmarking** — `sayBenchmark()` with custom parameters
+- **Advanced formatting** — `sayAssertions()`, `sayJson()`, `sayMermaid()`
+
+**The philosophy:** Learn the 8 core methods first. They're sufficient for most documentation. Reach for specialized methods when you have a specific problem they solve.
 
 ---
 
@@ -129,3 +221,30 @@ The constraint forces ingenuity and avoids dependency accumulation. It also mean
 The philosophy DTR embodies has a simple premise: documentation is most valuable when it is most accurate, and it is most accurate when it is derived from the actual system rather than from a developer's description of it.
 
 Developers are good at building systems. They are less reliable as documentarians of those systems — not through negligence, but because documentation maintenance competes with everything else they need to do. DTR removes that competition by making documentation a byproduct of the tests that already need to run.
+
+---
+
+## Getting Started: Tutorials and Examples
+
+DTR provides comprehensive learning resources:
+
+**6-Part Tutorial Series:**
+1. [Quick Start](/tutorial/quick-start) — Your first DTR test in 5 minutes
+2. [Basic Output Methods](/tutorial/basic-output) — Core `say*` methods
+3. [Code Introspection](/tutorial/introspection) — Automatic documentation from code structure
+4. [Testing & Documentation](/tutorial/testing) — Combining assertions with documentation
+5. [Advanced Features](/tutorial/advanced) — Benchmarking, diagrams, and Java 26 features
+6. [Output Formats](/tutorial/outputs) — Markdown, LaTeX, blog posts, and slides
+
+**Example Gallery:**
+Explore [8 real-world patterns](/examples) showing how DTR solves common documentation challenges:
+- API documentation from Javadoc
+- Record and enum schemas
+- Exception diagnostics
+- Performance benchmarking
+- Contract verification
+- Evolution tracking
+- Class diagrams and call graphs
+- Multi-format output (single test → docs + slides + PDF)
+
+Each example is a complete, working test that demonstrates idiomatic DTR usage. Copy, adapt, and extend for your own projects.

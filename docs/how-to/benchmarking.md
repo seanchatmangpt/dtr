@@ -1,295 +1,232 @@
 # How-To: Benchmarking with DTR
 
-Measure real performance using DTR 2.6.0's built-in `sayBenchmark` method and `System.nanoTime()`.
+Quick recipes for measuring performance using `sayBenchmark`.
 
-**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
-
----
-
-## Core Principle: Real Measurements Only
-
-- No simulation, no fakes, no hard-coded numbers
-- Measure with `sayBenchmark` or `System.nanoTime()` on real execution
-- Report: metric + units + Java version + iterations + environment
-- Example: `"String concat: 78ns avg (10M iterations, Java 26.0.2, 8 cores)"`
+**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
-## Quick Start: sayBenchmark
+## Quick Reference
 
-`sayBenchmark(String label, Runnable task)` is the primary benchmarking method in DTR 2.6.0. It runs the task with configurable warmup and measurement rounds, then documents the results automatically.
+| Pattern | Method | When to Use |
+|---------|--------|-------------|
+| Single measurement | `sayBenchmark(label, task)` | Most benchmarks |
+| Custom rounds | `sayBenchmark(label, task, warmup, measure)` | Fast/slow operations |
+| Environment context | `sayEnvProfile()` | Always include |
+| A/B comparison | Multiple `sayBenchmark` calls | Compare implementations |
+
+---
+
+## Core Principles
+
+1. **Real measurements only** — No simulation, no fakes, no hard-coded numbers
+2. **Report complete context** — Metric + units + Java version + iterations + environment
+3. **Always warm up** — JIT compilation changes timings significantly
+4. **Use `sayBenchmark`** — Handles warmup, measurement, and statistics automatically
+
+---
+
+## Recipe: Basic Benchmark
+
+Measure a single operation with default warmup/measurement rounds:
 
 ```java
 @ExtendWith(DtrExtension.class)
-class StringBenchmarkDocTest {
+class BasicBenchmark {
 
     @Test
-    void benchmarkStringOps(DtrContext ctx) {
-        ctx.sayNextSection("String Performance");
-        ctx.sayEnvProfile();
+    void benchmarkHashMapPut(DtrContext ctx) {
+        ctx.sayNextSection("HashMap.put() Performance");
+        ctx.sayEnvProfile(); // Document environment
 
-        ctx.sayBenchmark("String concatenation (1000 appends)", () -> {
-            String s = "";
-            for (int i = 0; i < 1000; i++) s += i;
-        });
-
-        ctx.sayBenchmark("StringBuilder (1000 appends)", () -> {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 1000; i++) sb.append(i);
-            sb.toString();
-        });
-
-        ctx.sayBenchmark("String.join (1000 elements)", () -> {
-            String.join("", java.util.Collections.nCopies(1000, "x"));
+        Map<String, String> map = new HashMap<>();
+        ctx.sayBenchmark("HashMap.put() single operation", () -> {
+            map.put("key", "value");
         });
     }
 }
 ```
 
-`sayBenchmark` outputs a timing table to the documentation showing average, min, max, and standard deviation across measurement rounds.
+**Default behavior:**
+- 50 warmup rounds (JIT compilation)
+- 500 measurement rounds (statistical significance)
+- Outputs: avg, min, max, p99, throughput
 
 ---
 
-## Configurable Warmup and Measurement Rounds
+## Recipe: Custom Rounds
 
-For more precise measurements, use the four-argument overload:
+Adjust rounds for operation speed:
 
 ```java
 @Test
-void precisionBenchmark(DtrContext ctx) {
-    ctx.sayNextSection("Precision Benchmark");
+void benchmarkFastOperation(DtrContext ctx) {
+    ctx.sayNextSection("Fast Operation Performance");
 
-    // sayBenchmark(label, task, warmupRounds, measureRounds)
-    ctx.sayBenchmark("ArrayList add (1000 elements)", () -> {
-        var list = new java.util.ArrayList<Integer>();
-        for (int i = 0; i < 1000; i++) list.add(i);
-    }, 10, 100);
+    // Fast operation (< 100ns): More rounds
+    ctx.sayBenchmark("ArrayList.add() fast", () -> {
+        var list = new ArrayList<Integer>();
+        list.add(42);
+    }, 100, 10000); // 100 warmup, 10000 measure
+}
 
-    ctx.sayBenchmark("LinkedList add (1000 elements)", () -> {
-        var list = new java.util.LinkedList<Integer>();
-        for (int i = 0; i < 1000; i++) list.add(i);
-    }, 10, 100);
+@Test
+void benchmarkSlowOperation(DtrContext ctx) {
+    ctx.sayNextSection("Slow Operation Performance");
+
+    // Slow operation (> 1ms): Fewer rounds
+    ctx.sayBenchmark("Database query", () -> {
+        database.executeQuery("SELECT * FROM users");
+    }, 5, 50); // 5 warmup, 50 measure
 }
 ```
 
----
-
-## Manual Measurement with System.nanoTime()
-
-For custom statistics or multi-step measurements, use `System.nanoTime()` directly:
-
-```java
-@Test
-void manualBenchmark(DtrContext ctx) {
-    ctx.sayNextSection("Manual Timing");
-
-    final int iterations = 1000;
-    long[] measurements = new long[iterations];
-
-    // Warmup
-    for (int i = 0; i < 100; i++) {
-        String.valueOf(i);
-    }
-
-    // Measure
-    for (int i = 0; i < iterations; i++) {
-        long start = System.nanoTime();
-        String.valueOf(i);
-        measurements[i] = System.nanoTime() - start;
-    }
-
-    // Calculate statistics
-    java.util.Arrays.sort(measurements);
-    long avg = java.util.Arrays.stream(measurements).sum() / measurements.length;
-    long min = measurements[0];
-    long max = measurements[measurements.length - 1];
-    long p95 = measurements[(int)(measurements.length * 0.95)];
-    double mean = avg;
-    double variance = java.util.Arrays.stream(measurements)
-        .mapToDouble(x -> Math.pow(x - mean, 2)).average().orElse(0);
-    double stdDev = Math.sqrt(variance);
-
-    ctx.sayKeyValue(java.util.Map.of(
-        "Operation", "String.valueOf(int)",
-        "Iterations", String.valueOf(iterations),
-        "Average", avg + " ns",
-        "Min", min + " ns",
-        "Max", max + " ns",
-        "P95", p95 + " ns",
-        "Std Dev", String.format("%.1f ns", stdDev),
-        "Java Version", System.getProperty("java.version")
-    ));
-}
-```
+**When to customize:**
+- **Fast operations** (< 100ns): Increase rounds (e.g., 1000/10000)
+- **Slow operations** (> 1ms): Decrease rounds (e.g., 5/50)
+- **Warmup-sensitive code**: Increase warmup (e.g., 100/500)
 
 ---
 
-## Benchmarking Virtual Thread Throughput
+## Recipe: A/B Comparison
+
+Compare multiple implementations side-by-side:
 
 ```java
 @Test
-void benchmarkVirtualThreads(DtrContext ctx) throws Exception {
-    ctx.sayNextSection("Virtual Thread Throughput");
+void benchmarkMapComparison(DtrContext ctx) {
+    ctx.sayNextSection("Map.put() Performance Comparison");
     ctx.sayEnvProfile();
 
-    final int taskCount = 1000;
+    String key = "test-key";
+    String value = "test-value";
 
-    // Platform threads
-    long startPlatform = System.nanoTime();
-    try (var executor = java.util.concurrent.Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors())) {
-        var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
-        for (int i = 0; i < taskCount; i++) {
-            futures.add(executor.submit(() -> {
-                Thread.sleep(1);
-                return null;
-            }));
-        }
-        for (var f : futures) f.get();
-    }
-    long platformNs = System.nanoTime() - startPlatform;
-
-    // Virtual threads
-    long startVirtual = System.nanoTime();
-    try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
-        var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
-        for (int i = 0; i < taskCount; i++) {
-            futures.add(executor.submit(() -> {
-                Thread.sleep(1);
-                return null;
-            }));
-        }
-        for (var f : futures) f.get();
-    }
-    long virtualNs = System.nanoTime() - startVirtual;
-
-    ctx.sayTable(new String[][] {
-        {"Executor", "Total Time", "Per Task", "Tasks"},
-        {"Platform threads", platformNs / 1_000_000 + " ms",
-            platformNs / taskCount + " ns", String.valueOf(taskCount)},
-        {"Virtual threads", virtualNs / 1_000_000 + " ms",
-            virtualNs / taskCount + " ns", String.valueOf(taskCount)}
+    // HashMap
+    Map<String, String> hashMap = new HashMap<>();
+    ctx.sayBenchmark("HashMap.put()", () -> {
+        hashMap.put(key, value);
     });
 
-    ctx.say("Java " + System.getProperty("java.version") +
-            " | Cores: " + Runtime.getRuntime().availableProcessors());
+    // TreeMap
+    Map<String, String> treeMap = new TreeMap<>();
+    ctx.sayBenchmark("TreeMap.put()", () -> {
+        treeMap.put(key, value);
+    });
+
+    // ConcurrentHashMap
+    Map<String, String> concurrentMap = new ConcurrentHashMap<>();
+    ctx.sayBenchmark("ConcurrentHashMap.put()", () -> {
+        concurrentMap.put(key, value);
+    });
 }
 ```
 
 ---
 
-## Benchmark Documentation Coverage
+## Recipe: Regression Test
 
-Combine `sayBenchmark` with `sayDocCoverage` to document both performance and coverage:
+Document performance as a regression test:
 
 ```java
 @Test
-void benchmarkAndCover(DtrContext ctx) {
-    ctx.sayNextSection("Record Serialization Performance");
+void verifyStringConcatPerformance(DtrContext ctx) {
+    ctx.sayNextSection("String Concatenation Performance");
+    ctx.sayEnvProfile();
 
-    record Point(double x, double y, double z) {}
+    String name = "World";
 
-    ctx.sayRecordComponents(Point.class);
-
-    ctx.sayBenchmark("Point toString (10000 calls)", () -> {
-        var p = new Point(1.0, 2.0, 3.0);
-        for (int i = 0; i < 10000; i++) p.toString();
+    // Benchmark: String.format()
+    ctx.sayBenchmark("String.format()", () -> {
+        String.format("Hello %s", name);
     });
 
-    ctx.sayDocCoverage(Point.class);
+    // Benchmark: Concatenation
+    ctx.sayBenchmark("Concatenation (+)", () -> {
+        "Hello " + name;
+    });
+
+    // Benchmark: concat()
+    ctx.sayBenchmark("String.concat()", () -> {
+        "Hello ".concat(name);
+    });
 }
-```
-
----
-
-## ASCII Chart of Benchmark Results
-
-Visualize benchmark results as a bar chart:
-
-```java
-@Test
-void chartBenchmarkResults(DtrContext ctx) {
-    ctx.sayNextSection("Collection Performance Chart");
-
-    String[] labels = {"ArrayList", "LinkedList", "ArrayDeque", "TreeSet"};
-    double[] timesNs = new double[labels.length];
-
-    // Measure each
-    for (int c = 0; c < labels.length; c++) {
-        long start = System.nanoTime();
-        for (int i = 0; i < 10_000; i++) {
-            switch (c) {
-                case 0 -> new java.util.ArrayList<>().add(i);
-                case 1 -> new java.util.LinkedList<>().add(i);
-                case 2 -> new java.util.ArrayDeque<>().add(i);
-                case 3 -> new java.util.TreeSet<>().add(i);
-            }
-        }
-        timesNs[c] = (double)(System.nanoTime() - start) / 10_000;
-    }
-
-    ctx.sayAsciiChart("Add operation latency (ns/op, lower is better)", timesNs, labels);
-    ctx.say("Measured on Java " + System.getProperty("java.version") +
-            ", " + Runtime.getRuntime().availableProcessors() + " cores");
-}
-```
-
----
-
-## Best Practices
-
-### Always warm up the JVM
-
-JIT compilation changes timings significantly. Always run warmup iterations:
-
-```java
-// Warmup (not measured)
-for (int i = 0; i < 1000; i++) {
-    yourOperation();
-}
-
-// Then measure
-ctx.sayBenchmark("Your operation", () -> yourOperation());
-```
-
-### Report environment context
-
-```java
-ctx.sayEnvProfile(); // Always call this before benchmarks
-```
-
-### Use sayBenchmark for standard cases
-
-`sayBenchmark` handles warmup, measurement, and statistics automatically. Only drop to `System.nanoTime()` when you need custom multi-step control.
-
-### Do not hard-code results
-
-```java
-// WRONG — no real measurement
-ctx.say("Performance: 500 ns");
-
-// CORRECT — real measurement
-ctx.sayBenchmark("Your operation", () -> yourOperation());
 ```
 
 ---
 
 ## Interpreting Results
 
-Typical `sayBenchmark` output:
+### Metrics Explained
 
-| Operation | Avg | Min | Max | Std Dev | Rounds |
-|-----------|-----|-----|-----|---------|--------|
-| StringBuilder append | 234 ns | 198 ns | 567 ns | 45 ns | 100 |
+| Metric | Meaning | Use Case |
+|--------|---------|----------|
+| **Average** | Mean execution time | General performance estimate |
+| **Min** | Fastest observed | Best-case scenario |
+| **Max** | Slowest observed | Worst-case scenario (GC, scheduling) |
+| **P99** | 99th percentile | Typical worst-case (outliers excluded) |
+| **Throughput** | Operations per second | Scalability metric |
 
-- **Avg**: Mean time per invocation across all measurement rounds
-- **Min/Max**: Best and worst single measurement
-- **Std Dev**: Measurement variability — lower is more stable
-- **Rounds**: Number of measurement rounds (after warmup)
+### Example Output
+
+```
+HashMap.put() Performance
+-------------------------
+Average: 45 ns | Min: 38 ns | Max: 231 ns | P99: 67 ns
+Throughput: 22.22M ops/sec
+```
 
 ---
 
-See Also:
-- [Performance Tuning](performance-tuning.md) — Reduce build time and profiling strategies
-- [Use Virtual Threads](use-virtual-threads.md) — Virtual thread concurrency patterns
-- [sayAsciiChart via Timeline](sse-parsing.md) — ASCII chart documentation
+## Best Practices
+
+### Always Warm Up
+
+JIT compilation changes timings. `sayBenchmark` includes automatic warmup.
+
+### Document Environment
+
+Always call `sayEnvProfile()` before benchmarks:
+
+```java
+ctx.sayEnvProfile(); // Java version, OS, processors, heap, timezone
+ctx.sayBenchmark("operation", () -> operation());
+```
+
+### Don't Hard-Code Results
+
+```java
+// ❌ WRONG — No real measurement
+ctx.say("Performance: 500 ns");
+
+// ✅ CORRECT — Real measurement
+ctx.sayBenchmark("operation", () -> operation());
+```
+
+### Use Real Operations
+
+```java
+// ❌ WRONG — Fake operation
+ctx.sayBenchmark("database query", () -> Thread.sleep(100));
+
+// ✅ CORRECT — Real operation
+ctx.sayBenchmark("database query", () -> database.executeQuery("SELECT * FROM users"));
+```
+
+---
+
+## See Also
+
+### Learning Resources
+- **[Tutorial 4: Performance Documentation](../tutorials/performance.md)** — Hands-on tutorial with exercises and complete examples
+- **[PERFORMANCE.md](../PERFORMANCE.md)** — Architecture, optimization strategies, and real-world numbers
+
+### Related How-Tos
+- **[Performance Tuning](performance-tuning.md)** — Reduce build time and profiling strategies
+- **[sayAsciiChart](sse-parsing.md)** — Visualize benchmark results as ASCII charts
+
+### API Reference
+- **[DtrContext API](../api/io/github/seanchatmangpt/dtr/junit5/DtrContext.md)** — Complete `say*` method reference
+
+---
+
+**Version:** 2026.3.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+

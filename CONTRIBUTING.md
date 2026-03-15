@@ -2,95 +2,183 @@
 
 Thank you for your interest in contributing to DTR! We welcome contributions of all kinds including bug reports, documentation improvements, feature requests, and pull requests.
 
+## Quick Start
+
+**New to DTR?** Start with our **[30-Minute Quickstart Guide](docs/CONTRIBUTING_QUICKSTART.md)** to get from zero to your first contribution in under 30 minutes.
+
+**Experienced contributor?** Jump to the section you need:
+
+- [Development Setup](#development-setup) - Get your environment ready
+- [Code Style](#code-style) - Follow our conventions
+- [Testing](#testing) - Ensure quality before submitting
+- [Pull Request Process](#pull-request-process) - Submit your changes
+
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Local CI Testing with act](#local-ci-testing-with-act)
-- [Development Workflows](#development-workflows)
-- [Code Style Guidelines](#code-style-guidelines)
-- [Testing Requirements](#testing-requirements)
+- [Development Setup](#development-setup)
+- [Development Workflow](#development-workflow)
+- [Code Style](#code-style)
+- [Testing](#testing)
 - [Pull Request Process](#pull-request-process)
-- [Troubleshooting](#troubleshooting)
+- [Local CI Testing](#local-ci-testing)
+- [Additional Resources](#additional-resources)
 
-## Prerequisites
+## Development Setup
 
-### Required Tools
+### Prerequisites
 
-- **Java 26** (Java 26.ea.13-graal or later)
-- **Maven 4.0.0-rc-3+** or **mvnd 2.0.0+** (preferred)
+- **Java 26** (Java 26.ea.13-graal or later) with preview features
+- **Maven 4.0.0-rc-3+** or **mvnd 2.0.0+** (recommended for speed)
 - **Git** for version control
-- **act** (for local CI testing) - [Install act](https://github.com/nektos/act#installation)
 
-### Installation
+For detailed setup instructions, see **[Environment Setup Guide](docs/contributing/setup.md)**.
+
+### Quick Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/seanchatmangpt/dtr.git
+git clone https://github.com/YOUR_USERNAME/dtr.git
 cd dtr
 
 # Verify Java version (must be 26+)
 java -version
-# Expected output: openjdk version "26.ea.13-graal" or later
+# Expected: openjdk version "26.ea.13" or higher
 
-# Verify Maven (mvnd recommended for speed)
+# Verify Maven (mvnd recommended)
 mvnd --version
-# Expected output: Maven 4.0.0-rc-3+ or mvnd 2.0.0+
+# Expected: Maven 4.0.0-rc-3+ or mvnd 2.0.0+
 
-# Verify act is installed
-act --version
-# Expected output: act version X.X.X
+# Build the project
+mvnd clean verify
+
+# Run tests
+mvnd test
 ```
 
 ### Installing Java 26 via SDKMAN
 
 ```bash
-# Install SDKMAN if not already installed
+# Install SDKMAN
 curl -s "https://get.sdkman.io" | bash
 source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-# Install Java 26 (Early Access)
+# Install Java 26
 sdk install java 26.ea.13-graal
 sdk use java 26.ea.13-graal
 
-# Verify installation
+# Verify
 java -version
 ```
 
-### Installing Maven mvnd (Maven Daemon)
+## Development Workflow
 
-```bash
-# Download mvnd 2.0.0+
-wget https://github.com/apache/maven-mvnd/releases/download/2.0.0/mvnd-2.0.0-linux-amd64.tar.gz
-tar -xzf mvnd-2.0.0-linux-amd64.tar.gz
-export PATH="$PATH:$PWD/mvnd-2.0.0-linux-amd64/bin"
+### Making Changes
 
-# Or on macOS
-brew install mvnd
+1. **Create a feature branch** from `main`:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+   > **Note:** Agent/automated branches follow `claude/description-XXXXX` pattern and are managed by tooling.
 
-# Verify installation
-mvnd --version
+2. **Make your changes** following code style guidelines
+
+3. **Test your changes**:
+   ```bash
+   # Run all tests
+   mvnd test
+
+   # Run specific module
+   mvnd test -pl dtr-core
+
+   # Full verification
+   mvnd clean verify
+   ```
+
+4. **Commit with clear messages**:
+   ```bash
+   git commit -m "feat: Add support for new feature
+
+   - Implements feature X
+   - Adds tests for Y
+   - Closes #123"
+   ```
+
+5. **Push to your fork**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+For detailed workflow guidance, see **[Making Changes Guide](docs/contributing/making-changes.md)**.
+
+### Project Structure
+
+```
+dtr/
+├── dtr-core/                 # Main library with RenderMachine, say* API
+├── dtr-integration-test/     # Integration tests (Ninja Framework app)
+├── dtr-benchmarks/           # JMH performance benchmarks
+├── dtr-cli/                  # Python CLI wrapper
+├── docs/                     # User documentation (Diataxis structure)
+├── pom.xml                   # Root Maven configuration
+└── CLAUDE.md                 # Developer quick reference
 ```
 
-## Quick Start
+For a detailed codebase tour, see **[Codebase Tour](docs/contributing/codebase-tour.md)**.
 
-### Building the Project
+## Code Style
 
+### Java Conventions
+
+- Follow standard Java naming and structure conventions
+- Use the formatting configured in `.mvn/maven.config`
+- Keep methods focused and concise (single responsibility)
+- Add meaningful Javadoc for public APIs
+- **Java 26+ features are encouraged**: records, sealed classes, pattern matching, gatherers
+
+### Commit Message Format
+
+Use conventional commit prefixes:
+
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `test:` - Adding or updating tests
+- `refactor:` - Code refactoring without feature changes
+- `chore:` - Build process, dependencies, etc.
+
+**Example:**
 ```bash
-# Full clean build with all modules
-mvnd clean install
+# Good
+git commit -m "feat: Add WebSocket streaming support
 
-# Build specific module
-mvnd clean install -pl dtr-core
+- Implements RFC 6455 WebSocket protocol
+- Adds WebSocketClient interface
+- Includes integration tests
+- Closes #456"
 
-# Build with all tests
-mvnd clean verify
-
-# Build with proxy (if behind corporate firewall)
-mvnd clean install \
-  -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128 \
-  -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
+# Bad
+git commit -m "fixed stuff"
 ```
+
+### Documentation Style
+
+Documentation follows the [Diataxis framework](https://diataxis.fr/):
+- **Tutorials** - Step-by-step learning lessons
+- **How-to guides** - Solution-oriented instructions
+- **Reference** - Technical information (API docs)
+- **Explanation** - Conceptual context
+
+## Testing
+
+### Requirements
+
+All PRs must:
+
+1. **Include tests** for new features
+2. **Pass all tests**: `mvnd test`
+3. **Maintain coverage** - Don't reduce test coverage
+4. **Generate documentation**: `mvnd test -pl dtr-integration-test`
 
 ### Running Tests
 
@@ -101,276 +189,19 @@ mvnd test
 # Run specific test class
 mvnd test -Dtest=PhDThesisDocTest
 
-# Run integration tests only
+# Run integration tests
 mvnd test -pl dtr-integration-test
 
-# Run with verbose output
-mvnd test -X
-
-# Run tests with coverage
+# Run with coverage
 mvnd clean verify -Djacoco.skip=false
+
+# Run specific module
+mvnd test -pl dtr-core
 ```
 
-## Local CI Testing with act
+### Testing from Documentation
 
-**act** allows you to run GitHub Actions workflows locally on your machine, speeding up development and catching issues before pushing.
-
-### Installing act
-
-```bash
-# On macOS
-brew install act
-
-# On Linux
-curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
-
-# Via cargo
-cargo install act
-
-# Verify installation
-act --version
-```
-
-### Setting Up act Secrets
-
-Create a `.secrets` file in the project root (git-ignored) for local testing:
-
-```bash
-# Create .secrets file
-cat > .secrets << 'EOF'
-CENTRAL_USERNAME=your_username
-CENTRAL_TOKEN=your_token
-GPG_PRIVATE_KEY=your_gpg_private_key
-GPG_PASSPHRASE=your_passphrase
-GPG_KEY_ID=your_key_id
-EOF
-
-# Set proper permissions
-chmod 600 .secrets
-```
-
-**Note:** For local act testing, you can use dummy values if you're not testing deployment:
-
-```bash
-cat > .secrets << 'EOF'
-CENTRAL_USERNAME=test_user
-CENTRAL_TOKEN=test_token
-GPG_PRIVATE_KEY=test_key
-GPG_PASSPHRASE=test_pass
-GPG_KEY_ID=test_id
-EOF
-```
-
-### Running Workflows Locally
-
-```bash
-# List all workflows
-act -l
-
-# Run the CI gate workflow (default job)
-act -j quality-check
-
-# Run specific job
-act -j test-coverage
-
-# Run with specific Java version matrix
-act -j build-verification
-
-# Run all jobs in CI gate workflow
-act -j quality-check -j dependency-check -j test-coverage -j security-scan -j build-verification
-
-# Run with secrets file
-act --secret-file .secrets -j test-coverage
-
-# Run with verbose output
-act -v -j test-coverage
-
-# Run with specific platform (useful if act defaults to wrong architecture)
-act -P ubuntu-latest=catthehacker/ubuntu:act-latest
-```
-
-### Common act Commands
-
-```bash
-# Quick test: Run quality checks only
-act -j quality-check
-
-# Full CI: Run all CI gate jobs
-act -j quality-check -j dependency-check -j test-coverage -j security-scan -j build-verification
-
-# Test deployment readiness (requires real secrets)
-act -j deployment-ready --secret-file .secrets
-
-# Run specific workflow by event type
-act push -j quality-check
-act pull_request -j test-coverage
-
-# Dry run (show what would be executed)
-act -n -j quality-check
-```
-
-### Troubleshooting act Issues
-
-#### Docker Not Running
-
-```bash
-# Start Docker Desktop or Docker daemon
-sudo systemctl start docker  # Linux
-# Or open Docker Desktop on macOS/Windows
-
-# Verify Docker is running
-docker ps
-```
-
-#### Platform/Architecture Issues
-
-```bash
-# Use pre-built act images
-act -P ubuntu-latest=catthehacker/ubuntu:act-latest
-
-# Or use official Ubuntu image
-act -P ubuntu-latest=node:16-buster-slim
-```
-
-#### Java Installation Issues
-
-The CI workflow uses SDKMAN to install Java 26. If this fails locally:
-
-```bash
-# Install Java 26 locally first
-sdk install java 26.ea.13-graal
-sdk use java 26.ea.13-graal
-
-# Then run act with local Java
-act -j build-verification
-```
-
-#### Maven Repository Cache
-
-```bash
-# Clear Maven cache if needed
-rm -rf ~/.m2/repository
-
-# Use act's container cache
-act --reuse --container-architecture linux/amd64 -j test-coverage
-```
-
-## How to Contribute
-
-### Reporting Bugs
-
-Before creating a bug report, please check the issue list. When reporting a bug, include:
-
-1. Your environment (Java version, OS, Maven version)
-2. Steps to reproduce the issue
-3. Expected behavior vs. actual behavior
-4. Code examples if applicable
-5. Stack trace or error messages
-
-**Use the GitHub Issues tab:** [DTR Issues](https://github.com/seanchatmangpt/dtr/issues)
-
-### Suggesting Enhancements
-
-Feature suggestions are welcome! When proposing a feature:
-
-1. Use a clear, descriptive title
-2. Explain the use case and benefits
-3. Provide examples of how it would work
-4. Note any potential implementation challenges
-
-**Use the GitHub Discussions tab:** [DTR Discussions](https://github.com/seanchatmangpt/dtr/discussions)
-
-### Submitting Pull Requests
-
-1. **Fork the repository** on GitHub
-2. **Create a feature branch** from `main`:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-   > **Note:** Agent/automated branches follow the pattern `claude/description-XXXXX` (e.g., `claude/fix-latex-errors-rzhxB`). These branches are managed by automated tooling and should not be pushed to manually.
-
-3. **Make your changes** following the code style (see below)
-
-4. **Commit with clear messages** (see Commit Guidelines below)
-
-5. **Push to your fork**:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-6. **Create a Pull Request** with:
-   - Clear title describing the change
-   - Description of what changed and why
-   - Reference to any related issues (e.g., "Fixes #123")
-   - Test coverage for new features
-
-### Code Style
-
-- Follow Java conventions for naming and structure
-- Use the formatting configured in `.mvn/maven.config`
-- Keep methods focused and concise
-- Add meaningful comments for complex logic
-- Java 26+ features (records, sealed classes, pattern matching, gatherers) are encouraged
-
-### Commit Guidelines
-
-Write clear, atomic commits:
-
-```bash
-# Good commit message
-git commit -m "feat: Add support for WebSocket streaming in tests
-
-- Implements RFC 6455 WebSocket protocol
-- Adds WebSocketClient interface
-- Includes integration tests for bi-directional messaging
-- Closes #456"
-
-# Bad commit message
-git commit -m "fixed stuff"
-```
-
-Use conventional commit prefixes:
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation changes
-- `test:` - Adding or updating tests
-- `refactor:` - Code refactoring without feature changes
-- `chore:` - Build process, dependencies, etc.
-
-## Development Workflows
-
-### Java Module Development (dtr-core, dtr-integration-test, dtr-benchmarks)
-
-```bash
-# Edit Java source files in src/main/java/io/github/seanchatmangpt/dtr/
-
-# Test your changes
-mvnd clean test -pl dtr-core
-
-# Run specific test
-mvnd test -pl dtr-core -Dtest=DTRTest
-
-# Build documentation from tests
-mvnd clean test -pl dtr-integration-test -Dtest=PhDThesisDocTest
-```
-
-### CLI Development (dtr-cli - Python)
-
-See [dtr-cli/CONTRIBUTING.md](./dtr-cli/CONTRIBUTING.md) for Python-specific guidelines.
-
-## Documentation
-
-### Adding to User Documentation
-
-Documentation lives in `/docs/` with sections:
-- `tutorials/` - Step-by-step guides
-- `how-to/` - Solution-oriented guides
-- `reference/` - API and configuration reference
-- `explanation/` - Conceptual information
-
-### Generating Documentation from Tests
-
-The beauty of DTR is that documentation is generated from tests:
+DTR's unique feature: documentation is generated from tests:
 
 ```java
 @Test
@@ -384,67 +215,129 @@ void documentMyFeature() {
 
 Run the test to generate markdown in `target/docs/test-results/`.
 
-## Project Structure
+## Pull Request Process
 
+### Before Submitting
+
+1. **Test locally**: Ensure `mvnd clean verify` passes
+2. **Update documentation**: Add/ update docs for new features
+3. **Check style**: Follow code style guidelines
+4. **Write clear description**: Explain what changed and why
+
+### Creating a Pull Request
+
+1. **Push your branch** to your fork
+2. **Create PR** with:
+   - Clear title (e.g., "feat: Add WebSocket streaming support")
+   - Description of changes
+   - Reference to related issues (e.g., "Fixes #123")
+   - Test coverage information
+
+3. **Fill in PR template**:
+   ```markdown
+   ## What Changed
+   - Added feature X
+   - Fixed bug Y
+
+   ## Why
+   Explain the motivation for this change
+
+   ## Testing
+   - Added unit tests for X
+   - Verified integration tests pass
+   - Manual testing steps
+
+   ## Checklist
+   - [x] Tests pass locally
+   - [x] Documentation updated
+   - [x] Commit messages follow conventions
+   ```
+
+### After Submitting
+
+1. **Watch CI results** - All checks must pass (green ✓)
+2. **Address feedback** - Respond to reviewer comments
+3. **Celebrate!** - Once merged, you're a DTR contributor!
+
+## Local CI Testing
+
+**act** allows you to run GitHub Actions workflows locally before pushing.
+
+### Installation
+
+```bash
+# macOS
+brew install act
+
+# Linux
+curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+
+# Verify
+act --version
 ```
-dtr/
-├── dtr-core/                    # Main library with RenderMachine, say* API
-│   ├── src/main/java/io/github/seanchatmangpt/dtr/
-│   └── src/test/java/
-├── dtr-integration-test/        # Integration tests (Ninja Framework app)
-├── dtr-benchmarks/              # JMH performance benchmarks
-├── dtr-cli/               # Python CLI wrapper
-├── docs/                        # User documentation (Diataxis structure)
-├── pom.xml                      # Root Maven configuration
-└── CLAUDE.md                    # Developer quick reference
+
+### Running Workflows Locally
+
+```bash
+# List all workflows
+act -l
+
+# Run quality checks
+act -j quality-check
+
+# Run all CI gate jobs
+act -j quality-check -j test-coverage -j build-verification
+
+# Run with secrets file (create .secrets first)
+act --secret-file .secrets -j test-coverage
 ```
 
-## Key Files to Know
+### Creating Secrets File
 
-- **[CLAUDE.md](./CLAUDE.md)** — Quick reference for developers
-- **[pom.xml](./pom.xml)** — Maven configuration, dependencies, versions
-- **.mvn/maven.config** — Maven flags (includes `--enable-preview`)
-- **LICENSE** — Apache 2.0 license text
-- **BREAKING-CHANGES-2.0.0.md** — Major version breaking changes
+```bash
+# Create .secrets file (git-ignored)
+cat > .secrets << 'EOF'
+CENTRAL_USERNAME=test_user
+CENTRAL_TOKEN=test_token
+GPG_PRIVATE_KEY=test_key
+GPG_PASSPHRASE=test_pass
+GPG_KEY_ID=test_id
+EOF
 
-## Testing Requirements
-
-All PRs must:
-
-1. Include tests for new features
-2. Pass existing tests: `mvnd test`
-3. Maintain or improve code coverage
-4. Generate documentation: `mvnd test -pl dtr-integration-test`
-
-## Review Process
-
-1. A maintainer will review your PR
-2. Feedback may be requested
-3. Once approved, your PR will be merged
-4. Your contribution will be credited in release notes
-
-## Release Process
-
-The project uses semantic versioning. Current version: `2.5.0-SNAPSHOT`
-
-Releases to Maven Central follow:
-- `SNAPSHOT` → Final testing
-- `X.Y.Z` → Stable release
-- Release notes document breaking changes
-
-## Getting Help
-
-- **GitHub Issues:** Bug reports and feature requests
-- **GitHub Discussions:** General questions and feature ideas
-- **Email:** Contact maintainers through GitHub profile
+chmod 600 .secrets
+```
 
 ## Additional Resources
 
-- [Java 25 Features Guide](./JAVA_26_DEVELOPER_GUIDE.md)
-- [Architecture Overview](./docs/explanation/architecture.md)
-- [API Reference](./docs/reference/)
-- [Maven Central Release Guide](./RELEASE_PLAN_2.0.0.md)
+### For New Contributors
+
+- **[30-Minute Quickstart](docs/CONTRIBUTING_QUICKSTART.md)** - Get started fast
+- **[Environment Setup](docs/contributing/setup.md)** - Detailed setup instructions
+- **[Codebase Tour](docs/contributing/codebase-tour.md)** - Project architecture overview
+
+### For Developers
+
+- **[Making Changes Guide](docs/contributing/making-changes.md)** - Development workflow details
+- **[CLAUDE.md](CLAUDE.md)** - Developer quick reference
+- **[say* API Reference](docs/reference/say-api.md)** - Complete API documentation
+- **[Java 26 Features](docs/explanation/java26-code-reflection.md)** - Advanced Java 26 features in DTR
+
+### For Maintainers
+
+- **[Release Process](docs/contributing/releasing.md)** - How releases are managed
+- **[Architecture Overview](docs/ARCHITECTURE.md)** - System design documentation
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+
+### Community
+
+- **[GitHub Issues](https://github.com/seanchatmangpt/dtr/issues)** - Bug reports and feature requests
+- **[GitHub Discussions](https://github.com/seanchatmangpt/dtr/discussions)** - General questions and ideas
+- **[Full Documentation Index](docs/index.md)** - All DTR documentation
 
 ---
 
-**Thank you for contributing to DTR!** Your work helps make documentation and testing better for everyone.
+**Thank you for contributing to DTR!** 🎉
+
+Your contributions help make documentation and testing better for everyone. Every contribution matters, whether it's a typo fix, a new test, or a major feature.
+
+**Questions?** Open a [GitHub Discussion](https://github.com/seanchatmangpt/dtr/discussions) or reach out to maintainers.

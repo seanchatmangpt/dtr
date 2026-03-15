@@ -1,3 +1,34 @@
+## [NEXT] - In Progress
+
+### Documentation Overhaul
+- README.md: Reduced from 2047 to ~400 lines, working example now visible without scrolling
+- Added 80/20 API focus highlighting 8 essential methods
+- New 5-minute Quick Start Guide (QUICKSTART.md)
+- New 6-tutorial progressive learning series (TUTORIALS/)
+- New Architecture documentation (ARCHITECTURE.md)
+- New 30-minute Contributing Quickstart (CONTRIBUTING_QUICKSTART.md)
+- New Migration Guide (MIGRATING.md) with v2.5.x → v2.6.0 paths
+- New Performance Guide (PERFORMANCE.md)
+- New Symptom-based Troubleshooting Guide (TROUBLESHOOTING.md)
+- New Example Gallery (EXAMPLES.md) with 8 real-world patterns
+- Redesigned API Reference with decision tree (docs/reference/say-api-methods.md)
+- Removed obsolete HTTP/WebSocket/gRPC documentation (v2.6.0 removed these features)
+
+### Design Principles
+- Progressive disclosure: Simple first, complex later
+- 80/20 rule: 8 core methods cover 80% of use cases
+- Symptom-based troubleshooting: Organize by what users SEE
+- Real examples only: No synthetic benchmarks
+- Multi-format output: Single source generates Markdown, LaTeX, Blog, Slides
+
+### New Tutorials
+- Tutorial 1: Hello DTR (15 min) - Core mental model
+- Tutorial 2: REST APIs (20 min) - Real-world API documentation
+- Tutorial 3: Java 26 Features (25 min) - Records, sealed classes, pattern matching
+- Tutorial 4: Performance (20 min) - Benchmarking with sayBenchmark
+- Tutorial 5: Diagrams (20 min) - Mermaid visualization
+- Tutorial 6: Contracts (25 min) - Interface verification
+
 ## v2026.3.0 — 2026-03-14
 
 - docs: update session log

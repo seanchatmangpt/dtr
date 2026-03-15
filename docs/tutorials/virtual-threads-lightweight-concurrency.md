@@ -1,16 +1,22 @@
 # Tutorial: Benchmarking with Virtual Threads and sayBenchmark
 
-Learn how to measure and document performance using DTR 2.6.0's `sayBenchmark` method. This tutorial uses Java 26 virtual threads as a real-world subject: you will benchmark virtual thread creation overhead, compare warmup strategies, and document results directly in generated Markdown.
+> **Advanced Tutorial** — This tutorial goes beyond the 6-part core series to explore virtual threads and performance benchmarking in depth.
+
+Learn how to measure and document performance using DTR's `sayBenchmark` method. This tutorial uses Java 26 virtual threads as a real-world subject: you will benchmark virtual thread creation overhead, compare warmup strategies, and document results directly in generated Markdown.
 
 **Time:** ~30 minutes
-**Prerequisites:** Java 26, DTR 2.6.0, completion of [Your First DocTest](your-first-doctest.md)
+**Prerequisites:** Java 26, DTR 2026.3.0, completion of [Tutorial 1: Your First DocTest](your-first-doctest.md)
 **What you'll learn:** How `sayBenchmark` works, when to use explicit warmup rounds, and how to embed benchmark results in living documentation
+
+**Related tutorials:**
+- [Tutorial 3: Java 26 Features](java26-features.md) — More Java 26 language features and APIs
+- [Performance Guide](../PERFORMANCE.md) — Best practices for benchmarking and performance testing
 
 ---
 
 ## What Is sayBenchmark?
 
-`sayBenchmark` is a DTR 2.6.0 method that runs a `Runnable` task, measures its execution time using `System.nanoTime()`, performs virtual-thread-based warmup, and emits a formatted result table in the documentation output.
+`sayBenchmark` is a DTR method that runs a `Runnable` task, measures its execution time using `System.nanoTime()`, performs virtual-thread-based warmup, and emits a formatted result table in the documentation output.
 
 Two signatures are available:
 
@@ -269,6 +275,7 @@ Close the documentation with an environment snapshot so readers know which machi
 
 ## Next Steps
 
-- [Tutorial: Records and Sealed Classes](records-sealed-classes.md) — benchmark record construction vs class construction
-- [Tutorial: Testing a REST API](testing-a-rest-api.md) — measure HTTP endpoint latency with `sayBenchmark`
-- [Tutorial: Visualizing Code with sayMermaid](websockets-realtime.md) — diagram the virtual thread scheduler
+- [Tutorial 3: Java 26 Features](java26-features.md) — Explore more Java 26 language features and APIs
+- [Tutorial 4: Records and Sealed Classes](records-sealed-classes.md) — Benchmark record construction vs class construction
+- [Tutorial 6: Testing a REST API](testing-a-rest-api.md) — Measure HTTP endpoint latency with `sayBenchmark`
+- [Performance Guide](../PERFORMANCE.md) — Best practices for benchmarking and performance considerations

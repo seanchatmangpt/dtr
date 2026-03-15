@@ -1,7 +1,7 @@
-# Reference: DtrContext and DtrTest API Reference
+# Reference: DtrTest Base Class API
 
 **Package:** `io.github.seanchatmangpt.dtr.core`
-**Version:** 2.6.0
+**Version:** 2026.3.0
 
 `DtrContext` is the parameter-injection API for JUnit 5 tests. `DtrExtension` is the JUnit 5 extension that manages the documentation lifecycle. Together they replace the v2.4.x `DTR` abstract base class.
 
@@ -54,21 +54,21 @@ The `RenderMachine` is shared across the entire test class (to produce a single 
 
 **Class:** `io.github.seanchatmangpt.dtr.core.DtrContext`
 
-Provides access to all 37 `say*` documentation methods and the `RenderMachine` instance.
+Provides access to all 50+ `say*` documentation methods and the `RenderMachine` instance.
 
 ### say* methods
 
-All 37 documentation output methods are documented in [say* Core API Reference](request-api.md). The method groups are:
+All 50+ documentation output methods are documented in [say* Core API Reference](request-api.md). The method groups are:
 
 | Group | Methods | Since |
 |-------|---------|-------|
-| Core | `say`, `sayNextSection`, `sayRaw`, `sayCode`, `sayJson`, `sayTable`, `sayWarning`, `sayNote`, `sayKeyValue`, `sayUnorderedList`, `sayOrderedList`, `sayAssertions`, `sayRef`, `sayCite` (×2), `sayFootnote` | v2.0 |
-| JVM Introspection | `sayCallSite`, `sayAnnotationProfile`, `sayClassHierarchy`, `sayStringProfile`, `sayReflectiveDiff` | v2.4.0 |
-| Code Reflection | `sayCodeModel` (×2), `sayControlFlowGraph`, `sayCallGraph`, `sayOpProfile` | v2.3.0 |
-| Benchmarking | `sayBenchmark` (×2) | v2.6.0 |
-| Mermaid | `sayMermaid`, `sayClassDiagram` | v2.6.0 |
-| Coverage and Quality | `sayDocCoverage`, `sayContractVerification`, `sayEvolutionTimeline` | v2.6.0 |
-| Utility | `sayEnvProfile`, `sayRecordComponents`, `sayException`, `sayAsciiChart` | v2.6.0 |
+| Core | `say`, `sayNextSection`, `sayRaw`, `sayCode`, `sayJson`, `sayTable`, `sayWarning`, `sayNote`, `sayKeyValue`, `sayUnorderedList`, `sayOrderedList`, `sayAssertions`, `sayRef`, `sayCite` (×2), `sayFootnote` | 2026.1.0 |
+| JVM Introspection | `sayCallSite`, `sayAnnotationProfile`, `sayClassHierarchy`, `sayStringProfile`, `sayReflectiveDiff` | 2026.2.0 |
+| Code Reflection | `sayCodeModel` (×2), `sayControlFlowGraph`, `sayCallGraph`, `sayOpProfile` | 2026.1.0 |
+| Benchmarking | `sayBenchmark` (×2) | 2026.3.0 |
+| Mermaid | `sayMermaid`, `sayClassDiagram` | 2026.3.0 |
+| Coverage and Quality | `sayDocCoverage`, `sayContractVerification`, `sayEvolutionTimeline` | 2026.3.0 |
+| Utility | `sayEnvProfile`, `sayRecordComponents`, `sayException`, `sayAsciiChart` | 2026.3.0 |
 
 ### RenderMachine methods
 
@@ -119,9 +119,9 @@ class FeatureDocTest {
     @Test
     void overview(DtrContext ctx) {
         ctx.sayNextSection("Feature Overview");
-        ctx.say("This document describes the v2.6.0 release.");
+        ctx.say("This document describes the 2026.3.0 release.");
         ctx.sayNote("Requires Java 26+ with --enable-preview.");
-        ctx.sayWarning("API incompatible with DTR 2.5.x — see changelog.");
+        ctx.sayWarning("API incompatible with DTR 2026.2.x — see changelog.");
     }
 
     @Test
@@ -195,18 +195,18 @@ target/docs/test-results/
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2.6.0</version>
+    <version>2026.3.0</version>
     <scope>test</scope>
 </dependency>
 ```
 
 ---
 
-## Migration from v2.4.x DTR base class
+## Migration from v2026.2.x DTR base class
 
-In v2.5.0 the `DTR` abstract base class and JUnit 4 lifecycle were replaced by `DtrContext` + `DtrExtension`.
+In 2026.3.0 the `DTR` abstract base class and JUnit 4 lifecycle were replaced by `DtrContext` + `DtrExtension`.
 
-| v2.4.x (DTR base class) | v2.6.0 (DtrContext) |
+| v2026.2.x (DTR base class) | 2026.3.0 (DtrContext) |
 |-------------------------|---------------------|
 | `extends DTR` | `@ExtendWith(DtrExtension.class)` |
 | `sayNextSection("x")` | `ctx.sayNextSection("x")` |
@@ -220,6 +220,7 @@ In v2.5.0 the `DTR` abstract base class and JUnit 4 lifecycle were replaced by `
 
 ## See also
 
-- [say* Core API Reference](request-api.md) — all 37 method signatures
+- [say* Core API Reference](request-api.md) — all 50+ method signatures
 - [RenderMachine API](rendermachine-api.md) — rendering implementations
 - [Configuration](configuration.md) — output directory, Maven settings
+- [Architecture](../architecture.md) — DTR system design and component overview

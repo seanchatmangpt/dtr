@@ -1,12 +1,12 @@
-# Explanation: The 80/20 Design Patterns of DTR 2.6.0
+# Explanation: The 80/20 Design Patterns of DTR 2026.3.0
 
-This document explains the reasoning behind DTR's design decisions in version 2.6.0 — not how to use the features, but why they were designed the way they were.
+This document explains the reasoning behind DTR's design decisions in version 2026.3.0 — not how to use the features, but why they were designed the way they were.
 
 ---
 
 ## The Core Principle: Derive Facts from Code Structure
 
-DTR's central design principle, applied most fully in v2.6.0, is this:
+DTR's central design principle is this:
 
 > Documentation is most accurate when derived from the code it describes, not from a developer's description of that code.
 
@@ -14,13 +14,13 @@ This principle sounds obvious. Its implications are radical.
 
 If a record has five components, documentation derived from `getRecordComponents()` will always show five components — even after a refactor that adds a sixth. Documentation written by a developer may not. The developer forgets; the JVM does not.
 
-Every new capability in v2.6.0 is an application of this principle to a different category of documentation problem.
+Every new capability in DTR is an application of this principle to a different category of documentation problem.
 
 ---
 
-## Why 14 New Capabilities, 0 New Dependencies
+## Why 44 Methods, 0 New Dependencies
 
-DTR 2.6.0 adds 14 new `say*` signatures. It adds zero new external dependencies.
+DTR provides 44 `say*` methods across 10 categories. It adds zero new external dependencies.
 
 This is not a coincidence. It is a constraint.
 
@@ -32,11 +32,143 @@ Second, the constraint forces careful design. When you cannot reach for an exter
 
 ---
 
+## The 8 Essential Methods (The 80%)
+
+The 80/20 principle applies strongly to DTR: **8 core methods cover 80% of documentation use cases.** Master these first, then explore advanced methods when needed.
+
+### 1. `say(String text)` — Paragraphs
+**Most common method. Use for narrative text, explanations, and descriptions.**
+
+```java
+say("DTR transforms Java documentation into executable tests that prove code works as documented.");
+```
+
+### 2. `sayCode(String code, String language)` — Code Blocks
+**Display code with syntax highlighting. Use for examples, configuration, API usage.**
+
+```java
+sayCode("public record Person(String name, int age) {}", "java");
+```
+
+### 3. `sayTable(String[][] data)` — Structured Data
+**Render 2D arrays as tables. First row is headers. Use for comparisons, feature lists, metrics.**
+
+```java
+sayTable(new String[][]{
+    {"Method", "Use Case", "Frequency"},
+    {"say()", "Narrative text", "80%"},
+    {"sayCode()", "Code examples", "70%"},
+    {"sayTable()", "Structured data", "50%"}
+});
+```
+
+### 4. `sayNextSection(String headline)` — Section Headings
+**Create H1 headings with TOC entries. Use for major sections and chapter boundaries.**
+
+```java
+sayNextSection("API Reference");
+```
+
+### 5. `sayRef(Class<?> clazz, String anchor)` — Cross-References
+**Link to other documentation sections. Creates navigable documentation networks.**
+
+```java
+sayRef(BasicsTutorial.class, "getting-started");
+```
+
+### 6. `sayNote(String message)` — Context Notes
+**Add non-critical context, tips, and additional information. Renders as GitHub-style [!NOTE].**
+
+```java
+sayNote("For more details, see the complete API Reference in CLAUDE.md.");
+```
+
+### 7. `sayWarning(String message)` — Warnings
+**Highlight critical constraints, caveats, and important warnings. Renders as GitHub-style [!WARNING].**
+
+```java
+sayWarning("This feature requires Java 26+ with --enable-preview.");
+```
+
+### 8. `sayKeyValue(Map<String, String> pairs)` — Metadata
+**Display key-value pairs as a 2-column table. Use for configuration, properties, facts.**
+
+```java
+sayKeyValue(Map.of(
+    "Version", "2026.3.0",
+    "Java", "26.ea.13+",
+    "License", "EPL-2.0"
+));
+```
+
+---
+
+## When to Use Advanced Methods
+
+The remaining 36 methods are **precise instruments for precise problems**. Use them when:
+
+### Code Structure Analysis
+- **`sayCodeModel(Class)`** — Documenting class structure, sealed hierarchies, method signatures
+- **`sayClassHierarchy(Class)`** — Showing inheritance trees and interface implementations
+- **`sayAnnotationProfile(Class)`** — Analyzing annotation usage across classes
+- **`sayRecordComponents(Class)`** — Documenting record schemas (names, types, annotations)
+
+### Performance & Benchmarking
+- **`sayBenchmark(String, Runnable)`** — Documenting reproducible performance measurements
+- **`sayEnvProfile()`** — Capturing Java version, OS, processors, heap for context
+
+### Java 26 Code Reflection (JEP 516)
+- **`sayControlFlowGraph(Method)`** — Generating Mermaid flowcharts from bytecode
+- **`sayCallGraph(Class)`** — Visualizing method-to-method call relationships
+- **`sayOpProfile(Method)`** — Analyzing operation counts from Code Reflection IR
+
+### Cross-References & Citations
+- **`sayCite(String)`** — BibTeX citation references for academic documentation
+- **`sayFootnote(String)`** — Adding footnotes and auxiliary content
+
+### Testing & Validation
+- **`sayAndAssertThat(String, actual, Matcher)`** — Asserting and documenting in one call
+- **`sayException(Throwable)`** — Documenting exception behavior and stack traces
+- **`sayDocCoverage(Class[])`** — Reporting which public methods were documented
+
+### Presentation-Specific (Slides/Blogs)
+- **`saySlideOnly(String)`** — Content for slide decks only
+- **`sayDocOnly(String)`** — Content for documentation only
+- **`saySpeakerNote(String)`** — Presenter notes
+- **`sayTweetable(String)`** — Social-media quote boxes
+- **`sayTldr(String)`** — TL;DR summary boxes
+
+### Advanced Visualization
+- **`sayMermaid(String)`** — Raw Mermaid diagrams (flowcharts, sequences, etc.)
+- **`sayClassDiagram(Class[])`** — Auto-generated class diagrams from reflection
+- **`sayAsciiChart(String, double[], String[])`** — Horizontal bar charts with Unicode blocks
+
+**Rule of thumb:** If a core method can express it clearly, use the core method. Advanced methods add power but also complexity.
+
+---
+
+## Decision Tree Summary
+
+For a complete decision tree with examples, see the **Extended say* API Reference (80/20 Guide)** in `CLAUDE.md`. Quick reference:
+
+```
+Simple text? → say()
+Code/config? → sayCode() or sayJson()
+Structured data? → sayTable() or sayKeyValue()
+List? → sayUnorderedList() or sayOrderedList()
+Important context? → sayNote() or sayWarning()
+Testing? → sayAndAssertThat()
+Slides/blogs? → Use presentation-specific methods
+Code analysis? → Use reflection-based methods
+```
+
+---
+
 ## The Blue Ocean Methodology Applied to Documentation
 
 "Blue Ocean" strategy in product design means creating new market space by solving problems that existing tools do not address, rather than competing on the same dimensions.
 
-Applied to DTR: instead of being a better HTML reporter, a better API doc generator, or a better test assertion library, v2.6.0 identifies categories of documentation pain that no existing tool addresses and builds targeted capabilities for each.
+Applied to DTR: instead of being a better HTML reporter, a better API doc generator, or a better test assertion library, DTR identifies categories of documentation pain that no existing tool addresses and builds targeted capabilities for each.
 
 ### Pain Point 1: Performance Claims Drift
 
@@ -60,7 +192,7 @@ Applied to DTR: instead of being a better HTML reporter, a better API doc genera
 
 **The problem.** Documentation describes what code does today, not how it evolved. Readers who need to understand why a design decision was made have no path from the documentation to the version history.
 
-**The capability.** `sayGitEvolution(String path)` executes `git log` on the specified path and documents the commit history as a timeline table. The evolution of a component becomes part of its documentation.
+**The capability.** `sayEvolutionTimeline(Class<?> clazz, int maxEntries)` executes `git log` on the class source file and documents the commit history as a timeline table. The evolution of a component becomes part of its documentation.
 
 ### Pain Point 5: Diagrams Drift from Reality
 
@@ -72,40 +204,19 @@ Applied to DTR: instead of being a better HTML reporter, a better API doc genera
 
 **The problem.** You know which tests pass. You do not know which `say*` method families were used, which record types were documented, which modules were covered by documentation.
 
-**The capability.** `sayCoverageReport(DtrContext)` introspects the current test's event queue and documents which categories of documentation were produced. This is documentation coverage — analogous to test coverage, but for documentation.
+**The capability.** `sayDocCoverage(Class<?>... classes)` introspects the specified classes and documents which public methods were documented. This is documentation coverage — analogous to test coverage, but for documentation.
 
 ### Pain Point 7: Exception Behavior Is Undocumented
 
 **The problem.** What exceptions a method throws, under what conditions, is rarely documented systematically. Developers read source code to find out.
 
-**The capability.** DTR 2.6.0 includes exception documentation methods that capture and document exception behavior through controlled test invocation, making the exception contract part of the test-generated documentation.
-
----
-
-## The 80% Rule Applied to say* Selection
-
-Not every `say*` method is appropriate for every documentation context. The 80/20 principle applies here: 20% of the `say*` methods will appear in 80% of tests.
-
-The core 20%:
-
-| Method | When to Use |
-|---|---|
-| `sayNextSection(String)` | Chapter/section boundaries |
-| `say(String)` | Narrative context between facts |
-| `sayCode(String, String)` | Showing code examples |
-| `sayTable(String[][])` | Structured comparison data |
-| `sayNote(String)` | Non-critical context |
-| `sayWarning(String)` | Critical constraints or caveats |
-
-The introspection and benchmarking methods — the Blue Ocean capabilities — appear when you are documenting a specific class's structure, a specific method's performance, or a specific architectural constraint. They are not general-purpose; they are precise instruments for precise problems.
-
-Use `sayRecordComponents` when you need to document a record's structure, not as a substitute for `say`. Use `sayBenchmark` when you need a documented, reproducible performance measurement, not to satisfy curiosity about speed.
+**The capability.** `sayException(Throwable t)` captures and documents exception behavior through controlled test invocation, making the exception contract part of the test-generated documentation.
 
 ---
 
 ## Pattern: Structure Over Description
 
-The common pattern across all new capabilities:
+The common pattern across all capabilities:
 
 1. Identify a category of documentation that developers write by hand (and update imperfectly)
 2. Find the authoritative source in the JVM (reflection, git, bytecode)
@@ -130,9 +241,9 @@ Removing it also illustrated the principle: if you have to maintain something, m
 
 ## The Cumulative Effect
 
-Individually, each of the 14 new capabilities solves one documentation problem. Collectively, they address the single root cause: **the gap between what code does and what documentation says it does.**
+Individually, each capability solves one documentation problem. Collectively, they address the single root cause: **the gap between what code does and what documentation says it does.**
 
-A codebase documented with DTR 2.6.0 has:
+A codebase documented with DTR has:
 - Performance claims that are re-verified on every test run
 - Type structures that match their documentation by construction
 - Architectural constraints that are verified and documented simultaneously
@@ -140,3 +251,25 @@ A codebase documented with DTR 2.6.0 has:
 - Diagrams derived from the actual class hierarchy
 
 These are not incremental improvements to documentation quality. They are structural changes to how documentation accuracy is maintained — or rather, how the need to maintain it is eliminated.
+
+---
+
+## Further Reading
+
+### Hands-On Tutorial
+- **[Tutorial 1: Basics](../tutorial/basics.md)** — Get started with the 8 essential methods in 5 minutes
+
+### Complete API Reference
+- **[CLAUDE.md](../../CLAUDE.md)** — Full reference for all 44 methods with decision tree and examples
+
+### Examples
+- **[Examples Directory](../example/)** — Real-world documentation tests demonstrating all method categories
+
+### Advanced Topics
+- **[Java 26 Code Reflection](../explanation/java-26-code-reflection.md)** — JEP 516 integration and advanced bytecode analysis
+- **[Benchmarking Guide](../explanation/benchmarking.md)** — Reproducible performance measurement patterns
+- **[Coverage Metrics](../explanation/coverage.md)** — Documentation coverage analysis and reporting
+
+---
+
+**Next Step:** Try [Tutorial 1: Basics](../tutorial/basics.md) to see the 8 essential methods in action.

@@ -1,5 +1,7 @@
 # Explanation: Architecture
 
+> **Note:** This is the original deep-dive into DTR 2.6.0 internals. For the comprehensive architecture overview, see **[ARCHITECTURE.md](../ARCHITECTURE.md)**. This document focuses on implementation philosophy and new module details.
+
 This document describes DTR's module structure, class design, and the internal event pipeline that transforms test method calls into multi-format documentation output.
 
 ---

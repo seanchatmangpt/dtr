@@ -4,44 +4,175 @@ Complete reference for all documentation methods in the DTR framework.
 
 ## Table of Contents
 
-- [Core API](#core-api)
-- [Formatting & Structure](#formatting--structure)
-- [Cross-References](#cross-references)
-- [Code Model (Reflection-Based)](#code-model-reflection-based)
-- [Java 26 Code Reflection (JEP 516)](#java-26-code-reflection-jep-516)
-- [Benchmarking](#benchmarking)
-- [Mermaid Diagrams](#mermaid-diagrams)
-- [Coverage & Quality](#coverage--quality)
-- [80/20 Low-Hanging Fruit](#80-20-low-hanging-fruit)
-- [Slide/Blog-Specific Methods](#slide-blog-specific-methods)
-- [Assertion Combos](#assertion-combos)
+- [80/20 Essential Methods](#8020-essential-methods)
+- [Decision Tree: Which Method Should I Use?](#decision-tree-which-method-should-i-use)
+- [Complete Reference](#complete-reference)
+  - [Core API](#core-api)
+  - [Formatting & Structure](#formatting--structure)
+  - [Cross-References](#cross-references)
+  - [Code Model (Reflection-Based)](#code-model-reflection-based)
+  - [Java 26 Code Reflection (JEP 516)](#java-26-code-reflection-jep-516)
+  - [Benchmarking](#benchmarking)
+  - [Mermaid Diagrams](#mermaid-diagrams)
+  - [Coverage & Quality](#coverage--quality)
+  - [Additional Utilities](#additional-utilities)
+  - [Slide/Blog-Specific Methods](#slide-blog-specific-methods)
+  - [Assertion Combos](#assertion-combos)
 
-## Core API
+---
+
+## 80/20 Essential Methods
+
+**These 8 methods cover 80% of documentation use cases.** Start here.
 
 ### `say(String text)`
+**Render a paragraph** - the most common method. Supports Markdown formatting.
+
+```java
+say("This is a **bold** paragraph with *italic* text.");
+```
+
+### `sayCode(String code, String language)`
+**Document code examples** with syntax highlighting.
+
+```java
+sayCode("public void hello() { System.out.println(\"Hello\"); }", "java");
+```
+
+### `sayTable(String[][] data)`
+**Display structured data** in a table. First row = headers.
+
+```java
+sayTable(new String[][]{
+    {"Feature", "Status", "Priority"},
+    {"Login", "✓ Done", "High"},
+    {"Registration", "🔄 In Progress", "Medium"}
+});
+```
+
+### `sayNextSection(String headline)`
+**Create a section heading** that adds to the table of contents.
+
+```java
+sayNextSection("User Authentication");
+```
+
+### `sayRef(Class<?> docTestClass, String anchor)`
+**Link to another section** in your documentation.
+
+```java
+sayRef(UserServiceTest.class, "registration-flow");
+```
+
+### `sayNote(String message)`
+**Add helpful context** in a GitHub-style note block.
+
+```java
+sayNote("For optimal performance, use connection pooling.");
+```
+
+### `sayWarning(String message)`
+**Highlight important warnings** in a GitHub-style warning block.
+
+```java
+sayWarning("This API endpoint is deprecated and will be removed in v2.0.");
+```
+
+### `sayKeyValue(Map<String, String> pairs)`
+**Document metadata** in a clean 2-column table.
+
+```java
+sayKeyValue(Map.of(
+    "Version", "1.0.0",
+    "Author", "John Doe",
+    "License", "Apache 2.0"
+));
+```
+
+---
+
+## Decision Tree: Which Method Should I Use?
+
+```
+What do you want to document?
+
+├── Simple text/paragraph
+│   └── Use say()
+│
+├── Code or configuration example
+│   └── Use sayCode(code, "language")
+│
+├── Structured data
+│   ├── Multiple rows/columns → sayTable(data[][])
+│   └── Key-value pairs → sayKeyValue(Map)
+│
+├── Important context or warning
+│   ├── Warning/deprecation → sayWarning()
+│   └── Helpful tip/context → sayNote()
+│
+├── Section organization
+│   ├── New heading + TOC entry → sayNextSection()
+│   └── Link to other section → sayRef()
+│
+├── List of items
+│   ├── Bulleted list → sayUnorderedList(items)
+│   └── Numbered steps → sayOrderedList(items)
+│
+├── JSON data
+│   └── Use sayJson(object)
+│
+└── Advanced features
+    ├── Class/method analysis → [see Code Model section](#code-model-reflection-based)
+    ├── Performance testing → [see Benchmarking section](#benchmarking)
+    ├── Visual diagrams → [see Mermaid Diagrams section](#mermaid-diagrams)
+    └── All other methods → [see Complete Reference below](#complete-reference)
+```
+
+### Quick Reference Card
+
+| Goal | Method |
+|------|--------|
+| Write text | `say()` |
+| Show code | `sayCode()` |
+| Display data | `sayTable()` or `sayKeyValue()` |
+| Add heading | `sayNextSection()` |
+| Create link | `sayRef()` |
+| Add note | `sayNote()` |
+| Add warning | `sayWarning()` |
+| Show metadata | `sayKeyValue()` |
+
+---
+
+## Complete Reference
+
+Full alphabetical listing of all 50+ documentation methods.
+
+### Core API
+
+#### `say(String text)`
 Renders a paragraph of text (supports basic Markdown formatting).
 
 ```java
 say("This is a **bold** paragraph with *italic* text.");
 ```
 
-### `sayNextSection(String headline)`
+#### `sayNextSection(String headline)`
 Creates an H1 heading with automatic table of contents entry.
 
 ```java
 sayNextSection("User Authentication");
 ```
 
-### `sayRaw(String rawMarkdown)`
+#### `sayRaw(String rawMarkdown)`
 Injects raw Markdown/HTML content bypassing DTR's formatting rules.
 
 ```java
 sayRaw("# Custom Heading\n\nRaw HTML: <div class='custom'>content</div>");
 ```
 
-## Formatting & Structure
+### Formatting & Structure
 
-### `sayTable(String[][] data)`
+#### `sayTable(String[][] data)`
 Creates a table from a 2D array (first row = headers).
 
 ```java
@@ -52,28 +183,28 @@ sayTable(new String[][]{
 });
 ```
 
-### `sayCode(String code, String language)`
+#### `sayCode(String code, String language)`
 Renders a code block with syntax highlighting.
 
 ```java
 sayCode("public void hello() { System.out.println(\"Hello\"); }", "java");
 ```
 
-### `sayWarning(String message)`
+#### `sayWarning(String message)`
 Creates a GitHub-style warning block.
 
 ```java
 sayWarning("This API endpoint is deprecated and will be removed in v2.0.");
 ```
 
-### `sayNote(String message)`
+#### `sayNote(String message)`
 Creates a GitHub-style note block.
 
 ```java
 sayNote("For optimal performance, use connection pooling.");
 ```
 
-### `sayKeyValue(Map<String, String> pairs)`
+#### `sayKeyValue(Map<String, String> pairs)`
 Creates a 2-column metadata table.
 
 ```java
@@ -84,7 +215,7 @@ sayKeyValue(Map.of(
 ));
 ```
 
-### `sayUnorderedList(List<String> items)`
+#### `sayUnorderedList(List<String> items)`
 Creates a bullet list.
 
 ```java
@@ -95,7 +226,7 @@ sayUnorderedList(List.of(
 ));
 ```
 
-### `sayOrderedList(List<String> items)`
+#### `sayOrderedList(List<String> items)`
 Creates a numbered list.
 
 ```java
@@ -107,7 +238,7 @@ sayOrderedList(List.of(
 ));
 ```
 
-### `sayJson(Object object)`
+#### `sayJson(Object object)`
 Pretty-prints JSON in a code block.
 
 ```java
@@ -117,7 +248,7 @@ sayJson(Map.of(
 ));
 ```
 
-### `sayAssertions(Map<String, String> assertions)`
+#### `sayAssertions(Map<String, String> assertions)`
 Creates a table of assertions with check/result columns.
 
 ```java
@@ -128,88 +259,88 @@ sayAssertions(Map.of(
 ));
 ```
 
-## Cross-References
+### Cross-References
 
-### `sayRef(DocTestRef ref)`
+#### `sayRef(DocTestRef ref)`
 Links to another DocTest section.
 
 ```java
 sayRef(DocTestRef.of(OtherTest.class, "user-creation"));
 ```
 
-### `sayRef(Class<?> docTestClass, String anchor)`
+#### `sayRef(Class<?> docTestClass, String anchor)`
 Convenience method to create and render a cross-reference.
 
 ```java
 sayRef(UserServiceTest.class, "registration-flow");
 ```
 
-### `sayCite(String citationKey)`
+#### `sayCite(String citationKey)`
 Creates a BibTeX citation reference.
 
 ```java
 sayCite("smith2023");
 ```
 
-### `sayCite(String citationKey, String pageRef)`
+#### `sayCite(String citationKey, String pageRef)`
 Creates a BibTeX citation with page number.
 
 ```java
 sayCite("smith2023", "pp. 42-47");
 ```
 
-### `sayFootnote(String text)`
+#### `sayFootnote(String text)`
 Adds a footnote.
 
 ```java
 sayFootnote("This implementation uses a trie data structure for O(1) lookups.");
 ```
 
-## Code Model (Reflection-Based)
+### Code Model (Reflection-Based)
 
-### `sayCodeModel(Class<?> clazz)`
+#### `sayCodeModel(Class<?> clazz)`
 Documents class structure: sealed hierarchy, methods, signatures.
 
 ```java
 sayCodeModel(UserService.class);
 ```
 
-### `sayCodeModel(Method method)`
+#### `sayCodeModel(Method method)`
 Documents method structure with Java 26 Code Reflection.
 
 ```java
 sayCodeModel(UserService.class.getMethod("createUser", User.class));
 ```
 
-### `sayCallSite()`
+#### `sayCallSite()`
 Documents caller location (class, method, line) via StackWalker.
 
 ```java
 sayCallSite();
 ```
 
-### `sayAnnotationProfile(Class<?> clazz)`
+#### `sayAnnotationProfile(Class<?> clazz)`
 Documents all annotations on class and methods.
 
 ```java
 sayAnnotationProfile(RESTController.class);
 ```
 
-### `sayClassHierarchy(Class<?> clazz)`
+#### `sayClassHierarchy(Class<?> clazz)`
 Documents inheritance tree.
 
 ```java
 sayClassHierarchy(AbstractList.class);
 ```
 
-### `sayStringProfile(String text)`
+#### `sayStringProfile(String text)`
 Documents word count, line count, Unicode metrics.
 
 ```java
 sayStringProfile("This is a sample text for analysis.");
 ```
 
-### `sayReflectiveDiff(Object before, Object after)`
+#### `sayReflectiveDiff(Object before, Object after)`
 Creates field-by-field comparison table.
 
 ```java
@@ -218,32 +349,32 @@ User newUser = new User("new", "new@example.com");
 sayReflectiveDiff(oldUser, newUser);
 ```
 
-## Java 26 Code Reflection (JEP 516)
+### Java 26 Code Reflection (JEP 516)
 
-### `sayControlFlowGraph(Method method)`
+#### `sayControlFlowGraph(Method method)`
 Creates Mermaid flowchart of method CFG (requires @CodeReflection).
 
 ```java
 sayControlFlowGraph(UserService.class.getMethod("processOrder"));
 ```
 
-### `sayCallGraph(Class<?> clazz)`
+#### `sayCallGraph(Class<?> clazz)`
 Creates Mermaid graph of method-to-method calls.
 
 ```java
 sayCallGraph(OrderService.class);
 ```
 
-### `sayOpProfile(Method method)`
+#### `sayOpProfile(Method method)`
 Documents operation count table from Code Reflection IR.
 
 ```java
 sayOpProfile(UserService.class.getMethod("validateUser"));
 ```
 
-## Benchmarking
+### Benchmarking
 
-### `sayBenchmark(String label, Runnable task)`
+#### `sayBenchmark(String label, Runnable task)`
 Measures performance with default 50 warmup / 500 measure rounds.
 
 ```java
@@ -255,7 +386,7 @@ sayBenchmark("ArrayList.add()", () -> {
 });
 ```
 
-### `sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds)`
+#### `sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds)`
 Measures with explicit round counts.
 
 ```java
@@ -265,48 +396,48 @@ sayBenchmark("HashMap.put()", () -> {
 }, 100, 1000);
 ```
 
-## Mermaid Diagrams
+### Mermaid Diagrams
 
-### `sayMermaid(String diagramDsl)`
+#### `sayMermaid(String diagramDsl)`
 Renders raw Mermaid diagram.
 
 ```java
 sayMermaid("flowchart TD\n    A[Start] --> B{Is user?}\n    B -->|Yes| C[Show dashboard]\n    B -->|No| D[Show login]");
 ```
 
-### `sayClassDiagram(Class<?>... classes)`
+#### `sayClassDiagram(Class<?>... classes)`
 Auto-generates class diagram from reflection.
 
 ```java
 sayClassDiagram(User.class, Order.class, UserService.class);
 ```
 
-## Coverage & Quality
+### Coverage & Quality
 
-### `sayDocCoverage(Class<?>... classes)`
+#### `sayDocCoverage(Class<?>... classes)`
 Reports which public methods were documented.
 
 ```java
 sayDocCoverage(UserService.class, OrderService.class);
 ```
 
-## 80/20 Low-Hanging Fruit
+### Additional Utilities
 
-### `sayEnvProfile()`
+#### `sayEnvProfile()`
 Documents Java version, OS, processors, heap, timezone, DTR version.
 
 ```java
 sayEnvProfile();
 ```
 
-### `sayRecordComponents(Class<? extends Record> recordClass)`
+#### `sayRecordComponents(Class<? extends Record> recordClass)`
 Documents record schema table.
 
 ```java
 sayRecordComponents(UserRecord.class);
 ```
 
-### `sayException(Throwable t)`
+#### `sayException(Throwable t)`
 Documents exception type, message, cause chain, top 5 frames.
 
 ```java
@@ -317,7 +448,7 @@ try {
 }
 ```
 
-### `sayAsciiChart(String label, double[] values, String[] xLabels)`
+#### `sayAsciiChart(String label, double[] values, String[] xLabels)`
 Creates horizontal bar chart with Unicode blocks.
 
 ```java
@@ -327,60 +458,60 @@ sayAsciiChart("Performance Metrics",
 );
 ```
 
-## Slide/Blog-Specific Methods
+### Slide/Blog-Specific Methods
 
-### `saySlideOnly(String text)`
+#### `saySlideOnly(String text)`
 Text appears only in slide deck, not docs.
 
 ```java
 saySlideOnly("Remember to ask questions at the end!");
 ```
 
-### `sayDocOnly(String text)`
+#### `sayDocOnly(String text)`
 Text appears only in docs, not slides.
 
 ```java
 sayDocOnly("For more implementation details, see the source code.");
 ```
 
-### `saySpeakerNote(String text)`
+#### `saySpeakerNote(String text)`
 Presenter notes (slides only).
 
 ```java
 saySpeakerNote("This section shows real-world usage patterns.");
 ```
 
-### `sayHeroImage(String altText)`
+#### `sayHeroImage(String altText)`
 Hero image section.
 
 ```java
 sayHeroImage("Project architecture overview");
 ```
 
-### `sayTweetable(String text)`
+#### `sayTweetable(String text)`
 Social-media quote box.
 
 ```java
 sayTweetable("DTR transforms documentation into executable tests!");
 ```
 
-### `sayTldr(String text)`
+#### `sayTldr(String text)`
 TL;DR summary box.
 
 ```java
 sayTldr("Key takeaway: Always document your tests for better maintainability.");
 ```
 
-### `sayCallToAction(String url)`
+#### `sayCallToAction(String url)`
 CTA button/link.
 
 ```java
 sayCallToAction("https://github.com/seanchatmangpt/dtr");
 ```
 
-## Assertion Combos
+### Assertion Combos
 
-### `sayAndAssertThat(String label, T actual, Matcher<? super T> matcher)`
+#### `sayAndAssertThat(String label, T actual, Matcher<? super T> matcher)`
 Generic assert + document method.
 
 ```java
@@ -390,7 +521,7 @@ sayAndAssertThat("Response Status",
 );
 ```
 
-### `sayAndAssertThat(String label, long actual, Matcher<Long> matcher)`
+#### `sayAndAssertThat(String label, long actual, Matcher<Long> matcher)`
 Primitive long version.
 
 ```java
@@ -400,7 +531,7 @@ sayAndAssertThat("Processing Time",
 );
 ```
 
-### `sayAndAssertThat(String label, int actual, Matcher<Integer> matcher)`
+#### `sayAndAssertThat(String label, int actual, Matcher<Integer> matcher)`
 Primitive int version.
 
 ```java
@@ -410,7 +541,7 @@ sayAndAssertThat("User Count",
 );
 ```
 
-### `sayAndAssertThat(String label, boolean actual, Matcher<Boolean> matcher)`
+#### `sayAndAssertThat(String label, boolean actual, Matcher<Boolean> matcher)`
 Primitive boolean version.
 
 ```java

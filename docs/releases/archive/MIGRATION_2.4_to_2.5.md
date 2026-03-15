@@ -1,5 +1,7 @@
 # DTR Migration Guide: 2.4.x → 2.5.x → 2.6.0
 
+> **[!NOTE]** This is a historical migration guide. For current migration information, see [docs/MIGRATING.md](../../MIGRATING.md).
+
 **Last Updated:** March 14, 2026
 
 ---
