@@ -1096,4 +1096,173 @@ public interface RenderMachineCommands {
             sayNote("Degraded stations detected \u2014 monitor closely");
         }
     }
+
+    // =========================================================================
+    // Blue Ocean: Toyota Poka-Yoke (Mistake-Proofing)
+    // =========================================================================
+
+    /**
+     * Documents a Toyota Poka-Yoke validation report — renders each guard's result
+     * in a table and emits a summary with a pass/block verdict.
+     *
+     * <p>Poka-Yoke (mistake-proofing) prevents defects by evaluating a set of guards
+     * before a process is allowed to proceed. This method documents which guards were
+     * checked, whether they detected defects, and whether the process was allowed or
+     * blocked as a result.</p>
+     *
+     * <p>Renders:</p>
+     * <ol>
+     *   <li>A status line: process name and ALLOWED / BLOCKED verdict</li>
+     *   <li>A 5-column table: Guard | Type | Status | Description | Value Tested</li>
+     *   <li>A summary line: triggered count, safe count, total</li>
+     *   <li>A warning (if blocked) or note (if allowed)</li>
+     * </ol>
+     *
+     * @param report the {@link io.github.seanchatmangpt.dtr.toyota.PokaYoke.PokaYokeReport}
+     *               produced by {@link io.github.seanchatmangpt.dtr.toyota.PokaYoke#validate}
+     */
+    default void sayPokaYoke(
+            io.github.seanchatmangpt.dtr.toyota.PokaYoke.PokaYokeReport report) {
+
+        say("**Poka-Yoke: " + report.processName() + "** \u2014 Process "
+                + (report.processAllowed() ? "\u2713 ALLOWED" : "\u2717 BLOCKED"));
+
+        var guards = report.guards();
+        String[][] table = new String[guards.size() + 1][5];
+        table[0] = new String[]{"Guard", "Type", "Status", "Description", "Value Tested"};
+        for (int i = 0; i < guards.size(); i++) {
+            var g = guards.get(i);
+            table[i + 1] = new String[]{
+                g.guardName(),
+                g.type().name(),
+                g.triggered() ? "\u2717 TRIGGERED" : "\u2713 safe",
+                g.description(),
+                g.testedValue() == null ? "null" : String.valueOf(g.testedValue())
+            };
+        }
+        sayTable(table);
+
+        int n = report.triggered();
+        int m = report.safe();
+        int k = guards.size();
+        say("Guards triggered: **" + n + "** | Safe: **" + m + "** | Total: **" + k + "**");
+
+        if (!report.processAllowed()) {
+            sayWarning("Process blocked by " + n
+                    + " Poka-Yoke guard(s) \u2014 defect prevented");
+        } else {
+            sayNote("All Poka-Yoke guards passed \u2014 mistake-proofing verified");
+        }
+    }
+
+    // =========================================================================
+    // Blue Ocean: Toyota Jidoka (Autonomation / Intelligent Automation)
+    // =========================================================================
+
+    /**
+     * Documents a Toyota Jidoka processing run — per-item defect disposition table,
+     * pass/defect/auto-stop counts, and a machine-status summary line.
+     *
+     * <p>Jidoka ("automation with a human touch") empowers machines to detect their
+     * own defects and stop automatically rather than passing bad work downstream.
+     * This method renders the full audit trail of a
+     * {@link io.github.seanchatmangpt.dtr.toyota.JidokaProcessor#process} run as
+     * structured documentation.</p>
+     *
+     * <p>Renders:</p>
+     * <ol>
+     *   <li>A status headline: machine name + running/stopped indicator.</li>
+     *   <li>A 4-column table: Item ID | Disposition | Defect Description | Time.</li>
+     *   <li>A bold summary line: passed / defects / auto-stops of total.</li>
+     *   <li>A warning when the machine stopped, or a note when all items passed.</li>
+     * </ol>
+     *
+     * @param report the report produced by
+     *               {@link io.github.seanchatmangpt.dtr.toyota.JidokaProcessor#process}
+     */
+    default void sayJidoka(
+            io.github.seanchatmangpt.dtr.toyota.JidokaProcessor.JidokaReport report) {
+
+        String status = report.machineStopped()
+                ? "\uD83D\uDD34 STOPPED (defect detected)"
+                : "\uD83D\uDFE2 RUNNING";
+        say("**Jidoka: " + report.machineName() + "** \u2014 Machine " + status);
+
+        var items = report.items();
+        String[][] table = new String[items.size() + 1][4];
+        table[0] = new String[]{"Item ID", "Disposition", "Defect Description", "Time"};
+        for (int i = 0; i < items.size(); i++) {
+            var item = items.get(i);
+            table[i + 1] = new String[]{
+                item.itemId(),
+                item.disposition().name(),
+                item.defectDescription() != null ? item.defectDescription() : "\u2014",
+                io.github.seanchatmangpt.dtr.toyota.JidokaProcessor.humanNs(item.processedNs())
+            };
+        }
+        sayTable(table);
+
+        int total = items.size();
+        say("Passed: **" + report.passed() + "** | Defects: **" + report.defects()
+                + "** | Auto-Stops: **" + report.autoStops() + "** of **" + total + "** items");
+
+        if (report.machineStopped()) {
+            sayWarning("Jidoka auto-stop triggered \u2014 human intervention required to clear defect");
+        } else {
+            sayNote("Jidoka: all items passed autonomous quality check");
+        }
+    }
+
+    // =========================================================================
+    // Toyota Production System: Takt Time
+    // =========================================================================
+
+    /**
+     * Documents a Toyota Takt Time analysis as a structured metrics table plus
+     * a summary line comparing cycle time to takt time.
+     *
+     * <p>Takt time ({@code T}) is the rhythm of customer demand:
+     * {@code T = availableTime / customerDemand}. A process is on-pace when its
+     * average cycle time ({@code C}) is at or below takt time.</p>
+     *
+     * <p>Renders:</p>
+     * <ol>
+     *   <li>A metric table with all {@link io.github.seanchatmangpt.dtr.toyota.TaktTimer.TaktAnalysis} fields</li>
+     *   <li>A summary line: Takt | Cycle | Utilization — meets/behind demand</li>
+     *   <li>A {@code [!WARNING]} block if cycle exceeds takt</li>
+     *   <li>A {@code [!NOTE]} block if utilization is below 60%</li>
+     * </ol>
+     *
+     * @param analysis the takt analysis produced by
+     *                 {@link io.github.seanchatmangpt.dtr.toyota.TaktTimer#measure}
+     */
+    default void sayTaktTime(
+            io.github.seanchatmangpt.dtr.toyota.TaktTimer.TaktAnalysis analysis) {
+
+        sayTable(new String[][]{
+            {"Metric", "Value"},
+            {"Process",            analysis.processName()},
+            {"Units produced",     String.valueOf(analysis.unitsProduced())},
+            {"Customer demand",    String.valueOf(analysis.customerDemand())},
+            {"Available time",     io.github.seanchatmangpt.dtr.toyota.TaktTimer.humanNs(analysis.availableTimeNs())},
+            {"Takt time (T)",      io.github.seanchatmangpt.dtr.toyota.TaktTimer.humanNs(analysis.taktTimeNs())},
+            {"Avg cycle time (C)", io.github.seanchatmangpt.dtr.toyota.TaktTimer.humanNs(analysis.avgCycleNs())},
+            {"Utilization",        String.format("%.1f%%", analysis.utilizationPct())},
+            {"Meets target",       analysis.meetsTarget() ? "yes" : "NO"}
+        });
+
+        say("Takt: **" + io.github.seanchatmangpt.dtr.toyota.TaktTimer.humanNs(analysis.taktTimeNs())
+                + "** | Cycle: **" + io.github.seanchatmangpt.dtr.toyota.TaktTimer.humanNs(analysis.avgCycleNs())
+                + "** | Utilization: **" + String.format("%.1f", analysis.utilizationPct()) + "%**"
+                + " \u2014 " + (analysis.meetsTarget() ? "\u2713 meets demand" : "\u2717 behind demand"));
+
+        if (!analysis.meetsTarget()) {
+            sayWarning("Cycle time exceeds takt \u2014 production cannot keep up with demand");
+        }
+
+        if (analysis.utilizationPct() < 60.0) {
+            sayNote("Utilization < 60% \u2014 capacity exists for increased demand");
+        }
+    }
+
 }
