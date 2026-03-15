@@ -1,0 +1,87 @@
+@prefix dtr:   <https://dtr.io/ontology/test#>
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
+@prefix :      <https://example.com/myproject#>
+
+# ---------------------------------------------------------------------------
+# DTR Test Ontology
+#
+# Each dtr:DocClass becomes one Java file extending DtrTest.
+# Each dtr:DocSection becomes one @Test method inside that class.
+# dtr:sayMethod values drive which say* calls are scaffolded.
+# ---------------------------------------------------------------------------
+
+# ── ontology schema ─────────────────────────────────────────────────────────
+
+dtr:DocClass a rdfs:Class ;
+    rdfs:label "Documentation test class" ;
+    rdfs:comment "Maps to one Java file extending DtrTest." .
+
+dtr:DocSection a rdfs:Class ;
+    rdfs:label "Documentation test section" ;
+    rdfs:comment "Maps to one @Test method within a DocClass." .
+
+dtr:package a rdf:Property ;
+    rdfs:domain dtr:DocClass ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "Java package name" .
+
+dtr:name a rdf:Property ;
+    rdfs:label "Simple class / section name" .
+
+dtr:section a rdf:Property ;
+    rdfs:domain dtr:DocClass ;
+    rdfs:range  dtr:DocSection ;
+    rdfs:label  "Section belonging to this class" .
+
+dtr:order a rdf:Property ;
+    rdfs:domain dtr:DocSection ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "Numeric sort key for method ordering" .
+
+dtr:title a rdf:Property ;
+    rdfs:domain dtr:DocSection ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "Human-readable @DocSection title" .
+
+dtr:description a rdf:Property ;
+    rdfs:domain dtr:DocSection ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "One-sentence @DocDescription text" .
+
+dtr:sayMethod a rdf:Property ;
+    rdfs:domain dtr:DocSection ;
+    rdfs:range  xsd:string ;
+    rdfs:label  "say* method to scaffold in this section" .
+
+# ── example project: MyFeature documentation ────────────────────────────────
+
+:MyFeatureDocTest a dtr:DocClass ;
+    dtr:package "com.example.docs" ;
+    dtr:name    "MyFeatureDocTest" ;
+    dtr:section :section_intro ;
+    dtr:section :section_config ;
+    dtr:section :section_advanced .
+
+:section_intro a dtr:DocSection ;
+    dtr:order       "1" ;
+    dtr:title       "Getting Started" ;
+    dtr:description "Walk through the basic usage of MyFeature with a minimal example." ;
+    dtr:sayMethod   "say" ;
+    dtr:sayMethod   "sayCode" .
+
+:section_config a dtr:DocSection ;
+    dtr:order       "2" ;
+    dtr:title       "Configuration Reference" ;
+    dtr:description "Every configuration key with its type, default value, and description." ;
+    dtr:sayMethod   "say" ;
+    dtr:sayMethod   "sayTable" ;
+    dtr:sayMethod   "sayNote" .
+
+:section_advanced a dtr:DocSection ;
+    dtr:order       "3" ;
+    dtr:title       "Advanced Patterns" ;
+    dtr:description "Edge cases, performance considerations, and production caveats." ;
+    dtr:sayMethod   "say" ;
+    dtr:sayMethod   "sayWarning" ;
+    dtr:sayMethod   "sayCode" .

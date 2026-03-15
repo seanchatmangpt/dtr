@@ -1,0 +1,75 @@
+# ggen.toml — DTR test generation rules
+#
+# Run: ggen sync
+# Output: lib/ directory with generated Java test scaffolding
+#
+# Prerequisite: ggen-cli installed (cargo install ggen-cli or ./target/release/ggen)
+# Ontology:    ontology/dtr-spec.ttl
+# Templates:   templates/*.tera
+
+ontology = "ontology/dtr-spec.ttl"
+
+# ── Rule 1: One Java test class per dtr:DocClass ─────────────────────────────
+#
+# Each class gets its own file. Sections become @Test methods ordered by
+# dtr:order. The dtr:sayMethod values drive which say* calls are scaffolded.
+
+[[rules]]
+name        = "dtr-test-class"
+description = "Generate a DTR documentation test class from the ontology"
+sparql      = """
+  PREFIX dtr:  <https://dtr.io/ontology/test#>
+  SELECT ?className ?package ?sectionTitle ?description ?order ?sayMethod
+  WHERE {
+    ?class   a dtr:DocClass ;
+             dtr:name    ?className ;
+             dtr:package ?package ;
+             dtr:section ?section .
+    ?section dtr:title       ?sectionTitle ;
+             dtr:description ?description ;
+             dtr:order       ?order .
+    OPTIONAL { ?section dtr:sayMethod ?sayMethod }
+  }
+  ORDER BY ?className ?order ?sayMethod
+"""
+template    = "templates/dtr-test-class.tera"
+to          = "lib/tests/MyFeatureDocTest.java"
+
+# ── Rule 2: Maven pom.xml dependency fragment ────────────────────────────────
+#
+# Drop lib/pom-fragment.xml into your project's <dependencies> block.
+
+[[rules]]
+name        = "dtr-pom-fragment"
+description = "Generate Maven pom.xml dependency fragment for DTR"
+sparql      = """
+  PREFIX dtr: <https://dtr.io/ontology/test#>
+  SELECT DISTINCT ?package
+  WHERE { ?class a dtr:DocClass ; dtr:package ?package }
+  ORDER BY ?package
+"""
+template    = "templates/dtr-pom-fragment.tera"
+to          = "lib/pom-fragment.xml"
+
+# ── Rule 3: README index of generated test classes ───────────────────────────
+#
+# lib/README.md lists every generated test class with its sections.
+
+[[rules]]
+name        = "dtr-test-index"
+description = "Generate README index listing all generated test classes"
+sparql      = """
+  PREFIX dtr: <https://dtr.io/ontology/test#>
+  SELECT ?className ?package ?sectionTitle ?order
+  WHERE {
+    ?class   a dtr:DocClass ;
+             dtr:name    ?className ;
+             dtr:package ?package ;
+             dtr:section ?section .
+    ?section dtr:title ?sectionTitle ;
+             dtr:order  ?order .
+  }
+  ORDER BY ?className ?order
+"""
+template    = "templates/dtr-test-index.tera"
+to          = "lib/README.md"
