@@ -21,7 +21,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +130,6 @@ public class StructuredConcurrencyDocTest extends DtrTest {
                 """);
 
         // Real execution: fork 4 tasks, verify all complete
-        List<String> results = new ArrayList<>();
         AtomicInteger counter = new AtomicInteger(0);
 
         try (var scope = StructuredTaskScope.open(
