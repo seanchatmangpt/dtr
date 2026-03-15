@@ -1,0 +1,1 @@
+{"overall": "red", "generated": "2026-03-15T00:13:33Z", "elapsed_seconds": 0, "violations": 98, "skip_verify": true, "phases": {"observatory": "green", "guard": "red", "build": "skip", "git": "red"}}

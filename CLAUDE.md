@@ -421,8 +421,75 @@ make guard-test       # run 14 Rust unit tests
 
 ---
 
+## DX PIPELINE (Ψ→H→Λ→Ω)
+
+The `dx.sh` five-phase validation pipeline is the developer completion gate.
+Run it before declaring work done. Run `/dx` as a skill to invoke it from Claude.
+
+```bash
+make dx          # full pipeline (Observatory → Guards → Build → Git)
+make dx-fast     # skip mvnd verify (phases Ψ + H + Ω only — faster iteration)
+```
+
+| Phase | Symbol | What It Checks | Fails When |
+|-------|--------|----------------|------------|
+| Observatory | Ψ | Facts refresh (docs/facts/) | dtr-observe binary fails |
+| H-Guards | H | Semantic lies in Java source | Any H-pattern violation found |
+| Build/Verify | Λ | `mvnd verify` (all tests) | Any test or compile failure |
+| Git | Ω | Working tree state | Uncommitted or unpushed changes |
+
+**Receipt:** `.claude/dx-receipt.json` — machine-readable phase results after every run.
+
+**Completion-promise loop:** Run `/dx` → if any phase red, fix it → run `/dx` again.
+Never declare work complete while any phase is red.
+
+Single phase: `bash scripts/dx.sh --phase H` (aliases: psi/observatory, h/guard, lambda/build, omega/git)
+
+---
+
+## STOP HOOK GATE
+
+The Claude Code Stop hook (`.claude/hooks/session-stop.sh`) is a completion gate.
+It runs when Claude tries to end a session and can **block** completion.
+
+**Block conditions** (conservative — pre-existing issues do not block):
+1. Uncommitted changes (staged or unstaged)
+2. Untracked files (not .gitignored)
+3. Unpushed commits on current branch
+
+**Never blocks on:** H-Guard violations (98 pre-existing in main sources), test failures.
+
+**`stop_hook_active` guard:** When Claude is already in forced-continuation from a
+previous block, the hook exits 0 immediately to prevent infinite loops.
+
+**Integration with dx.sh:** Phase Ω checks the same git conditions. Make Phase Ω
+green and the Stop hook will pass. Green Ω = session can end.
+
+---
+
+## AGENT PATTERNS
+
+Use specialized agents in parallel for independent tasks:
+
+```
+Explore          → fast codebase search (file patterns, keyword search)
+java-26-expert   → fix Java source, modernize idioms, pattern matching
+dtr-expert       → write/fix DTR documentation tests (say* API)
+maven-build-expert → resolve build failures, pom.xml changes
+pipeline-orchestrator → autonomous dx.sh → fix → loop until green
+```
+
+The pipeline-orchestrator agent (`.claude/agents/pipeline-orchestrator.md`) implements
+the ralph-loop: it runs dx.sh, diagnoses failures, delegates to domain agents, and
+loops until all phases are green.
+
+**Shared memory:** `CLAUDE.md` is loaded by all agents automatically. Facts in
+`docs/facts/` provide codebase context at ~50 tokens per file (100× cheaper than grep).
+
+---
+
 **Last Updated:** March 14, 2026
-**Branch:** claude/setup-makefile-github-actions-M0Kiz
+**Branch:** claude/rust-java-truth-enforcement-SUXp9
 **Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
 **Version scheme:** `YYYY.MINOR.PATCH` — year is major, calendar owns it, no `release-major`.
 **Invariant:** The human decides the change type. The script derives the number. The tag is the trigger. The pipeline is the specification. `mvnd verify` is the gate.

@@ -25,7 +25,8 @@ CURRENT_VERSION := $(shell scripts/current-version.sh)
         publish version check \
         build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs \
         build-guard guard-scan guard-scan-json guard-test clean-guard \
-        build-observatory observe observe-test clean-observatory
+        build-observatory observe observe-test clean-observatory \
+        dx dx-fast
 
 help:
 	@echo ""
@@ -60,6 +61,10 @@ help:
 	@echo ""
 	@echo "Breaking changes: use @Deprecated with min 1-year removal window."
 	@echo "The year boundary is the breaking change window, not a major bump."
+	@echo ""
+	@echo "DX Pipeline:"
+	@echo "  dx                 full five-phase pipeline (Ψ→H→Λ→Ω)"
+	@echo "  dx-fast            skip mvnd verify (Ψ+H+Ω — faster iteration)"
 	@echo ""
 
 compile:
@@ -202,4 +207,12 @@ observe-test: ## Run Observatory Rust unit tests
 
 clean-observatory: ## Clean Observatory build artifacts
 	cd scripts/rust/dtr-observatory && cargo clean
+
+# ─── DX Pipeline ──────────────────────────────────────────────────────────────
+
+dx: ## Run full five-phase validation pipeline (Ψ→H→Λ→Ω)
+	bash scripts/dx.sh
+
+dx-fast: ## Run dx.sh without mvnd verify (phases Ψ+H+Ω only — faster iteration)
+	bash scripts/dx.sh --skip-verify
 
