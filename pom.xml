@@ -11,7 +11,7 @@ the specific language governing permissions and limitations under the License. -
 
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr</artifactId>
-    <version>2026.1.0</version>
+    <version>2026.1.1-rc.1</version>
     <packaging>pom</packaging>
 
     <name>DTR - Documentation Testing Runtime</name>
@@ -242,7 +242,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.0</version>
                     <configuration>
-                        <release>26</release>
+                        <release>25</release>
                         <compilerArgs>
                             <arg>--enable-preview</arg>
                         </compilerArgs>
@@ -290,7 +290,7 @@ the specific language governing permissions and limitations under the License. -
                     <version>3.11.2</version>
                     <configuration>
                         <additionalOptions>--enable-preview</additionalOptions>
-                        <release>26</release>
+                        <release>25</release>
                     </configuration>
                 </plugin>
 
@@ -308,8 +308,8 @@ the specific language governing permissions and limitations under the License. -
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[26,)</version>
-                                        <message>Java 26 or higher is required.</message>
+                                        <version>[25,)</version>
+                                        <message>Java 25 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
@@ -397,7 +397,7 @@ the specific language governing permissions and limitations under the License. -
                         <configuration>
                             <doclint>none</doclint>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <release>26</release>
+                            <release>25</release>
                         </configuration>
                         <executions>
                             <execution>
@@ -482,7 +482,7 @@ the specific language governing permissions and limitations under the License. -
                         <configuration>
                             <doclint>none</doclint>
                             <additionalOptions>--enable-preview</additionalOptions>
-                            <release>26</release>
+                            <release>25</release>
                         </configuration>
                         <executions>
                             <execution>

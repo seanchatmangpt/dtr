@@ -284,6 +284,72 @@ public class DtrContext implements RenderMachineCommands {
     }
 
     // ========================================================================
+    // 80/20 Blue Ocean Innovations — v2.7.0 delegations
+    // ========================================================================
+
+    @Override
+    public void sayTimeSeries(String label, long[] values, String[] timestamps) {
+        renderMachine.sayTimeSeries(label, values, timestamps);
+    }
+
+    @Override
+    public void sayComplexityProfile(String label,
+                                     java.util.function.IntFunction<Runnable> taskFactory,
+                                     int[] ns) {
+        renderMachine.sayComplexityProfile(label, taskFactory, ns);
+    }
+
+    @Override
+    public void sayStateMachine(String title, java.util.Map<String, String> transitions) {
+        renderMachine.sayStateMachine(title, transitions);
+    }
+
+    @Override
+    public void sayDataFlow(String title,
+                            java.util.List<String> stages,
+                            java.util.List<java.util.function.Function<Object, Object>> transforms,
+                            Object sample) {
+        renderMachine.sayDataFlow(title, stages, transforms, sample);
+    }
+
+    @Override
+    public void sayApiDiff(Class<?> before, Class<?> after) {
+        renderMachine.sayApiDiff(before, after);
+    }
+
+    @Override
+    public void sayHeatmap(String title, double[][] matrix, String[] rowLabels, String[] colLabels) {
+        renderMachine.sayHeatmap(title, matrix, rowLabels, colLabels);
+    }
+
+    @Override
+    public void sayPropertyBased(String property,
+                                 java.util.function.Predicate<Object> check,
+                                 java.util.List<Object> inputs) {
+        renderMachine.sayPropertyBased(property, check, inputs);
+    }
+
+    @Override
+    public void sayParallelTrace(String title,
+                                 java.util.List<String> agents,
+                                 java.util.List<long[]> timeSlots) {
+        renderMachine.sayParallelTrace(title, agents, timeSlots);
+    }
+
+    @Override
+    public void sayDecisionTree(String title, java.util.Map<String, Object> branches) {
+        renderMachine.sayDecisionTree(title, branches);
+    }
+
+    @Override
+    public void sayAgentLoop(String agentName,
+                             java.util.List<String> observations,
+                             java.util.List<String> decisions,
+                             java.util.List<String> tools) {
+        renderMachine.sayAgentLoop(agentName, observations, decisions, tools);
+    }
+
+    // ========================================================================
     // Accessors for internal components
     // ========================================================================
 

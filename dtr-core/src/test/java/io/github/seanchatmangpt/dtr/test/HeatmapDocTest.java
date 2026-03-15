@@ -325,13 +325,17 @@ public class HeatmapDocTest extends DtrTest {
             {"LATAM",   "12h (280ms)",    "20h (460ms)",    "All windows within 500ms SLA"},
         });
 
+        final double fMinMs = minMs;
+        final double fMaxMs = maxMs;
+        final int fSlaBreach = slaBreach;
+        final long fNs = ns;
         sayKeyValue(new LinkedHashMap<>() {{
             put("Matrix dimensions", "4 rows x 6 columns");
-            put("Value range", minMs + " ms min / " + maxMs + " ms max");
+            put("Value range", fMinMs + " ms min / " + fMaxMs + " ms max");
             put("SLA threshold", "500 ms (p99)");
-            put("SLA breaches in matrix", String.valueOf(slaBreach));
-            put("Intensity bands", "░ ▒ ▓ █  (normalised to " + (long) minMs + " min / " + (long) maxMs + " max)");
-            put("sayHeatmap() overhead", ns + " ns (Java " + System.getProperty("java.version") + ")");
+            put("SLA breaches in matrix", String.valueOf(fSlaBreach));
+            put("Intensity bands", "░ ▒ ▓ █  (normalised to " + (long) fMinMs + " min / " + (long) fMaxMs + " max)");
+            put("sayHeatmap() overhead", fNs + " ns (Java " + System.getProperty("java.version") + ")");
         }});
 
         sayNote(

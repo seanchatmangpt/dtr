@@ -136,8 +136,8 @@ public class DocMetadataBenchmarkTest {
             "systemProperties map should not be empty");
 
         // Verify Java version is at least 25
-        assertTrue(meta.javaVersion().startsWith("26") || Integer.parseInt(meta.javaVersion()
-            .split("\\.")[0]) >= 26, "Java 26+ required, got: " + meta.javaVersion());
+        assertTrue(Integer.parseInt(meta.javaVersion().split("\\.")[0]) >= 25,
+            "Java 25+ required, got: " + meta.javaVersion());
 
         // Verify timestamp is ISO 8601 format
         assertTrue(meta.buildTimestamp().contains("T") && meta.buildTimestamp().contains("Z"),
