@@ -122,6 +122,9 @@ public final class RenderMachineImpl extends RenderMachine {
     /** Accumulated markdown document lines. */
     List<String> markdownDocument = new ArrayList<>();
 
+    /** Breaking changes for structured release notes. */
+    final List<Map<String, String>> breakingChanges = new ArrayList<>();
+
     /** Output filename (typically the test class name). */
     private String fileName;
 
@@ -1649,5 +1652,70 @@ public final class RenderMachineImpl extends RenderMachine {
             }
         }
         markdownDocument.add("");
+    }
+
+    @Override
+    public void sayDiff(String before, String after, String language) {
+        markdownDocument.add("");
+        markdownDocument.add("```diff");
+        if (language != null && !language.isEmpty()) {
+            markdownDocument.add("--- before (" + language + ")");
+            markdownDocument.add("+++ after (" + language + ")");
+        } else {
+            markdownDocument.add("--- before");
+            markdownDocument.add("+++ after");
+        }
+
+        if (before != null && after != null) {
+            String[] beforeLines = before.split("\n", -1);
+            String[] afterLines = after.split("\n", -1);
+
+            int i = 0, j = 0;
+            while (i < beforeLines.length && j < afterLines.length) {
+                if (beforeLines[i].equals(afterLines[j])) {
+                    markdownDocument.add(" " + beforeLines[i]);
+                    i++;
+                    j++;
+                } else {
+                    markdownDocument.add("-" + beforeLines[i]);
+                    i++;
+                    if (j < afterLines.length && !afterLines[j].equals(beforeLines[i >= beforeLines.length ? beforeLines.length - 1 : i])) {
+                        markdownDocument.add("+" + afterLines[j]);
+                        j++;
+                    }
+                }
+            }
+
+            while (i < beforeLines.length) {
+                markdownDocument.add("-" + beforeLines[i]);
+                i++;
+            }
+
+            while (j < afterLines.length) {
+                markdownDocument.add("+" + afterLines[j]);
+                j++;
+            }
+        }
+
+        markdownDocument.add("```");
+    }
+
+    @Override
+    public void sayBreakingChange(String what, String removedIn, String migrateWith) {
+        markdownDocument.add("");
+        markdownDocument.add("> [!WARNING]");
+        markdownDocument.add("> **Breaking Change:** " + (what != null ? what : "API change") +
+            " removed in " + (removedIn != null ? removedIn : "next version"));
+        if (migrateWith != null && !migrateWith.isEmpty()) {
+            markdownDocument.add(">");
+            markdownDocument.add("> " + migrateWith);
+        }
+        markdownDocument.add("");
+
+        breakingChanges.add(new LinkedHashMap<String, String>() {{
+            put("removed", what != null ? what : "");
+            put("version", removedIn != null ? removedIn : "");
+            put("migration", migrateWith != null ? migrateWith : "");
+        }});
     }
 }
