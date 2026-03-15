@@ -1,3 +1,11 @@
+# ARCHIVED TUTORIAL
+
+**This tutorial is from a previous version of DTR and is archived for reference.**
+
+For current tutorials, see [docs/tutorials/](../../../tutorials/).
+
+---
+
 # Tutorial: Testing a REST API and Documenting It with DTR
 
 In this tutorial you will call a real HTTP API using `java.net.http.HttpClient`, assert on the responses with AssertJ, and document each step using DTR `say*` methods. The result is a living API reference generated from your test run.

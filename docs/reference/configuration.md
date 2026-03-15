@@ -1,6 +1,6 @@
 # Reference: Configuration
 
-**Version:** 2.6.0
+**Version:** 2026.3.0
 
 ---
 
@@ -10,7 +10,7 @@
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2.6.0</version>
+    <version>2026.3.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -37,6 +37,8 @@ This path is the default in `RenderMachineImpl`. To change it, supply a custom `
 | `{ClassName}.html` | HTML documentation page |
 | `{ClassName}.tex` | LaTeX source |
 | `{ClassName}.json` | Structured JSON representation |
+| `{ClassName}.blog.md` | Blog-formatted Markdown |
+| `{ClassName}.slides.md` | Slide deck Markdown |
 
 ---
 
@@ -48,11 +50,13 @@ Required Maven compiler configuration for Java 26 with preview features:
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.14.0</version>
     <configuration>
-        <release>25</release>
+        <release>26</release>
         <compilerArgs>
             <arg>--enable-preview</arg>
         </compilerArgs>
+        <enablePreview>true</enablePreview>
     </configuration>
 </plugin>
 ```
@@ -63,8 +67,15 @@ Required Surefire configuration to pass `--enable-preview` to the test JVM:
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.5.3</version>
     <configuration>
-        <argLine>--enable-preview</argLine>
+        <argLine>
+            --enable-preview
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+        </argLine>
+        <forkCount>1</forkCount>
+        <reuseForks>false</reuseForks>
     </configuration>
 </plugin>
 ```
@@ -102,16 +113,18 @@ cat target/docs/test-results/MyDocTest.md
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `dtr.output.dir` | `target/docs/test-results` | Base output directory |
+| `dtr.output.dir` | `docs/test` | Base output directory |
+| `dtr.format` | `markdown` | Output format: `markdown`, `latex`, `blog`, `slides` |
 | `dtr.output.formats` | `md,html,tex,json` | Comma-separated list of output formats to generate |
 | `dtr.benchmark.warmup` | `100` | Default warmup iterations for `sayBenchmark` |
 | `dtr.benchmark.iterations` | `1000` | Default measured iterations for `sayBenchmark` |
 | `dtr.mermaid.cli` | (auto-detected) | Path to `mmdc` (Mermaid CLI) for LaTeX diagram export |
+| `dtr.javadoc.skip` | `false` | Skip Rust-based Javadoc extraction step |
 
 Set system properties in Maven:
 
 ```bash
-mvnd test -Ddtr.output.dir=docs/api -Ddtr.output.formats=md,html
+mvnd test -Ddtr.output.dir=docs/api -Ddtr.format=markdown
 ```
 
 Or in `pom.xml`:
@@ -124,7 +137,7 @@ Or in `pom.xml`:
         <argLine>--enable-preview</argLine>
         <systemPropertyVariables>
             <dtr.output.dir>docs/api</dtr.output.dir>
-            <dtr.output.formats>md,html</dtr.output.formats>
+            <dtr.format>markdown</dtr.format>
         </systemPropertyVariables>
     </configuration>
 </plugin>
@@ -146,7 +159,7 @@ Add `slf4j-simple` as a test-scoped dependency to suppress this:
 <dependency>
     <groupId>org.slf4j</groupId>
     <artifactId>slf4j-simple</artifactId>
-    <version>2.0.13</version>
+    <version>2.0.17</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -167,14 +180,14 @@ Run `mvnd validate` to check these rules without building.
 
 | Tool | Minimum version | Recommended |
 |------|----------------|-------------|
-| Java | 25 | 25.0.2+ |
+| Java | 26 | 26.ea.13+ |
 | Maven | 4.0.0-rc-3 | 4.0.0-rc-3+ |
 | mvnd | 2.0.0 | 2.0.0+ |
 
 Verify your environment:
 
 ```bash
-java -version           # should be 25+
+java -version           # should be 26+
 mvnd --version          # should be 2.0.0+
 echo $JAVA_HOME         # should point to Java 26
 ```
@@ -208,8 +221,60 @@ The proxy handles HTTPS CONNECT tunneling and injects `Proxy-Authorization` head
 
 ---
 
+## Output format configuration
+
+DTR supports multiple output formats for different use cases:
+
+| Format | System Property Value | Use Case |
+|--------|----------------------|----------|
+| Markdown | `markdown` or `md` | Default documentation format |
+| LaTeX | `latex` or `tex` | Academic papers, PDF generation |
+| Blog | `blog` | Blog posts with simplified formatting |
+| Slides | `slides` | Presentation decks with speaker notes |
+
+Configure in `pom.xml`:
+
+```xml
+<properties>
+    <dtr.format>markdown</dtr.format>
+    <dtr.output.dir>docs/test</dtr.output.dir>
+</properties>
+```
+
+Or override via system property:
+
+```bash
+mvnd test -Ddtr.format=slides
+```
+
+---
+
+## RenderMachine customization
+
+To customize output behavior, provide a custom `RenderMachine` implementation:
+
+```java
+public class CustomRenderMachine implements RenderMachine {
+    @Override
+    public void render(DocTestContext context, String output) {
+        // Custom rendering logic
+    }
+}
+
+// Register via @DtrTest configuration
+@DtrTest(renderMachine = CustomRenderMachine.class)
+public class MyDocumentationTest {
+    // ...
+}
+```
+
+For advanced customization, see the [RenderMachine API](rendermachine-api.md) reference.
+
+---
+
 ## See also
 
 - [DtrContext and DtrExtension API Reference](testbrowser-api.md) — API surface
-- [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) — Maven proxy, Java version errors
+- [Architecture](ARCHITECTURE.md) — System design and component overview
+- [Troubleshooting](TROUBLESHOOTING.md) — Maven proxy, Java version errors, common issues
 - [Known Issues](KNOWN_ISSUES.md) — version-specific limitations

@@ -47,7 +47,7 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 
 | Guide | Task |
 |---|---|
-| [Migrating to v2.6](MIGRATION_2.4_to_2.5.md) | From 2.4.x → 2.5.x → 2.6.0 including HTTP stack removal |
+| [Migration Guide](../MIGRATING.md) | Complete migration paths between all DTR versions |
 
 ---
 

@@ -1,21 +1,21 @@
 # How-To: Performance Tuning DTR Tests
 
-Optimize your DTR 2.6.0 tests and documentation generation for faster builds and better performance.
+Quick recipes to optimize your DTR tests and documentation generation for faster builds.
 
-**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
+**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
 ## Overview
 
-DTR adds measurable overhead to tests. This guide shows how to minimize it while maintaining documentation quality.
+This guide provides practical, task-focused optimization recipes. For comprehensive performance analysis, architecture details, and real-world benchmarks, see [Performance Guide](../PERFORMANCE.md).
 
-**Key Areas:**
-1. Profiling with `sayBenchmark`
-2. Reflection caching
-3. Maven build optimization
-4. Virtual thread tuning
-5. Memory management
+**Quick Recipes:**
+1. Profile with `sayBenchmark`
+2. Leverage reflection caching
+3. Optimize Maven builds
+4. Tune virtual threads
+5. Manage memory effectively
 
 ---
 
@@ -61,7 +61,7 @@ class ProfileDocTest {
 
 ## 2. Reflection Caching
 
-DTR 2.6.0 caches reflection results for `sayClassDiagram`, `sayRecordComponents`, `sayContractVerification`, `sayCallGraph`, and `sayDocCoverage`. First call is slower; subsequent calls on the same class are fast:
+DTR automatically caches reflection results for `sayClassDiagram`, `sayRecordComponents`, `sayContractVerification`, `sayCallGraph`, and `sayDocCoverage`. First call incurs reflection overhead; subsequent calls on the same class are fast:
 
 ```java
 @Test
@@ -172,7 +172,6 @@ Add to `~/.m2/jvm.config`:
 ```
 -Xmx2g
 -XX:+UseG1GC
--XX:+ParallelRefProcEnabled
 ```
 
 ### Monitor Memory
@@ -185,6 +184,8 @@ mvnd --list
 mvnd --stop
 mvnd clean install
 ```
+
+> **Note:** For detailed memory performance characteristics and heap sizing guidelines, see [Performance Guide: Memory Footprint](../PERFORMANCE.md#key-performance-characteristics).
 
 ---
 
@@ -296,9 +297,11 @@ mvnd clean test
 |----------|--------|-------|
 | `say()` call | < 500 ns | Minimal overhead |
 | `sayJson()` small object | < 5 µs | Jackson serialization |
-| `sayBenchmark()` 10 rounds | < 100 ms | Includes warmup |
+| `sayBenchmark()` default rounds | < 100 ms | Includes warmup |
 | `sayRecordComponents()` cached | < 100 ns | Cache hit |
 | Build 100 tests | < 30 s | With mvnd, parallel |
+
+> **See also:** [Performance Guide: Real-World Numbers](../PERFORMANCE.md#real-world-numbers) for detailed benchmarks.
 
 ---
 
@@ -322,6 +325,7 @@ if (isCI) {
 
 ## See Also
 
-- [Benchmarking](benchmarking.md) — Detailed sayBenchmark usage
-- [Use Virtual Threads](use-virtual-threads.md) — Virtual thread concurrency
-- [Add DTR to Maven](add-to-maven.md) — Compiler and Surefire configuration
+- [Performance Guide](../PERFORMANCE.md) — Comprehensive performance analysis, architecture, and real-world benchmarks
+- [How-To: Benchmarking](benchmarking.md) — Detailed `sayBenchmark` usage and best practices
+- [How-To: Use Virtual Threads](use-virtual-threads.md) — Virtual thread concurrency patterns
+- [How-To: Add DTR to Maven](add-to-maven.md) — Compiler and Surefire configuration

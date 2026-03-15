@@ -1,5 +1,13 @@
 # Tutorial: Your First DocTest
 
+> **[!NOTE]**
+> This tutorial is from a previous version of DTR (pre-2.6.0) and is archived for reference. It documents the legacy API pattern using `DtrContext` parameter injection.
+>
+> **For current tutorials, see [docs/tutorials/](../../tutorials/).**
+> The current approach uses `extends DtrTest` instead of `DtrContext` parameter injection.
+
+---
+
 In this tutorial you will write a DocTest that exercises real Java code, asserts on results, and produces a Markdown documentation page — all from a single JUnit 5 test class.
 
 By the end you will have:
@@ -260,8 +268,49 @@ cat target/docs/test-results/ProductDocTest.md
 
 ---
 
+## Migration to Current API
+
+The legacy pattern shown in this tutorial uses `DtrContext` parameter injection:
+
+```java
+// Legacy (pre-2.6.0)
+@ExtendWith(DtrExtension.class)
+class ProductDocTest {
+    @Test
+    void documentProductModel(DtrContext ctx) {
+        ctx.say("text");
+    }
+}
+```
+
+The current API (2026.3.0+) uses inheritance:
+
+```java
+// Current (2026.3.0+)
+@ExtendWith(DtrExtension.class)
+class ProductDocTest extends DtrTest {
+    @Test
+    @DocSection("Product Model")
+    void documentProductModel() {
+        say("text");
+    }
+}
+```
+
+**Key differences:**
+- `extends DtrTest` instead of `DtrContext` parameter
+- `@DocSection` annotations for section headings
+- Direct method calls (`say()`) instead of context methods (`ctx.say()`)
+- Hamcrest matchers (`assertThat`) instead of AssertJ
+
+---
+
 ## Next steps
 
-- [Tutorial: Testing a REST API](testing-a-rest-api.md) — call real HTTP endpoints and document the results
-- [Tutorial: Records and Sealed Classes](records-sealed-classes.md) — advanced record patterns with `sayRecordComponents` and `sayCodeModel`
-- [Tutorial: Benchmarking with sayBenchmark](virtual-threads-lightweight-concurrency.md) — measure and document performance
+- **[Tutorial 1: Hello DTR](../../tutorials/basics.md)** — Current tutorial with modern API
+- **[Tutorial 2: REST API Documentation](../../tutorials/http-testing.md)** — Documenting REST APIs
+- **[Tutorial 3: Java 26 Features](../../tutorials/java26-features.md)** — Advanced record patterns
+
+---
+
+**Archived Version:** DTR 2.6.0 | **Current Version:** 2026.3.0 | **Last Updated:** March 2026

@@ -1,6 +1,8 @@
 # Explanation: Java 26 Design Philosophy
 
-Java 26 brings together virtual threads, records, sealed classes, pattern matching, and preview APIs into a coherent design philosophy. This document explains how they work together and why DTR depends on them — not for syntax convenience, but for capabilities that older Java versions cannot provide.
+Java 26 brings together virtual threads, records, sealed classes, pattern matching, and the Code Reflection API into a coherent design philosophy. This document explains how they work together and why DTR depends on them — not for syntax convenience, but for capabilities that older Java versions cannot provide.
+
+**Prerequisites**: Read [Tutorial 3: Java 26 Features](../tutorial/java26-features.md) for hands-on examples of these features. For system-level design, see [Architecture](architecture.md).
 
 ---
 
@@ -11,21 +13,23 @@ Java's evolution over the past decade has moved steadily toward a single goal: c
 **From:** Complex threading models + ceremony-heavy data classes + verbose type dispatch
 **To:** Structured concurrency + transparent immutable records + exhaustive pattern matching
 
-DTR 2.6.0 uses all of these features — not because they are fashionable, but because they solve real problems in a documentation generation library.
+DTR 2026.3.0 uses all of these features — not because they are fashionable, but because they solve real problems in a documentation generation library.
 
 ---
 
 ## Why `--enable-preview` Is Not Optional
 
-Most documentation about Java 26 features focuses on stable APIs: virtual threads (stable since 21), records (stable since 16), sealed classes (stable since 17), pattern matching (stable since 21). DTR uses all of these but also requires `--enable-preview` for a specific reason.
+Most documentation about Java 26 features focuses on stable APIs: virtual threads (stable since 21), records (stable since 16), sealed classes (stable since 17), pattern matching (stable since 21). DTR uses all of these but also requires `--enable-preview` for a specific reason: the **Code Reflection API (JEP 494)**.
 
-### The Code Reflection API (JEP 516, Project Babylon)
+### The Code Reflection API (JEP 494, Project Babylon)
 
 `sayCallSite()` uses the Code Reflection API, a preview feature in Java 26. This API allows DTR to capture the exact source location where a documentation call was made — file name, line number, method name — at near-zero runtime cost.
 
+**What changed in Java 26**: JEP 494 introduces the stable `java.lang.reflect.code` package, building on the preview work from earlier Java versions. The Code Reflection API provides direct access to the JVM's intermediate representation (IR) of compiled code, enabling powerful analysis and metaprogramming capabilities.
+
 The alternative would be `Thread.currentThread().getStackTrace()`, which works but allocates a stack trace array and costs microseconds per call. The Code Reflection API provides the same information at a fraction of the cost because it is wired into the JVM's internal representation of compiled code, not a runtime introspection mechanism.
 
-Project Babylon is evolving. The Code Reflection API is in preview because its design is still being refined. DTR accepts this dependency because the capability — provenance-tracked documentation — is architecturally central to the library's accuracy guarantees. When JEP 516 graduates from preview, DTR will update to the stable form.
+Project Babylon is evolving. The Code Reflection API in Java 26 provides stable access to code IR through JEP 494. DTR accepts this dependency because the capability — provenance-tracked documentation — is architecturally central to the library's accuracy guarantees. As the Code Reflection API matures, DTR will continue to leverage its growing capabilities for deeper code analysis.
 
 The `--enable-preview` flag is set once in `.mvn/maven.config` and propagates automatically.
 
@@ -81,6 +85,8 @@ DTR uses sealed for `SayEvent` and abstract for `RenderMachine`. This distinctio
 
 **`SayEvent` is sealed because the event type set is closed.** Every render machine must handle every event type. If `SayEvent` were open, someone could add a new event type without updating any render machine, and that event would silently produce no output. The sealed constraint makes this a compile-time error: add a new permitted subtype and every switch over `SayEvent` in every render machine will fail to compile until it handles the new type.
 
+With Java 26's enhanced pattern matching for switch, this exhaustiveness checking is even more powerful — the compiler verifies that every permitted subtype is handled in switch expressions and statements.
+
 **`RenderMachine` is abstract because the render target set is open.** DTR provides Markdown, LaTeX, HTML, and JSON implementations, but users should be able to add their own. A Confluence page renderer, an OpenAPI fragment emitter, a documentation database writer — all of these are valid `RenderMachine` implementations. Sealed would prohibit them. Abstract invites them.
 
 The rule is: seal what must be exhaustive; make abstract what should be extensible.
@@ -92,6 +98,8 @@ The rule is: seal what must be exhaustive; make abstract what should be extensib
 ### Beyond Type Checks
 
 Pattern matching in Java 26 lets you destructure a value and bind its components in a single expression. With sealed types, this becomes exhaustive — the compiler verifies every case is handled.
+
+**Java 26 enhancements**: Pattern matching for switch is now final, with support for guarded patterns (`when` clauses), record patterns, and array patterns. This makes the dispatch logic in render machines even more expressive and type-safe.
 
 In DTR, every `RenderMachine` implementation contains a switch over `SayEvent`:
 
@@ -130,7 +138,7 @@ These features are synergistic. Each one makes the others more useful.
 
 ### Preview APIs
 
-Using `--enable-preview` means accepting instability in the Code Reflection API's surface. DTR's `sayCallSite` implementation may need updates as Project Babylon evolves. The trade-off is accepted because the capability — zero-cost source provenance — is central to DTR's accuracy guarantees.
+Using `--enable-preview` means accepting that some APIs may evolve. While JEP 494 provides stable Code Reflection foundations, DTR also uses related preview features for advanced code analysis. DTR's `sayCallSite` and `sayControlFlowGraph` implementations may need updates as Project Babylon evolves. The trade-off is accepted because the capability — zero-cost source provenance and visualizable control flow — is central to DTR's accuracy guarantees.
 
 ### Records' Immutability
 
@@ -144,6 +152,7 @@ Records cannot be mutated after construction. This is a constraint that occasion
 
 ## See Also
 
-- [Explanation: Why Virtual Threads Matter](virtual-threads-philosophy.md)
-- [Explanation: Why Records and Sealed Classes](records-sealed-philosophy.md)
-- [Explanation: Architecture](architecture.md)
+- [Tutorial 3: Java 26 Features](../tutorial/java26-features.md) — Hands-on introduction to virtual threads, records, sealed classes, and pattern matching
+- [Explanation: Architecture](architecture.md) — System-level design of DTR's rendering pipeline
+- [Explanation: Why Virtual Threads Matter](virtual-threads-philosophy.md) — Deep dive on virtual thread philosophy
+- [Explanation: Why Records and Sealed Classes](records-sealed-philosophy.md) — Deep dive on data-oriented design

@@ -149,11 +149,13 @@ The following tutorials have been removed because DTR 2.6.0 eliminated the built
 
 ---
 
-## Legacy Tutorials (Superseded)
+## Legacy Tutorials (Archived)
 
-The following tutorials have been superseded by the new progressive series:
+The following tutorials have been superseded by the new progressive series and are archived for historical reference:
 
-- ~~[your-first-doctest.md](your-first-doctest.md)~~ → Use [Tutorial 1: Hello DTR](basics.md) instead
+- **[your-first-doctest-pre-2.6.md](../releases/archive/tutorials/your-first-doctest-pre-2.6.md)** — Archived version using `DtrContext` parameter injection (pre-2.6.0 API)
+  → Use [Tutorial 1: Hello DTR](basics.md) for the current `extends DtrTest` pattern
+
 - ~~[testing-a-rest-api.md](testing-a-rest-api.md)~~ → Use [Tutorial 2: REST API Documentation](http-testing.md) instead
 - ~~[records-sealed-classes.md](records-sealed-classes.md)~~ → Use [Tutorial 3: Java 26 Features](java26-features.md) instead
 

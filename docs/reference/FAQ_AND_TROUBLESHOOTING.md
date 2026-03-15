@@ -1,113 +1,504 @@
 # FAQ and Troubleshooting Guide
 
-**DTR 2.6.0** — Common issues, solutions, and diagnostic commands.
+**DTR 2026.1.0+** — Quick answers to common questions.
+
+> **📋 Comprehensive Troubleshooting:** For detailed symptom-based problem solving, see [TROUBLESHOOTING.md](../TROUBLESHOOTING.md).
 
 ---
 
-## Installation and Setup
+## Quick Setup Checklist
 
-### Q: Maven says "could not find artifact"
-
-**Error:** `The requested required projects <module> do not exist`
-
-**Solution:**
-1. Ensure you are using the v2.6.0 dependency:
-   ```xml
-   <dependency>
-       <groupId>io.github.seanchatmangpt.dtr</groupId>
-       <artifactId>dtr-core</artifactId>
-       <version>2.6.0</version>
-       <scope>test</scope>
-   </dependency>
-   ```
-
-2. Clear Maven cache and rebuild:
-   ```bash
-   mvnd clean install -U
-   ```
-
-3. If Maven Central download fails, start the proxy and retry:
-   ```bash
-   python3 maven-proxy-auth.py &
-   mvnd clean install -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128
-   ```
-
----
-
-### Q: "too many authentication attempts" from Maven Central
-
-**Error:** `Failed to authenticate with the remote repository at central`
-
-**Solution:**
-Maven Central rate-limits authentication attempts. Start the proxy server:
+**Before diving in, verify the basics:**
 
 ```bash
-# 1. Start proxy
-python3 maven-proxy-auth.py &
+# 1. Java 26+ required
+java -version
 
-# 2. Add to .mvn/jvm.config
--Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128
--Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=3128
--Dhttp.nonProxyHosts=localhost|127.0.0.1
+# 2. Maven 4.0.0-rc-5+ with mvnd daemon
+mvnd --version
 
-# 3. Rebuild
-mvnd clean install
+# 3. Preview features enabled
+cat .mvn/maven.config  # Must contain: --enable-preview
+
+# 4. DTR dependency in test scope
+grep -A 5 "dtr-core" pom.xml  # Must show: <scope>test</scope>
 ```
 
-**Troubleshooting the proxy:**
-```bash
-pkill -f maven-proxy
-python3 maven-proxy-auth.py &
-ps aux | grep maven-proxy  # verify running
-echo $https_proxy           # check env var
-```
+**If any of these fail, see the [Setup Issues](../TROUBLESHOOTING.md#setup-issues) section in TROUBLESHOOTING.md.**
 
 ---
 
-### Q: Java version error
+## Top 10 Frequently Asked Questions
 
-**Error:** `Unsupported class version` or `Java 26 is required`
+### Installation & Setup
 
-**Solution:**
+#### Q1: Maven says "could not find artifact" or "ClassNotFoundException: DtrExtension"
+
+**Quick Answer:** Verify DTR dependency with correct scope and force update.
+
+```xml
+<!-- pom.xml -->
+<dependency>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-core</artifactId>
+    <version>2026.1.0</version>
+    <scope>test</scope>  <!-- CRITICAL -->
+</dependency>
+```
+
 ```bash
-java -version  # verify 25+
+mvnd clean install -U
+```
+
+**🔍 Detailed:** [Missing Dependency](../TROUBLESHOOTING.md#missing-dependency)
+
+---
+
+#### Q2: "Preview features disabled" or "IllegalAccessError" on Code Reflection
+
+**Quick Answer:** Enable preview features in `.mvn/maven.config` and `pom.xml`.
+
+```bash
+# .mvn/maven.config
+--enable-preview
+```
+
+```xml
+<!-- pom.xml - add to both compiler and surefire plugins -->
+<compilerArgs>
+    <arg>--enable-preview</arg>
+</compilerArgs>
+<argLine>--enable-preview</argLine>
+```
+
+**🔍 Detailed:** [Preview Features Not Enabled](../TROUBLESHOOTING.md#preview-features-not-enabled)
+
+---
+
+#### Q3: "Unsupported class version" or "Java 26 is required"
+
+**Quick Answer:** Upgrade to Java 26 and configure JAVA_HOME.
+
+```bash
+# macOS
+brew install openjdk@26
+export JAVA_HOME=/opt/homebrew/opt/openjdk@26
+
+# Linux
+sudo apt-get install openjdk-26-jdk
 export JAVA_HOME=/usr/lib/jvm/java-26-openjdk-amd64
-java -version  # verify again
-mvnd clean install
+
+# Verify
+java -version  # Should show 26
+```
+
+**🔍 Detailed:** [Java Version Mismatch](../TROUBLESHOOTING.md#java-version-mismatch)
+
+---
+
+### Test Execution
+
+#### Q4: Tests compile but don't run ("No tests were executed")
+
+**Quick Answer:** Verify JUnit 5 imports and test class naming.
+
+```java
+// Correct imports (JUnit 5)
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
+import io.github.seanchatmangpt.dtr.junit5.DtrContext;
+
+@ExtendWith(DtrExtension.class)
+class MyDocTest {  // Must match *Test.java pattern
+    @Test
+    void test(DtrContext ctx) {
+        ctx.say("Hello, DTR!");
+    }
+}
+```
+
+**🔍 Detailed:** [Tests Not Executed](../TROUBLESHOOTING.md#tests-not-executed)
+
+---
+
+#### Q5: Test passes but no documentation generated
+
+**Quick Answer:** Ensure `@ExtendWith(DtrExtension.class)` and at least one `say*()` call.
+
+```bash
+# Diagnose
+grep "@ExtendWith" src/test/java/MyDocTest.java  # Must find DtrExtension.class
+grep "ctx\\.say" src/test/java/MyDocTest.java    # Must find at least one
+ls -la target/docs/test-results/                  # Check output
+```
+
+**🔍 Detailed:** [No Documentation Generated](../TROUBLESHOOTING.md#no-documentation-generated)
+
+---
+
+#### Q6: "DtrContext cannot be resolved" or parameter resolution failed
+
+**Quick Answer:** Add `@ExtendWith(DtrExtension.class)` to test class.
+
+```java
+@ExtendWith(DtrExtension.class)  // ADD THIS
+class MyDocTest {
+    @Test
+    void test(DtrContext ctx) {  // ctx will be injected
+        ctx.say("This works!");
+    }
+}
+```
+
+**🔍 Detailed:** [Extension Not Loading](../TROUBLESHOOTING.md#extension-not-loading)
+
+---
+
+### Output & Rendering
+
+#### Q7: Documentation files are empty or only contain metadata
+
+**Quick Answer:** Ensure unconditional `say*()` calls or use `@DocSection` annotations.
+
+```java
+// WRONG (conditional)
+if (condition) {
+    ctx.say("Only runs if true");  // Empty docs if false
+}
+
+// RIGHT (unconditional)
+ctx.say("Test verifies authentication");
+if (condition) {
+    ctx.sayNote("Condition was true");
+} else {
+    ctx.sayNote("Condition was false");
+}
+
+// OR use annotations
+@Test
+@DocSection("User Authentication")
+@DocDescription({"Verifies user login with valid credentials"})
+void test(DtrContext ctx) {
+    // Annotations generate content even without say* calls
+}
+```
+
+**🔍 Detailed:** [Empty Documentation Files](../TROUBLESHOOTING.md#empty-documentation-files)
+
+---
+
+#### Q8: Mermaid diagrams show as raw text in HTML
+
+**Quick Answer:** Check network access to Mermaid.js CDN or configure local CDN URL.
+
+```bash
+# Test CDN access
+curl -I https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
+
+# Use local Mermaid.js for offline environments
+mvnd test -Ddtr.mermaid.cdn=http://localhost/mermaid.min.js
+```
+
+**🔍 Detailed:** See [Output Problems](../TROUBLESHOOTING.md#output-problems) in TROUBLESHOOTING.md.
+
+---
+
+### Performance & Build
+
+#### Q9: Build is slow (30+ seconds)
+
+**Quick Answer:** Use mvnd daemon, parallel builds, and build only changed modules.
+
+```bash
+# Use mvnd (not mvn)
+mvnd clean test  # Reuses daemon, much faster
+
+# Parallel builds
+mvnd -T 1C clean test  # 1 thread per CPU core
+
+# Build only what changed
+mvnd clean install -pl dtr-core -am
+
+# Restart unresponsive daemon
+mvnd --stop
+mvnd clean test
+```
+
+**🔍 Detailed:** [Slow Builds](../TROUBLESHOOTING.md#slow-builds)
+
+---
+
+#### Q10: Out of memory during build
+
+**Quick Answer:** Increase Maven and Surefire heap sizes.
+
+```bash
+# Maven heap
+export MAVEN_OPTS="-Xmx2g"
+mvnd clean test
+
+# Or configure in ~/.m2/mvnd.properties
+mvnd.maxHeapSize=2g
+```
+
+```xml
+<!-- Surefire heap in pom.xml -->
+<plugin>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <argLine>-Xmx1g --enable-preview</argLine>
+    </configuration>
+</plugin>
+```
+
+**🔍 Detailed:** [Out of Memory](../TROUBLESHOOTING.md#out-of-memory)
+
+---
+
+## Migration from DTR 2.x to 2026.1.0+
+
+### Q: What changed in DTR 2026?
+
+**Key Breaking Changes:**
+
+1. **Package structure changed:**
+   ```java
+   // Old (2.x)
+   import io.github.seanchatmangpt.dtr.core.DtrContext;
+
+   // New (2026.1.0+)
+   import io.github.seanchatmangpt.dtr.junit5.DtrContext;
+   ```
+
+2. **Extension registration:**
+   ```java
+   // Old (2.x)
+   class MyDocTest extends DtrTest {
+       @Test
+       void test() {
+           say("Hello");
+       }
+   }
+
+   // New (2026.1.0+ - recommended)
+   @ExtendWith(DtrExtension.class)
+   class MyDocTest {
+       @Test
+       void test(DtrContext ctx) {
+           ctx.say("Hello");
+       }
+   }
+   ```
+
+3. **HTTP client layer removed in 2.6.0:**
+   - `sayAndMakeRequest()`, `Request`, `Response` no longer exist
+   - Use standard `java.net.http.HttpClient` instead
+   - Document results with `ctx.sayCode()`, `ctx.sayJson()`, `ctx.sayAssertions()`
+
+**🔍 Detailed:** [v2026 Breaking Changes](../TROUBLESHOOTING.md#v2026-breaking-changes)
+
+---
+
+### Q: Where did `sayAndMakeRequest` go?
+
+**Answer:** Removed in v2.6.0. Use standard HTTP clients and document results manually.
+
+```java
+// Old (v2.5.x)
+Response r = sayAndMakeRequest(Request.GET().url(testServerUrl().path("/api/users")));
+sayAndAssertThat("Status is 200", r.httpStatus(), equalTo(200));
+
+// New (v2.6.0+)
+var client = java.net.http.HttpClient.newHttpClient();
+var request = java.net.http.HttpRequest.newBuilder()
+    .uri(URI.create("http://localhost:8080/api/users"))
+    .GET().build();
+var response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+ctx.sayCode("GET /api/users", "http");
+ctx.sayAssertions(Map.of("Status is 200", response.statusCode() == 200));
+ctx.sayJson(response.body());
 ```
 
 ---
 
-### Q: "Preview features disabled" error
+### Q: Where did `sayAndAssertThat` go?
 
-**Error:** `error: preview features are not enabled` or `IllegalAccessError` on Code Reflection methods
+**Answer:** Removed in v2.6.0. Use JUnit 5 assertions for testing, `ctx.sayAssertions()` for documentation.
 
-**Solution:**
-1. Add to `.mvn/maven.config`:
-   ```
-   --enable-preview
-   ```
+```java
+// Assert (throws if false)
+assertEquals(200, response.statusCode(), "Status must be 200");
+assertTrue(response.body().contains("Alice"), "Body must contain Alice");
 
-2. Add to `pom.xml` compiler and surefire plugins:
-   ```xml
-   <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-compiler-plugin</artifactId>
-       <configuration>
-           <release>25</release>
-           <compilerArgs>
-               <arg>--enable-preview</arg>
-           </compilerArgs>
-       </configuration>
-   </plugin>
-   <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-surefire-plugin</artifactId>
-       <configuration>
-           <argLine>--enable-preview</argLine>
-       </configuration>
-   </plugin>
-   ```
+// Document the assertions
+ctx.sayAssertions(Map.of(
+    "Status is 200",         response.statusCode() == 200,
+    "Body contains Alice",   response.body().contains("Alice")
+));
+```
+
+---
+
+### Q: What about WebSocket/SSE APIs and authentication helpers?
+
+**Answer:** All removed in v2.6.0 as part of HTTP client layer simplification.
+
+- `WebSocketClient`, `ServerSentEventsClient` → Use `jakarta.websocket.*` or `java.net.http.HttpClient`
+- `BearerTokenAuth`, `ApiKeyAuth`, `BasicAuth` → Pass tokens as headers manually
+- DTR 2026.1.0+ focuses on documentation generation, not HTTP testing
+
+---
+
+## Getting Help
+
+### Debug Commands
+
+```bash
+# Run specific test with verbose output
+mvnd test -Dtest=MyDocTest -v
+
+# Enable debug logging
+mvnd test -X
+
+# Check surefire reports
+cat target/surefire-reports/MyDocTest.txt
+
+# Verify versions
+java -version          # Should be 26+
+mvnd --version         # Should be 2.0.0+
+cat .mvn/maven.config  # Must have --enable-preview
+```
+
+---
+
+### Additional Resources
+
+- **🔍 Comprehensive Troubleshooting:** [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- **📖 API Reference:** [say* Core API Reference](request-api.md)
+- **🎨 RenderMachine:** [RenderMachine API](rendermachine-api.md)
+- **📝 80/20 Quick Reference:** [Quick Start Guide](80-20-quick-reference.md)
+- **🏗️ Architecture:** [How DTR Works](../explanation/how-dtr-works.md)
+- **🐛 Report Issues:** [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues)
+
+---
+
+## Additional FAQ Topics
+
+### LaTeX/PDF Generation
+
+#### Q: `pdflatex not found` or LaTeX compilation fails
+
+**Quick Answer:** Install LaTeX or use `PandocStrategy`.
+
+```bash
+# Install LaTeX
+# Ubuntu/Debian
+sudo apt-get install texlive-latex-base texlive-fonts-recommended
+
+# macOS
+brew install --cask mactex
+
+# Verify
+pdflatex --version
+```
+
+```java
+// Or use Pandoc strategy (requires pandoc installed)
+ctx.setRenderMachine(
+    new RenderMachineLatex(new IEEETemplate(), new PandocStrategy())
+);
+```
+
+---
+
+### Git Integration
+
+#### Q: `sayEvolutionTimeline` shows "git history unavailable"
+
+**Quick Answer:** Ensure git repository has semver version tags.
+
+```bash
+# Check for tags
+git log --oneline --decorate | head -20
+git tag | grep -E '^v[0-9]'
+
+# Create missing tags
+git tag v2026.1.0
+git tag v2026.2.0
+
+# Verify
+git tag -l
+```
+
+---
+
+### Advanced Debugging
+
+#### Q: How do I diagnose "No Docs Generated"?
+
+```bash
+# 1. Did the test run?
+mvnd test -Dtest=MyDocTest
+# Look for: Tests run: 1
+
+# 2. Is extension loaded?
+grep "@ExtendWith" src/test/java/MyDocTest.java
+# Must find: @ExtendWith(DtrExtension.class)
+
+# 3. Are say* methods called?
+grep "ctx\\.say" src/test/java/MyDocTest.java
+# Must find at least one
+
+# 4. Check output directory
+ls -la target/docs/test-results/
+# Should show: MyDocTest.md
+```
+
+#### Q: How do I diagnose "Compilation Errors"?
+
+```bash
+# 1. Check Java version
+java -version
+# Must be: openjdk version "26.x.x"
+
+# 2. Check preview enabled
+cat .mvn/maven.config
+# Must contain: --enable-preview
+
+# 3. Verify dependency
+grep -A 3 "dtr-core" pom.xml
+# Must contain: <scope>test</scope>
+
+# 4. Clean rebuild
+mvnd clean compile -U
+```
+
+#### Q: How do I diagnose "Runtime Failures"?
+
+```bash
+# 1. Check imports
+grep "import.*dtr" src/test/java/MyDocTest.java
+# Must be: io.github.seanchatmangpt.dtr.junit5.*
+
+# 2. Verify JUnit 5
+grep "import org.junit" src/test/java/MyDocTest.java
+# Must be: org.junit.jupiter.api.*
+
+# 3. Check test naming
+ls src/test/java/**/*Test.java
+# Must match: *Test.java pattern
+
+# 4. Run with verbose output
+mvnd test -Dtest=MyDocTest -v
+```
+
+---
+
+**Last Updated:** 2026-03-15
+**DTR Version:** 2026.1.0+
+**For comprehensive troubleshooting, see [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)**
 
 ---
 

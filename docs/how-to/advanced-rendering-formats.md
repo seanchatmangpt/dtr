@@ -2,7 +2,7 @@
 
 Generate documentation in multiple formats beyond Markdown: LaTeX, blog posts, HTML presentations, and OpenAPI specifications — all from a single DTR test.
 
-**DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
+**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
@@ -13,8 +13,8 @@ DTR's `MultiRenderMachine` routes each `say*` call to multiple output engines si
 | Format | Template | Best For | Output |
 |--------|----------|----------|--------|
 | **Markdown** | Built-in | Version control, websites | `.md` |
-| **LaTeX** | ACM/arXiv/IEEE/Nature | Academic papers | `.tex` |
-| **Blog posts** | Dev.to, Medium | Community outreach | `.md` + frontmatter |
+| **LaTeX** | ACM/IEEE/ArXiv/Nature/US Patent | Academic papers, patents | `.tex` + `.pdf` |
+| **Blog posts** | Dev.to, Hashnode, Medium, LinkedIn, Substack | Community outreach | `.md` + frontmatter |
 | **OpenAPI** | OpenAPI 3.0 | API client generation | `.json` / `.yaml` |
 | **HTML Slides** | Reveal.js | Live presentations | `.html` |
 
@@ -25,9 +25,10 @@ DTR's `MultiRenderMachine` routes each `say*` call to multiple output engines si
 ### Supported Templates
 
 - **ACM Conference** — ACM SIGPLAN/SIGOPS conferences
-- **arXiv** — Computer Science preprints
+- **ArXiv** — Computer Science preprints
 - **IEEE** — IEEE journal format
 - **Nature** — Nature magazine style
+- **US Patent** — USPTO patent application format
 
 ### Basic LaTeX Generation
 
@@ -38,7 +39,7 @@ class ResearchDocTest {
     @Test
     void documentAsAcmPaper(DtrContext ctx) {
         ctx.sayNextSection("Abstract");
-        ctx.say("This paper presents DTR 2.6.0, a documentation testing runtime " +
+        ctx.say("This paper presents DTR 2026.3.0, a documentation testing runtime " +
                 "for Java 26 that generates publication-ready output from JUnit 5 tests.");
 
         ctx.sayNextSection("Introduction");
@@ -87,6 +88,14 @@ pdflatex target/docs/test-results/ResearchDocTest.tex
 
 ## 2. Blog Export
 
+### Supported Blog Platforms
+
+- **Dev.to** — Developer community with built-in audience
+- **Hashnode** — Developer blogging with analytics
+- **Medium** — General tech audience
+- **LinkedIn** — Professional network articles
+- **Substack** — Newsletter-driven blog posts
+
 ### Generate a Blog Post
 
 ```java
@@ -94,7 +103,7 @@ pdflatex target/docs/test-results/ResearchDocTest.tex
 void generateBlogPost(DtrContext ctx) {
     ctx.sayNextSection("Building Resilient APIs with Java 26");
 
-    ctx.say("In this article, we'll document a REST API using DTR 2.6.0 — " +
+    ctx.say("In this article, we'll document a REST API using DTR 2026.3.0 — " +
             "a testing framework that generates documentation directly from executed tests.");
 
     ctx.sayNextSection("Setup");
@@ -104,7 +113,7 @@ void generateBlogPost(DtrContext ctx) {
         <dependency>
             <groupId>io.github.seanchatmangpt.dtr</groupId>
             <artifactId>dtr-core</artifactId>
-            <version>2.6.0</version>
+            <version>2026.3.0</version>
             <scope>test</scope>
         </dependency>
         """, "xml");
@@ -129,7 +138,7 @@ void generateBlogPost(DtrContext ctx) {
 
 ```bash
 target/blog/
-├── Building-Resilient-APIs-with-Java-25.md
+├── Building-Resilient-APIs-with-Java-26.md
 ├── meta.yaml
 └── frontmatter.yml
 ```
@@ -140,7 +149,7 @@ target/blog/
 
 ### Document API Interactions
 
-Since DTR 2.6.0 does not include a built-in HTTP client, document API interactions manually using `sayJson` and `sayCode`:
+Document API interactions manually using `sayJson` and `sayCode`:
 
 ```java
 @Test
@@ -197,10 +206,10 @@ cat target/docs/openapi.yaml
 ```java
 @Test
 void presentApiDocumentation(DtrContext ctx) {
-    ctx.sayNextSection("DTR 2.6.0: Documentation from Tests");
+    ctx.sayNextSection("DTR 2026.3.0: Documentation from Tests");
     ctx.say("Generate Markdown, LaTeX, blog posts, and slides from a single JUnit 5 test.");
 
-    ctx.sayNextSection("New in 2.6.0");
+    ctx.sayNextSection("New in 2026.3.0");
     ctx.sayUnorderedList(java.util.List.of(
         "sayBenchmark — inline microbenchmarks",
         "sayMermaid — Mermaid diagram DSL",
@@ -222,7 +231,7 @@ void presentApiDocumentation(DtrContext ctx) {
         """, "java");
 
     ctx.sayNextSection("Thank You");
-    ctx.say("DTR 2.6.0 — March 2026 | Java 26 | Maven Central");
+    ctx.say("DTR 2026.3.0 — March 2026 | Java 26 | Maven Central");
 }
 ```
 
@@ -237,11 +246,26 @@ Open in a browser; use arrow keys to navigate slides.
 ### Customize Presentation Theme
 
 ```xml
+<!-- In pom.xml properties -->
 <properties>
     <reveal.theme>black</reveal.theme>
     <reveal.transition>slide</reveal.transition>
+    <reveal.width>960</reveal.width>
+    <reveal.height>700</reveal.height>
 </properties>
 ```
+
+### Available Themes
+
+- `black` — Default dark theme
+- `white` — Clean light theme
+- `league` — Brown/gray theme
+- `beige` — Warm theme
+- `sky` — Blue gradients
+- `night` — Dark blue theme
+- `serif` — Traditional typography
+- `simple` — Minimal design
+- `solarized` — Solarized color scheme
 
 ---
 
@@ -269,9 +293,20 @@ target/
 
 ---
 
-## 6. Using MultiRenderMachine with Virtual Threads
+## 6. Architecture Details
 
-For large documentation suites, use virtual threads to dispatch to render engines concurrently:
+The rendering system is built on the `MultiRenderMachine` which dispatches each `say*` call to all configured output engines. For architecture details including:
+
+- Virtual thread-based concurrent rendering
+- Template engine abstraction layer
+- Output format registration
+- Custom renderer implementation
+
+See [ARCHITECTURE.md](../ARCHITECTURE.md#rendermachine) for complete details.
+
+### Using Virtual Threads
+
+For large documentation suites, virtual threads dispatch to render engines concurrently with minimal overhead:
 
 ```java
 @Test
@@ -353,6 +388,7 @@ ctx.sayNextSection("Test 1");               // Bad
 
 ## Next Steps
 
+- See [ARCHITECTURE.md](../ARCHITECTURE.md) for RenderMachine implementation details
 - See [Benchmarking](benchmarking.md) to measure rendering performance
 - See [Configure Multi-Format Output](customize-html-output.md) for MultiRenderMachine setup
 - See [Reference: RenderMachine API](../reference/rendermachine-api.md) for all rendering methods

@@ -9,11 +9,12 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [v2.5.x → v2.6.0 (HIGH IMPACT)](#v25x--v260-high-impact)
-3. [v2.0.0 → v2.5.x](#v200--v25x)
-4. [v1.x → v2.0.0](#v1x--v200)
-5. [Feature Mapping Table](#feature-mapping-table)
-6. [Troubleshooting Migrations](#troubleshooting-migrations)
+2. [Historical Migration Guides](#historical-migration-guides)
+3. [v2.5.x → v2.6.0 (HIGH IMPACT)](#v25x--v260-high-impact)
+4. [v2.0.0 → v2.5.x](#v200--v25x)
+5. [v1.x → v2.0.0](#v1x--v200)
+6. [Feature Mapping Table](#feature-mapping-table)
+7. [Troubleshooting Migrations](#troubleshooting-migrations)
 
 ---
 
@@ -35,6 +36,18 @@ This guide helps you migrate between DTR versions. DTR uses **calendar versionin
 - **v2.5.x → v2.6.0**: ⚠️ **HIGH IMPACT** — HTTP client layer removed, requires code changes
 - **v2.0.0 → v2.5.x**: ✅ **LOW IMPACT** — Mostly additive, RenderMachine sealed→abstract
 - **v1.x → v2.0.0**: ⚠️ **BREAKING** — Complete rewrite, Java 26 required
+
+---
+
+## Historical Migration Guides
+
+The following migration guides are archived for historical reference:
+
+| Guide | Versions Covered | Archive Location |
+|-------|------------------|------------------|
+| 2.4.x → 2.5.x → 2.6.0 | Early migration paths | [releases/archive/MIGRATION_2.4_to_2.5.md](releases/archive/MIGRATION_2.4_to_2.5.md) |
+
+**Note:** These guides are preserved for historical context. For current migration information, use the sections below.
 
 ---
 

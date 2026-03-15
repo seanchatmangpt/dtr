@@ -1,6 +1,8 @@
 # Known Issues and Limitations
 
-**DTR 2.6.0** — Current limitations, workarounds, and version-specific notes.
+**DTR 2026.3.0** — Current limitations, workarounds, and version-specific notes.
+
+> **Looking for help with a specific problem?** Start with the [Troubleshooting Guide](../TROUBLESHOOTING.md) for symptom-based solutions. For bugs and feature requests, see [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues).
 
 ---
 
@@ -8,25 +10,10 @@
 
 | Property | Value |
 |----------|-------|
-| Current version | 2.6.0 |
-| Java requirement | 25+ with `--enable-preview` |
+| Current version | 2026.3.0 |
+| Java requirement | 26+ with `--enable-preview` |
 | Maven requirement | 4.0.0-rc-3+ |
 | mvnd requirement | 2.0.0+ |
-
----
-
-## v2.6.0 Breaking Changes
-
-### HTTP client layer removed
-
-**Status:** Intentional breaking change
-**Severity:** High (if upgrading from v2.5.x)
-
-`TestBrowser`, `TestBrowserImpl`, `Request`, `Response`, `Url`, `sayAndMakeRequest`, `sayAndAssertThat`, `WebSocketClient`, `ServerSentEventsClient`, `BearerTokenAuth`, `ApiKeyAuth`, `BasicAuth`, and `HttpConstants` are all removed.
-
-**Migration:** Use standard Java HTTP clients (`java.net.http.HttpClient`) and document results with `ctx.sayCode(...)`, `ctx.sayJson(...)`, and `ctx.sayAssertions(Map)`.
-
-See [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) for migration examples.
 
 ---
 
@@ -117,7 +104,7 @@ JEP 516 Code Reflection is a preview feature in Java 26. All `sayCodeModel`, `sa
 
 `sayEvolutionTimeline` reads git history for version tags matching `v[0-9]+\.[0-9]+\.[0-9]+`. If the repository has no such tags, the method renders a warning and skips the timeline output.
 
-**Workaround:** Create semver tags: `git tag v2.6.0`
+**Workaround:** Create semver tags: `git tag v2026.3.0`
 
 ---
 
@@ -236,7 +223,6 @@ class SpringDocTest {
 
 | Issue | Severity | Workaround |
 |-------|----------|------------|
-| HTTP client layer removed | High | Use `java.net.http.HttpClient` directly |
 | LaTeX PDF dependencies | Medium | Install TeX Live or use PandocStrategy |
 | Mermaid in LaTeX | Low | Install mermaid-cli or use HTML output |
 | WireMock Jetty warnings | Low | Suppress with `-Dorg.eclipse.jetty.util.log.announce=false` |
@@ -247,17 +233,28 @@ class SpringDocTest {
 
 ---
 
-## Reporting issues
+## Getting Help
 
-If you encounter an issue not listed here:
+### For Common Problems
 
-1. Check [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md)
-2. Enable debug output: `mvnd test -X`
-3. Report with:
-   - Java version (`java -version`)
-   - Maven version (`mvnd --version`)
-   - Minimal test case that reproduces the issue
-   - Full error output and stack trace
+See the [Troubleshooting Guide](../TROUBLESHOOTING.md) for symptom-based solutions to:
+- Setup issues (preview features, dependencies, Java version)
+- Build errors (compilation failures, dependency conflicts)
+- Runtime failures (extension not loading, tests not executing)
+- Output problems (no documentation, empty files, wrong location)
+- Performance issues (slow builds, out of memory errors)
+- Migration issues (breaking changes from previous versions)
+
+### For Bugs and Feature Requests
+
+- **Search existing issues:** [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues)
+- **Report a new issue:** Include:
+  - Java version (`java -version`)
+  - Maven version (`mvnd --version`)
+  - DTR version (from `pom.xml`)
+  - Minimal test case that reproduces the issue
+  - Full error output and stack trace
+  - Debug output: `mvnd test -X`
 
 ---
 
@@ -270,4 +267,4 @@ The following items are planned for future releases:
 - [ ] `sayDocCoverage` integration with JaCoCo for line-level coverage data
 - [ ] Quarkus native image support for reflection-heavy methods
 
-Last updated: 2026-03-14
+Last updated: 2026-03-15
