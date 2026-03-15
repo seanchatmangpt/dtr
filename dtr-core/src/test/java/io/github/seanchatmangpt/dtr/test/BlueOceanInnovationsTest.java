@@ -330,4 +330,78 @@ public class BlueOceanInnovationsTest extends DtrTest {
         say("Benchmark results from b1 rendered as a chart:");
         sayBenchmark("Chart demonstration", () -> Math.sqrt(42.0), 20, 100);
     }
+
+    @Test
+    void c7_saySecurityManager_java_security_environment() {
+        sayNextSection("C7: saySecurityManager() — Java Security Environment");
+
+        say("Documents the complete Java security environment — security manager presence, " +
+                "installed security providers, available cryptographic algorithms, " +
+                "and SecureRandom implementation details. Essential for security-sensitive " +
+                "code documentation and FIPS compliance verification.");
+
+        say("**Example usage:**");
+        sayCode("""
+                // One-liner to document security environment
+                saySecurityManager();
+
+                // Renders:
+                // 1. Security Manager Status (present/absent)
+                // 2. Security Providers (name, version, info)
+                // 3. Available Cryptographic Algorithms
+                // 4. SecureRandom implementation details
+                """, "java");
+
+        say("**Current JVM security landscape:**");
+        saySecurityManager();
+
+        sayNote("Security providers vary by JVM vendor and version. " +
+                "Common providers include SUN, SunRsaSign, SunJCE, SunJSSE, " +
+                "and SunPKCS11. The algorithm list shows what crypto operations " +
+                "are available without external libraries.");
+
+        say("**Use cases:**");
+        sayUnorderedList(java.util.List.of(
+                "Documenting FIPS 140-2 compliance crypto providers",
+                "Verifying security manager is installed in sandboxed environments",
+                "Checking available algorithms for encryption/hashing operations",
+                "Auditing JVM security configuration for production deployments"
+        ));
+    }
+
+    @Test
+    void c8_sayThreadDump_jvm_thread_state() {
+        sayNextSection("C8: sayThreadDump() — JVM Thread State");
+
+        say("Documents the current JVM thread state with aggregate metrics and per-thread details. " +
+                "Uses {@link java.lang.management.ManagementFactory#getThreadMXBean()} to introspect " +
+                "the JVM's thread state without external tools. Invaluable for concurrency behavior " +
+                "documentation and thread pool sizing decisions.");
+
+        say("**Example usage:**");
+        sayCode("""
+                // One-liner to document thread state
+                sayThreadDump();
+
+                // Renders:
+                // 1. Thread Summary (thread count, daemon count, peak count, total started)
+                // 2. Thread Details (ID, name, state, alive, interrupted for each thread)
+                """, "java");
+
+        say("**Current JVM thread state:**");
+        sayThreadDump();
+
+        sayNote("On Java 21+, virtual threads appear alongside platform threads. " +
+                "Thread states include NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, and TERMINATED. " +
+                "The peak thread count shows the maximum concurrent threads since JVM start.");
+
+        say("**Use cases:**");
+        sayUnorderedList(java.util.List.of(
+                "Documenting thread pool sizing decisions (e.g., ForkJoinPool.commonPool)",
+                "Debugging deadlocks and thread starvation issues",
+                "Verifying virtual thread usage on Java 21+",
+                "Auditing thread leaks in long-running applications",
+                "Showing concurrency behavior in parallel stream documentation"
+        ));
+    }
 }

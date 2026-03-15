@@ -7,7 +7,7 @@ Markdown-based render machine implementation for generating portable API documen
 
 ```java
 public final class RenderMachineImpl extends RenderMachine {
-    // RenderMachineImpl, sayCodeModel, sayJavaCode, sayCodeModel, sayDocCoverage, convertTextToId
+    // RenderMachineImpl, sayCodeModel, sayJavaCode, sayCodeModel, sayDocCoverage, convertTextToId, renderModuleInfo
 }
 ```
 
@@ -30,6 +30,17 @@ Converts a section heading to a lowercase anchor ID suitable for use in markdown
 | `text` | the heading text to convert |
 
 > **Returns:** a lowercase alphanumeric anchor ID
+
+---
+
+### `renderModuleInfo`
+
+Renders module information for a single module.
+
+| Parameter | Description |
+| --- | --- |
+| `module` | the module to document |
+| `classes` | the classes from this module (for context) |
 
 ---
 

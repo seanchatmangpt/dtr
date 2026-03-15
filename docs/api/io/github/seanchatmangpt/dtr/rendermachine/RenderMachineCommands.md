@@ -7,7 +7,7 @@ Core documentation-output contract for the DTR render machine. <p>Every {@code s
 
 ```java
 public interface RenderMachineCommands {
-    // say, sayNextSection, sayRaw, sayTable, sayCode, sayWarning, sayNote, sayKeyValue, ... (38 total)
+    // say, sayNextSection, sayRaw, sayTable, sayCode, sayWarning, sayNote, sayKeyValue, ... (44 total)
 }
 ```
 
@@ -246,6 +246,16 @@ Renders a raw Mermaid diagram as a fenced {@code mermaid} code block. Mermaid re
 
 ---
 
+### `sayModuleDependencies`
+
+Documents Java 9+ module (JPMS) dependencies and exports for the given classes. <p>Blue ocean innovation: renders the complete JPMS module graph — showing each module's name, automatic status, required modules (with modifiers like TRANSITIVE, STATIC), exported packages (qualified or unqualified), opened packages, services used, and services provided. Essential for documenting modular applications and troubleshooting module access issues.</p> <p>Uses {@link Class#getModule()} to retrieve the module for each class, then extracts the module descriptor via {@link java.lang.Module#getDescriptor()}. Handles named modules and unnamed modules (the classpath) differently — for unnamed modules, renders a note that JPMS descriptors are not available.</p> <p>Example output:</p> <pre>{@code sayModuleDependencies(String.class, List.class); // Renders: // ### Module Dependencies // // #### java.base (named module) // - **Automatic:** No // - **Packages:** 500+ packages // - **Requires:** (none — java.base is the base module) // - **Exports:** java.lang, java.util, java.io, ... // - **Opens:** (none) // - **Uses:** java.lang.System$LoggerFinder // - **Provides:** (none) }</pre>
+
+| Parameter | Description |
+| --- | --- |
+| `classes` | the classes whose modules to document (may be from different modules) |
+
+---
+
 ### `sayNextSection`
 
 A heading that will appear as a top-level section in the documentation and in the table of contents. No escaping is done.
@@ -273,6 +283,12 @@ Renders a lightweight operation-count table for a method using the Java 26 Code 
 | Parameter | Description |
 | --- | --- |
 | `method` | the method to profile (should be annotated with {@code @CodeReflection}) |
+
+---
+
+### `sayOperatingSystem`
+
+Documents OS-level environment metrics for platform-specific behavior documentation. <p>Captures operating system metadata using {@link java.lang.management.ManagementFactory} and {@link com.sun.management.OperatingSystemMXBean} (if available). This is essential for: <ul>   <li>Documenting platform-specific behavior (Windows vs Linux vs macOS)</li>   <li>Showing available processor count for parallel stream documentation</li>   <li>Revealing CPU pressure via system load average</li>   <li>Displaying memory headroom (physical and swap space)</li> </ul> <p>Renders a markdown table with basic metrics (OS name, version, arch, processors) and extended metrics (CPU load, memory usage) when available. Falls back gracefully if {@code com.sun.management.OperatingSystemMXBean} is unavailable.</p> <p>Example output:</p> <pre>{@code ### Operating System Metrics | Metric | Value | | --- | --- | | OS Name | Linux | | OS Version | 6.8.0-48-generic | | OS Architecture | amd64 | | Available Processors | 16 | | System Load Average | 3.42 | | Process CPU Load | 12.5% | | System CPU Load | 35.8% | | Total Physical Memory | 32768 MB | | Free Physical Memory | 8192 MB | | Used Physical Memory | 24576 MB | | Total Swap Space | 16384 MB | | Free Swap Space | 12288 MB | }</pre>
 
 ---
 
@@ -327,6 +343,12 @@ Compares two objects field-by-field using reflection and renders a diff table. <
 
 ---
 
+### `saySecurityManager`
+
+Documents the Java security environment — security manager presence, installed security providers, and available cryptographic algorithms. <p>Blue ocean innovation: automatically captures the security landscape of the JVM, including which crypto providers are available (e.g., SunJCE, SunRsaSign), their versions, and what cryptographic algorithms are supported. Essential for documenting security-sensitive code, FIPS compliance, and cryptographic operations.</p> <p>Renders three tables:</p> <ol>   <li>Security Manager Status (present/absent)</li>   <li>Security Providers (name, version, info)</li>   <li>Available Cryptographic Algorithms (sample from KeyPairGenerator, Cipher, MessageDigest)</li> </ol>
+
+---
+
 ### `sayStringProfile`
 
 Analyzes a string and renders its structural profile using Java string APIs. <p>Blue ocean innovation: renders word count, line count, character category distribution, and Unicode metrics for any string — using only {@link String#chars()}, {@link String#lines()}, and {@link Character} APIs. Invaluable for documenting text processing and NLP APIs.</p>
@@ -337,6 +359,20 @@ Analyzes a string and renders its structural profile using Java string APIs. <p>
 
 ---
 
+### `saySystemProperties`
+
+Documents JVM system properties matching a regex filter pattern. Renders a sorted markdown table with Property Key and Value columns. <p>Blue ocean innovation: focus documentation on specific property subsets. For example, use {@code "java.*"} to document only Java-related properties, or {@code "user.*"} to document user-specific configuration. Useful for targeted configuration documentation without cluttering output with unrelated properties.</p> <p>Uses {@link java.util.regex.Pattern#compile(String)} with {@code asPredicate()} to filter property keys before rendering.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `regexFilter` | the regular expression pattern to match property keys                    (e.g., "java.*", "user.*", "os.*") |
+
+| Exception | Description |
+| --- | --- |
+| `java` | if the regex pattern is invalid |
+
+---
+
 ### `sayTable`
 
 Renders a markdown table from a 2D string array. The first row is treated as table headers.
@@ -344,6 +380,12 @@ Renders a markdown table from a 2D string array. The first row is treated as tab
 | Parameter | Description |
 | --- | --- |
 | `data` | A 2D array where each row is a list of cells. First row becomes TH. |
+
+---
+
+### `sayThreadDump`
+
+Documents the current JVM thread state. <p>Blue ocean innovation: captures and renders a complete thread dump with aggregate metrics and per-thread details. Uses {@link java.lang.management.ManagementFactory#getThreadMXBean()} to introspect the JVM's thread state without external tools.</p> <p>Renders two sections:</p> <ol>   <li><strong>Summary metrics:</strong> total thread count, daemon thread count, peak thread count,       and total started thread count</li>   <li><strong>Thread table:</strong> for each live thread, displays Thread ID, name, state       (NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED), and whether alive</li> </ol> <p>Invaluable for concurrency behavior documentation and thread pool sizing decisions. On Java 21+, shows virtual thread usage alongside platform threads.</p> <p>Example:</p> <pre>{@code sayThreadDump(); // Renders: // ## Thread Summary // | Metric | Value | // | --- | --- | // | Thread Count | 42 | // | Daemon Thread Count | 8 | // | Peak Thread Count | 45 | // | Total Started Thread Count | 127 | // // ## Thread Details // | Thread ID | Name | State | Alive | Interrupted | // | --- | --- | --- | --- | --- | // | 1 | main | RUNNABLE | true | N/A | // | 42 | ForkJoinPool.commonPool-worker-1 | WAITING | true | N/A | // }</pre>
 
 ---
 

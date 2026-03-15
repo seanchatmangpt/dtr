@@ -577,6 +577,30 @@ public abstract class DtrTest implements RenderMachineCommands {
         renderMachine.sayJavadoc(method);
     }
 
+    /** Documents the Java security environment (security manager, providers, crypto algorithms). */
+    @Override
+    public final void saySecurityManager() {
+        renderMachine.saySecurityManager();
+    }
+
+    /** Documents the current JVM thread state with aggregate metrics and per-thread details. */
+    @Override
+    public final void sayThreadDump() {
+        renderMachine.sayThreadDump();
+    }
+
+    /** Documents all JVM system properties in a sorted markdown table. */
+    @Override
+    public final void saySystemProperties() {
+        renderMachine.saySystemProperties();
+    }
+
+    /** Documents JVM system properties matching a regex filter pattern. */
+    @Override
+    public final void saySystemProperties(String regexFilter) {
+        renderMachine.saySystemProperties(regexFilter);
+    }
+
     /**
      * Runs a Hamcrest assertion and documents the result as a table row.
      * Passes a {@code ✓ PASS} label on success; rethrows on failure.
@@ -602,5 +626,17 @@ public abstract class DtrTest implements RenderMachineCommands {
     public final void sayAndAssertThat(String label, boolean actual, Matcher<Boolean> matcher) {
         MatcherAssert.assertThat(label, actual, matcher);
         sayAssertions(Map.of(label, "✓ PASS"));
+    }
+
+    /** Documents OS-level environment metrics (name, version, arch, processors, memory). */
+    @Override
+    public final void sayOperatingSystem() {
+        renderMachine.sayOperatingSystem();
+    }
+
+    /** Documents Java 9+ module (JPMS) dependencies and exports. */
+    @Override
+    public final void sayModuleDependencies(Class<?>... classes) {
+        renderMachine.sayModuleDependencies(classes);
     }
 }

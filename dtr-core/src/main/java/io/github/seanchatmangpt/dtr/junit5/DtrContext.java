@@ -283,6 +283,36 @@ public class DtrContext implements RenderMachineCommands {
         renderMachine.sayJavadoc(method);
     }
 
+    @Override
+    public void saySystemProperties() {
+        renderMachine.saySystemProperties();
+    }
+
+    @Override
+    public void saySystemProperties(String regexFilter) {
+        renderMachine.saySystemProperties(regexFilter);
+    }
+
+    @Override
+    public void saySecurityManager() {
+        renderMachine.saySecurityManager();
+    }
+
+    @Override
+    public void sayModuleDependencies(Class<?>... classes) {
+        renderMachine.sayModuleDependencies(classes);
+    }
+
+    @Override
+    public void sayThreadDump() {
+        renderMachine.sayThreadDump();
+    }
+
+    @Override
+    public void sayOperatingSystem() {
+        renderMachine.sayOperatingSystem();
+    }
+
     // ========================================================================
     // Accessors for internal components
     // ========================================================================
