@@ -246,6 +246,57 @@ public abstract class RenderMachine implements RenderMachineCommands {
                              java.util.List<String> decisions,
                              java.util.List<String> tools) {}
 
+    // ── Toyota Production System + Joe Armstrong — no-op defaults ─────────────
+
+    /** Erlang OTP supervision tree — no-op in base class. */
+    public void saySupervisionTree(String title,
+                                   java.util.Map<String, java.util.List<String>> supervisors) {}
+
+    /** Actor model message passing — no-op in base class. */
+    public void sayActorMessages(String title,
+                                 java.util.List<String> actors,
+                                 java.util.List<String[]> messages) {}
+
+    /** Let-it-crash fault-tolerance scenario — no-op in base class. */
+    public void sayFaultTolerance(String scenario,
+                                  java.util.List<String> failures,
+                                  java.util.List<String> recoveries) {}
+
+    /** Kaizen continuous-improvement before/after — no-op in base class. */
+    public void sayKaizen(String metric, long[] before, long[] after, String unit) {}
+
+    /** Kanban WIP board snapshot — no-op in base class. */
+    public void sayKanban(String board,
+                          java.util.List<String> backlog,
+                          java.util.List<String> wip,
+                          java.util.List<String> done) {}
+
+    /** Erlang-style pattern match results — no-op in base class. */
+    public void sayPatternMatch(String title,
+                                java.util.List<String> patterns,
+                                java.util.List<String> values,
+                                java.util.List<Boolean> matches) {}
+
+    /** Toyota Andon production status board — no-op in base class. */
+    public void sayAndon(String system,
+                         java.util.List<String> stations,
+                         java.util.List<String> statuses) {}
+
+    /** Muda waste-elimination analysis — no-op in base class. */
+    public void sayMuda(String process,
+                        java.util.List<String> wastes,
+                        java.util.List<String> improvements) {}
+
+    /** Value stream map with cycle times — no-op in base class. */
+    public void sayValueStream(String product,
+                               java.util.List<String> steps,
+                               long[] cycleTimeMs) {}
+
+    /** Poka-yoke mistake-proofing verification — no-op in base class. */
+    public void sayPokaYoke(String operation,
+                            java.util.List<String> mistakeProofs,
+                            java.util.List<Boolean> verified) {}
+
     /**
      * Finishes documentation generation and writes output to disk.
      */
