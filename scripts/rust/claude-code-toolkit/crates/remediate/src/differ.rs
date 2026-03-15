@@ -59,10 +59,11 @@ pub fn apply_edits(source: &[u8], plan: &RemediationPlan) -> Result<(Vec<u8>, St
 fn format_unified_diff(diff: &TextDiff<str>) -> String {
     let mut output = String::new();
     for change in diff.iter_all_changes() {
-        match change {
-            similar::ChangeTag::Delete => output.push_str(&format!("- {}", change)),
-            similar::ChangeTag::Insert => output.push_str(&format!("+ {}", change)),
-            similar::ChangeTag::Equal => output.push_str(&format!("  {}", change)),
+        let line = change.value();
+        match change.tag() {
+            similar::ChangeTag::Delete => output.push_str(&format!("-{}", line)),
+            similar::ChangeTag::Insert => output.push_str(&format!("+{}", line)),
+            similar::ChangeTag::Equal => output.push_str(&format!(" {}", line)),
         }
     }
     output
