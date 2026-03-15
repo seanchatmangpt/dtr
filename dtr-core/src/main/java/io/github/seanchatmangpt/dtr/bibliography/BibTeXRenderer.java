@@ -87,7 +87,7 @@ public final class BibTeXRenderer {
      */
     public static String renderBibliography(Map<String, BibTeXEntry> entries, CitationStyle style) {
         if (entries == null || entries.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — no bibliography to render
         }
 
         StringBuilder sb = new StringBuilder();
@@ -131,7 +131,7 @@ public final class BibTeXRenderer {
      */
     public static String renderLatexBibliography(Map<String, BibTeXEntry> entries, CitationStyle style) {
         if (entries == null || entries.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — no LaTeX bibliography to render
         }
 
         StringBuilder sb = new StringBuilder();
@@ -362,7 +362,7 @@ public final class BibTeXRenderer {
      */
     private static String extractFirstAuthor(String authorField) {
         if (authorField.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: empty guard — no author field means no surname to extract
         }
 
         // Split by "and"

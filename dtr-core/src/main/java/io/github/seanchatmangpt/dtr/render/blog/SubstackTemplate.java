@@ -38,7 +38,7 @@ public record SubstackTemplate() implements BlogTemplate {
 
     @Override
     public String heroImage(String altText) {
-        return "";  // Substack uses cover image differently
+        return "";  // hguard-ok: Substack manages hero images via its upload UI, not inline markdown
     }
 
     @Override

@@ -47,7 +47,7 @@ public final class BenchmarkRunner {
                 final int batchSize = warmupRounds / 4;
                 scope.fork(() -> {
                     for (int j = 0; j < batchSize; j++) task.run();
-                    return null;
+                    return null;  // hguard-ok: Callable<Void> contract requires null return — not a stub
                 });
             }
             scope.join();

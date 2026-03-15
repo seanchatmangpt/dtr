@@ -18,7 +18,7 @@ public final class StringEscapeUtils {
      */
     public static String escapeLaTeX(String text) {
         if (text == null || text.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — caller passes non-null non-empty input
         }
 
         return text
@@ -44,7 +44,7 @@ public final class StringEscapeUtils {
      */
     public static String escapeJson(String text) {
         if (text == null) {
-            return "";
+            return "";  // hguard-ok: null guard — empty string is the correct contract for null input
         }
         return text
             .replace("\\", "\\\\")
@@ -62,7 +62,7 @@ public final class StringEscapeUtils {
      */
     public static String escapeYaml(String text) {
         if (text == null) {
-            return "";
+            return "";  // hguard-ok: null guard — empty string is the correct contract for null input
         }
         return text.replace("'", "''");
     }
@@ -75,7 +75,7 @@ public final class StringEscapeUtils {
      */
     public static String escapeHtml(String text) {
         if (text == null) {
-            return "";
+            return "";  // hguard-ok: null guard — empty string is the correct contract for null input
         }
         return text
             .replace("&", "&amp;")
@@ -93,7 +93,7 @@ public final class StringEscapeUtils {
      */
     public static String escapeBibValue(String value) {
         if (value == null) {
-            return "";
+            return "";  // hguard-ok: null guard — empty string is the correct contract for null input
         }
         return value
             .replace("\\", "\\\\")

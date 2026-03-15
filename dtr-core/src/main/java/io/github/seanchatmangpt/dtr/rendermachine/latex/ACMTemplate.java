@@ -136,7 +136,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatCodeBlock(String code, String language) {
         if (code == null || code.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -152,7 +152,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatKeyValue(Map<String, String> pairs) {
         if (pairs == null || pairs.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -178,7 +178,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatUnorderedList(List<String> items) {
         if (items == null || items.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -197,7 +197,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatOrderedList(List<String> items) {
         if (items == null || items.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -216,7 +216,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatTable(String[][] data) {
         if (data == null || data.length == 0) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         int cols = data[0].length;
@@ -266,7 +266,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatWarning(String message) {
         if (message == null || message.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         return "\\noindent\\textit{Warning: " + escapeLatex(message) + "}\n";
@@ -275,7 +275,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatNote(String message) {
         if (message == null || message.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         return "\\noindent\\textit{Note: " + escapeLatex(message) + "}\n";
@@ -284,7 +284,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatAssertions(Map<String, String> assertions) {
         if (assertions == null || assertions.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -312,7 +312,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatJson(String jsonString) {
         if (jsonString == null || jsonString.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -355,7 +355,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
      */
     public static String generateCCSConcepts(List<String> keywords) {
         if (keywords == null || keywords.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -382,7 +382,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
      */
     private static String escapeXml(String text) {
         if (text == null) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
         return text
             .replace("&", "&amp;")
@@ -395,7 +395,7 @@ public record ACMTemplate(String template, String conference) implements LatexTe
     @Override
     public String formatFootnote(String text) {
         if (text == null || text.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         return "\\footnote{" + escapeLatex(text) + "}";

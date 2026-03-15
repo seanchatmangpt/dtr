@@ -116,7 +116,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatCodeBlock(String code, String language) {
         if (code == null || code.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -132,7 +132,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatKeyValue(Map<String, String> pairs) {
         if (pairs == null || pairs.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -157,7 +157,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatUnorderedList(List<String> items) {
         if (items == null || items.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -176,7 +176,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatOrderedList(List<String> items) {
         if (items == null || items.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -195,7 +195,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatTable(String[][] data) {
         if (data == null || data.length == 0) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -244,7 +244,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatWarning(String message) {
         if (message == null || message.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         return "\\begin{tcolorbox}[colback=warnbg,colframe=red!50!black,title={\\textbf{Warning}}]\n"
@@ -255,7 +255,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatNote(String message) {
         if (message == null || message.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         return "\\begin{tcolorbox}[colback=notebg,colframe=blue!50!black,title={\\textbf{Note}}]\n"
@@ -266,7 +266,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatAssertions(Map<String, String> assertions) {
         if (assertions == null || assertions.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -293,7 +293,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatJson(String jsonString) {
         if (jsonString == null || jsonString.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         var sb = new StringBuilder();
@@ -307,7 +307,7 @@ public record ArXivTemplate() implements LatexTemplate {
     @Override
     public String formatFootnote(String text) {
         if (text == null || text.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — implemented method returns empty for absent input
         }
 
         return "\\footnote{" + escapeLatex(text) + "}";

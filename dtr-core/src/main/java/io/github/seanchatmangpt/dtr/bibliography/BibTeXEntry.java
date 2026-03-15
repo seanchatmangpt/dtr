@@ -56,14 +56,14 @@ public record BibTeXEntry(
      */
     public String getField(String fieldName) {
         if (fieldName == null) {
-            return "";
+            return "";  // hguard-ok: null guard — empty string is the correct contract for missing fields
         }
         for (var entry : fields.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(fieldName)) {
-                return entry.getValue() != null ? entry.getValue() : "";
+                return entry.getValue() != null ? entry.getValue() : "";  // hguard-ok: missing field value — empty string per BibTeX convention
             }
         }
-        return "";
+        return "";  // hguard-ok: field not found — empty string per BibTeX convention (absent = empty)
     }
 
     /**

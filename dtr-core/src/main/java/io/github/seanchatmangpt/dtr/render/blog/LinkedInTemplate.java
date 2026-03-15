@@ -38,7 +38,7 @@ public record LinkedInTemplate() implements BlogTemplate {
 
     @Override
     public String heroImage(String altText) {
-        return "";  // LinkedIn uses upload interface
+        return "";  // hguard-ok: LinkedIn manages hero images via its upload UI, not inline content
     }
 
     @Override
@@ -49,7 +49,7 @@ public record LinkedInTemplate() implements BlogTemplate {
 
     @Override
     public String canonicalUrl(String docTestUrl) {
-        return "";  // LinkedIn doesn't support canonical in metadata
+        return "";  // hguard-ok: LinkedIn has no canonical URL metadata field — platform constraint, not a stub
     }
 
     @Override

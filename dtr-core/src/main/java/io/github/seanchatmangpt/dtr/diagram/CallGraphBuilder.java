@@ -43,7 +43,7 @@ public final class CallGraphBuilder {
         }
 
         if (edges.isEmpty()) {
-            return "";
+            return "";  // hguard-ok: empty graph is the correct result when no @CodeReflection methods found
         }
 
         return "graph LR\n" + String.join("\n", edges);

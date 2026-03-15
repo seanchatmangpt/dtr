@@ -69,7 +69,7 @@ public record RevealJsTemplate() implements SlideTemplate {
     @Override
     public String formatTableSlide(String[][] data) {
         if (data == null || data.length == 0) {
-            return "";
+            return "";  // hguard-ok: null/empty guard — no slide rendered when no data rows provided
         }
         StringBuilder html = new StringBuilder();
         html.append("<section>\n");
