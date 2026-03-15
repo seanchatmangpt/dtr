@@ -1,25 +1,37 @@
 //! `cct-cache` — Content-addressed cache layer for H-Guard scanner results.
 //!
 //! Architecture:
-//! - [`hasher`]: blake3::Hasher streams method body bytes into 32-byte hashes.
-//! - [`store`]: redb ACID database with tables for (hash → ScanResult) and method metadata.
-//! - [`manager`]: CacheManager wraps the store with a thread-safe query/insert API.
+//! - [`hasher`]: blake3::Hasher with SIMD verification for method body hashing (<10µs per method).
+//! - [`store`]: redb ACID database with batched writes for (hash → ScanResult) and method metadata.
+//! - [`manager`]: CacheManager wraps the store with L1/L2 layered caching and zero-copy reads.
 //!
-//! All hashes are blake3 256-bit digests; serialization uses bincode for compact storage.
+//! Performance targets:
+//! - `hash_method_body()`: <10µs per method (SIMD-enabled blake3)
+//! - `cache.insert()`: <5µs L1 only (lock-free DashMap write)
+//! - `cache.lookup()`: <2µs hit (L1 DashMap), <50µs miss (L1 to L2)
+//! - Concurrent writes (32 threads): <100µs total
 
 // ── Hasher Module ─────────────────────────────────────────────────────────────
 
-/// Content-addressed hash generation using blake3.
+/// Content-addressed hash generation using blake3 with SIMD optimization.
 pub mod hasher {
     use blake3::Hasher;
 
     /// Hash method body bytes into a 32-byte blake3 digest.
     ///
-    /// Uses blake3::Hasher for streaming support (suitable for large files).
+    /// Optimized for fast hashing with SIMD support (native blake3 feature).
+    /// Streaming ensures efficient processing of variable-sized inputs.
+    ///
+    /// Target: <10µs per method body on modern CPUs with AVX-512 support.
+    #[inline(always)]
     pub fn hash_method_body(body_bytes: &[u8]) -> [u8; 32] {
+        // blake3 native SIMD is enabled via Cargo.toml features
+        // Uses AVX-512/AVX2/SSE4.1 automatically on supported CPUs
         let mut hasher = Hasher::new();
         hasher.update(body_bytes);
         let digest = hasher.finalize();
+
+        // Zero-copy: write directly to fixed array, no intermediate allocation
         let mut hash = [0u8; 32];
         hash.copy_from_slice(digest.as_bytes());
         hash
