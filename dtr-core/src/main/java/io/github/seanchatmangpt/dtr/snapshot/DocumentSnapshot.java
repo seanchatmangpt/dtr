@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.SequencedCollection;
 
 /**
  * Saves document lines to a JSON file and diffs current lines against a saved snapshot.
