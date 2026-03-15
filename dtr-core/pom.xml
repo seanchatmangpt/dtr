@@ -19,6 +19,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Deploy to Maven Central via the Sonatype Central Publisher Portal -->
+    <parent>
+        <groupId>io.github.seanchatmangpt.dtr</groupId>
+        <artifactId>dtr</artifactId>
+        <version>2026.3.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
     <version>2026.3.0</version>
@@ -52,13 +60,6 @@
             <organizationUrl>https://github.com/seanchatmangpt</organizationUrl>
         </developer>
     </developers>
-
-    <!-- Deploy to Maven Central via the Sonatype Central Publisher Portal -->
-    <parent>
-        <groupId>io.github.seanchatmangpt.dtr</groupId>
-        <artifactId>dtr</artifactId>
-        <version>2026.3.0</version>
-    </parent>
 
 
     <build>
