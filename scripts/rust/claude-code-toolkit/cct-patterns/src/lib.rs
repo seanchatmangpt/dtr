@@ -51,12 +51,20 @@ pub struct PatternFile {
 }
 
 impl PatternFile {
+    /// Load a pattern config from a TOML file.
+    ///
+    /// # Errors
+    /// Returns an error if reading or parsing the TOML file fails.
     pub fn from_toml(path: &Path) -> Result<Self> {
         let content =
             std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
         toml::from_str(&content).with_context(|| format!("parsing {}", path.display()))
     }
 
+    /// Load a pattern config from a TOML string.
+    ///
+    /// # Errors
+    /// Returns an error if parsing the TOML fails.
     pub fn from_toml_str(s: &str) -> Result<Self> {
         toml::from_str(s).map_err(Into::into)
     }
