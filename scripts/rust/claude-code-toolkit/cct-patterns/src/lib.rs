@@ -110,6 +110,9 @@ impl Scanner {
     }
 
     /// Load from an embedded TOML string and compile.
+    ///
+    /// # Errors
+    /// Returns an error if parsing the TOML string fails, or if any regex pattern fails to compile.
     pub fn from_toml_str(toml: &str) -> Result<Self> {
         Self::new(PatternFile::from_toml_str(toml)?)
     }
@@ -132,6 +135,9 @@ impl Scanner {
     }
 
     /// Scan a single file. Uses Blake3 content cache for repeated identical bodies.
+    ///
+    /// # Errors
+    /// Returns an error if reading the file fails.
     pub fn scan_file(&mut self, path: &Path) -> Result<Vec<Violation>> {
         let path_str = path.to_string_lossy();
         if self.is_excluded(&path_str) || !self.is_in_scope(&path_str) {
@@ -163,6 +169,9 @@ impl Scanner {
 
     /// Scan multiple files, ordering them by Naive Bayes prior (highest violation
     /// probability first) so that time-to-first-violation is minimized.
+    ///
+    /// # Errors
+    /// Returns an error if scanning any file fails.
     pub fn scan_files_prioritized(&mut self, paths: &[&Path]) -> Result<Vec<Violation>> {
         // Simple prior: order by filename heuristic (longer paths often = deeper = more complex)
         // A real implementation would persist a violation-count histogram per path prefix.
