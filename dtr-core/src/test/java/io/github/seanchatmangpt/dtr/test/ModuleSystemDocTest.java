@@ -124,7 +124,7 @@ public class ModuleSystemDocTest extends DtrTest {
 
         if (isNamed && dtrModule.getDescriptor() != null) {
             ModuleDescriptor desc = dtrModule.getDescriptor();
-            descriptorInfo = desc.toNameAndVersion().orElse(desc.name());
+            descriptorInfo = desc.toNameAndVersion();
         }
 
         Map<String, String> moduleProps = new LinkedHashMap<>();
