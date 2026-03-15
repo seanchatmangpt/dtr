@@ -3,6 +3,7 @@ name = "cct-pipeline"
 version = "0.1.0"
 edition = "2021"
 description = "Multi-phase validation pipeline framework with JSON receipt — generalizes dx.sh"
+rust-version = "1.70"
 
 [dependencies]
 serde = { workspace = true }

@@ -52,12 +52,12 @@ pub struct PatternFile {
 
 impl PatternFile {
     pub fn from_toml(path: &Path) -> Result<Self> {
-        let content = std::fs::read_to_string(path)
-            .with_context(|| format!("reading {}", path.display()))?;
+        let content =
+            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
         toml::from_str(&content).with_context(|| format!("parsing {}", path.display()))
     }
 
-    pub fn from_str(s: &str) -> Result<Self> {
+    pub fn from_toml_str(s: &str) -> Result<Self> {
         toml::from_str(s).map_err(Into::into)
     }
 }
@@ -96,13 +96,15 @@ impl Scanner {
     }
 
     /// Load from an embedded TOML string and compile.
-    pub fn from_str(toml: &str) -> Result<Self> {
-        Self::new(PatternFile::from_str(toml)?)
+    pub fn from_toml_str(toml: &str) -> Result<Self> {
+        Self::new(PatternFile::from_toml_str(toml)?)
     }
 
     /// Returns true if the file path should be excluded.
     pub fn is_excluded(&self, path: &str) -> bool {
-        self.exclude_paths.iter().any(|ex| path.contains(ex.as_str()))
+        self.exclude_paths
+            .iter()
+            .any(|ex| path.contains(ex.as_str()))
     }
 
     /// Returns true if the file extension is in scope.
@@ -110,7 +112,9 @@ impl Scanner {
         if self.extensions.is_empty() {
             return true; // no filter = all files
         }
-        self.extensions.iter().any(|ext| path.ends_with(ext.as_str()))
+        self.extensions
+            .iter()
+            .any(|ext| path.ends_with(ext.as_str()))
     }
 
     /// Scan a single file. Uses Blake3 content cache for repeated identical bodies.
@@ -120,8 +124,8 @@ impl Scanner {
             return Ok(vec![]);
         }
 
-        let content = std::fs::read_to_string(path)
-            .with_context(|| format!("reading {}", path.display()))?;
+        let content =
+            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
 
         // Blake3 cache lookup — normalize whitespace before hashing
         let normalized = normalize(&content);
@@ -131,7 +135,10 @@ impl Scanner {
             // Remap cached violations to the actual file path (hash may come from another file)
             return Ok(cached
                 .iter()
-                .map(|v| Violation { file: path_str.to_string(), ..v.clone() })
+                .map(|v| Violation {
+                    file: path_str.to_string(),
+                    ..v.clone()
+                })
                 .collect());
         }
 
@@ -167,8 +174,12 @@ fn violation_prior_score(path: &Path) -> f64 {
     let s = path.to_string_lossy();
     let mut score = 0.0_f64;
     // Files named *Impl*, *Base*, *Abstract* tend to have more stubs
-    if s.contains("Impl") { score += 2.0; }
-    if s.contains("Abstract") || s.contains("Base") { score += 1.5; }
+    if s.contains("Impl") {
+        score += 2.0;
+    }
+    if s.contains("Abstract") || s.contains("Base") {
+        score += 1.5;
+    }
     // Deeper paths often = more complex implementations
     score += path.components().count() as f64 * 0.1;
     score
@@ -176,10 +187,7 @@ fn violation_prior_score(path: &Path) -> f64 {
 
 /// Normalize whitespace for content hashing (collapse runs of whitespace to single space).
 fn normalize(content: &str) -> String {
-    content
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
+    content.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 // ─── Violation ────────────────────────────────────────────────────────────────
@@ -196,7 +204,11 @@ pub struct Violation {
 }
 
 /// Scan content string line by line against compiled patterns.
-pub fn scan_content(content: &str, file_label: &str, patterns: &[(PatternConfig, Regex)]) -> Vec<Violation> {
+pub fn scan_content(
+    content: &str,
+    file_label: &str,
+    patterns: &[(PatternConfig, Regex)],
+) -> Vec<Violation> {
     let mut violations = Vec::new();
     for (line_num, line) in content.lines().enumerate() {
         for (config, re) in patterns {
@@ -229,9 +241,19 @@ pub struct ScanReceipt {
 
 impl ScanReceipt {
     pub fn new(violations: Vec<Violation>, files_scanned: usize, cache_hits: usize) -> Self {
-        let status = if violations.is_empty() { "GREEN" } else { "RED" };
+        let status = if violations.is_empty() {
+            "GREEN"
+        } else {
+            "RED"
+        };
         let violation_count = violations.len();
-        Self { status, violation_count, violations, files_scanned, cache_hits }
+        Self {
+            status,
+            violation_count,
+            violations,
+            files_scanned,
+            cache_hits,
+        }
     }
 }
 
@@ -263,12 +285,12 @@ severity = "error"
 "#;
 
     fn make_scanner() -> Scanner {
-        Scanner::from_str(JAVA_TOML).unwrap()
+        Scanner::from_toml_str(JAVA_TOML).unwrap()
     }
 
     #[test]
     fn detects_todo_comment() {
-        let mut s = make_scanner();
+        let s = make_scanner();
         let violations = scan_content("// TODO implement this\n", "Foo.java", &s.patterns);
         assert!(!violations.is_empty());
         assert_eq!(violations[0].pattern, "H_TODO");
@@ -284,7 +306,11 @@ severity = "error"
     #[test]
     fn clean_content_has_no_violations() {
         let s = make_scanner();
-        let violations = scan_content("public String getName() { return name; }\n", "Foo.java", &s.patterns);
+        let violations = scan_content(
+            "public String getName() { return name; }\n",
+            "Foo.java",
+            &s.patterns,
+        );
         assert!(violations.is_empty());
     }
 
@@ -320,8 +346,12 @@ severity = "error"
     #[test]
     fn scan_receipt_red_when_violations() {
         let v = Violation {
-            file: "F.java".into(), line: 1, pattern: "H_TODO".into(),
-            severity: "error".into(), matched: "// TODO".into(), fix: "fix".into(),
+            file: "F.java".into(),
+            line: 1,
+            pattern: "H_TODO".into(),
+            severity: "error".into(),
+            matched: "// TODO".into(),
+            fix: "fix".into(),
         };
         let receipt = ScanReceipt::new(vec![v], 1, 0);
         assert_eq!(receipt.status, "RED");

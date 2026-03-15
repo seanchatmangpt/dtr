@@ -1,7 +1,7 @@
 //! DTR H-Guard: semantic lie detection for Java source files.
 //!
 //! Implements the seven H-Guard patterns from the YAWL truth-enforcement architecture:
-//! H_TODO, H_MOCK, H_MOCK_CLASS, H_STUB, H_EMPTY, H_FALLBACK, H_SILENT.
+//! `H_TODO`, `H_MOCK`, `H_MOCK_CLASS`, `H_STUB`, `H_EMPTY`, `H_FALLBACK`, `H_SILENT`.
 //!
 //! Each pattern is a compiled regex applied line-by-line to Java source.
 //! Files in test source trees are excluded by default.
@@ -28,6 +28,7 @@ pub struct Violation {
 }
 
 /// All seven H-Guard patterns, compiled once at startup.
+#[allow(clippy::struct_field_names)]
 pub struct GuardPatterns {
     h_todo: Regex,
     h_mock_class: Regex,
@@ -42,6 +43,11 @@ pub struct GuardPatterns {
 
 impl GuardPatterns {
     /// Compile all patterns. Panics if a pattern is invalid (programmer error).
+    ///
+    /// # Panics
+    /// Panics if any of the regex patterns fail to compile (e.g., due to invalid regex syntax).
+    /// This is a programmer error and should never occur with the hardcoded patterns.
+    #[must_use]
     pub fn compile() -> Self {
         GuardPatterns {
             // H_TODO: deferred work markers in comments
@@ -96,6 +102,7 @@ impl GuardPatterns {
 
     /// Scan a single line against all H-Guard patterns.
     /// Returns zero or more violations (a line can match multiple patterns).
+    #[must_use]
     pub fn scan_line(&self, line: &str, line_num: usize, file: &str) -> Vec<Violation> {
         let mut hits = Vec::new();
         let trimmed = line.trim();
@@ -207,7 +214,14 @@ impl GuardPatterns {
 /// * `path` — path to the `.java` file
 /// * `patterns` — compiled guard patterns (reuse across calls)
 /// * `exclude_tests` — if true, skip files under `src/test/` paths
-pub fn scan_file(path: &Path, patterns: &GuardPatterns, exclude_tests: bool) -> Result<Vec<Violation>> {
+///
+/// # Errors
+/// Returns an error if the file cannot be read (e.g., permission denied, file not found).
+pub fn scan_file(
+    path: &Path,
+    patterns: &GuardPatterns,
+    exclude_tests: bool,
+) -> Result<Vec<Violation>> {
     let path_str = path.to_string_lossy();
 
     if exclude_tests && is_test_path(&path_str) {
@@ -227,6 +241,7 @@ pub fn scan_file(path: &Path, patterns: &GuardPatterns, exclude_tests: bool) -> 
 }
 
 /// Scan Java source text (not a file) — used by the hook to scan proposed content.
+#[must_use]
 pub fn scan_content(content: &str, label: &str, patterns: &GuardPatterns) -> Vec<Violation> {
     let mut violations = Vec::new();
     for (idx, line) in content.lines().enumerate() {
@@ -238,6 +253,7 @@ pub fn scan_content(content: &str, label: &str, patterns: &GuardPatterns) -> Vec
 
 /// Returns true if the path is under a test source tree.
 /// Test violations are expected and allowed (mocks, stubs, etc. are fine in tests).
+#[must_use]
 pub fn is_test_path(path: &str) -> bool {
     path.contains("/src/test/")
         || path.contains("\\src\\test\\")
@@ -293,18 +309,23 @@ mod tests {
 
     #[test]
     fn h_mock_class() {
-        assert!(violation_codes("public class MockAuthService implements AuthService {")
-            .contains(&"H_MOCK_CLASS".to_string()));
+        assert!(
+            violation_codes("public class MockAuthService implements AuthService {")
+                .contains(&"H_MOCK_CLASS".to_string())
+        );
         assert!(violation_codes("class StubDatabase extends Database {")
             .contains(&"H_MOCK_CLASS".to_string()));
     }
 
     #[test]
     fn h_mock_method_var() {
-        assert!(violation_codes("    ZaiClient mockClient = factory.create();")
-            .contains(&"H_MOCK".to_string()));
-        assert!(violation_codes("    String stubResponse = call();")
-            .contains(&"H_MOCK".to_string()));
+        assert!(
+            violation_codes("    ZaiClient mockClient = factory.create();")
+                .contains(&"H_MOCK".to_string())
+        );
+        assert!(
+            violation_codes("    String stubResponse = call();").contains(&"H_MOCK".to_string())
+        );
     }
 
     #[test]
@@ -321,22 +342,23 @@ mod tests {
     fn h_stub_empty_list() {
         assert!(violation_codes("        return Collections.emptyList();")
             .contains(&"H_STUB".to_string()));
-        assert!(violation_codes("        return new ArrayList<>();")
-            .contains(&"H_STUB".to_string()));
+        assert!(
+            violation_codes("        return new ArrayList<>();").contains(&"H_STUB".to_string())
+        );
     }
 
     #[test]
     fn h_empty_body_inline() {
-        assert!(violation_codes("    public void init() { }")
-            .contains(&"H_EMPTY".to_string()));
-        assert!(violation_codes("    protected void onStart() {}")
-            .contains(&"H_EMPTY".to_string()));
+        assert!(violation_codes("    public void init() { }").contains(&"H_EMPTY".to_string()));
+        assert!(violation_codes("    protected void onStart() {}").contains(&"H_EMPTY".to_string()));
     }
 
     #[test]
     fn h_silent_log() {
-        assert!(violation_codes(r#"        log.warn("not implemented yet");"#)
-            .contains(&"H_SILENT".to_string()));
+        assert!(
+            violation_codes(r#"        log.warn("not implemented yet");"#)
+                .contains(&"H_SILENT".to_string())
+        );
         assert!(violation_codes(r#"        log.error("unimplemented");"#)
             .contains(&"H_SILENT".to_string()));
     }

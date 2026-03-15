@@ -23,7 +23,10 @@ fn main() -> Result<()> {
         "observe" => cmd_observe(&args[2..]),
         "dx" => cmd_dx(&args[2..]),
         "hook" => cmd_hook(&args[2..]),
-        "--help" | "-h" | "help" => { print_usage(); Ok(()) }
+        "--help" | "-h" | "help" => {
+            print_usage();
+            Ok(())
+        }
         unknown => {
             eprintln!("cct: unknown subcommand '{unknown}'. Try 'cct help'.");
             process::exit(1);
@@ -55,7 +58,7 @@ fn cmd_scan(args: &[String]) -> Result<()> {
     let embedded_java = include_str!("../../patterns/java.toml");
     let mut scanner = match config_path {
         Some(ref p) => cct_patterns::Scanner::from_toml(p)?,
-        None => cct_patterns::Scanner::from_str(embedded_java)?,
+        None => cct_patterns::Scanner::from_toml_str(embedded_java)?,
     };
 
     let file_refs: Vec<&Path> = files.iter().map(PathBuf::as_path).collect();
@@ -73,7 +76,11 @@ fn cmd_scan(args: &[String]) -> Result<()> {
         if receipt.violations.is_empty() {
             eprintln!("✓ {} file(s) clean", files.len());
         } else {
-            eprintln!("✗ {} violation(s) in {} file(s)", receipt.violation_count, files.len());
+            eprintln!(
+                "✗ {} violation(s) in {} file(s)",
+                receipt.violation_count,
+                files.len()
+            );
         }
     }
 
@@ -90,8 +97,14 @@ fn cmd_observe(args: &[String]) -> Result<()> {
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
-            "--root" => { i += 1; root = args.get(i).map(PathBuf::from).unwrap_or(root); }
-            "--output" => { i += 1; output = args.get(i).map(PathBuf::from); }
+            "--root" => {
+                i += 1;
+                root = args.get(i).map(PathBuf::from).unwrap_or(root);
+            }
+            "--output" => {
+                i += 1;
+                output = args.get(i).map(PathBuf::from);
+            }
             "--quiet" => quiet = true,
             _ => {}
         }
@@ -102,7 +115,11 @@ fn cmd_observe(args: &[String]) -> Result<()> {
     let facts = cct_facts::gather_all(&root);
 
     if !quiet {
-        eprintln!("cct observe: gathering {} fact files → {}", facts.len(), output_dir.display());
+        eprintln!(
+            "cct observe: gathering {} fact files → {}",
+            facts.len(),
+            output_dir.display()
+        );
     }
 
     cct_facts::write_facts(&output_dir, &facts)?;
@@ -121,10 +138,7 @@ fn cmd_observe(args: &[String]) -> Result<()> {
 fn cmd_dx(args: &[String]) -> Result<()> {
     let mut skip_phases: Vec<String> = Vec::new();
     let mut single_phase: Option<String> = None;
-    let root = PathBuf::from(
-        std::env::var("CLAUDE_PROJECT_DIR")
-            .unwrap_or_else(|_| ".".into())
-    );
+    let root = PathBuf::from(std::env::var("CLAUDE_PROJECT_DIR").unwrap_or_else(|_| ".".into()));
 
     let mut i = 0;
     while i < args.len() {
@@ -166,7 +180,9 @@ fn cmd_dx(args: &[String]) -> Result<()> {
                 // Fallback: use cct-facts
                 let facts = cct_facts::gather_all(&root_clone);
                 match cct_facts::write_facts(&root_clone.join("docs/facts"), &facts) {
-                    Ok(_) => cct_pipeline::PhaseResult::green(format!("{} facts written", facts.len())),
+                    Ok(_) => {
+                        cct_pipeline::PhaseResult::green(format!("{} facts written", facts.len()))
+                    }
                     Err(e) => cct_pipeline::PhaseResult::red(format!("facts failed: {e}")),
                 }
             }
@@ -211,17 +227,15 @@ fn cmd_dx(args: &[String]) -> Result<()> {
             // Placeholder — full mvnd verify is expensive; skip by default
             cct_pipeline::PhaseResult::skip("use --phase Build to enable mvnd verify")
         })
-        .phase("Git", move |_| {
-            match cct_git::git_state(&root_clone2) {
-                Ok(state) => {
-                    if let Some(reason) = state.block_reason() {
-                        cct_pipeline::PhaseResult::red(reason)
-                    } else {
-                        cct_pipeline::PhaseResult::green("working tree clean")
-                    }
+        .phase("Git", move |_| match cct_git::git_state(&root_clone2) {
+            Ok(state) => {
+                if let Some(reason) = state.block_reason() {
+                    cct_pipeline::PhaseResult::red(reason)
+                } else {
+                    cct_pipeline::PhaseResult::green("working tree clean")
                 }
-                Err(e) => cct_pipeline::PhaseResult::red(format!("git check failed: {e}")),
             }
+            Err(e) => cct_pipeline::PhaseResult::red(format!("git check failed: {e}")),
         });
 
     // Apply skips
@@ -263,10 +277,7 @@ fn cmd_hook_stop() -> Result<()> {
         return Ok(());
     }
 
-    let root = PathBuf::from(
-        std::env::var("CLAUDE_PROJECT_DIR")
-            .unwrap_or_else(|_| ".".into())
-    );
+    let root = PathBuf::from(std::env::var("CLAUDE_PROJECT_DIR").unwrap_or_else(|_| ".".into()));
 
     let state = cct_git::git_state(&root)?;
     if let Some(reason) = state.block_reason() {
@@ -282,7 +293,12 @@ fn cmd_hook_pre_tool_use() -> Result<()> {
     // Block destructive git operations
     if payload.tool_name == "Bash" {
         if let Some(cmd) = payload.command() {
-            let blocked = ["git push --force", "git push -f ", "git reset --hard", "git clean -f"];
+            let blocked = [
+                "git push --force",
+                "git push -f ",
+                "git reset --hard",
+                "git clean -f",
+            ];
             for pattern in blocked {
                 if cmd.contains(pattern) {
                     eprintln!("cct: blocked destructive operation: {pattern}");
@@ -298,8 +314,9 @@ fn cmd_hook_pre_tool_use() -> Result<()> {
             if path.ends_with(".java") {
                 if let Some(content) = payload.proposed_content() {
                     let embedded = include_str!("../../patterns/java.toml");
-                    if let Ok(scanner) = cct_patterns::Scanner::from_str(embedded) {
-                        let violations = cct_patterns::scan_content(content, path, &scanner.patterns);
+                    if let Ok(scanner) = cct_patterns::Scanner::from_toml_str(embedded) {
+                        let violations =
+                            cct_patterns::scan_content(content, path, &scanner.patterns);
                         if !violations.is_empty() {
                             eprintln!("cct: H-Guard violations in proposed content for {path}:");
                             for v in &violations {

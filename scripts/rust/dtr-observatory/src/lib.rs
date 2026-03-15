@@ -18,10 +18,14 @@ use walkdir::WalkDir;
 // ─── Modules ─────────────────────────────────────────────────────────────────
 
 /// Parse root pom.xml for version, groupId, and module list.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or files cannot be parsed.
 pub fn gather_modules(root: &Path) -> Result<Value> {
     let pom = root.join("pom.xml");
-    let content = fs::read_to_string(&pom)
-        .with_context(|| format!("Cannot read {}", pom.display()))?;
+    let content =
+        fs::read_to_string(&pom).with_context(|| format!("Cannot read {}", pom.display()))?;
 
     let version = extract_first_tag(&content, "version").unwrap_or_else(|| "unknown".to_string());
     let group_id = extract_first_tag(&content, "groupId").unwrap_or_else(|| "unknown".to_string());
@@ -51,6 +55,10 @@ pub fn gather_modules(root: &Path) -> Result<Value> {
 // ─── Java Profile ─────────────────────────────────────────────────────────────
 
 /// Read compiler settings from .mvn/maven.config.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or files cannot be parsed.
 pub fn gather_java_profile(root: &Path) -> Result<Value> {
     let config_path = root.join(".mvn").join("maven.config");
     let content = fs::read_to_string(&config_path)
@@ -74,6 +82,10 @@ pub fn gather_java_profile(root: &Path) -> Result<Value> {
 // ─── Rust Capabilities ───────────────────────────────────────────────────────
 
 /// Inventory all Rust crates under scripts/rust/.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or files cannot be parsed.
 pub fn gather_rust_capabilities(root: &Path) -> Result<Value> {
     let rust_dir = root.join("scripts").join("rust");
 
@@ -129,6 +141,10 @@ pub fn gather_rust_capabilities(root: &Path) -> Result<Value> {
 // ─── Source Stats ─────────────────────────────────────────────────────────────
 
 /// Count Java files by module and directory type.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or files cannot be parsed.
 pub fn gather_source_stats(root: &Path) -> Result<Value> {
     let pom = root.join("pom.xml");
     let content = fs::read_to_string(&pom).context("Cannot read pom.xml")?;
@@ -172,6 +188,10 @@ pub fn gather_source_stats(root: &Path) -> Result<Value> {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 /// Count test classes (files containing @Test) per module.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or files cannot be parsed.
 pub fn gather_tests(root: &Path) -> Result<Value> {
     let pom = root.join("pom.xml");
     let content = fs::read_to_string(&pom).context("Cannot read pom.xml")?;
@@ -203,6 +223,10 @@ pub fn gather_tests(root: &Path) -> Result<Value> {
 // ─── Guard Status ─────────────────────────────────────────────────────────────
 
 /// Run dtr-guard-scan over main sources and capture result.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or files cannot be parsed.
 pub fn gather_guard_status(root: &Path) -> Result<Value> {
     let guard_bin = root
         .join("scripts")
@@ -234,10 +258,8 @@ pub fn gather_guard_status(root: &Path) -> Result<Value> {
             if main_dir.exists() {
                 for entry in WalkDir::new(&main_dir)
                     .into_iter()
-                    .filter_map(|e| e.ok())
-                    .filter(|e| {
-                        e.path().extension().and_then(|x| x.to_str()) == Some("java")
-                    })
+                    .filter_map(std::result::Result::ok)
+                    .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("java"))
                 {
                     files.push(entry.path().to_path_buf());
                 }
@@ -258,10 +280,7 @@ pub fn gather_guard_status(root: &Path) -> Result<Value> {
     }
 
     // Run guard scan with --json flag
-    let file_args: Vec<&str> = main_java
-        .iter()
-        .map(|p| p.to_str().unwrap_or(""))
-        .collect();
+    let file_args: Vec<&str> = main_java.iter().map(|p| p.to_str().unwrap_or("")).collect();
 
     let output = Command::new(&guard_bin)
         .arg("--json")
@@ -279,7 +298,7 @@ pub fn gather_guard_status(root: &Path) -> Result<Value> {
                     .unwrap_or("UNKNOWN");
                 let violations = parsed
                     .get("violation_count")
-                    .and_then(|v| v.as_u64())
+                    .and_then(serde_json::Value::as_u64)
                     .unwrap_or(0);
 
                 Ok(json!({
@@ -313,17 +332,20 @@ pub fn gather_guard_status(root: &Path) -> Result<Value> {
 
 // ─── Write Facts ──────────────────────────────────────────────────────────────
 
-/// Write all facts as minified JSON to output_dir.
+/// Write all facts as minified JSON to `output_dir`.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or files cannot be parsed.
 pub fn write_facts(output_dir: &Path, facts: &[(&str, Value)]) -> Result<()> {
     fs::create_dir_all(output_dir)
         .with_context(|| format!("Cannot create {}", output_dir.display()))?;
 
     for (filename, value) in facts {
         let path = output_dir.join(filename);
-        let json_str = serde_json::to_string(value)
-            .with_context(|| format!("Cannot serialize {filename}"))?;
-        fs::write(&path, &json_str)
-            .with_context(|| format!("Cannot write {}", path.display()))?;
+        let json_str =
+            serde_json::to_string(value).with_context(|| format!("Cannot serialize {filename}"))?;
+        fs::write(&path, &json_str).with_context(|| format!("Cannot write {}", path.display()))?;
     }
 
     Ok(())
@@ -348,7 +370,11 @@ fn extract_all_tags(xml: &str, tag: &str) -> Vec<String> {
     while let Some(start_pos) = remaining.find(&open) {
         let after_open = start_pos + open.len();
         if let Some(end_pos) = remaining[after_open..].find(&close) {
-            results.push(remaining[after_open..after_open + end_pos].trim().to_string());
+            results.push(
+                remaining[after_open..after_open + end_pos]
+                    .trim()
+                    .to_string(),
+            );
             remaining = &remaining[after_open + end_pos + close.len()..];
         } else {
             break;
@@ -403,7 +429,7 @@ fn count_rust_tests(crate_dir: &Path) -> usize {
 
     WalkDir::new(&src_dir)
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("rs"))
         .filter_map(|e| fs::read_to_string(e.path()).ok())
         .map(|content| content.matches("#[test]").count())
@@ -416,7 +442,7 @@ fn count_java_files(dir: &Path) -> usize {
     }
     WalkDir::new(dir)
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("java"))
         .count()
 }
@@ -428,7 +454,7 @@ fn count_packages(main_java_dir: &Path) -> usize {
     WalkDir::new(main_java_dir)
         .min_depth(1)
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .filter(|e| e.file_type().is_dir())
         .count()
 }
@@ -439,7 +465,7 @@ fn count_test_classes(test_dir: &Path) -> usize {
     }
     WalkDir::new(test_dir)
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("java"))
         .filter_map(|e| fs::read_to_string(e.path()).ok())
         .filter(|content| content.contains("@Test"))
@@ -455,7 +481,10 @@ fn read_maven_config(root: &Path) -> (String, bool) {
         .find_map(|l| {
             let l = l.trim();
             if l.starts_with("-Dmaven.compiler.release=") {
-                Some(l.trim_start_matches("-Dmaven.compiler.release=").to_string())
+                Some(
+                    l.trim_start_matches("-Dmaven.compiler.release=")
+                        .to_string(),
+                )
             } else {
                 None
             }
@@ -477,8 +506,7 @@ fn iso8601_now() -> String {
         .output()
         .ok()
         .and_then(|o| String::from_utf8(o.stdout).ok())
-        .map(|s| s.trim().to_string())
-        .unwrap_or_else(|| "unknown".to_string())
+        .map_or_else(|| "unknown".to_string(), |s| s.trim().to_string())
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -523,10 +551,7 @@ mod tests {
         let crates = result["crates"].as_array().unwrap();
         // dtr-guard and dtr-javadoc and dtr-observatory should be found
         assert!(crates.len() >= 2, "Expected at least 2 Rust crates");
-        let names: Vec<&str> = crates
-            .iter()
-            .filter_map(|c| c["name"].as_str())
-            .collect();
+        let names: Vec<&str> = crates.iter().filter_map(|c| c["name"].as_str()).collect();
         assert!(names.contains(&"dtr-guard"), "Expected dtr-guard crate");
     }
 
@@ -575,9 +600,7 @@ name = "other-tool"
     fn test_write_facts_creates_files() {
         let tmp = std::env::temp_dir().join("dtr-obs-test");
         let _ = fs::remove_dir_all(&tmp);
-        let facts = vec![
-            ("test.json", json!({"key": "value"})),
-        ];
+        let facts = vec![("test.json", json!({"key": "value"}))];
         write_facts(&tmp, &facts).expect("write_facts failed");
         assert!(tmp.join("test.json").exists());
         let content = fs::read_to_string(tmp.join("test.json")).unwrap();

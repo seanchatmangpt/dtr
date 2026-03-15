@@ -3,6 +3,7 @@ name = "cct-cli"
 version = "0.1.0"
 edition = "2021"
 description = "Unified CLI for cct-scanner with oracle prioritization, cache dedup, and remediation — integrates all 4 scanner layers"
+rust-version = "1.70"
 
 [[bin]]
 name = "cct"

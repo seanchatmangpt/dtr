@@ -21,7 +21,7 @@ impl DecayCache {
 
         // Precompute decay weights for each day 0-365
         for age in 0..366 {
-            let weight = Self::compute_weight(age, decay_factor, decay_window_days);
+            let weight = Self::compute_weight(age as i64, decay_factor, decay_window_days);
             entries.push((age as i64, weight));
         }
 
@@ -104,7 +104,7 @@ impl RiskScorer {
     /// - Total violation count
     /// - Distinct pattern count
     /// - Temporal decay (recent violations weight more)
-    /// Returns a normalized [0, 1] score.
+    /// - Returns a normalized [0, 1] score.
     ///
     /// **Performance:** <50µs typical (5-10 violations). Uses:
     /// - Cached decay weights: O(1) lookup instead of 200ns computation
@@ -127,9 +127,7 @@ impl RiskScorer {
             let decay_weight = self.decay_cache.get_weight(age_days);
 
             weighted_count += decay_weight;
-            *pattern_weights
-                .entry(&violation.pattern)
-                .or_insert(0.0) += decay_weight;
+            *pattern_weights.entry(&violation.pattern).or_insert(0.0) += decay_weight;
         }
 
         // Distinct pattern contribution
@@ -255,7 +253,10 @@ mod tests {
         let recent_score = scorer.score_risk(&recent);
         let old_score = scorer.score_risk(&old);
 
-        assert!(recent_score > old_score, "Recent violations should score higher");
+        assert!(
+            recent_score > old_score,
+            "Recent violations should score higher"
+        );
     }
 
     #[test]
@@ -272,7 +273,10 @@ mod tests {
         let few_score = scorer.score_risk(&few);
         let many_score = scorer.score_risk(&many);
 
-        assert!(many_score > few_score, "More violations should increase score");
+        assert!(
+            many_score > few_score,
+            "More violations should increase score"
+        );
     }
 
     #[test]
@@ -350,8 +354,14 @@ mod tests {
         let scores = scorer.score_risks_parallel(&histories);
 
         assert_eq!(scores.len(), 4, "should have 4 scores");
-        assert!(scores[0] > scores[1], "5-day violation should score higher than 10-day");
-        assert!(scores[1] > scores[2], "10-day violation should score higher than 20-day");
+        assert!(
+            scores[0] > scores[1],
+            "5-day violation should score higher than 10-day"
+        );
+        assert!(
+            scores[1] > scores[2],
+            "10-day violation should score higher than 20-day"
+        );
         assert_eq!(scores[3], 0.0, "empty history should score 0");
     }
 
@@ -360,7 +370,10 @@ mod tests {
         let scorer = RiskScorer::new();
 
         let histories = vec![
-            vec![create_violation_days_ago("p1", 5), create_violation_days_ago("p2", 10)],
+            vec![
+                create_violation_days_ago("p1", 5),
+                create_violation_days_ago("p2", 10),
+            ],
             vec![create_violation_days_ago("p1", 15)],
             vec![],
             vec![
@@ -371,10 +384,7 @@ mod tests {
         ];
 
         // Sequential scoring
-        let sequential_scores: Vec<f64> = histories
-            .iter()
-            .map(|h| scorer.score_risk(h))
-            .collect();
+        let sequential_scores: Vec<f64> = histories.iter().map(|h| scorer.score_risk(h)).collect();
 
         // Parallel scoring
         let parallel_scores = scorer.score_risks_parallel(&histories);
@@ -385,8 +395,18 @@ mod tests {
             "should have same number of scores"
         );
 
-        for (i, (seq, par)) in sequential_scores.iter().zip(parallel_scores.iter()).enumerate() {
-            assert!((seq - par).abs() < 1e-10, "score {} should match: seq={}, par={}", i, seq, par);
+        for (i, (seq, par)) in sequential_scores
+            .iter()
+            .zip(parallel_scores.iter())
+            .enumerate()
+        {
+            assert!(
+                (seq - par).abs() < 1e-10,
+                "score {} should match: seq={}, par={}",
+                i,
+                seq,
+                par
+            );
         }
     }
 }

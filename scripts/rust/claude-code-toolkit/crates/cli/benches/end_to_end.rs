@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use cct_scanner::Scanner;
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -32,7 +32,8 @@ public class Example {
         return "";
     }
 }
-"#.to_string()
+"#
+    .to_string()
 }
 
 fn sample_clean_java() -> String {
@@ -50,14 +51,19 @@ public class CleanExample {
         return new ArrayList<>();
     }
 }
-"#.to_string()
+"#
+    .to_string()
 }
 
 fn bench_scan_single_file(c: &mut Criterion) {
     let temp_dir = TempDir::new().expect("create temp dir");
     let scanner = Scanner::new();
 
-    create_test_java_file(temp_dir.path(), "Example.java", &sample_java_with_violations());
+    create_test_java_file(
+        temp_dir.path(),
+        "Example.java",
+        &sample_java_with_violations(),
+    );
 
     let root = black_box(temp_dir.path().to_path_buf());
 
@@ -117,12 +123,16 @@ fn bench_scan_10_files_hot(c: &mut Criterion) {
     let root = black_box(temp_dir.path().to_path_buf());
 
     // Warm up the cache with one pass
-    let files: Vec<PathBuf> = (0..10).map(|i| root.join(format!("Test{}.java", i))).collect();
+    let files: Vec<PathBuf> = (0..10)
+        .map(|i| root.join(format!("Test{}.java", i)))
+        .collect();
     let _ = scanner.scan_files_parallel(&files);
 
     c.bench_function("e2e_scan_10_files_hot_cache", |b| {
         b.iter(|| {
-            let files: Vec<PathBuf> = (0..10).map(|i| root.join(format!("Test{}.java", i))).collect();
+            let files: Vec<PathBuf> = (0..10)
+                .map(|i| root.join(format!("Test{}.java", i)))
+                .collect();
             scanner.scan_files_parallel(&files)
         });
     });
@@ -147,12 +157,16 @@ fn bench_scan_100_files_warm(c: &mut Criterion) {
     let root = black_box(temp_dir.path().to_path_buf());
 
     // Warm up cache with 50 files
-    let warmup_files: Vec<PathBuf> = (0..50).map(|i| root.join(format!("Test{}.java", i))).collect();
+    let warmup_files: Vec<PathBuf> = (0..50)
+        .map(|i| root.join(format!("Test{}.java", i)))
+        .collect();
     let _ = scanner.scan_files_parallel(&warmup_files);
 
     c.bench_function("e2e_scan_100_files_warm_cache", |b| {
         b.iter(|| {
-            let all_files: Vec<PathBuf> = (0..100).map(|i| root.join(format!("Test{}.java", i))).collect();
+            let all_files: Vec<PathBuf> = (0..100)
+                .map(|i| root.join(format!("Test{}.java", i)))
+                .collect();
             scanner.scan_files_parallel(&all_files)
         });
     });
@@ -179,7 +193,9 @@ fn bench_scan_1000_small_files(c: &mut Criterion) {
 
     c.bench_function("e2e_scan_1000_files_many_small", |b| {
         b.iter(|| {
-            let all_files: Vec<PathBuf> = (0..1000).map(|i| root.join(format!("Test{}.java", i))).collect();
+            let all_files: Vec<PathBuf> = (0..1000)
+                .map(|i| root.join(format!("Test{}.java", i)))
+                .collect();
             scanner.scan_files_parallel(&all_files)
         });
     });

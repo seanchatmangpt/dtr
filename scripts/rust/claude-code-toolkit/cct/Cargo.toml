@@ -3,6 +3,7 @@ name = "cct"
 version = "0.1.0"
 edition = "2021"
 description = "Claude Code Toolkit — cct scan | cct observe | cct dx | cct hook"
+rust-version = "1.70"
 
 [[bin]]
 name = "cct"

@@ -3,6 +3,7 @@ name = "cct-scanner"
 version = "0.1.0"
 edition = "2021"
 description = "AST-based Java scanner using tree-sitter + aho-corasick for H-Guard pattern detection"
+rust-version = "1.70"
 
 [[bench]]
 name = "scanner"

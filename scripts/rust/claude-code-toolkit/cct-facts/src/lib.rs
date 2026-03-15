@@ -65,12 +65,19 @@ pub fn gather_project_type(root: &Path) -> Result<Value> {
     let has_gradle = root.join("build.gradle").exists() || root.join("build.gradle.kts").exists();
     let has_pyproject = root.join("pyproject.toml").exists();
 
-    let kind = if has_pom { "maven" }
-        else if has_cargo { "cargo" }
-        else if has_gradle { "gradle" }
-        else if has_npm { "npm" }
-        else if has_pyproject { "python" }
-        else { "unknown" };
+    let kind = if has_pom {
+        "maven"
+    } else if has_cargo {
+        "cargo"
+    } else if has_gradle {
+        "gradle"
+    } else if has_npm {
+        "npm"
+    } else if has_pyproject {
+        "python"
+    } else {
+        "unknown"
+    };
 
     Ok(json!({
         "type": kind,
@@ -117,10 +124,10 @@ pub fn gather_source_stats(root: &Path) -> Result<Value> {
 pub fn gather_git_info(root: &Path) -> Result<Value> {
     let r = root.to_string_lossy();
 
-    let branch = git_output(&["-C", &r, "branch", "--show-current"])
-        .unwrap_or_else(|| "unknown".into());
-    let last_commit = git_output(&["-C", &r, "log", "--oneline", "-1"])
-        .unwrap_or_else(|| "(no commits)".into());
+    let branch =
+        git_output(&["-C", &r, "branch", "--show-current"]).unwrap_or_else(|| "unknown".into());
+    let last_commit =
+        git_output(&["-C", &r, "log", "--oneline", "-1"]).unwrap_or_else(|| "(no commits)".into());
     let is_dirty = Command::new("git")
         .args(["-C", &r, "diff", "--quiet"])
         .status()
@@ -145,9 +152,13 @@ pub fn gather_maven(root: &Path) -> Result<Value> {
     let version = extract_between(&pom, "<version>", "</version>").unwrap_or("unknown");
     let group_id = extract_between(&pom, "<groupId>", "</groupId>").unwrap_or("unknown");
     let artifact_id = extract_between(&pom, "<artifactId>", "</artifactId>").unwrap_or("unknown");
-    let java_release = extract_between(&pom, "<maven.compiler.release>", "</maven.compiler.release>")
-        .or_else(|| extract_between(&pom, "<release>", "</release>"))
-        .unwrap_or("unknown");
+    let java_release = extract_between(
+        &pom,
+        "<maven.compiler.release>",
+        "</maven.compiler.release>",
+    )
+    .or_else(|| extract_between(&pom, "<release>", "</release>"))
+    .unwrap_or("unknown");
 
     // Collect module names
     let modules: Vec<&str> = pom
@@ -262,10 +273,14 @@ mod tests {
     fn dtr_root() -> PathBuf {
         // cct-facts/ → claude-code-toolkit/ → rust/ → scripts/ → dtr/
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent().unwrap()
-            .parent().unwrap()
-            .parent().unwrap()
-            .parent().unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
             .to_path_buf()
     }
 

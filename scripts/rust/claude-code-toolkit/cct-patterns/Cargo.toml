@@ -3,6 +3,7 @@ name = "cct-patterns"
 version = "0.1.0"
 edition = "2021"
 description = "Configurable code pattern scanner with Blake3 content cache and Naive Bayes priority ordering"
+rust-version = "1.70"
 
 [dependencies]
 serde = { workspace = true }

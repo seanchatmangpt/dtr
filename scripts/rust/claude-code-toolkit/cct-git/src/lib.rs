@@ -28,11 +28,15 @@ impl GitState {
     /// First block reason, if any.
     pub fn block_reason(&self) -> Option<String> {
         if self.has_uncommitted {
-            return Some("Uncommitted changes detected. Commit and push before ending the session.".into());
+            return Some(
+                "Uncommitted changes detected. Commit and push before ending the session.".into(),
+            );
         }
         if !self.untracked_files.is_empty() {
             let list = self.untracked_files.join(", ");
-            return Some(format!("Untracked files detected: {list}. Commit and push before ending."));
+            return Some(format!(
+                "Untracked files detected: {list}. Commit and push before ending."
+            ));
         }
         if self.unpushed_count > 0 {
             return Some(format!(
@@ -182,9 +186,12 @@ mod tests {
     fn git_state_on_real_repo() {
         // This test only checks that git_state doesn't panic on the current repo
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent().unwrap()
-            .parent().unwrap()
-            .parent().unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
             .to_path_buf();
         let state = git_state(&path);
         assert!(state.is_ok());

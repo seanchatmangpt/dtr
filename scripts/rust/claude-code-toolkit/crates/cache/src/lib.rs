@@ -55,7 +55,10 @@ pub mod hasher {
             let body2 = b"public void bar() { return null; }";
             let hash1 = hash_method_body(body1);
             let hash2 = hash_method_body(body2);
-            assert_ne!(hash1, hash2, "different inputs should produce different hashes");
+            assert_ne!(
+                hash1, hash2,
+                "different inputs should produce different hashes"
+            );
         }
 
         #[test]
@@ -620,7 +623,7 @@ pub mod manager {
             let db_path = tmp.path().join("test.db");
             let manager = CacheManager::new(&db_path).unwrap();
 
-            let bodies = vec![
+            let bodies = [
                 b"public int method1() { return 0; }".to_vec(),
                 b"public void method2() { }".to_vec(),
                 b"public boolean method3() { return false; }".to_vec(),
@@ -633,11 +636,7 @@ pub mod manager {
 
             manager.flush().unwrap(); // Flush buffered writes
 
-            assert_eq!(
-                manager.count().unwrap(),
-                3,
-                "should have cached 3 entries"
-            );
+            assert_eq!(manager.count().unwrap(), 3, "should have cached 3 entries");
 
             for body in bodies.iter() {
                 assert!(manager.contains(body).unwrap());
@@ -654,7 +653,11 @@ pub mod manager {
             let result = test_result("Test.java", 1);
 
             manager.insert(body, &result).unwrap();
-            assert_eq!(manager.memory_cache_size(), 1, "L1 cache should have 1 entry");
+            assert_eq!(
+                manager.memory_cache_size(),
+                1,
+                "L1 cache should have 1 entry"
+            );
 
             // Second query should hit L1 cache
             let retrieved = manager.query(body).unwrap();
@@ -680,11 +683,19 @@ pub mod manager {
             // New instance: L1 is empty, should promote from L2
             {
                 let manager = CacheManager::new(&db_path).unwrap();
-                assert_eq!(manager.memory_cache_size(), 0, "L1 should be empty on new instance");
+                assert_eq!(
+                    manager.memory_cache_size(),
+                    0,
+                    "L1 should be empty on new instance"
+                );
 
                 let retrieved = manager.query(body).unwrap();
                 assert!(retrieved.is_some());
-                assert_eq!(manager.memory_cache_size(), 1, "L1 should be populated from L2");
+                assert_eq!(
+                    manager.memory_cache_size(),
+                    1,
+                    "L1 should be populated from L2"
+                );
             }
         }
 

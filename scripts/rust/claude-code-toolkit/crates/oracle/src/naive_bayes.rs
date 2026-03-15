@@ -109,8 +109,8 @@ impl NaiveBayesOracle {
         // With Laplace smoothing to avoid zero probabilities
         let alpha = 1.0; // Laplace smoothing constant
 
-        let match_ratio = (training_matches as f64 + alpha)
-            / (matched_pattern_count as f64 + alpha);
+        let match_ratio =
+            (training_matches as f64 + alpha) / (matched_pattern_count as f64 + alpha);
 
         // Also factor in prior: how common are violations in general?
         let combined_score = (self.prior_positive * 0.5) + (match_ratio * 0.5);
@@ -181,12 +181,18 @@ mod tests {
 
         oracle.add_training_sample(
             "file1.java",
-            &[create_violation("dangerous-pattern"), create_violation("dangerous-pattern")],
+            &[
+                create_violation("dangerous-pattern"),
+                create_violation("dangerous-pattern"),
+            ],
         );
         oracle.add_training_sample("file2.java", &[]);
         oracle.train();
 
         let prediction = oracle.predict(&[create_violation("dangerous-pattern")]);
-        assert!(prediction > 0.0, "Known violation pattern should predict above 0");
+        assert!(
+            prediction > 0.0,
+            "Known violation pattern should predict above 0"
+        );
     }
 }

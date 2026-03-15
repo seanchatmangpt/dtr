@@ -47,7 +47,10 @@ mod tests {
         ];
 
         let score = oracle.predict(&new_history);
-        assert!(score > 0.5, "File with multiple violations should have high risk");
+        assert!(
+            score > 0.5,
+            "File with multiple violations should have high risk"
+        );
     }
 
     #[test]
@@ -143,7 +146,10 @@ mod tests {
         let score = oracle.predict(&new_history);
 
         // Should not be NaN or infinity due to Laplace smoothing
-        assert!(score.is_finite(), "Score should be finite with Laplace smoothing");
+        assert!(
+            score.is_finite(),
+            "Score should be finite with Laplace smoothing"
+        );
         assert!(score >= 0.0 && score <= 1.0, "Score should be normalized");
     }
 }

@@ -8,8 +8,8 @@
 //!
 //! Run with: `cargo bench --release -- --nocapture allocation`
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
 use cct_scanner::Scanner;
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
@@ -42,7 +42,8 @@ public class Example {
         return "";
     }
 }
-"#.to_string()
+"#
+    .to_string()
 }
 
 fn sample_clean_java() -> String {
@@ -60,7 +61,8 @@ public class CleanExample {
         return new ArrayList<>();
     }
 }
-"#.to_string()
+"#
+    .to_string()
 }
 
 /// Benchmark per-file latency: <10ms hot, <100ms cold
@@ -92,10 +94,10 @@ fn bench_per_file_latency(c: &mut Criterion) {
 
         group.bench_with_input(
             BenchmarkId::from_parameter(scenario),
-            &file_count,
-            |b, &fc| {
+            file_count,
+            |b, fc| {
                 b.iter(|| {
-                    let files: Vec<PathBuf> = (0..fc)
+                    let files: Vec<PathBuf> = (0..(*fc))
                         .map(|i| root.join(format!("Test{}.java", i)))
                         .collect();
                     scanner.scan_files_parallel(&files)
@@ -130,27 +132,23 @@ fn bench_amortized_scaling(c: &mut Criterion) {
     // Measure cost per file at different scales
     for file_count in [10, 100, 500, 1000].iter() {
         let id = format!("{}_files", file_count);
-        group.bench_with_input(
-            BenchmarkId::from_parameter(&id),
-            &file_count,
-            |b, &fc| {
-                b.iter(|| {
-                    let files: Vec<PathBuf> = (0..fc)
-                        .map(|i| root.join(format!("Test{:04}.java", i)))
-                        .collect();
-                    let start = std::time::Instant::now();
-                    scanner.scan_files_parallel(&files);
-                    let elapsed_us = start.elapsed().as_micros();
-                    let per_file_us = elapsed_us / fc as u128;
-                    eprintln!(
-                        "  {} files: {:.2}ms total ({:.2}µs per file)",
-                        fc,
-                        elapsed_us as f64 / 1000.0,
-                        per_file_us as f64
-                    );
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(&id), file_count, |b, fc| {
+            b.iter(|| {
+                let files: Vec<PathBuf> = (0..(*fc))
+                    .map(|i| root.join(format!("Test{:04}.java", i)))
+                    .collect();
+                let start = std::time::Instant::now();
+                scanner.scan_files_parallel(&files);
+                let elapsed_us = start.elapsed().as_micros();
+                let per_file_us = elapsed_us / (*fc) as u128;
+                eprintln!(
+                    "  {} files: {:.2}ms total ({:.2}µs per file)",
+                    fc,
+                    elapsed_us as f64 / 1000.0,
+                    per_file_us as f64
+                );
+            });
+        });
     }
 
     group.finish();
@@ -181,8 +179,9 @@ fn bench_memory_stability(c: &mut Criterion) {
                 (temp_dir, scanner)
             },
             |(temp_dir, scanner)| {
-                let files: Vec<PathBuf> =
-                    (0..100).map(|i| temp_dir.path().join(format!("Test{}.java", i))).collect();
+                let files: Vec<PathBuf> = (0..100)
+                    .map(|i| temp_dir.path().join(format!("Test{}.java", i)))
+                    .collect();
                 scanner.scan_files_parallel(&files)
             },
             criterion::BatchSize::SmallInput,
@@ -220,7 +219,10 @@ fn bench_cache_hit_rate(c: &mut Criterion) {
         });
     });
 
-    eprintln!("Cache warmup (cold): {:.2}ms", cold_elapsed.as_secs_f64() * 1000.0);
+    eprintln!(
+        "Cache warmup (cold): {:.2}ms",
+        cold_elapsed.as_secs_f64() * 1000.0
+    );
 }
 
 criterion_group!(

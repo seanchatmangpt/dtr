@@ -170,12 +170,18 @@ mod tests {
         let tmp_count = entries
             .filter_map(|e| {
                 e.ok().and_then(|entry| {
-                    entry.file_name().into_string().ok()
+                    entry
+                        .file_name()
+                        .into_string()
+                        .ok()
                         .filter(|n| n.contains(".tmp"))
                         .map(|_| ())
                 })
             })
             .count();
-        assert_eq!(tmp_count, 0, "no temp files should remain after atomic_write");
+        assert_eq!(
+            tmp_count, 0,
+            "no temp files should remain after atomic_write"
+        );
     }
 }

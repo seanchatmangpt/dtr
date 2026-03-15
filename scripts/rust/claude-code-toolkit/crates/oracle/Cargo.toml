@@ -3,6 +3,7 @@ name = "cct-oracle"
 version = "0.1.0"
 edition = "2021"
 description = "Naive Bayes risk scorer for prioritizing high-violation files in scanner execution"
+rust-version = "1.70"
 
 [[bench]]
 name = "oracle"

@@ -57,16 +57,12 @@ impl PreToolUsePayload {
 
     /// Extract `file_path` from tool_input (for Write/Edit tools).
     pub fn file_path(&self) -> Option<&str> {
-        self.tool_input
-            .get("file_path")
-            .and_then(|v| v.as_str())
+        self.tool_input.get("file_path").and_then(|v| v.as_str())
     }
 
     /// Extract `command` from tool_input (for Bash tool).
     pub fn command(&self) -> Option<&str> {
-        self.tool_input
-            .get("command")
-            .and_then(|v| v.as_str())
+        self.tool_input.get("command").and_then(|v| v.as_str())
     }
 
     /// Extract proposed file content (for Write tool: `content`; Edit tool: `new_string`).
@@ -189,7 +185,8 @@ mod tests {
 
     #[test]
     fn deserialize_pre_tool_use_write() {
-        let json = r#"{"tool_name":"Write","tool_input":{"file_path":"Foo.java","content":"// TODO"}}"#;
+        let json =
+            r#"{"tool_name":"Write","tool_input":{"file_path":"Foo.java","content":"// TODO"}}"#;
         let p: PreToolUsePayload = serde_json::from_str(json).unwrap();
         assert_eq!(p.file_path(), Some("Foo.java"));
         assert_eq!(p.proposed_content(), Some("// TODO"));

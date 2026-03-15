@@ -3,6 +3,7 @@ name = "cct-facts"
 version = "0.1.0"
 edition = "2021"
 description = "Generic codebase fact gatherer — compact JSON context for Claude Code agents"
+rust-version = "1.70"
 
 [dependencies]
 serde = { workspace = true }

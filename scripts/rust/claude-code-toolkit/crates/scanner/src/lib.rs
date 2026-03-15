@@ -116,7 +116,7 @@ pub fn extract_methods(source: &[u8]) -> Vec<MethodBody> {
         .expect("capture 'method_body'");
 
     let mut cursor = QueryCursor::new();
-    let mut matches = cursor.matches(&query, tree.root_node(), source);
+    let mut matches = cursor.matches(query, tree.root_node(), source);
 
     let mut methods = Vec::new();
     while let Some(m) = matches.next() {
@@ -368,10 +368,8 @@ struct ClassLevelPatterns {
 impl ClassLevelPatterns {
     fn new() -> Self {
         ClassLevelPatterns {
-            mock_class_re: Regex::new(
-                r"\b(?:class|interface)\s+(?:Mock|Stub|Fake|Demo)[A-Z]\w*",
-            )
-            .unwrap(),
+            mock_class_re: Regex::new(r"\b(?:class|interface)\s+(?:Mock|Stub|Fake|Demo)[A-Z]\w*")
+                .unwrap(),
         }
     }
 
@@ -619,8 +617,7 @@ public class MockUserRepository {
     #[test]
     fn test_scan_source_h_stub_null() {
         let scanner = Scanner::new();
-        let result =
-            scanner.scan_source(Path::new("UserService.java"), STUB_NULL_JAVA.as_bytes());
+        let result = scanner.scan_source(Path::new("UserService.java"), STUB_NULL_JAVA.as_bytes());
         assert!(
             result.violations.iter().any(|v| v.pattern == "H_STUB_NULL"),
             "return null should trigger H_STUB_NULL, got: {:?}",
@@ -642,10 +639,15 @@ public class MockUserRepository {
     #[test]
     fn test_scan_source_h_mock_class() {
         let scanner = Scanner::new();
-        let result =
-            scanner.scan_source(Path::new("MockUserRepository.java"), MOCK_CLASS_JAVA.as_bytes());
+        let result = scanner.scan_source(
+            Path::new("MockUserRepository.java"),
+            MOCK_CLASS_JAVA.as_bytes(),
+        );
         assert!(
-            result.violations.iter().any(|v| v.pattern == "H_MOCK_CLASS"),
+            result
+                .violations
+                .iter()
+                .any(|v| v.pattern == "H_MOCK_CLASS"),
             "Mock class declaration should trigger H_MOCK_CLASS, got: {:?}",
             result.violations
         );

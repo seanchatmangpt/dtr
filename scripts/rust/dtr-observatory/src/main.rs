@@ -58,9 +58,8 @@ fn run() -> Result<()> {
         i += 1;
     }
 
-    let root = root.unwrap_or_else(|| {
-        env::current_dir().expect("Cannot determine current directory")
-    });
+    let root =
+        root.unwrap_or_else(|| env::current_dir().expect("Cannot determine current directory"));
     let output = output.unwrap_or_else(|| root.join("docs").join("facts"));
 
     if !quiet {
@@ -68,12 +67,12 @@ fn run() -> Result<()> {
     }
 
     // Run all six gatherers
-    let modules = run_gatherer("modules", &root, gather_modules, quiet)?;
-    let java_profile = run_gatherer("java-profile", &root, gather_java_profile, quiet)?;
-    let rust_caps = run_gatherer("rust-capabilities", &root, gather_rust_capabilities, quiet)?;
-    let source_stats = run_gatherer("source-stats", &root, gather_source_stats, quiet)?;
-    let tests = run_gatherer("tests", &root, gather_tests, quiet)?;
-    let guard_status = run_gatherer("guard-status", &root, gather_guard_status, quiet)?;
+    let modules = run_gatherer("modules", &root, gather_modules, quiet);
+    let java_profile = run_gatherer("java-profile", &root, gather_java_profile, quiet);
+    let rust_caps = run_gatherer("rust-capabilities", &root, gather_rust_capabilities, quiet);
+    let source_stats = run_gatherer("source-stats", &root, gather_source_stats, quiet);
+    let tests = run_gatherer("tests", &root, gather_tests, quiet);
+    let guard_status = run_gatherer("guard-status", &root, gather_guard_status, quiet);
 
     let facts = vec![
         ("modules.json", modules),
@@ -93,7 +92,11 @@ fn run() -> Result<()> {
         });
         println!("{}", serde_json::to_string(&summary)?);
     } else if !quiet {
-        eprintln!("Observatory: {} facts written to {}", facts.len(), output.display());
+        eprintln!(
+            "Observatory: {} facts written to {}",
+            facts.len(),
+            output.display()
+        );
         eprintln!("  modules.json, java-profile.json, rust-capabilities.json,");
         eprintln!("  source-stats.json, tests.json, guard-status.json");
     }
@@ -101,12 +104,7 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn run_gatherer<F>(
-    name: &str,
-    root: &Path,
-    gatherer: F,
-    quiet: bool,
-) -> Result<serde_json::Value>
+fn run_gatherer<F>(name: &str, root: &Path, gatherer: F, quiet: bool) -> serde_json::Value
 where
     F: Fn(&Path) -> Result<serde_json::Value>,
 {
@@ -115,11 +113,11 @@ where
             if !quiet {
                 eprintln!("  ✓ {name}");
             }
-            Ok(value)
+            value
         }
         Err(e) => {
             eprintln!("  ✗ {name}: {e}");
-            Ok(serde_json::json!({"error": e.to_string()}))
+            serde_json::json!({"error": e.to_string()})
         }
     }
 }
