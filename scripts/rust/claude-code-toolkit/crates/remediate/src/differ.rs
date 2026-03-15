@@ -16,6 +16,9 @@ use similar::TextDiff;
 ///
 /// # Returns
 /// Tuple of (new_source_bytes, unified_diff_string)
+///
+/// # Errors
+/// Returns an error if the remediation plan contains invalid edits or if edit byte ranges exceed source bounds.
 pub fn apply_edits(source: &[u8], plan: &RemediationPlan) -> Result<(Vec<u8>, String)> {
     // Validate all edits are well-formed
     if !plan.all_edits_valid() {

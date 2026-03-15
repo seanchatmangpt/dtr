@@ -138,6 +138,9 @@ pub mod store {
 
     impl Store {
         /// Open or create a cache database at `db_path`.
+        ///
+        /// # Errors
+        /// Returns an error if the database cannot be created or initialized.
         pub fn new(db_path: &Path) -> Result<Self> {
             let db = Database::create(db_path)?;
             // Initialize tables on creation
@@ -159,6 +162,9 @@ pub mod store {
         /// Call `flush_batch()` explicitly to commit pending writes.
         ///
         /// Target: <5µs for buffered inserts, <50µs amortized when batch commits.
+        ///
+        /// # Errors
+        /// Returns an error if serialization fails or if flushing the batch fails.
         #[inline(always)]
         pub fn insert(&self, hash: &[u8; 32], result: &CachedScanResult) -> Result<()> {
             // Encode once, reuse in both direct and batched paths
@@ -182,6 +188,9 @@ pub mod store {
         }
 
         /// Flush accumulated batch writes to disk in a single transaction.
+        ///
+        /// # Errors
+        /// Returns an error if opening a write transaction, inserting records, or committing fails.
         pub fn flush_batch(&self) -> Result<()> {
             let mut buffer = self.write_buffer.lock().unwrap();
             if buffer.is_empty() {
@@ -203,6 +212,9 @@ pub mod store {
         /// Query a scan result by hash with zero-copy deserialization.
         ///
         /// Target: <2µs on L1 cache hit (via manager), <50µs on L2 miss.
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction or deserializing the cached result fails.
         pub fn query(&self, hash: &[u8; 32]) -> Result<Option<CachedScanResult>> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(SCAN_RESULTS_TABLE)?;
@@ -218,6 +230,9 @@ pub mod store {
         }
 
         /// Store method name metadata for a hash.
+        ///
+        /// # Errors
+        /// Returns an error if opening a write transaction, inserting the metadata, or committing fails.
         pub fn insert_method_metadata(&self, hash: &[u8; 32], method_name: &str) -> Result<()> {
             let write_txn = self.db.begin_write()?;
             {
@@ -229,6 +244,9 @@ pub mod store {
         }
 
         /// Retrieve method name metadata by hash.
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction fails.
         pub fn query_method_metadata(&self, hash: &[u8; 32]) -> Result<Option<String>> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(METHOD_METADATA_TABLE)?;
