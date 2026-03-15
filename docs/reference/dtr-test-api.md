@@ -1,7 +1,7 @@
 # Reference: DtrTest Base Class API
 
 **Package:** `io.github.seanchatmangpt.dtr.core`
-**Version:** 2026.3.0
+**Version:** 2026.2.0
 
 `DtrContext` is the parameter-injection API for JUnit 5 tests. `DtrExtension` is the JUnit 5 extension that manages the documentation lifecycle. Together they replace the v2.4.x `DTR` abstract base class.
 
@@ -62,13 +62,13 @@ All 50+ documentation output methods are documented in [say* Core API Reference]
 
 | Group | Methods | Since |
 |-------|---------|-------|
-| Core | `say`, `sayNextSection`, `sayRaw`, `sayCode`, `sayJson`, `sayTable`, `sayWarning`, `sayNote`, `sayKeyValue`, `sayUnorderedList`, `sayOrderedList`, `sayAssertions`, `sayRef`, `sayCite` (×2), `sayFootnote` | 2026.1.0 |
+| Core | `say`, `sayNextSection`, `sayRaw`, `sayCode`, `sayJson`, `sayTable`, `sayWarning`, `sayNote`, `sayKeyValue`, `sayUnorderedList`, `sayOrderedList`, `sayAssertions`, `sayRef`, `sayCite` (×2), `sayFootnote` | 2026.2.0 |
 | JVM Introspection | `sayCallSite`, `sayAnnotationProfile`, `sayClassHierarchy`, `sayStringProfile`, `sayReflectiveDiff` | 2026.2.0 |
-| Code Reflection | `sayCodeModel` (×2), `sayControlFlowGraph`, `sayCallGraph`, `sayOpProfile` | 2026.1.0 |
-| Benchmarking | `sayBenchmark` (×2) | 2026.3.0 |
-| Mermaid | `sayMermaid`, `sayClassDiagram` | 2026.3.0 |
-| Coverage and Quality | `sayDocCoverage`, `sayContractVerification`, `sayEvolutionTimeline` | 2026.3.0 |
-| Utility | `sayEnvProfile`, `sayRecordComponents`, `sayException`, `sayAsciiChart` | 2026.3.0 |
+| Code Reflection | `sayCodeModel` (×2), `sayControlFlowGraph`, `sayCallGraph`, `sayOpProfile` | 2026.2.0 |
+| Benchmarking | `sayBenchmark` (×2) | 2026.2.0 |
+| Mermaid | `sayMermaid`, `sayClassDiagram` | 2026.2.0 |
+| Coverage and Quality | `sayDocCoverage`, `sayContractVerification`, `sayEvolutionTimeline` | 2026.2.0 |
+| Utility | `sayEnvProfile`, `sayRecordComponents`, `sayException`, `sayAsciiChart` | 2026.2.0 |
 
 ### RenderMachine methods
 
@@ -119,7 +119,7 @@ class FeatureDocTest {
     @Test
     void overview(DtrContext ctx) {
         ctx.sayNextSection("Feature Overview");
-        ctx.say("This document describes the 2026.3.0 release.");
+        ctx.say("This document describes the 2026.2.0 release.");
         ctx.sayNote("Requires Java 26+ with --enable-preview.");
         ctx.sayWarning("API incompatible with DTR 2026.2.x — see changelog.");
     }
@@ -195,7 +195,7 @@ target/docs/test-results/
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.3.0</version>
+    <version>2026.2.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -204,9 +204,9 @@ target/docs/test-results/
 
 ## Migration from v2026.2.x DTR base class
 
-In 2026.3.0 the `DTR` abstract base class and JUnit 4 lifecycle were replaced by `DtrContext` + `DtrExtension`.
+In 2026.2.0 the `DTR` abstract base class and JUnit 4 lifecycle were replaced by `DtrContext` + `DtrExtension`.
 
-| v2026.2.x (DTR base class) | 2026.3.0 (DtrContext) |
+| v2026.2.x (DTR base class) | 2026.2.0 (DtrContext) |
 |-------------------------|---------------------|
 | `extends DTR` | `@ExtendWith(DtrExtension.class)` |
 | `sayNextSection("x")` | `ctx.sayNextSection("x")` |

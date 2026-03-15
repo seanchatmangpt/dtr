@@ -398,7 +398,7 @@ make release-minor
 
 ### What NOT to Do
 
-**Don't** run `make release-minor` twice - it will increment to v2026.3.0
+**Don't** run `make release-minor` twice - it will increment to v2026.2.0
 **Don't** manually delete RC tags before promotion
 **Don't** skip RC testing - RCs exist to catch issues before Maven Central
 

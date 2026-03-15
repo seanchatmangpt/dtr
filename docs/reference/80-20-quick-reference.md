@@ -93,4 +93,4 @@ ctx.sayCite("smith2023");
 
 ---
 
-**DTR 2026.3.0** — `io.github.seanchatmangpt.dtr:dtr-core:2026.3.0` — Java 26+ — `--enable-preview`
+**DTR 2026.2.0** — `io.github.seanchatmangpt.dtr:dtr-core:2026.2.0` — Java 26+ — `--enable-preview`

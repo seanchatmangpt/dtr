@@ -92,7 +92,7 @@ Breaking API changes are handled by deprecation cycle:
 3. Remove the method no earlier than `2027.1.0` (one full year of warning)
 
 The year boundary IS the breaking change window. Downstream users who pin
-`[2026.1.0,2027)` are protected by the range.
+`[2026.2.0,2027)` are protected by the range.
 
 ---
 
@@ -101,10 +101,10 @@ The year boundary IS the breaking change window. Downstream users who pin
 Document this in README once:
 ```xml
 <!-- Pinned to 2026 — protected from year-boundary changes -->
-<version>[2026.1.0,2027)</version>
+<version>[2026.2.0,2027)</version>
 
 <!-- From specific release onward within 2026 -->
-<version>[2026.3.0,2027)</version>
+<version>[2026.2.0,2027)</version>
 ```
 
 ---
