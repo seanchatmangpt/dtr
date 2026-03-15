@@ -55,7 +55,7 @@ Configure the compiler plugin for Java 26 with preview features enabled:
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.13.0</version>
             <configuration>
-                <release>25</release>
+                <release>26</release>
                 <compilerArgs>
                     <arg>--enable-preview</arg>
                 </compilerArgs>

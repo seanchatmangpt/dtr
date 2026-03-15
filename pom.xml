@@ -11,7 +11,7 @@ the specific language governing permissions and limitations under the License. -
 
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr</artifactId>
-    <version>2026.1.1-rc.1</version>
+    <version>2026.1.0</version>
     <packaging>pom</packaging>
 
     <name>DTR - Documentation Testing Runtime</name>
@@ -24,18 +24,22 @@ the specific language governing permissions and limitations under the License. -
         <module>dtr-benchmarks</module>
     </modules>
 
-    <!--
-        No root distributionManagement: the release profile uses central-publishing-maven-plugin
-        which uploads via the Sonatype Portal REST API (not distributionManagement URLs).
-        The release-rc profile defines its own distributionManagement for GitHub Packages.
-        Snapshot deploys use `make snapshot` which routes through the release-rc profile.
-    -->
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <url>https://central.sonatype.com/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>central</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <scm>
         <url>https://github.com/seanchatmangpt/dtr</url>
         <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
         <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
-        <tag>v2026.1.1-rc.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
@@ -81,7 +85,7 @@ the specific language governing permissions and limitations under the License. -
 
         <!-- Dependency versions -->
         <jackson.version>2.21.1</jackson.version>
-        <junit.version>6.0.3</junit.version>
+        <junit5.version>6.0.3</junit5.version>
         <mockito.version>5.22.0</mockito.version>
         <jqwik.version>1.9.0</jqwik.version>
         <guava.version>33.5.0-jre</guava.version>
@@ -158,23 +162,23 @@ the specific language governing permissions and limitations under the License. -
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
-                <version>${junit.version}</version>
+                <version>${junit5.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
-                <version>${junit.version}</version>
+                <version>${junit5.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit.version}</version>
+                <version>${junit5.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-launcher</artifactId>
-                <version>${junit.version}</version>
+                <version>${junit5.version}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -285,9 +289,7 @@ the specific language governing permissions and limitations under the License. -
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.11.2</version>
                     <configuration>
-                        <additionalJOptions>
-                            <additionalJOption>--enable-preview</additionalJOption>
-                        </additionalJOptions>
+                        <additionalOptions>--enable-preview</additionalOptions>
                         <release>26</release>
                     </configuration>
                 </plugin>
@@ -307,7 +309,7 @@ the specific language governing permissions and limitations under the License. -
                                 <rules>
                                     <requireJavaVersion>
                                         <version>[26,)</version>
-                                        <message>Java 26 or higher is required. Build will fail on any version below 26.</message>
+                                        <message>Java 26 or higher is required.</message>
                                     </requireJavaVersion>
                                     <requireMavenVersion>
                                         <version>[4.0.0-rc-3,)</version>
@@ -363,11 +365,10 @@ the specific language governing permissions and limitations under the License. -
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.10.0</version>
+                        <version>0.6.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
-                            <tokenAuth>true</tokenAuth>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
                         </configuration>
@@ -395,9 +396,7 @@ the specific language governing permissions and limitations under the License. -
                         <version>3.11.2</version>
                         <configuration>
                             <doclint>none</doclint>
-                            <additionalJOptions>
-                                <additionalJOption>--enable-preview</additionalJOption>
-                            </additionalJOptions>
+                            <additionalOptions>--enable-preview</additionalOptions>
                             <release>26</release>
                         </configuration>
                         <executions>
@@ -433,6 +432,19 @@ the specific language governing permissions and limitations under the License. -
                         </executions>
                     </plugin>
 
+                    <!-- maven-release-plugin: ensure it uses the correct SCM tag format -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>3.1.1</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <releaseProfiles>release</releaseProfiles>
+                            <goals>deploy</goals>
+                            <tagNameFormat>v@{project.version}</tagNameFormat>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -469,9 +481,7 @@ the specific language governing permissions and limitations under the License. -
                         <version>3.11.2</version>
                         <configuration>
                             <doclint>none</doclint>
-                            <additionalJOptions>
-                                <additionalJOption>--enable-preview</additionalJOption>
-                            </additionalJOptions>
+                            <additionalOptions>--enable-preview</additionalOptions>
                             <release>26</release>
                         </configuration>
                         <executions>
@@ -510,9 +520,9 @@ the specific language governing permissions and limitations under the License. -
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.mycila</groupId>
-                        <artifactId>license-maven-plugin</artifactId>
-                        <version>4.5</version>
+                        <groupId>com.mycila.maven-license-plugin</groupId>
+                        <artifactId>maven-license-plugin</artifactId>
+                        <version>1.6.0</version>
                         <configuration>
                             <quiet>false</quiet>
                             <header>src/main/resources/license-header.txt</header>
