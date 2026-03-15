@@ -1,0 +1,4 @@
+--no-transfer-progress
+--batch-mode
+-Dmaven.compiler.enablePreview=true
+-Dmaven.compiler.release=26
