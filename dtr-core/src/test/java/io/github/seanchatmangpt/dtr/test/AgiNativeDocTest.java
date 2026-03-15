@@ -108,15 +108,16 @@ public class AgiNativeDocTest extends DtrTest {
     // =========================================================================
 
     sealed interface DocumentationEra
-            permits DocumentationEra.Static, DocumentationEra.Dynamic, DocumentationEra.AgiNative {
+            permits AgiNativeDocTest.EraStatic, AgiNativeDocTest.EraDynamic,
+                    AgiNativeDocTest.EraAgiNative {
         String label();
         String problem();
         String solution();
     }
 
-    record Static(String label, String problem, String solution) implements DocumentationEra {}
-    record Dynamic(String label, String problem, String solution) implements DocumentationEra {}
-    record AgiNative(String label, String problem, String solution) implements DocumentationEra {}
+    record EraStatic(String label, String problem, String solution) implements DocumentationEra {}
+    record EraDynamic(String label, String problem, String solution) implements DocumentationEra {}
+    record EraAgiNative(String label, String problem, String solution) implements DocumentationEra {}
 
     // =========================================================================
     // Test 1: AGI-Native Thesis
