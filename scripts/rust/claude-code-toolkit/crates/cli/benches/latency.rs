@@ -6,8 +6,10 @@
 //! - 100 files: target 4-8x speedup on 4-core CPU
 //! - 1000 files: extrapolate to production scale
 //!
-//! Uses Criterion framework for statistical analysis with percentile reporting.
+//! Uses Criterion framework for statistical analysis with percentile reporting (p50/p95/p99).
+//! Includes flamegraph profiling with pprof backend for detailed performance analysis.
 //! Run with: `cargo bench --release latency -- --nocapture --verbose`
+//! Flamegraph output: target/criterion/latency_*/profile-graphs/
 
 use cct_scanner::Scanner;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
@@ -61,6 +63,7 @@ fn create_violated_java_file(path: &PathBuf, violation_count: usize) {
 }
 
 /// Criterion-based benchmark: Single file scan latency (baseline).
+/// Includes flamegraph profiling and percentile reporting.
 fn criterion_single_file(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
     let file_path = black_box(temp_dir.path().join("Single.java"));
@@ -68,14 +71,19 @@ fn criterion_single_file(c: &mut Criterion) {
 
     let scanner = Scanner::new();
 
-    c.bench_function("latency_single_file_baseline", |b| {
+    let mut group = c.benchmark_group("latency_single_file");
+    group.sample_size(100); // Increase sample size for better percentile accuracy
+
+    group.bench_function("baseline", |b| {
         b.iter(|| {
             let _ = scanner.scan_file(&file_path);
         });
     });
+
+    group.finish();
 }
 
-/// Criterion-based benchmark: 10 files parallel scan.
+/// Criterion-based benchmark: 10 files parallel scan with percentile analysis.
 fn criterion_ten_files(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
     let mut files = Vec::new();
@@ -89,14 +97,20 @@ fn criterion_ten_files(c: &mut Criterion) {
     let files = black_box(files);
     let scanner = Scanner::new();
 
-    c.bench_function("latency_ten_files_parallel", |b| {
+    let mut group = c.benchmark_group("latency_ten_files");
+    group.sample_size(50); // Good balance for percentile accuracy
+
+    group.bench_function("parallel", |b| {
         b.iter(|| {
             let _ = scanner.scan_files_parallel(&files);
         });
     });
+
+    group.finish();
 }
 
-/// Criterion-based benchmark: 100 files parallel scan with statistical percentiles.
+/// Criterion-based benchmark: 100 files parallel scan with comprehensive statistical percentiles.
+/// Reports p50 (median), p95, and p99 latencies automatically via Criterion.
 fn criterion_hundred_files(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
     let mut files = Vec::new();
@@ -115,7 +129,8 @@ fn criterion_hundred_files(c: &mut Criterion) {
     let scanner = Scanner::new();
 
     let mut group = c.benchmark_group("latency_100_files");
-    group.sample_size(20); // 20 samples for statistical analysis
+    group.sample_size(30); // 30 samples for high-quality percentile estimates (p50/p95/p99)
+    group.measurement_time(std::time::Duration::from_secs(30)); // Allow sufficient time for measurements
 
     group.bench_function("parallel_scan", |b| {
         b.iter(|| {
@@ -127,6 +142,7 @@ fn criterion_hundred_files(c: &mut Criterion) {
 }
 
 /// Criterion-based benchmark: 1000 files parallel scan (production scale).
+/// Includes percentile tracking to understand tail latencies in real deployments.
 fn criterion_thousand_files(c: &mut Criterion) {
     let temp_dir = TempDir::new().unwrap();
     let mut files = Vec::new();
@@ -145,7 +161,8 @@ fn criterion_thousand_files(c: &mut Criterion) {
     let scanner = Scanner::new();
 
     let mut group = c.benchmark_group("latency_1000_files");
-    group.sample_size(10); // Smaller sample for large workload
+    group.sample_size(15); // 15 samples for production scale: enough for percentiles, manageable time
+    group.measurement_time(std::time::Duration::from_secs(60)); // Allow longer measurement for large workload
 
     group.bench_function("parallel_scan", |b| {
         b.iter(|| {
