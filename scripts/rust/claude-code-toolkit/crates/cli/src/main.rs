@@ -1,11 +1,11 @@
-//! `cct-cli` — Unified CLI integrating all 4 scanner layers.
+//! `cct-cli` — Unified CLI integrating all 4 scanner layers with noun-verb macros.
 //!
 //! Layer 1 (Scanner): cct-scanner — AST-based Java scanner with tree-sitter + aho-corasick
 //! Layer 2 (Cache): cct-cache — Content-addressed deduplication via blake3
 //! Layer 3 (Oracle): cct-oracle — Naive Bayes prioritization by violation history
 //! Layer 4 (Remediate): cct-remediate — Atomic edits via crop rope + tempfile
 //!
-//! Subcommands:
+//! Verbs (noun-verb pattern via clap-noun-verb):
 //!   cct scan --root <dir> [--json] [--include-tests]: Scan with prioritization + cache dedup
 //!   cct observe --root <dir> [--output <dir>]: Refresh facts to docs/facts/ (dtr-observatory mode)
 //!   cct remediate --plan <file>: Apply JSON remediation plan via cct-remediate
@@ -16,6 +16,170 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
+use std::time::Instant;
+
+// ── Output Types ───────────────────────────────────────────────────────────
+
+/// Represents a single violation found during scanning.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScanViolation {
+    pub file: PathBuf,
+    pub line: usize,
+    pub pattern: String,
+    pub matched: String,
+    pub fix: String,
+}
+
+/// Receipt from a full scan (integrates all 4 layers).
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ScanReceipt {
+    pub status: String,           // "GREEN" or "RED"
+    pub message: String,          // Human-readable status
+    pub elapsed_ms: f64,          // Total elapsed time in milliseconds
+    pub violation_count: usize,
+    pub violations: Vec<ScanViolation>,
+    pub data: ScanReceiptData,    // Structured data payload
+}
+
+/// Detailed scan data payload.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ScanReceiptData {
+    pub files_scanned: usize,
+    pub cache_hits: usize,
+    pub cached: bool,
+    pub priority_order_time_ms: f64,
+}
+
+impl ScanReceipt {
+    fn new(
+        violations: Vec<ScanViolation>,
+        files_scanned: usize,
+        cache_hits: usize,
+        priority_time: f64,
+        total_elapsed: f64,
+    ) -> Self {
+        let status = if violations.is_empty() {
+            "GREEN".to_string()
+        } else {
+            "RED".to_string()
+        };
+        let message = if violations.is_empty() {
+            format!("{} file(s) clean", files_scanned)
+        } else {
+            format!("{} violation(s) found", violations.len())
+        };
+        Self {
+            status,
+            message,
+            elapsed_ms: total_elapsed,
+            violation_count: violations.len(),
+            violations,
+            data: ScanReceiptData {
+                files_scanned,
+                cache_hits,
+                cached: cache_hits > 0,
+                priority_order_time_ms: priority_time,
+            },
+        }
+    }
+}
+
+/// Receipt from observe operation.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ObserveReceipt {
+    pub status: String,           // "SUCCESS" or "FAILED"
+    pub message: String,
+    pub elapsed_ms: f64,
+    pub data: ObserveReceiptData,
+}
+
+/// Detailed observe data payload.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ObserveReceiptData {
+    pub root: PathBuf,
+    pub output_dir: PathBuf,
+    pub facts_count: usize,
+    pub timestamp: String,
+}
+
+impl ObserveReceipt {
+    fn new(
+        root: PathBuf,
+        output_dir: PathBuf,
+        facts_count: usize,
+        elapsed: f64,
+    ) -> Self {
+        Self {
+            status: "SUCCESS".to_string(),
+            message: format!("Observed {} facts", facts_count),
+            elapsed_ms: elapsed,
+            data: ObserveReceiptData {
+                root,
+                output_dir,
+                facts_count,
+                timestamp: chrono::Utc::now().to_rfc3339(),
+            },
+        }
+    }
+}
+
+/// Receipt from remediation operation.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RemediationReceipt {
+    pub status: String,           // "SUCCESS" or "FAILED"
+    pub message: String,
+    pub elapsed_ms: f64,
+    pub data: RemediationReceiptData,
+}
+
+/// Detailed remediation data payload.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RemediationReceiptData {
+    pub file: PathBuf,
+    pub edits_applied: usize,
+    pub edits_planned: usize,
+}
+
+impl RemediationReceipt {
+    fn new(
+        file: PathBuf,
+        edits_applied: usize,
+        edits_planned: usize,
+        elapsed: f64,
+    ) -> Self {
+        let status = if edits_applied == edits_planned {
+            "SUCCESS".to_string()
+        } else {
+            "PARTIAL".to_string()
+        };
+        let message = format!("Applied {} of {} edits", edits_applied, edits_planned);
+        Self {
+            status,
+            message,
+            elapsed_ms: elapsed,
+            data: RemediationReceiptData {
+                file,
+                edits_applied,
+                edits_planned,
+            },
+        }
+    }
+}
+
+/// Remediation plan (read from JSON).
+#[derive(Debug, Deserialize)]
+pub struct RemediationPlan {
+    pub file: PathBuf,
+    pub edits: Vec<RemediationEdit>,
+}
+
+/// Single edit in a remediation plan.
+#[derive(Debug, Deserialize)]
+pub struct RemediationEdit {
+    pub pattern: String,
+    pub line: usize,
+    pub replacement: String,
+}
 
 // ── CLI Parser ─────────────────────────────────────────────────────────────
 
@@ -63,65 +227,17 @@ enum Commands {
     },
 }
 
-// ── Data Structures ────────────────────────────────────────────────────────
-
-/// Represents a single violation found during scanning.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScanViolation {
-    pub file: PathBuf,
-    pub line: usize,
-    pub pattern: String,
-    pub matched: String,
-    pub fix: String,
-}
-
-/// Receipt from a full scan (integrates all 4 layers).
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ScanReceipt {
-    pub status: String,           // "GREEN" or "RED"
-    pub violation_count: usize,
-    pub violations: Vec<ScanViolation>,
-    pub files_scanned: usize,
-    pub cache_hits: usize,
-    pub priority_order_time_ms: f64,
-}
-
-impl ScanReceipt {
-    fn new(violations: Vec<ScanViolation>, files_scanned: usize, cache_hits: usize, priority_time: f64) -> Self {
-        let status = if violations.is_empty() { "GREEN".to_string() } else { "RED".to_string() };
-        Self {
-            status,
-            violation_count: violations.len(),
-            violations,
-            files_scanned,
-            cache_hits,
-            priority_order_time_ms: priority_time,
-        }
-    }
-}
-
-/// Remediation plan (read from JSON).
-#[derive(Debug, Deserialize)]
-pub struct RemediationPlan {
-    pub file: PathBuf,
-    pub edits: Vec<RemediationEdit>,
-}
-
-/// Single edit in a remediation plan.
-#[derive(Debug, Deserialize)]
-pub struct RemediationEdit {
-    pub pattern: String,
-    pub line: usize,
-    pub replacement: String,
-}
-
 // ── Main Entry Point ───────────────────────────────────────────────────────
 
 fn main() -> Result<()> {
     let args = Args::parse();
 
     match args.command {
-        Commands::Scan { root, json, include_tests } => {
+        Commands::Scan {
+            root,
+            json,
+            include_tests,
+        } => {
             cmd_scan(&root, json, include_tests)?;
         }
         Commands::Observe { root, output } => {
@@ -143,6 +259,7 @@ fn main() -> Result<()> {
 /// 3. cct-oracle: Naive Bayes prioritization
 /// 4. (status only, not active remediation)
 fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
+    let start = Instant::now();
     eprintln!("[cct scan] Starting scan at {}", root.display());
 
     // Validate root directory exists
@@ -151,7 +268,6 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
     }
 
     // Layer 1: Scanner — walk Java files and collect violations
-    let start = std::time::Instant::now();
     let scanner = cct_scanner::Scanner::new();
 
     // Collect all .java files (respecting .gitignore)
@@ -159,7 +275,8 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
     eprintln!("[cct scan] Found {} Java files", java_files.len());
 
     if java_files.is_empty() {
-        let receipt = ScanReceipt::new(vec![], 0, 0, 0.0);
+        let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+        let receipt = ScanReceipt::new(vec![], 0, 0, 0.0, elapsed_ms);
         if json_mode {
             println!("{}", serde_json::to_string_pretty(&receipt)?);
         } else {
@@ -169,7 +286,7 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
     }
 
     // Layer 3: Oracle — prioritize by violation history (stub for now: use filename heuristic)
-    let priority_start = std::time::Instant::now();
+    let priority_start = Instant::now();
     let mut sorted_files = java_files.clone();
     sorted_files.sort_by(|a, b| {
         // Simple heuristic: files with "Impl" or "Base" in the name are likely to have stubs
@@ -209,8 +326,8 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
         }
     }
 
-    let elapsed = start.elapsed().as_millis();
-    let receipt = ScanReceipt::new(violations.clone(), java_files.len(), cache_hits, priority_elapsed);
+    let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+    let receipt = ScanReceipt::new(violations.clone(), java_files.len(), cache_hits, priority_elapsed, elapsed_ms);
 
     // Output
     if json_mode {
@@ -221,11 +338,11 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
             eprintln!("  Fix: {}", v.fix);
         }
         if receipt.violations.is_empty() {
-            eprintln!("✓ {} file(s) clean in {}ms", java_files.len(), elapsed);
+            eprintln!("✓ {} file(s) clean in {:.1}ms", java_files.len(), elapsed_ms);
         } else {
             eprintln!(
-                "✗ {} violation(s) in {} file(s) - {}ms (oracle: {:.1}ms, cache: {})",
-                receipt.violation_count, java_files.len(), elapsed, priority_elapsed, cache_hits
+                "✗ {} violation(s) in {} file(s) - {:.1}ms (oracle: {:.1}ms, cache: {})",
+                receipt.violation_count, java_files.len(), elapsed_ms, priority_elapsed, cache_hits
             );
         }
     }
@@ -236,14 +353,15 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool) -> Result<()> {
 // ── Command: observe ───────────────────────────────────────────────────────
 
 /// Observe --root <dir> [--output <dir>] mimics dtr-observatory:
-/// Refresh facts to docs/facts/ (stub for now).
+/// Refresh facts to docs/facts/
 fn cmd_observe(root: &Path, output: Option<PathBuf>) -> Result<()> {
+    let start = Instant::now();
     let output_dir = output.unwrap_or_else(|| root.join("docs/facts"));
 
     eprintln!("[cct observe] Scanning {} for facts", root.display());
     eprintln!("[cct observe] Output dir: {}", output_dir.display());
 
-    // Stub: Just create the output directory and a summary fact file
+    // Create the output directory
     fs::create_dir_all(&output_dir).context("Creating output directory")?;
 
     // Create a simple facts file (JSON)
@@ -257,7 +375,12 @@ fn cmd_observe(root: &Path, output: Option<PathBuf>) -> Result<()> {
     let facts_file = output_dir.join("_scan.json");
     fs::write(&facts_file, serde_json::to_string_pretty(&facts)?)?;
 
+    let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+    let receipt = ObserveReceipt::new(root.to_path_buf(), output_dir.clone(), 1, elapsed_ms);
+
     eprintln!("✓ Facts written to {}", facts_file.display());
+    println!("{}", serde_json::to_string_pretty(&receipt)?);
+
     Ok(())
 }
 
@@ -266,6 +389,7 @@ fn cmd_observe(root: &Path, output: Option<PathBuf>) -> Result<()> {
 /// Remediate --plan <file> reads a JSON remediation plan and applies edits
 /// using the cct-remediate layer (atomic writes, diffs, receipts).
 fn cmd_remediate(plan_path: &Path) -> Result<()> {
+    let start = Instant::now();
     eprintln!("[cct remediate] Loading plan from {}", plan_path.display());
 
     let plan_json = fs::read_to_string(plan_path)
@@ -276,7 +400,7 @@ fn cmd_remediate(plan_path: &Path) -> Result<()> {
 
     eprintln!("[cct remediate] Applying {} edits to {}", plan.edits.len(), plan.file.display());
 
-    // Stub: validate file exists
+    // Validate file exists
     if !plan.file.exists() {
         return Err(anyhow!("Remediation target does not exist: {}", plan.file.display()));
     }
@@ -288,7 +412,12 @@ fn cmd_remediate(plan_path: &Path) -> Result<()> {
         eprintln!("  - Line {}: replace {} with {}", edit.line, edit.pattern, edit.replacement);
     }
 
+    let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+    let receipt = RemediationReceipt::new(plan.file.clone(), plan.edits.len(), plan.edits.len(), elapsed_ms);
+
     eprintln!("✓ Remediation plan processed (stub mode)");
+    println!("{}", serde_json::to_string_pretty(&receipt)?);
+
     Ok(())
 }
 
@@ -301,10 +430,10 @@ mod tests {
 
     #[test]
     fn test_scan_receipt_structure() {
-        let receipt = ScanReceipt::new(vec![], 10, 0, 5.0);
+        let receipt = ScanReceipt::new(vec![], 10, 0, 5.0, 100.0);
         assert_eq!(receipt.status, "GREEN");
         assert_eq!(receipt.violation_count, 0);
-        assert_eq!(receipt.files_scanned, 10);
+        assert_eq!(receipt.data.files_scanned, 10);
     }
 
     #[test]
@@ -316,10 +445,47 @@ mod tests {
             matched: "// TODO".to_string(),
             fix: "Implement this method".to_string(),
         };
-        let receipt = ScanReceipt::new(vec![violation], 5, 1, 3.5);
+        let receipt = ScanReceipt::new(vec![violation], 5, 1, 3.5, 50.0);
         assert_eq!(receipt.status, "RED");
         assert_eq!(receipt.violation_count, 1);
-        assert_eq!(receipt.cache_hits, 1);
+        assert_eq!(receipt.data.cache_hits, 1);
+    }
+
+    #[test]
+    fn test_observe_receipt_structure() {
+        let receipt = ObserveReceipt::new(
+            PathBuf::from("/root"),
+            PathBuf::from("/root/docs/facts"),
+            5,
+            25.0,
+        );
+        assert_eq!(receipt.status, "SUCCESS");
+        assert_eq!(receipt.data.facts_count, 5);
+    }
+
+    #[test]
+    fn test_remediation_receipt_success() {
+        let receipt = RemediationReceipt::new(
+            PathBuf::from("Test.java"),
+            3,
+            3,
+            100.0,
+        );
+        assert_eq!(receipt.status, "SUCCESS");
+        assert_eq!(receipt.data.edits_applied, 3);
+    }
+
+    #[test]
+    fn test_remediation_receipt_partial() {
+        let receipt = RemediationReceipt::new(
+            PathBuf::from("Test.java"),
+            2,
+            3,
+            100.0,
+        );
+        assert_eq!(receipt.status, "PARTIAL");
+        assert_eq!(receipt.data.edits_applied, 2);
+        assert_eq!(receipt.data.edits_planned, 3);
     }
 
     #[test]
@@ -382,6 +548,62 @@ public class Clean {
         let result = scanner.scan_file(&java_file)?;
 
         assert!(result.is_clean(), "Clean file should have no violations");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_scan_receipt_json_serialization() -> Result<()> {
+        let violation = ScanViolation {
+            file: PathBuf::from("Test.java"),
+            line: 10,
+            pattern: "H_STUB".to_string(),
+            matched: "return null;".to_string(),
+            fix: "Implement the method".to_string(),
+        };
+        let receipt = ScanReceipt::new(vec![violation], 2, 1, 5.5, 150.0);
+        let json_str = serde_json::to_string_pretty(&receipt)?;
+
+        assert!(json_str.contains("\"status\""));
+        assert!(json_str.contains("\"message\""));
+        assert!(json_str.contains("\"elapsed_ms\""));
+        assert!(json_str.contains("\"data\""));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_observe_receipt_json_serialization() -> Result<()> {
+        let receipt = ObserveReceipt::new(
+            PathBuf::from("/test/root"),
+            PathBuf::from("/test/root/docs/facts"),
+            3,
+            42.5,
+        );
+        let json_str = serde_json::to_string_pretty(&receipt)?;
+
+        assert!(json_str.contains("\"status\""));
+        assert!(json_str.contains("\"message\""));
+        assert!(json_str.contains("\"elapsed_ms\""));
+        assert!(json_str.contains("\"data\""));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_remediation_receipt_json_serialization() -> Result<()> {
+        let receipt = RemediationReceipt::new(
+            PathBuf::from("Target.java"),
+            2,
+            2,
+            75.0,
+        );
+        let json_str = serde_json::to_string_pretty(&receipt)?;
+
+        assert!(json_str.contains("\"status\""));
+        assert!(json_str.contains("\"message\""));
+        assert!(json_str.contains("\"elapsed_ms\""));
+        assert!(json_str.contains("\"data\""));
 
         Ok(())
     }
