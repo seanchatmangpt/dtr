@@ -117,9 +117,10 @@ jobs:
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           gpgconf --kill gpg-agent || true
 
-      - name: Import GPG key
+      - name: Import GPG key and extract key ID
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch --yes --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | base64 --decode | gpg --import --batch --yes --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
+          echo "GPG_KEY_ID=$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)" >> $GITHUB_ENV
 
       - name: Configure Maven settings
         run: |
@@ -139,7 +140,7 @@ jobs:
                 <activation><activeByDefault>true</activeByDefault></activation>
                 <properties>
                   <gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
-                  <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                  <gpg.passphrase>${env.GPG_SIGNING_KEY_PASSWORD}</gpg.passphrase>
                 </properties>
               </profile>
             </profiles>
@@ -148,13 +149,13 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_SIGNING_KEY_PASSWORD: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
+          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
 
       - name: Publish RC to GitHub Packages
         run: ./mvnw clean deploy -Prelease-rc -DskipTests --no-transfer-progress
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_SIGNING_KEY_PASSWORD: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
+          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}

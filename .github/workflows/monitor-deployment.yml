@@ -63,7 +63,7 @@ jobs:
 
             # Check if deployment is complete (placeholder)
             # In real implementation, use Central Portal API:
-            # curl -s -H "Authorization: Bearer ${{ secrets.CENTRAL_TOKEN }}" \
+            # curl -s -H "Authorization: Bearer ${{ secrets.CENTRAL_TOKEN_PASSWORD }}" \
             #   "$CENTRAL_API_URL/deployments/${{ inputs.deployment_id }}" | jq -r '.status'
 
             # Simulate check

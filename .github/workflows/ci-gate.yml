@@ -324,24 +324,20 @@ jobs:
             echo "🎯 Release tag detected"
 
             # Check required secrets (explicit checks for act compatibility)
-            if [ -z "${{ secrets.CENTRAL_USERNAME }}" ]; then
-              echo "❌ Missing secret: CENTRAL_USERNAME"
+            if [ -z "${{ secrets.CENTRAL_TOKEN_USERNAME }}" ]; then
+              echo "❌ Missing secret: CENTRAL_TOKEN_USERNAME"
               exit 1
             fi
-            if [ -z "${{ secrets.CENTRAL_TOKEN }}" ]; then
-              echo "❌ Missing secret: CENTRAL_TOKEN"
+            if [ -z "${{ secrets.CENTRAL_TOKEN_PASSWORD }}" ]; then
+              echo "❌ Missing secret: CENTRAL_TOKEN_PASSWORD"
               exit 1
             fi
-            if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
-              echo "❌ Missing secret: GPG_PRIVATE_KEY"
+            if [ -z "${{ secrets.GPG_SIGNING_KEY }}" ]; then
+              echo "❌ Missing secret: GPG_SIGNING_KEY"
               exit 1
             fi
-            if [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
-              echo "❌ Missing secret: GPG_PASSPHRASE"
-              exit 1
-            fi
-            if [ -z "${{ secrets.GPG_KEY_ID }}" ]; then
-              echo "❌ Missing secret: GPG_KEY_ID"
+            if [ -z "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}" ]; then
+              echo "❌ Missing secret: GPG_SIGNING_KEY_PASSWORD"
               exit 1
             fi
 

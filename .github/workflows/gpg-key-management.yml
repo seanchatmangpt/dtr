@@ -53,22 +53,15 @@ jobs:
           echo "🔍 Checking GPG prerequisites..."
 
           # Check if we have GPG private key in secrets
-          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
-            echo "❌ GPG_PRIVATE_KEY secret is missing"
+          if [ -z "${{ secrets.GPG_SIGNING_KEY }}" ]; then
+            echo "❌ GPG_SIGNING_KEY secret is missing"
             echo "can-proceed=false" >> $GITHUB_OUTPUT
             exit 1
           fi
 
           # Check if we have GPG passphrase
-          if [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
-            echo "❌ GPG_PASSPHRASE secret is missing"
-            echo "can-proceed=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-
-          # Check if we have GPG key ID
-          if [ -z "${{ secrets.GPG_KEY_ID }}" ]; then
-            echo "❌ GPG_KEY_ID secret is missing"
+          if [ -z "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}" ]; then
+            echo "❌ GPG_SIGNING_KEY_PASSWORD secret is missing"
             echo "can-proceed=false" >> $GITHUB_OUTPUT
             exit 1
           fi
@@ -89,10 +82,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Import GPG key
+      - name: Import GPG key and extract key ID
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
           gpg --list-secret-keys --keyid-format LONG
+          echo "GPG_KEY_ID=$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)" >> $GITHUB_ENV
 
       - name: Backup GPG key
         id: backup
@@ -105,10 +99,10 @@ jobs:
           mkdir -p "$BACKUP_DIR"
 
           # Export public key
-          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > "$BACKUP_DIR/public-key.asc"
+          gpg --armor --export "${{ env.GPG_KEY_ID }}" > "$BACKUP_DIR/public-key.asc"
 
           # Export private key with armor
-          gpg --armor --export-secret-keys "${{ secrets.GPG_KEY_ID }}" > "$BACKUP_DIR/private-key.asc"
+          gpg --armor --export-secret-keys "${{ env.GPG_KEY_ID }}" > "$BACKUP_DIR/private-key.asc"
 
           # Export key information
           gpg --list-secret-keys --keyid-format LONG > "$BACKUP_DIR/key-info.txt"
@@ -156,7 +150,7 @@ jobs:
           Name-Real: DTR Project
           Name-Email: dtr@example.com
           Expire-Date: ${{ github.event.inputs.expires_in_days }}d
-          Passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          Passphrase: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
           %echo Generating primary key
           %no-protection
           %commit
@@ -209,7 +203,7 @@ jobs:
 
       - name: Import GPG key
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
 
       - name: Generate revocation certificate
         id: revoke
@@ -221,7 +215,7 @@ jobs:
             --gen-revoke \
             --armor \
             --output revocation-cert.asc \
-            "${{ secrets.GPG_KEY_ID }}"
+            "$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)"
 
           echo "revocation-certificate=revocation-cert.asc" >> $GITHUB_OUTPUT
 

@@ -75,8 +75,8 @@ jobs:
             <servers>
               <server>
                 <id>central</id>
-                <username>${{ secrets.CENTRAL_USERNAME }}</username>
-                <password>${{ secrets.CENTRAL_TOKEN }}</password>
+                <username>${{ secrets.CENTRAL_TOKEN_USERNAME }}</username>
+                <password>${{ secrets.CENTRAL_TOKEN_PASSWORD }}</password>
               </server>
             </servers>
             <profiles>
@@ -86,8 +86,7 @@ jobs:
                   <activeByDefault>true</activeByDefault>
                 </activation>
                 <properties>
-                  <gpg.keyname>${{ secrets.GPG_KEY_ID }}</gpg.keyname>
-                  <gpg.passphrase>${{ secrets.GPG_PASSPHRASE }}</gpg.passphrase>
+                  <gpg.passphrase>${{ secrets.GPG_SIGNING_KEY_PASSWORD }}</gpg.passphrase>
                 </properties>
               </profile>
             </profiles>
@@ -155,8 +154,8 @@ jobs:
       - name: Generate GPG key
         run: |
           echo "🔐 Setting up GPG for dry run..."
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
-          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > public-key.asc
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
+          gpg --armor --export "$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)" > public-key.asc
 
       - name: Dry run deployment
         run: |
@@ -210,8 +209,8 @@ jobs:
 
       - name: Generate GPG key
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
-          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > public-key.asc
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
+          gpg --armor --export "$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)" > public-key.asc
 
       - name: Staging deployment
         run: |
@@ -272,8 +271,8 @@ jobs:
 
       - name: Generate GPG key
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
-          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > public-key.asc
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
+          gpg --armor --export "$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)" > public-key.asc
 
       - name: Production deployment
         run: |
@@ -333,7 +332,7 @@ jobs:
           echo "Closing staging repositories..."
 
           # In real scenario, this would use Central Portal API to close staging
-          # curl -X POST -u "${{ secrets.CENTRAL_USERNAME }}:${{ secrets.CENTRAL_TOKEN }}" \
+          # curl -X POST -u "${{ secrets.CENTRAL_TOKEN_USERNAME }}:${{ secrets.CENTRAL_TOKEN_PASSWORD }}" \
           #   https://central.sonatype.com/api/v1/staging/bulk/close
 
           echo "✅ Rollback simulation completed"

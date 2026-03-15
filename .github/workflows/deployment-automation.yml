@@ -167,8 +167,8 @@ jobs:
       - name: Generate GPG key
         if: ${{ !env.ACT }}
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
-          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > public-key.asc
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
+          gpg --armor --export "$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)" > public-key.asc
 
       - name: Deploy to staging repository
         if: ${{ !env.ACT }}
