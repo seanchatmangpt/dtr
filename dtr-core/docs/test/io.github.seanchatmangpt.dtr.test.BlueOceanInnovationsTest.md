@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `154 ns` |
+| Avg | `146 ns` |
 | Min | `42 ns` |
-| Max | `5834 ns` |
+| Max | `6791 ns` |
 | p99 | `625 ns` |
-| Ops/sec | `6,493,506` |
+| Ops/sec | `6,849,315` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `583 ns` |
-| Min | `250 ns` |
-| Max | `52041 ns` |
-| p99 | `2750 ns` |
-| Ops/sec | `1,715,265` |
+| Avg | `947 ns` |
+| Min | `208 ns` |
+| Max | `76208 ns` |
+| p99 | `38458 ns` |
+| Ops/sec | `1,055,966` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-15T03:25:33.371619Z` |
+| Timestamp | `2026-03-15T03:27:28.044177Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -321,6 +321,7 @@ Derives the git commit history for the source file of the given class using `git
 
 | Commit | Date | Author | Summary |
 | --- | --- | --- | --- |
+| `6a9cc57` | 2026-03-14 | Sean Chatman | feat(validation): environment-validation session results |
 | `6a3ab6f` | 2026-03-14 | Claude | chore: eradicate all remaining Java 25 references (80/20 gaps) |
 | `2155e33` | 2026-03-14 | Claude | Close 80/20 gaps: LICENSE, String.formatted, license plugin, TODO |
 | `e6d8943` | 2026-03-14 | Claude | feat: TPS enforcement — fail build on missing Javadoc, generate docs/api/ |
@@ -330,7 +331,6 @@ Derives the git commit history for the source file of the given class using `git
 | `dd1c236` | 2026-03-14 | Claude | feat: DTR v2.6.0 Blue Ocean 80/20 innovation — 13 new say* methods |
 | `f8aa8d6` | 2026-03-12 | Claude | fix: close remaining audit gaps for Fortune 500 readiness |
 | `d749c3f` | 2026-03-12 | Claude | Remove all DocTester references; rename to DTR branding |
-| `bab8177` | 2026-03-12 | Claude | Complete doctester → dtr rename (Document Testing Runtime) |
 
 *10 most recent commits touching `RenderMachineImpl.java`*
 
@@ -359,11 +359,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `84 ns` |
+| Avg | `80 ns` |
 | Min | `41 ns` |
-| Max | `333 ns` |
-| p99 | `333 ns` |
-| Ops/sec | `11,904,761` |
+| Max | `167 ns` |
+| p99 | `167 ns` |
+| Ops/sec | `12,500,000` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -463,10 +463,10 @@ sayThreadDump();
 
 | Metric | Value |
 | --- | --- |
-| Thread Count | `16` |
-| Daemon Thread Count | `15` |
-| Peak Thread Count | `16` |
-| Total Started Thread Count | `16` |
+| Thread Count | `17` |
+| Daemon Thread Count | `16` |
+| Peak Thread Count | `17` |
+| Total Started Thread Count | `17` |
 
 ### Thread Details
 
@@ -483,13 +483,14 @@ sayThreadDump();
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
 | `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
 | `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
-| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
+| `56` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
 | `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
-| `60` | `ForkJoinPool-1-worker-6` | `TIMED_WAITING` | `true` | `N/A` |
+| `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
 | `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
+| `70` | `ForkJoinPool-1-worker-7` | `TIMED_WAITING` | `true` | `N/A` |
 
-*16 live threads*
+*17 live threads*
 
 > [!NOTE]
 > On Java 21+, virtual threads appear alongside platform threads. Thread states include NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, and TERMINATED. The peak thread count shows the maximum concurrent threads since JVM start.
