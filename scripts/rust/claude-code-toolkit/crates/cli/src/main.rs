@@ -243,8 +243,9 @@ fn main() -> Result<()> {
             root,
             json,
             include_tests,
+            warmup,
         } => {
-            cmd_scan(&root, json, include_tests)?;
+            cmd_scan(&root, json, include_tests, warmup)?;
         }
         Commands::Observe { root, output } => {
             cmd_observe(&root, output)?;
@@ -279,7 +280,14 @@ fn main() -> Result<()> {
 /// Stage 3 (Cache): results written concurrently to DashMap L1 cache
 fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) -> Result<()> {
     let start = Instant::now();
-    eprintln!("[cct scan] Starting parallel scan at {}", root.display());
+
+    // Log phase information
+    let phase = if warmup {
+        "[WARMUP: Building cache + training oracle]"
+    } else {
+        "[HOT: Using populated cache + trained oracle]"
+    };
+    eprintln!("{} Starting parallel scan at {}", phase, root.display());
 
     // Validate root directory exists
     if !root.is_dir() {
@@ -398,6 +406,13 @@ fn cmd_scan(root: &Path, json_mode: bool, _include_tests: bool, warmup: bool) ->
             "  Timing: scan={:.1}ms, oracle={:.1}ms, sort={:.1}ms, total={:.1}ms",
             scan_stage_elapsed, oracle_stage_elapsed, priority_elapsed, elapsed_ms
         );
+
+        // Show warmup recommendation
+        if warmup {
+            eprintln!("  [WARMUP PHASE] Cache and oracle trained. Next run will be ~10x faster.");
+        } else {
+            eprintln!("  [HOT PHASE] Using cached state. Run with --warmup on first scan for best results.");
+        }
     }
 
     process::exit(if receipt.violation_count > 0 { 2 } else { 0 });
@@ -669,7 +684,7 @@ public class Clean {
         let root = temp_dir.path();
 
         // No Java files created, scan should return GREEN
-        cmd_scan(root, true, false)?;
+        cmd_scan(root, true, false, false)?;
 
         Ok(())
     }
