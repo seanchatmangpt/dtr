@@ -58,6 +58,9 @@ pub fn gather_all(root: &Path) -> Vec<(&'static str, Value)> {
 }
 
 /// Detect the primary project type.
+///
+/// # Errors
+/// Returns an error if JSON serialization fails.
 pub fn gather_project_type(root: &Path) -> Result<Value> {
     let has_pom = root.join("pom.xml").exists();
     let has_cargo = root.join("Cargo.toml").exists();
@@ -91,6 +94,9 @@ pub fn gather_project_type(root: &Path) -> Result<Value> {
 }
 
 /// Count source files by extension.
+///
+/// # Errors
+/// Returns an error if JSON serialization fails.
 pub fn gather_source_stats(root: &Path) -> Result<Value> {
     use walkdir::WalkDir;
     let mut counts: std::collections::HashMap<String, u64> = std::collections::HashMap::new();
@@ -121,6 +127,9 @@ pub fn gather_source_stats(root: &Path) -> Result<Value> {
 }
 
 /// Collect git metadata.
+///
+/// # Errors
+/// Returns an error if JSON serialization fails.
 pub fn gather_git_info(root: &Path) -> Result<Value> {
     let r = root.to_string_lossy();
 
