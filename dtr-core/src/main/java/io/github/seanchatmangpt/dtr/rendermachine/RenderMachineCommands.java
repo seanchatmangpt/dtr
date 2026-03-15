@@ -674,4 +674,79 @@ public interface RenderMachineCommands {
      * @param projectRoot absolute path to the git repository root
      */
     void sayGitHotspot(Class<?> clazz, String projectRoot);
+
+    // ── Wave 3 innovations ───────────────────────────────────────────────────
+
+    /**
+     * Runs N labeled tasks, ranks them by average ns, and documents a comparison table.
+     * @param tasks ordered map of label → task; at least one entry required
+     */
+    void sayBenchmarkComparison(java.util.Map<String, Runnable> tasks);
+
+    /**
+     * Detects the calling method via StackWalker and documents its Javadoc (if available).
+     * Useful for self-describing test methods without passing a Method reference.
+     */
+    void sayJavadocSelf();
+
+    /**
+     * Runs {@code task} at increasing thread counts and documents throughput scalability.
+     * @param label description of the workload
+     * @param taskCount number of tasks per thread level
+     * @param task the unit of work to execute in parallel
+     */
+    void sayParallelBenchmark(String label, int taskCount, Runnable task);
+
+    /**
+     * Parses the Maven pom.xml at {@code projectRoot} and renders a Mermaid dependency graph.
+     * @param projectRoot absolute path to the directory containing pom.xml
+     */
+    void sayDependencyGraph(String projectRoot);
+
+    /**
+     * Reflects on a class's public methods and documents them as an API contract table.
+     * @param clazz the class to inspect
+     */
+    void sayApiContract(Class<?> clazz);
+
+    /**
+     * Saves a snapshot of the current document lines to {@code target/docs/snapshots/{key}.json}.
+     * @param key snapshot identifier (alphanumeric, no spaces)
+     */
+    void sayDocumentSnapshot(String key);
+
+    /**
+     * Diffs the current document lines against the snapshot saved under {@code key} and documents
+     * added/removed lines. If no snapshot exists, documents that fact and saves one.
+     * @param key snapshot identifier matching a previously saved snapshot
+     */
+    void sayDocumentDiff(String key);
+
+    /**
+     * Runs {@code git log --follow} for the class's source file and documents commit history.
+     * @param clazz the class to trace
+     * @param projectRoot absolute path to the git repository root
+     */
+    void saySchemaEvolution(Class<?> clazz, String projectRoot);
+
+    /**
+     * Runs {@code trials} iterations of {@code gen.get()} through {@code predicate.test()} and
+     * documents any counterexamples found.
+     * @param label human-readable property description (e.g. "addition is commutative")
+     * @param gen value generator (called once per trial)
+     * @param predicate property under test — must return {@code true} for all generated values
+     * @param trials number of random trials to run
+     */
+    void sayPropertyBasedTest(String label,
+                              java.util.function.Supplier<Object> gen,
+                              java.util.function.Predicate<Object> predicate,
+                              int trials);
+
+    /**
+     * Compares the set of called method names against all public methods declared by {@code clazz}
+     * and documents a coverage table (covered, missing, percentage).
+     * @param clazz the class whose API coverage is being reported
+     * @param calledMethods names of methods that were actually exercised
+     */
+    void sayTestCoverage(Class<?> clazz, java.util.Set<String> calledMethods);
 }

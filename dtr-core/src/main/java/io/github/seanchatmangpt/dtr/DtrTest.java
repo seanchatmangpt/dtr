@@ -699,4 +699,69 @@ public abstract class DtrTest implements RenderMachineCommands {
     public final void sayGitHotspot(Class<?> clazz, String projectRoot) {
         renderMachine.sayGitHotspot(clazz, projectRoot);
     }
+
+    // ── Wave 3 innovations ────────────────────────────────────────────────────
+
+    /** Runs N labeled tasks, ranks them by average ns, and documents a comparison table. */
+    @Override
+    public final void sayBenchmarkComparison(java.util.Map<String, Runnable> tasks) {
+        renderMachine.sayBenchmarkComparison(tasks);
+    }
+
+    /** Detects the calling method via StackWalker and documents its Javadoc (if available). */
+    @Override
+    public final void sayJavadocSelf() {
+        renderMachine.sayJavadocSelf();
+    }
+
+    /** Runs {@code task} at increasing thread counts and documents throughput scalability. */
+    @Override
+    public final void sayParallelBenchmark(String label, int taskCount, Runnable task) {
+        renderMachine.sayParallelBenchmark(label, taskCount, task);
+    }
+
+    /** Parses the Maven pom.xml at {@code projectRoot} and renders a Mermaid dependency graph. */
+    @Override
+    public final void sayDependencyGraph(String projectRoot) {
+        renderMachine.sayDependencyGraph(projectRoot);
+    }
+
+    /** Reflects on a class's public methods and documents them as an API contract table. */
+    @Override
+    public final void sayApiContract(Class<?> clazz) {
+        renderMachine.sayApiContract(clazz);
+    }
+
+    /** Saves a snapshot of the current document lines to a JSON file. */
+    @Override
+    public final void sayDocumentSnapshot(String key) {
+        renderMachine.sayDocumentSnapshot(key);
+    }
+
+    /** Diffs current document lines against a previously saved snapshot. */
+    @Override
+    public final void sayDocumentDiff(String key) {
+        renderMachine.sayDocumentDiff(key);
+    }
+
+    /** Runs git log --follow for the class's source file and documents commit history. */
+    @Override
+    public final void saySchemaEvolution(Class<?> clazz, String projectRoot) {
+        renderMachine.saySchemaEvolution(clazz, projectRoot);
+    }
+
+    /** Runs trials of a generated value through a predicate and documents any counterexamples. */
+    @Override
+    public final void sayPropertyBasedTest(String label,
+                                           java.util.function.Supplier<Object> gen,
+                                           java.util.function.Predicate<Object> predicate,
+                                           int trials) {
+        renderMachine.sayPropertyBasedTest(label, gen, predicate, trials);
+    }
+
+    /** Compares called method names against all public methods in a class and documents coverage. */
+    @Override
+    public final void sayTestCoverage(Class<?> clazz, java.util.Set<String> calledMethods) {
+        renderMachine.sayTestCoverage(clazz, calledMethods);
+    }
 }

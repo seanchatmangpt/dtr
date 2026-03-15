@@ -1729,4 +1729,81 @@ public final class RenderMachineImpl extends RenderMachine {
         io.github.seanchatmangpt.dtr.githotspot.GitHotspotAnalyzer.toMarkdown(result).forEach(markdownDocument::add);
         markdownDocument.add("");
     }
+
+    // ── Wave 3 innovations ───────────────────────────────────────────────────
+
+    @Override
+    public void sayBenchmarkComparison(java.util.Map<String, Runnable> tasks) {
+        var result = io.github.seanchatmangpt.dtr.benchmark.BenchmarkComparison.compare(tasks, 10, 50);
+        io.github.seanchatmangpt.dtr.benchmark.BenchmarkComparison.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayJavadocSelf() {
+        var result = io.github.seanchatmangpt.dtr.javadoc.JavadocSelfLookup.lookup();
+        io.github.seanchatmangpt.dtr.javadoc.JavadocSelfLookup.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayParallelBenchmark(String label, int taskCount, Runnable task) {
+        var result = io.github.seanchatmangpt.dtr.parallel.ParallelBenchmarkRunner.run(label, taskCount, task);
+        io.github.seanchatmangpt.dtr.parallel.ParallelBenchmarkRunner.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayDependencyGraph(String projectRoot) {
+        var result = io.github.seanchatmangpt.dtr.dependencies.MavenDependencyReader.read(projectRoot);
+        io.github.seanchatmangpt.dtr.dependencies.MavenDependencyReader.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayApiContract(Class<?> clazz) {
+        var result = io.github.seanchatmangpt.dtr.apicontract.ApiContractExtractor.extract(clazz);
+        io.github.seanchatmangpt.dtr.apicontract.ApiContractExtractor.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayDocumentSnapshot(String key) {
+        var lines = java.util.List.copyOf(markdownDocument);
+        var result = io.github.seanchatmangpt.dtr.snapshot.DocumentSnapshot.save(key, lines);
+        io.github.seanchatmangpt.dtr.snapshot.DocumentSnapshot.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayDocumentDiff(String key) {
+        var lines = java.util.List.copyOf(markdownDocument);
+        var result = io.github.seanchatmangpt.dtr.snapshot.DocumentSnapshot.diff(key, lines);
+        io.github.seanchatmangpt.dtr.snapshot.DocumentSnapshot.diffToMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void saySchemaEvolution(Class<?> clazz, String projectRoot) {
+        var result = io.github.seanchatmangpt.dtr.schemaevolution.SchemaEvolutionReader.read(clazz, projectRoot);
+        io.github.seanchatmangpt.dtr.schemaevolution.SchemaEvolutionReader.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayPropertyBasedTest(String label,
+                                     java.util.function.Supplier<Object> gen,
+                                     java.util.function.Predicate<Object> predicate,
+                                     int trials) {
+        var result = io.github.seanchatmangpt.dtr.property.PropertyTestRunner.run(label, gen, predicate, trials);
+        io.github.seanchatmangpt.dtr.property.PropertyTestRunner.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayTestCoverage(Class<?> clazz, java.util.Set<String> calledMethods) {
+        var result = io.github.seanchatmangpt.dtr.methodcoverage.MethodCoverageTracker.analyze(clazz, calledMethods);
+        io.github.seanchatmangpt.dtr.methodcoverage.MethodCoverageTracker.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
 }

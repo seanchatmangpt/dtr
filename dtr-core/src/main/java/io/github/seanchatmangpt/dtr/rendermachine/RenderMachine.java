@@ -225,6 +225,41 @@ public abstract class RenderMachine implements RenderMachineCommands {
     /** Git hotspot — no-op in base class. */
     public void sayGitHotspot(Class<?> clazz, String projectRoot) {}
 
+    // ── Wave 3 innovations (no-op in base class) ─────────────────────────────
+
+    /** Benchmark comparison — no-op in base class. */
+    public void sayBenchmarkComparison(java.util.Map<String, Runnable> tasks) {}
+
+    /** Javadoc self-lookup — no-op in base class. */
+    public void sayJavadocSelf() {}
+
+    /** Parallel benchmark — no-op in base class. */
+    public void sayParallelBenchmark(String label, int taskCount, Runnable task) {}
+
+    /** Dependency graph — no-op in base class. */
+    public void sayDependencyGraph(String projectRoot) {}
+
+    /** API contract table — no-op in base class. */
+    public void sayApiContract(Class<?> clazz) {}
+
+    /** Document snapshot — no-op in base class. */
+    public void sayDocumentSnapshot(String key) {}
+
+    /** Document diff — no-op in base class. */
+    public void sayDocumentDiff(String key) {}
+
+    /** Schema evolution — no-op in base class. */
+    public void saySchemaEvolution(Class<?> clazz, String projectRoot) {}
+
+    /** Property-based test — no-op in base class. */
+    public void sayPropertyBasedTest(String label,
+                                     java.util.function.Supplier<Object> gen,
+                                     java.util.function.Predicate<Object> predicate,
+                                     int trials) {}
+
+    /** Test coverage table — no-op in base class. */
+    public void sayTestCoverage(Class<?> clazz, java.util.Set<String> calledMethods) {}
+
     /**
      * Finishes documentation generation and writes output to disk.
      */

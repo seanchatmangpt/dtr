@@ -377,6 +377,61 @@ public class DtrContext implements RenderMachineCommands {
     // Accessors for internal components
     // ========================================================================
 
+    // ── Wave 3 innovations ───────────────────────────────────────────────────
+
+    @Override
+    public void sayBenchmarkComparison(java.util.Map<String, Runnable> tasks) {
+        renderMachine.sayBenchmarkComparison(tasks);
+    }
+
+    @Override
+    public void sayJavadocSelf() {
+        renderMachine.sayJavadocSelf();
+    }
+
+    @Override
+    public void sayParallelBenchmark(String label, int taskCount, Runnable task) {
+        renderMachine.sayParallelBenchmark(label, taskCount, task);
+    }
+
+    @Override
+    public void sayDependencyGraph(String projectRoot) {
+        renderMachine.sayDependencyGraph(projectRoot);
+    }
+
+    @Override
+    public void sayApiContract(Class<?> clazz) {
+        renderMachine.sayApiContract(clazz);
+    }
+
+    @Override
+    public void sayDocumentSnapshot(String key) {
+        renderMachine.sayDocumentSnapshot(key);
+    }
+
+    @Override
+    public void sayDocumentDiff(String key) {
+        renderMachine.sayDocumentDiff(key);
+    }
+
+    @Override
+    public void saySchemaEvolution(Class<?> clazz, String projectRoot) {
+        renderMachine.saySchemaEvolution(clazz, projectRoot);
+    }
+
+    @Override
+    public void sayPropertyBasedTest(String label,
+                                     java.util.function.Supplier<Object> gen,
+                                     java.util.function.Predicate<Object> predicate,
+                                     int trials) {
+        renderMachine.sayPropertyBasedTest(label, gen, predicate, trials);
+    }
+
+    @Override
+    public void sayTestCoverage(Class<?> clazz, java.util.Set<String> calledMethods) {
+        renderMachine.sayTestCoverage(clazz, calledMethods);
+    }
+
     /**
      * Gets the underlying RenderMachine.
      *

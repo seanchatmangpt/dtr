@@ -17,6 +17,7 @@ package io.github.seanchatmangpt.dtr.rendermachine;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
 import io.github.seanchatmangpt.dtr.coverage.CoverageRow;
@@ -75,7 +76,44 @@ public sealed interface SayEvent
                 SayEvent.EnvProfileEvent,
                 SayEvent.RecordSchemaEvent,
                 SayEvent.ExceptionEvent,
-                SayEvent.AsciiChartEvent {
+                SayEvent.AsciiChartEvent,
+                // ── Missing core events ──────────────────────────────────────
+                SayEvent.AnnotationProfileEvent,
+                SayEvent.CallSiteEvent,
+                SayEvent.ClassDiagramEvent,
+                SayEvent.ClassHierarchyEvent,
+                SayEvent.ContractVerificationEvent,
+                SayEvent.EvolutionTimelineEvent,
+                SayEvent.JavadocEvent,
+                SayEvent.ModuleDependenciesEvent,
+                SayEvent.OperatingSystemEvent,
+                SayEvent.ReflectiveDiffEvent,
+                SayEvent.SecurityManagerEvent,
+                SayEvent.StringProfileEvent,
+                SayEvent.SystemPropertiesEvent,
+                SayEvent.ThreadDumpEvent,
+                // ── Innovation events (Phase 2) ──────────────────────────────
+                SayEvent.HttpContractEvent,
+                SayEvent.PerformanceRegressionEvent,
+                SayEvent.VirtualThreadComparisonEvent,
+                SayEvent.NarrativeScenarioEvent,
+                SayEvent.DataSampleEvent,
+                SayEvent.DecisionRecordEvent,
+                SayEvent.LoadProfileEvent,
+                SayEvent.TypeCompatEvent,
+                SayEvent.SecurityProfileEvent,
+                SayEvent.GitHotspotEvent,
+                // ── Wave 3 innovations ───────────────────────────────────────
+                SayEvent.BenchmarkComparisonEvent,
+                SayEvent.JavadocSelfEvent,
+                SayEvent.ParallelBenchmarkEvent,
+                SayEvent.DependencyGraphEvent,
+                SayEvent.ApiContractEvent,
+                SayEvent.DocumentSnapshotEvent,
+                SayEvent.DocumentDiffEvent,
+                SayEvent.SchemaEvolutionEvent,
+                SayEvent.PropertyTestEvent,
+                SayEvent.MethodCoverageEvent {
 
     /**
      * A narrative paragraph — the most fundamental documentation unit.
@@ -301,4 +339,118 @@ public sealed interface SayEvent
      * An ASCII horizontal bar chart for numeric data.
      */
     record AsciiChartEvent(String label, double[] values, String[] xLabels) implements SayEvent {}
+
+    // ── Missing core events ──────────────────────────────────────────────────
+
+    /** All annotations present on a class and its methods. */
+    record AnnotationProfileEvent(Class<?> clazz) implements SayEvent {}
+
+    /** Caller location captured at render time via StackWalker — no fields needed. */
+    record CallSiteEvent() implements SayEvent {}
+
+    /** Auto-generated Mermaid classDiagram from one or more classes. */
+    record ClassDiagramEvent(Class<?>[] classes) implements SayEvent {}
+
+    /** Inheritance tree for a class — superclass chain plus implemented interfaces. */
+    record ClassHierarchyEvent(Class<?> clazz) implements SayEvent {}
+
+    /** Interface implementation coverage across one or more implementation classes. */
+    record ContractVerificationEvent(Class<?> contract, Class<?>[] implementations) implements SayEvent {}
+
+    /** Git log --follow timeline for a class source file. */
+    record EvolutionTimelineEvent(Class<?> clazz, int maxEntries) implements SayEvent {}
+
+    /** Javadoc extracted from docs/meta/javadoc.json for a specific method. */
+    record JavadocEvent(java.lang.reflect.Method method) implements SayEvent {}
+
+    /** Module dependency graph for a set of classes. */
+    record ModuleDependenciesEvent(Class<?>[] classes) implements SayEvent {}
+
+    /** Operating system name, version, architecture, and kernel details. */
+    record OperatingSystemEvent() implements SayEvent {}
+
+    /** Field-by-field comparison table between two object snapshots. */
+    record ReflectiveDiffEvent(Object before, Object after) implements SayEvent {}
+
+    /** Security manager status and relevant policy details. */
+    record SecurityManagerEvent() implements SayEvent {}
+
+    /** Word count, line count, and Unicode metrics for a string. */
+    record StringProfileEvent(String text) implements SayEvent {}
+
+    /** System properties dump; optional filter prefix covers both overloads. */
+    record SystemPropertiesEvent(Optional<String> filter) implements SayEvent {}
+
+    /** Snapshot of all live threads at the time of the call. */
+    record ThreadDumpEvent() implements SayEvent {}
+
+    // ── Innovation events (Phase 2) ──────────────────────────────────────────
+
+    /** HTTP contract assertion — expected fields/values against a live endpoint. */
+    record HttpContractEvent(String url, String[][] expectedFields) implements SayEvent {}
+
+    /** Performance regression check — label and baseline nanoseconds only (Runnable excluded). */
+    record PerformanceRegressionEvent(String label, long baselineNs) implements SayEvent {}
+
+    /** Virtual-thread vs platform-thread throughput comparison for a workload. */
+    record VirtualThreadComparisonEvent(String label, int taskCount) implements SayEvent {}
+
+    /** BDD narrative scenario: Given / When / Then (Runnable excluded). */
+    record NarrativeScenarioEvent(String given, String when, String then) implements SayEvent {}
+
+    /** Metadata summary of a data sample — type name, total rows, max sample rows. */
+    record DataSampleEvent(String dataTypeName, int totalRows, int maxSampleRows) implements SayEvent {}
+
+    /** Architecture Decision Record with full ADR fields. */
+    record DecisionRecordEvent(
+            String id,
+            String title,
+            String context,
+            String decision,
+            String consequences
+    ) implements SayEvent {}
+
+    /** Load-profile measurement — label, thread count, and duration in ms (Runnable excluded). */
+    record LoadProfileEvent(String label, int threads, long durationMs) implements SayEvent {}
+
+    /** Binary compatibility check between two class versions. */
+    record TypeCompatEvent(Class<?> v1, Class<?> v2) implements SayEvent {}
+
+    /** Security annotations and permission requirements for a class. */
+    record SecurityProfileEvent(Class<?> clazz) implements SayEvent {}
+
+    /** Git churn hotspot analysis for a class file within a project root. */
+    record GitHotspotEvent(Class<?> clazz, String projectRoot) implements SayEvent {}
+
+    // ── Wave 3 innovation events ─────────────────────────────────────────────
+
+    /** Multi-task benchmark comparison — ranked table of relative speeds. */
+    record BenchmarkComparisonEvent(String[] labels, String[][] resultTable) implements SayEvent {}
+
+    /** Auto-detected caller javadoc — class name, method name, line number via StackWalker. */
+    record JavadocSelfEvent(String callerClass, String callerMethod, int lineNumber) implements SayEvent {}
+
+    /** Parallel scalability benchmark — throughput at increasing thread counts. */
+    record ParallelBenchmarkEvent(String label, int[] threadCounts, long[] throughputs) implements SayEvent {}
+
+    /** Maven dependency graph rendered as a Mermaid diagram. */
+    record DependencyGraphEvent(String mermaidDsl, String projectRoot) implements SayEvent {}
+
+    /** Reflective API contract table — public methods with params, return type, annotations. */
+    record ApiContractEvent(String className, String[][] rows) implements SayEvent {}
+
+    /** Document snapshot saved to target/docs/snapshots/{key}. */
+    record DocumentSnapshotEvent(String key, int lineCount) implements SayEvent {}
+
+    /** Diff between current document lines and a previous snapshot. */
+    record DocumentDiffEvent(String key, List<String> added, List<String> removed) implements SayEvent {}
+
+    /** Git-based schema evolution history for a class's source file. */
+    record SchemaEvolutionEvent(String className, List<String[]> history) implements SayEvent {}
+
+    /** Property-based test result — trials, failures, and counterexamples. */
+    record PropertyTestEvent(String label, int trials, int failures, List<String> counterexamples) implements SayEvent {}
+
+    /** Method-level documentation coverage for a class. */
+    record MethodCoverageEvent(String className, List<String[]> rows, int covered, int total) implements SayEvent {}
 }
