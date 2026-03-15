@@ -28,5 +28,10 @@ rayon = { workspace = true }
 name = "latency"
 path = "benches/latency.rs"
 
+[[bench]]
+name = "end_to_end"
+path = "benches/end_to_end.rs"
+
 [dev-dependencies]
 tempfile = "3"
+criterion = { version = "0.5", features = ["html_reports"] }
