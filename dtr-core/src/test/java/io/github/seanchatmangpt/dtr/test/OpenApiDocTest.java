@@ -23,7 +23,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 80/20 Blue Ocean Innovation: OpenAPI REST API Documentation.
