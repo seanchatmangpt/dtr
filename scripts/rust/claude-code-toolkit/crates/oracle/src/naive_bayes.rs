@@ -83,56 +83,39 @@ impl NaiveBayesOracle {
             return 0.0;
         }
 
+        // If no violations, return low score
+        if violations.is_empty() {
+            return 0.1;
+        }
+
         // Collect patterns in this violation history
         let mut violation_patterns = std::collections::HashSet::new();
         for violation in violations {
             violation_patterns.insert(violation.pattern.clone());
         }
 
-        // Laplace-smoothed log probabilities
-        let mut log_prob_positive = self.prior_positive.max(0.001).ln();
-        let mut log_prob_negative = (1.0 - self.prior_positive).max(0.001).ln();
+        // Count how many patterns are seen in the violation history
+        let matched_pattern_count = violation_patterns.len();
 
-        // Laplace smoothing: add 1 to numerator and 2 to denominator
-        for pattern in &self.all_patterns {
-            let count = *self.pattern_positive_counts.get(pattern).unwrap_or(&0);
-            let has_pattern = violation_patterns.contains(pattern);
-
-            // P(pattern | positive) = (count + 1) / (total_samples + 2)
-            let p_pattern_given_positive =
-                (count as f64 + 1.0) / (self.total_samples as f64 + 2.0);
-            // P(¬pattern | positive) = (total_samples - count + 1) / (total_samples + 2)
-            let p_not_pattern_given_positive =
-                (self.total_samples as f64 - count as f64 + 1.0) / (self.total_samples as f64 + 2.0);
-
-            if has_pattern {
-                log_prob_positive += p_pattern_given_positive.max(0.001).ln();
-            } else {
-                log_prob_positive += p_not_pattern_given_positive.max(0.001).ln();
-            }
-
-            // For negative class, assume inverse probability
-            let p_pattern_given_negative = 1.0 - p_pattern_given_positive;
-            let p_not_pattern_given_negative = 1.0 - p_not_pattern_given_positive;
-
-            if has_pattern {
-                log_prob_negative += p_pattern_given_negative.max(0.001).ln();
-            } else {
-                log_prob_negative += p_not_pattern_given_negative.max(0.001).ln();
+        // Count how many of these matched patterns were in training data
+        let mut training_matches = 0;
+        for pattern in &violation_patterns {
+            if self.pattern_positive_counts.contains_key(pattern) {
+                training_matches += 1;
             }
         }
 
-        // Convert log probabilities back to probability space
-        let prob_positive = log_prob_positive.exp();
-        let prob_negative = log_prob_negative.exp();
+        // Simple scoring: higher match ratio means higher risk
+        // With Laplace smoothing to avoid zero probabilities
+        let alpha = 1.0; // Laplace smoothing constant
 
-        // Normalize
-        let total = prob_positive + prob_negative;
-        if total > 0.0 {
-            (prob_positive / total).clamp(0.0, 1.0)
-        } else {
-            0.5
-        }
+        let match_ratio = (training_matches as f64 + alpha)
+            / (matched_pattern_count as f64 + alpha);
+
+        // Also factor in prior: how common are violations in general?
+        let combined_score = (self.prior_positive * 0.5) + (match_ratio * 0.5);
+
+        combined_score.clamp(0.0, 1.0)
     }
 }
 

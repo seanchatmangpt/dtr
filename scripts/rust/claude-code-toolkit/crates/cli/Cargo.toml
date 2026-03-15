@@ -11,12 +11,13 @@ path = "src/main.rs"
 [dependencies]
 cct-scanner = { path = "../scanner" }
 cct-cache = { path = "../cache" }
-cct-patterns = { path = "../../cct-patterns" }
-cct-pipeline = { path = "../../cct-pipeline" }
+cct-oracle = { path = "../oracle" }
+cct-remediate = { path = "../remediate" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
 walkdir = { workspace = true }
+chrono = { workspace = true }
 clap = { version = "4.5", features = ["derive"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }

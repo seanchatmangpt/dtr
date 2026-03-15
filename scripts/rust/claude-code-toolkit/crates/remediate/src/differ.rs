@@ -43,30 +43,25 @@ pub fn apply_edits(source: &[u8], plan: &RemediationPlan) -> Result<(Vec<u8>, St
         result.splice(edit.byte_start..edit.byte_start, edit.replacement.as_bytes().iter().cloned());
     }
 
-    // Generate unified diff
-    let before_str = str::from_utf8(source)
-        .unwrap_or("<invalid UTF-8 in source>");
-    let after_str = str::from_utf8(&result)
-        .unwrap_or("<invalid UTF-8 in result>");
+    // Generate unified diff by converting to owned strings
+    let before_str = String::from_utf8_lossy(source).into_owned();
+    let after_str = String::from_utf8_lossy(&result).into_owned();
 
-    let diff = TextDiff::from_lines(before_str, after_str);
-    let unified_diff = format_unified_diff(&diff);
+    // Create diff using owned strings
+    let diff = TextDiff::from_lines(before_str.as_str(), after_str.as_str());
 
-    Ok((result, unified_diff))
-}
-
-/// Format a similar::TextDiff as a unified diff string.
-fn format_unified_diff(diff: &TextDiff<str>) -> String {
-    let mut output = String::new();
+    // Collect changes into owned format for diff output
+    let mut unified_diff = String::new();
     for change in diff.iter_all_changes() {
         let line = change.value();
         match change.tag() {
-            similar::ChangeTag::Delete => output.push_str(&format!("-{}", line)),
-            similar::ChangeTag::Insert => output.push_str(&format!("+{}", line)),
-            similar::ChangeTag::Equal => output.push_str(&format!(" {}", line)),
+            similar::ChangeTag::Delete => unified_diff.push_str(&format!("-{}", line)),
+            similar::ChangeTag::Insert => unified_diff.push_str(&format!("+{}", line)),
+            similar::ChangeTag::Equal => unified_diff.push_str(&format!(" {}", line)),
         }
     }
-    output
+
+    Ok((result, unified_diff))
 }
 
 #[cfg(test)]
