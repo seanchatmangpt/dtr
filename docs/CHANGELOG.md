@@ -1,3 +1,48 @@
+## v2026.1.0 — 2026-03-14
+
+- docs: update javadoc extraction and test docs
+- docs: update session log
+- fix(ci): always clean reinstall SDKMAN to fix partial installation
+- fix(ci): handle partial SDKMAN installation on GitHub Actions
+- docs: update session log + generated docs
+- fix(latex): RenderMachineLatex updates
+- docs: update session log + RenderMachine classes
+- fix(ci): update workflow secret names to match GitHub secrets
+- docs: update session log
+- docs: update generated test documentation
+- docs: update generated documentation
+- chore: remove temporary implementation doc
+- docs: complete documentation and fix Maven Central config
+- docs: update CHANGELOG with release history
+- chore: clean up temporary reports and organize docs
+- docs: add extended say* API reference guide (80/20)
+- feat(validation): Maven Central publishing validation complete
+- docs: final doc regeneration
+- docs: regenerate javadoc and test docs
+- feat(validation): environment-validation session results
+- fix(config): add PATH env for non-interactive shells + new say* methods
+- refactor(docs): CLAUDE.md from first principles — encode agent autonomy
+- refactor(docs): condense CLAUDE.md to 50 LOC reference guide
+- docs: add act compatibility and update documentation
+- refactor(oracle): optimize Naive Bayes for <50µs/file risk scoring
+- feat(oracle): add Clone + Debug derive to RiskScorer
+- refactor(remediate): optimize Layer 4 diff generation and edit capacity
+- refactor(remediate): optimize crop + similar + tempfile for <100µs/edit
+- fix(oracle): remove nonexistent cache module declaration
+- fix(bench): simplify cache benchmarks to isolate blake3_hash results
+
+### Install
+
+```xml
+<dependency>
+  <groupId>io.github.seanchatmangpt.dtr</groupId>
+  <artifactId>dtr-core</artifactId>
+  <version>2026.1.0</version>
+</dependency>
+```
+
+Year-bounded range (recommended for libraries): `[2026.1.0,2027)`
+
 # DTR Changelog
 
 All releases follow CalVer **YYYY.MINOR.PATCH**.

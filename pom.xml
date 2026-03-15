@@ -40,7 +40,7 @@ the specific language governing permissions and limitations under the License. -
         <url>https://github.com/seanchatmangpt/dtr</url>
         <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
         <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v2026.1.0</tag>
     </scm>
 
     <issueManagement>
