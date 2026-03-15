@@ -937,4 +937,71 @@ public final class RenderMachineLatex extends RenderMachine {
         texDocument.add("\\end{tabular}");
         texDocument.add("");
     }
+
+    @Override
+    public void sayDiff(String before, String after, String language) {
+        if (before == null && after == null) {
+            return;
+        }
+        texDocument.add("");
+        texDocument.add("\\begin{verbatim}");
+        if (language != null && !language.isEmpty()) {
+            texDocument.add("--- before (" + language + ")");
+            texDocument.add("+++ after (" + language + ")");
+        } else {
+            texDocument.add("--- before");
+            texDocument.add("+++ after");
+        }
+
+        if (before != null && after != null) {
+            String[] beforeLines = before.split("\n", -1);
+            String[] afterLines = after.split("\n", -1);
+
+            int i = 0, j = 0;
+            while (i < beforeLines.length && j < afterLines.length) {
+                if (beforeLines[i].equals(afterLines[j])) {
+                    texDocument.add(" " + template.escapeLatex(beforeLines[i]));
+                    i++;
+                    j++;
+                } else {
+                    texDocument.add("-" + template.escapeLatex(beforeLines[i]));
+                    i++;
+                    if (j < afterLines.length && !afterLines[j].equals(beforeLines[i >= beforeLines.length ? beforeLines.length - 1 : i])) {
+                        texDocument.add("+" + template.escapeLatex(afterLines[j]));
+                        j++;
+                    }
+                }
+            }
+
+            while (i < beforeLines.length) {
+                texDocument.add("-" + template.escapeLatex(beforeLines[i]));
+                i++;
+            }
+
+            while (j < afterLines.length) {
+                texDocument.add("+" + template.escapeLatex(afterLines[j]));
+                j++;
+            }
+        }
+
+        texDocument.add("\\end{verbatim}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayBreakingChange(String what, String removedIn, String migrateWith) {
+        texDocument.add("");
+        texDocument.add("\\begin{center}");
+        texDocument.add("\\fbox{\\parbox{0.9\\textwidth}{");
+        texDocument.add("\\textbf{\\textcolor{red}{Breaking Change:}} " +
+            template.escapeLatex(what != null ? what : "API change") +
+            " removed in " + template.escapeLatex(removedIn != null ? removedIn : "next version"));
+        if (migrateWith != null && !migrateWith.isEmpty()) {
+            texDocument.add("\\\\");
+            texDocument.add(template.escapeLatex(migrateWith));
+        }
+        texDocument.add("}}");
+        texDocument.add("\\end{center}");
+        texDocument.add("");
+    }
 }

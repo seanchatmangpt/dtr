@@ -22,7 +22,7 @@ CURRENT_VERSION := $(shell scripts/current-version.sh)
 .PHONY: help compile test verify clean install package snapshot \
         release-minor release-patch release-year \
         release-rc-minor release-rc-patch \
-        publish version check \
+        publish version check check-preconditions \
         build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs \
         build-guard guard-scan guard-scan-json guard-test clean-guard \
         build-observatory observe observe-test clean-observatory \
@@ -59,7 +59,10 @@ help:
 	@echo ""
 	@echo "  publish            deploy locally (needs GPG + Central creds)"
 	@echo "  version            print current project version"
+	@echo ""
+	@echo "Preconditions:"
 	@echo "  check              verify toolchain (Java, Maven, GPG, Git)"
+	@echo "  check-preconditions detailed precondition validation (versions, paths)"
 	@echo ""
 	@echo "Javadoc:"
 	@echo "  extract-javadoc    extract Javadoc to JSON + generate docs/api/"
@@ -152,6 +155,9 @@ check:
 	@git --version
 	@echo "==> Current version"
 	@scripts/current-version.sh
+
+check-preconditions:
+	bash scripts/check-preconditions.sh
 
 # ─── Javadoc ─────────────────────────────────────────────────────────────────
 

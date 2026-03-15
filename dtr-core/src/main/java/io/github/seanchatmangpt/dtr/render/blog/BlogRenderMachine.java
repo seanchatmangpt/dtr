@@ -916,4 +916,60 @@ public final class BlogRenderMachine extends RenderMachine {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void sayDiff(String before, String after, String language) {
+        markdown.append("\n\n```diff\n");
+        if (language != null && !language.isEmpty()) {
+            markdown.append("--- before (").append(language).append(")\n");
+            markdown.append("+++ after (").append(language).append(")\n");
+        } else {
+            markdown.append("--- before\n");
+            markdown.append("+++ after\n");
+        }
+
+        if (before != null && after != null) {
+            String[] beforeLines = before.split("\n", -1);
+            String[] afterLines = after.split("\n", -1);
+
+            int i = 0, j = 0;
+            while (i < beforeLines.length && j < afterLines.length) {
+                if (beforeLines[i].equals(afterLines[j])) {
+                    markdown.append(" ").append(beforeLines[i]).append("\n");
+                    i++;
+                    j++;
+                } else {
+                    markdown.append("-").append(beforeLines[i]).append("\n");
+                    i++;
+                    if (j < afterLines.length && !afterLines[j].equals(beforeLines[i >= beforeLines.length ? beforeLines.length - 1 : i])) {
+                        markdown.append("+").append(afterLines[j]).append("\n");
+                        j++;
+                    }
+                }
+            }
+
+            while (i < beforeLines.length) {
+                markdown.append("-").append(beforeLines[i]).append("\n");
+                i++;
+            }
+
+            while (j < afterLines.length) {
+                markdown.append("+").append(afterLines[j]).append("\n");
+                j++;
+            }
+        }
+
+        markdown.append("```\n");
+    }
+
+    @Override
+    public void sayBreakingChange(String what, String removedIn, String migrateWith) {
+        markdown.append("\n\n> [!WARNING]\n");
+        markdown.append("> **Breaking Change:** ").append(what != null ? what : "API change")
+            .append(" removed in ").append(removedIn != null ? removedIn : "next version").append("\n");
+        if (migrateWith != null && !migrateWith.isEmpty()) {
+            markdown.append(">\n");
+            markdown.append("> ").append(migrateWith).append("\n");
+        }
+    }
 }
