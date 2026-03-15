@@ -163,8 +163,8 @@ jobs:
           GPG_SIGNING_KEY_PASSWORD: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
           GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
 
-      - name: Deploy
-        run: ./mvnw clean deploy -Prelease -DskipTests --no-transfer-progress
+      - name: Deploy to Maven Central
+        run: ./mvnw clean verify org.sonatype.central:central-publishing-maven-plugin:0.10.0:publish -Prelease -DskipTests --no-transfer-progress
         env:
           CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
           CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
