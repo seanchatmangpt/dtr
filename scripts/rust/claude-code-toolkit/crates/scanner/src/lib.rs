@@ -440,6 +440,9 @@ impl Scanner {
     }
 
     /// Scan a file on disk using memmap2 for zero-copy reading.
+    ///
+    /// # Errors
+    /// Returns an error if the file cannot be opened or memory-mapped.
     pub fn scan_file(&self, path: &Path) -> Result<ScanResult> {
         let file = File::open(path)?;
         // SAFETY: we do not mutate the backing file while the mapping is live.
