@@ -3,7 +3,7 @@
 **Package:** `io.github.seanchatmangpt.dtr.core`
 **Version:** 2026.2.0
 
-`DtrContext` is the parameter-injection API for JUnit 5 tests. `DtrExtension` is the JUnit 5 extension that manages the documentation lifecycle. Together they replace the v2.4.x `DTR` abstract base class.
+`DtrContext` is the parameter-injection API for JUnit Jupiter 6 tests. `DtrExtension` is the JUnit Jupiter 6 extension that manages the documentation lifecycle. Together they replace the v2.4.x `DTR` abstract base class.
 
 ---
 

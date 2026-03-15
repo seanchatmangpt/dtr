@@ -14,7 +14,7 @@
 
 ## What is DTR?
 
-DTR (Documentation Testing Runtime) is a Java 26 library that turns JUnit 5 tests into living documentation generators. Instead of writing docs separately from code — and watching them drift as code changes — you write `say*` method calls inside your tests that simultaneously:
+DTR (Documentation Testing Runtime) is a Java 26 library that turns JUnit Jupiter 6 tests into living documentation generators. Instead of writing docs separately from code — and watching them drift as code changes — you write `say*` method calls inside your tests that simultaneously:
 
 1. **Execute** your assertions and validations
 2. **Capture** structured documentation events

@@ -53,11 +53,11 @@ public static void finishDocTest() {
 - `sayBenchmark(String label, Runnable task)` — Real nanoTime measurements
 - `sayAndAssertThat(String label, T actual, Matcher<? super T> matcher)` — Assert + document
 
-### DtrExtension (JUnit 5 Integration)
+### DtrExtension (JUnit Jupiter 6 Integration)
 
 **Location:** `/dtr-core/src/main/java/io/github/seanchatmangpt/dtr/junit5/DtrExtension.java`
 
-JUnit 5 extension that manages `RenderMachine` lifecycle and processes annotations. Replaces JUnit 4 `@Rule` approach with JUnit 5's extension model.
+JUnit Jupiter 6 extension that manages `RenderMachine` lifecycle and processes annotations. Replaces JUnit 4 `@Rule` approach with JUnit Jupiter 6's extension model.
 
 **Lifecycle Management:**
 
@@ -378,7 +378,7 @@ Register in `RenderMachineFactory.selectLatexTemplateLazy()`.
 **Primary module containing:**
 
 - `DtrTest` — Base test class with 50+ `say*` methods
-- `DtrExtension` — JUnit 5 integration
+- `DtrExtension` — JUnit Jupiter 6 integration
 - `RenderMachine` — Output abstraction
 - `SayEvent` — Sealed event hierarchy
 - `RenderMachineFactory` — Format selection and configuration
@@ -622,7 +622,7 @@ flowchart TD
 
 ## References
 
-- **JUnit 5 Extension Model:** https://junit.org/junit5/docs/current/user-guide/#extensions
+- **JUnit Jupiter 6 Extension Model:** https://junit.org/junit5/docs/current/user-guide/#extensions
 - **Project Loom:** https://openjdk.org/projects/loom/
 - **Structured Concurrency (JEP 492):** https://openjdk.org/jeps/492
 - **Sealed Classes (JEP 409):** https://openjdk.org/jeps/409

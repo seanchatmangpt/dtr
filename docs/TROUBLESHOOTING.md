@@ -325,7 +325,7 @@ mvnd test -Dtest=MyDocTest
 
 3. **Check for wrong JUnit imports:**
    - Wrong: `import org.junit.Test;` (JUnit 4)
-   - Right: `import org.junit.jupiter.api.Test;` (JUnit 5)
+   - Right: `import org.junit.jupiter.api.Test;` (JUnit Jupiter 6)
 
 **Verification:**
 ```bash
@@ -910,7 +910,7 @@ mvnd clean compile -U
 grep "import.*dtr" src/test/java/MyDocTest.java
 # Must be: io.github.seanchatmangpt.dtr.junit5.*
 
-# 2. Verify JUnit 5
+# 2. Verify JUnit Jupiter 6
 grep "import org.junit" src/test/java/MyDocTest.java
 # Must be: org.junit.jupiter.api.*
 

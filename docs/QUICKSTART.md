@@ -43,7 +43,7 @@ Add this to your `pom.xml`:
         <scope>test</scope>
     </dependency>
 
-    <!-- JUnit 5 (required) -->
+    <!-- JUnit Jupiter 6 (required) -->
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter</artifactId>

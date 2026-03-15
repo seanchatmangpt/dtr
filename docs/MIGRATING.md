@@ -491,7 +491,7 @@ This migration covers versions from v2.0.0 through v2.5.x (2026.2.0). Most chang
 
 | Version | Key Changes | Breaking? |
 |---------|-------------|-----------|
-| v2.0.0 | Java 26 required, Markdown output, JUnit 5 support | Yes |
+| v2.0.0 | Java 26 required, Markdown output, JUnit Jupiter 6 support | Yes |
 | v2.4.0 | Added introspection methods (`sayCallSite`, `sayAnnotationProfile`, etc.) | No |
 | v2.5.0 | RenderMachine: sealed → abstract, Maven Central ready | Rare edge case |
 
@@ -548,7 +548,7 @@ DTR 2.0.0 was a complete rewrite with major breaking changes:
 
 - **Java 26 required** (was Java 8+)
 - **Markdown-first output** (was HTML)
-- **JUnit 5 support** (was JUnit 4)
+- **JUnit Jupiter 6 support** (was JUnit 4)
 - **HttpClient 5.x** (was HttpClient 4.5)
 - **Annotation-based testing API** (`@DocSection`, `@DocDescription`)
 
@@ -687,7 +687,7 @@ public class UserApiDocTest {
 1. **Upgrade Java to 26**
 2. **Update Maven to 4.0.0-rc-3+**
 3. **Update pom.xml** (see above)
-4. **Migrate JUnit 4 → JUnit 5**
+4. **Migrate JUnit 4 → JUnit Jupiter 6**
 5. **Update test class structure** (remove `extends DTR`, add `@ExtendWith`)
 6. **Update CI/CD documentation paths**
 7. **Run `mvnd clean test`**
@@ -806,17 +806,17 @@ export JAVA_HOME=/usr/lib/jvm/java-26-openjdk
 java -version  # Verify
 ```
 
-#### 4. JUnit 4 vs JUnit 5 Confusion
+#### 4. JUnit 4 vs JUnit Jupiter 6 Confusion
 
 **Symptom:** Tests don't run or `@Test` not found.
 
-**Solution:** Ensure you're using JUnit 5 annotations:
+**Solution:** Ensure you're using JUnit Jupiter 6 annotations:
 
 ```java
 // Wrong (JUnit 4)
 import org.junit.Test;
 
-// Correct (JUnit 5)
+// Correct (JUnit Jupiter 6)
 import org.junit.jupiter.api.Test;
 ```
 
@@ -888,10 +888,10 @@ When reporting issues, include:
 
 | DTR Version | Java Required | Maven Required | JUnit | HTTP Client | Status |
 |-------------|---------------|----------------|-------|-------------|--------|
-| 2026.2.0 (v2.6.0) | 26+ | 4.0.0-rc-3+ | JUnit 5 | None (use your own) | ✅ Current |
-| 2026.2.0 (v2.5.x) | 26+ | 4.0.0-rc-3+ | JUnit 5 | Built-in (deprecated) | ✅ Stable |
-| 2026.2.0 (v2.4.x) | 26+ | 4.0.0-rc-3+ | JUnit 5 | Built-in | ✅ Stable |
-| v2.0.0 | 26+ | 4.0.0-rc-3+ | JUnit 5 | Built-in | ⚠️ Legacy |
+| 2026.2.0 (v2.6.0) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | None (use your own) | ✅ Current |
+| 2026.2.0 (v2.5.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in (deprecated) | ✅ Stable |
+| 2026.2.0 (v2.4.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in | ✅ Stable |
+| v2.0.0 | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in | ⚠️ Legacy |
 | v1.x | 8-21 | 3.x | JUnit 4 | Built-in | ❌ Deprecated |
 
 ### Migration Decision Tree

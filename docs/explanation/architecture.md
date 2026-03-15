@@ -8,7 +8,7 @@ This document describes DTR's module structure, class design, and the internal e
 
 ## What DTR Is (and Is Not)
 
-DTR 2.6.0 is a **pure documentation-generation library**. It has no HTTP client, no network stack, and no server coupling. Its single job is to receive structured `say*()` calls from JUnit 5 tests and render them into Markdown, LaTeX, HTML, JSON, and other formats simultaneously.
+DTR 2.6.0 is a **pure documentation-generation library**. It has no HTTP client, no network stack, and no server coupling. Its single job is to receive structured `say*()` calls from JUnit Jupiter 6 tests and render them into Markdown, LaTeX, HTML, JSON, and other formats simultaneously.
 
 This boundary is intentional. HTTP testing — making actual requests, inspecting responses, verifying contracts — is your responsibility using tools designed for it: `java.net.http.HttpClient`, RestAssured, Spring MockMvc. DTR then documents what you observed, with precision derived from your running code.
 
@@ -21,7 +21,7 @@ dtr/
 ├── pom.xml                          # Parent POM
 ├── dtr-core/                        # The library (published to Maven Central)
 │   └── src/main/java/io/github/seanchatmangpt/dtr/
-│       ├── DtrExtension.java        # JUnit 5 extension entrypoint
+│       ├── DtrExtension.java        # JUnit Jupiter 6 extension entrypoint
 │       ├── DtrContext.java          # Test-facing API (all say* methods)
 │       ├── SayEvent.java            # Sealed event hierarchy (13 record types)
 │       ├── rendermachine/
@@ -46,11 +46,11 @@ dtr/
 ## Class Hierarchy
 
 ```
-JUnit 5 test class
+JUnit Jupiter 6 test class
     │
     │ @ExtendWith(DtrExtension.class)
     ▼
-DtrExtension                         ← JUnit 5 lifecycle hooks
+DtrExtension                         ← JUnit Jupiter 6 lifecycle hooks
     │  injects
     ▼
 DtrContext                           ← Test-facing API
@@ -221,7 +221,7 @@ DTR 2.6.0 adds 14 new capabilities with **zero new external dependencies**. The 
 
 | Dependency | Purpose |
 |---|---|
-| `junit:junit-jupiter:5.x` | JUnit 5 extension API |
+| `junit:junit-jupiter:5.x` | JUnit Jupiter 6 extension API |
 | `jackson-databind` | JSON rendering |
 | `slf4j-api` | Logging |
 

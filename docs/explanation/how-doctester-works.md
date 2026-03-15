@@ -8,7 +8,7 @@ This document describes the lifecycle of a DTR documentation run — from test s
 
 ## The Fundamental Model
 
-DTR is a JUnit 5 extension. When a test class annotated with `@ExtendWith(DtrExtension.class)` runs, DTR intercepts the JUnit lifecycle, injects a `DtrContext` parameter into each test method, captures every `say*()` call as a typed `SayEvent`, and then — when all test methods have run — flushes those events through a `MultiRenderMachine` that writes Markdown, LaTeX, HTML, and JSON output in parallel.
+DTR is a JUnit Jupiter 6 extension. When a test class annotated with `@ExtendWith(DtrExtension.class)` runs, DTR intercepts the JUnit lifecycle, injects a `DtrContext` parameter into each test method, captures every `say*()` call as a typed `SayEvent`, and then — when all test methods have run — flushes those events through a `MultiRenderMachine` that writes Markdown, LaTeX, HTML, and JSON output in parallel.
 
 The key insight is that **DTR decouples documentation capture from documentation rendering**. `say*()` calls do not immediately write anything. They create `SayEvent` records and queue them. Rendering happens once, at the end, using virtual threads.
 
@@ -23,7 +23,7 @@ graph TB
     end
 
     subgraph ExtensionLayer["Extension Layer"]
-        DtrExtension["DtrExtension<br/>JUnit 5 Extension"]
+        DtrExtension["DtrExtension<br/>JUnit Jupiter 6 Extension"]
         ParameterResolver["ParameterResolver<br/>injects DtrContext"]
     end
 
@@ -44,7 +44,7 @@ graph TB
         OutputFiles["target/docs/test-results/<br/>{TestClassName}.{md,tex,html,json}"]
     end
 
-    TestClass -->|JUnit 5 lifecycle| DtrExtension
+    TestClass -->|JUnit Jupiter 6 lifecycle| DtrExtension
     TestMethod -->|parameter| ParameterResolver
     ParameterResolver -->|injects| DtrContext
     DtrTest -.->|optional base class| TestClass
@@ -101,7 +101,7 @@ This is why `SayEvent` is a sealed interface. Each render machine must handle ev
 
 ### Step 1: JUnit discovers the test class
 
-JUnit 5 finds the class annotated with `@ExtendWith(DtrExtension.class)` and instantiates `DtrExtension`. This extension implements `BeforeAllCallback`, `AfterAllCallback`, `BeforeEachCallback`, `AfterEachCallback`, and `ParameterResolver`.
+JUnit Jupiter 6 finds the class annotated with `@ExtendWith(DtrExtension.class)` and instantiates `DtrExtension`. This extension implements `BeforeAllCallback`, `AfterAllCallback`, `BeforeEachCallback`, `AfterEachCallback`, and `ParameterResolver`.
 
 ### Step 2: `beforeAll` — render machine setup
 

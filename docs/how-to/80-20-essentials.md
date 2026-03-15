@@ -6,7 +6,7 @@
 
 ---
 
-## The JUnit 5 Test Pattern
+## The JUnit Jupiter 6 Test Pattern
 
 Every DTR test follows this structure:
 
@@ -27,7 +27,7 @@ class MyDocTest {
 }
 ```
 
-`DtrContext` is injected by JUnit 5 via `DtrExtension`. All `say*` calls on `ctx` produce output in `target/docs/test-results/MyDocTest.md`.
+`DtrContext` is injected by JUnit Jupiter 6 via `DtrExtension`. All `say*` calls on `ctx` produce output in `target/docs/test-results/MyDocTest.md`.
 
 ---
 

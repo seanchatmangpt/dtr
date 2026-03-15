@@ -40,7 +40,7 @@ class ResearchDocTest {
     void documentAsAcmPaper(DtrContext ctx) {
         ctx.sayNextSection("Abstract");
         ctx.say("This paper presents DTR 2026.2.0, a documentation testing runtime " +
-                "for Java 26 that generates publication-ready output from JUnit 5 tests.");
+                "for Java 26 that generates publication-ready output from JUnit Jupiter 6 tests.");
 
         ctx.sayNextSection("Introduction");
         ctx.say("Background: API documentation drifts from implementation over time. " +
@@ -207,7 +207,7 @@ cat target/docs/openapi.yaml
 @Test
 void presentApiDocumentation(DtrContext ctx) {
     ctx.sayNextSection("DTR 2026.2.0: Documentation from Tests");
-    ctx.say("Generate Markdown, LaTeX, blog posts, and slides from a single JUnit 5 test.");
+    ctx.say("Generate Markdown, LaTeX, blog posts, and slides from a single JUnit Jupiter 6 test.");
 
     ctx.sayNextSection("New in 2026.2.0");
     ctx.sayUnorderedList(java.util.List.of(

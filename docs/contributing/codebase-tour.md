@@ -52,11 +52,11 @@ cat target/docs/test-results/PhDThesisDocTest.md
 
 All packages are under `io.github.seanchatmangpt.dtr`.
 
-### `junit5/` — JUnit 5 integration
+### `junit5/` — JUnit Jupiter 6 integration
 
 | Class | Responsibility |
 |---|---|
-| `DtrExtension` | JUnit 5 `Extension` that manages the DTR lifecycle (before/after test, before/after class) |
+| `DtrExtension` | JUnit Jupiter 6 `Extension` that manages the DTR lifecycle (before/after test, before/after class) |
 | `DtrContext` | The public API surface injected into test methods; delegates to `RenderMachineCommands` |
 | `DtrCommands` | Interface that mirrors `RenderMachineCommands`; implemented by `DtrContext` |
 

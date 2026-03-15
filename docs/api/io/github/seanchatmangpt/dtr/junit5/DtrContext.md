@@ -2,7 +2,7 @@
 
 > **Package:** `io.github.seanchatmangpt.dtr.junit5`  
 
-Context object for JUnit 5 DTR tests. <p>Provides access to all DTR functionality within JUnit 5 test methods. Can be injected as a parameter into test methods when using {@link DtrExtension}. <p>Usage: <pre>{@code @ExtendWith(DtrExtension.class) class MyApiDocTest {     @Test     void testGetUsers(DtrContext ctx) {         ctx.sayNextSection("User API");         ctx.say("Documentation for User API goes here.");     } } }</pre>
+Context object for JUnit Jupiter 6 DTR tests. <p>Provides access to all DTR functionality within JUnit Jupiter 6 test methods. Can be injected as a parameter into test methods when using {@link DtrExtension}. <p>Usage: <pre>{@code @ExtendWith(DtrExtension.class) class MyApiDocTest {     @Test     void testGetUsers(DtrContext ctx) {         ctx.sayNextSection("User API");         ctx.say("Documentation for User API goes here.");     } } }</pre>
 
 ```java
 public class DtrContext implements RenderMachineCommands {

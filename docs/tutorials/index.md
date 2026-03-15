@@ -22,7 +22,7 @@ Tutorials are **learning-oriented**. They take you through a series of steps to 
 
 ### Tutorial 1: Hello DTR (15 min)
 
-[**basics.md**](basics.md) | **Prerequisites:** Java 26, Maven/mvnd, basic JUnit 5
+[**basics.md**](basics.md) | **Prerequisites:** Java 26, Maven/mvnd, basic JUnit Jupiter 6
 
 **What you'll build:** Your first documentation test from scratch
 
@@ -169,7 +169,7 @@ All tutorials require:
 
 - **Java 26** installed (`java -version` shows `openjdk 26.ea.13` or higher)
 - **Maven 4** or **mvnd** available (`mvnd --version`)
-- **Basic JUnit 5 knowledge** — `@Test` annotations, assertions, test structure
+- **Basic JUnit Jupiter 6 knowledge** — `@Test` annotations, assertions, test structure
 
 ### Installation
 

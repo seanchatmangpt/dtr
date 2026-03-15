@@ -61,7 +61,7 @@ The following pages document APIs that were removed in v2.6.0. They are preserve
 
 | Removed API | Description |
 |-------------|-------------|
-| [TestBrowser API](testbrowser-api.md) | ~~JUnit 5 extension lifecycle, DtrContext methods~~ (removed in v2.6.0) |
+| [TestBrowser API](testbrowser-api.md) | ~~JUnit Jupiter 6 extension lifecycle, DtrContext methods~~ (removed in v2.6.0) |
 | [HTTP Client APIs](request-api.md), [response-api.md), [http-constants.md](http-constants.md) | ~~Request/Response building, HTTP constants~~ (removed in v2.6.0) |
 | [WebSocket APIs](websockets-reference.md) | ~~WebSocket client, session management~~ (removed in v2.6.0) |
 | [Server-Sent Events APIs](sse-reference.md) | ~~SSE stream client, event handling~~ (removed in v2.6.0) |

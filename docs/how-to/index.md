@@ -40,7 +40,7 @@ How-to guides are **task-oriented**. They assume you know what you want to do an
 | Guide | Task |
 |---|---|
 | [Add DTR to a Maven Project](add-to-maven.md) | Dependencies and compiler config for v2.6.0 |
-| [Integrate with Frameworks](integrate-with-frameworks.md) | JUnit 5, Spring Boot, Arquillian integration |
+| [Integrate with Frameworks](integrate-with-frameworks.md) | JUnit Jupiter 6, Spring Boot, Arquillian integration |
 | [Control Documentation Generation](control-documentation.md) | say vs plain methods, conditional documentation |
 
 ### Migration

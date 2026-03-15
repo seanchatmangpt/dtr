@@ -100,10 +100,10 @@ java -version  # Should show 26
 
 #### Q4: Tests compile but don't run ("No tests were executed")
 
-**Quick Answer:** Verify JUnit 5 imports and test class naming.
+**Quick Answer:** Verify JUnit Jupiter 6 imports and test class naming.
 
 ```java
-// Correct imports (JUnit 5)
+// Correct imports (JUnit Jupiter 6)
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
@@ -325,7 +325,7 @@ ctx.sayJson(response.body());
 
 ### Q: Where did `sayAndAssertThat` go?
 
-**Answer:** Removed in v2.6.0. Use JUnit 5 assertions for testing, `ctx.sayAssertions()` for documentation.
+**Answer:** Removed in v2.6.0. Use JUnit Jupiter 6 assertions for testing, `ctx.sayAssertions()` for documentation.
 
 ```java
 // Assert (throws if false)
@@ -482,7 +482,7 @@ mvnd clean compile -U
 grep "import.*dtr" src/test/java/MyDocTest.java
 # Must be: io.github.seanchatmangpt.dtr.junit5.*
 
-# 2. Verify JUnit 5
+# 2. Verify JUnit Jupiter 6
 grep "import org.junit" src/test/java/MyDocTest.java
 # Must be: org.junit.jupiter.api.*
 
@@ -540,7 +540,7 @@ ctx.sayJson(response.body());
 
 `sayAndAssertThat(String, T, Matcher)` was **removed in v2.6.0**.
 
-**Replacement:** Use JUnit 5 assertions for the assertion, and `ctx.sayAssertions(Map)` to document results:
+**Replacement:** Use JUnit Jupiter 6 assertions for the assertion, and `ctx.sayAssertions(Map)` to document results:
 
 ```java
 // Assert (throws if false)
@@ -596,7 +596,7 @@ Authenticate directly using standard Java HTTP clients and pass tokens as header
 **Error:** `@Test` annotation not recognized or `DtrContext` cannot be resolved
 
 **Solution:**
-Ensure you are using JUnit 5 and the correct imports:
+Ensure you are using JUnit Jupiter 6 and the correct imports:
 
 ```java
 import io.github.seanchatmangpt.dtr.core.DtrContext;

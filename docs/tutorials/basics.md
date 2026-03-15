@@ -3,7 +3,7 @@
 **Welcome to DTR** — the Documentation Testing Runtime that transforms your Java tests into living, breathing documentation.
 
 **Time:** 15 minutes
-**Prerequisites:** Java 26 installed, Maven/mvnd installed, basic JUnit 5 knowledge
+**Prerequisites:** Java 26 installed, Maven/mvnd installed, basic JUnit Jupiter 6 knowledge
 
 ---
 
@@ -37,7 +37,7 @@ flowchart LR
 
 1. **Write a test** that exercises real code
 2. **Add `say*` calls** to document what's happening
-3. **Run the test** with JUnit 5
+3. **Run the test** with JUnit Jupiter 6
 4. **DTR generates documentation** in multiple formats (Markdown, HTML, LaTeX, JSON)
 
 ### The Benefits
@@ -68,7 +68,7 @@ mvnd --version
 # Should show Maven 4.0.0-rc-3 or later
 ```
 
-### Basic JUnit 5 Knowledge
+### Basic JUnit Jupiter 6 Knowledge
 
 You should be comfortable with:
 - `@Test` annotations
@@ -166,7 +166,7 @@ class HelloDtrTest extends DtrTest {
 
 ### What's Happening Here?
 
-- **`@ExtendWith(DtrExtension.class)`** — Registers DTR with JUnit 5
+- **`@ExtendWith(DtrExtension.class)`** — Registers DTR with JUnit Jupiter 6
 - **`extends DtrTest`** — Provides access to all `say*` methods
 - **`@DocSection("...")`** — Creates section headings in documentation
 - **`say(...)`** — Adds paragraph text
@@ -193,7 +193,7 @@ mvn test -Dtest=HelloDtrTest
 
 ### Expected Output
 
-You'll see standard JUnit 5 output:
+You'll see standard JUnit Jupiter 6 output:
 
 ```
 [INFO] -------------------------------------------------------
@@ -256,7 +256,7 @@ Add a new test method:
 @Test
 @DocSection("Important Notes")
 void notesAndWarnings() {
-    sayNote("DTR tests are regular JUnit 5 tests — they run in your CI pipeline.");
+    sayNote("DTR tests are regular JUnit Jupiter 6 tests — they run in your CI pipeline.");
     sayWarning("Don't commit generated docs to version control — regenerate from tests!");
 }
 ```
