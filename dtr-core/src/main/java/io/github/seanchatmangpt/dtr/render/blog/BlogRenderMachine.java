@@ -21,12 +21,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import io.github.seanchatmangpt.dtr.contract.ContractVerifier;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
+import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocEntry;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocIndex;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,6 +252,559 @@ public final class BlogRenderMachine extends RenderMachine {
         }
         buffer.append(" ").append(template.footnoteMarker(1)).append(" ");
         wordCount += text.split("\\s+").length;
+    }
+
+    @Override
+    public void sayCodeModel(Class<?> clazz) {
+        if (clazz == null) return;
+        buffer.append("### Class: `").append(clazz.getSimpleName()).append("`\n\n");
+        buffer.append("**Package:** `").append(clazz.getPackageName()).append("`\n\n");
+
+        if (clazz.isSealed()) {
+            buffer.append("**Sealed hierarchy:** Yes\n");
+            var permitted = clazz.getPermittedSubclasses();
+            if (permitted != null && permitted.length > 0) {
+                buffer.append("**Permitted subclasses:**\n");
+                for (Class<?> sub : permitted) {
+                    buffer.append("- `").append(sub.getSimpleName()).append("`\n");
+                }
+            }
+        } else if (clazz.isRecord()) {
+            buffer.append("**Type:** Record\n");
+        } else if (clazz.isInterface()) {
+            buffer.append("**Type:** Interface\n");
+        } else if (clazz.isEnum()) {
+            buffer.append("**Type:** Enum\n");
+        }
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        if (method == null) return;
+        buffer.append("### Method: `").append(method.getName()).append("`\n\n");
+        buffer.append("| Property | Value |\n| --- | --- |\n");
+        buffer.append("| Return Type | `").append(method.getReturnType().getSimpleName()).append("` |\n");
+        buffer.append("| Declaring Class | `").append(method.getDeclaringClass().getSimpleName()).append("` |\n");
+        buffer.append("| Parameter Count | ").append(method.getParameterCount()).append(" |\n");
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayCallSite() {
+        var walker = java.lang.StackWalker.getInstance(java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        walker.walk(frames -> {
+            frames.skip(2).findFirst().ifPresent(frame -> {
+                buffer.append("> 📍 **Call Site:** `").append(frame.getClassName())
+                    .append("#").append(frame.getMethodName())
+                    .append(":").append(frame.getLineNumber()).append("`\n\n");
+            });
+            return null;
+        });
+    }
+
+    @Override
+    public void sayAnnotationProfile(Class<?> clazz) {
+        if (clazz == null) return;
+        buffer.append("### Annotation Profile: `").append(clazz.getSimpleName()).append("`\n\n");
+
+        var classAnnotations = clazz.getAnnotations();
+        if (classAnnotations.length > 0) {
+            buffer.append("**Class annotations:**\n");
+            for (var a : classAnnotations) {
+                buffer.append("- `@").append(a.annotationType().getSimpleName()).append("`\n");
+            }
+            buffer.append("\n");
+        }
+    }
+
+    @Override
+    public void sayClassHierarchy(Class<?> clazz) {
+        if (clazz == null) return;
+        buffer.append("### Class Hierarchy: `").append(clazz.getSimpleName()).append("`\n\n");
+
+        List<String> hierarchy = new ArrayList<>();
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            hierarchy.add("`" + current.getSimpleName() + "`");
+            current = current.getSuperclass();
+        }
+        buffer.append(String.join(" → ", hierarchy)).append("\n\n");
+    }
+
+    @Override
+    public void sayStringProfile(String text) {
+        if (text == null || text.isEmpty()) return;
+        buffer.append("### String Profile\n\n");
+        buffer.append("| Metric | Value |\n| --- | --- |\n");
+        buffer.append("| Length | ").append(text.length()).append(" |\n");
+        buffer.append("| Words | ").append(text.split("\\s+").length).append(" |\n");
+        buffer.append("| Lines | ").append(text.lines().count()).append(" |\n");
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayReflectiveDiff(Object before, Object after) {
+        if (before == null || after == null) return;
+        buffer.append("### Reflective Diff\n\n");
+        buffer.append("| Field | Before | After |\n| --- | --- | --- |\n");
+        try {
+            for (var field : before.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                Object beforeVal = field.get(before);
+                Object afterVal = field.get(after);
+                if (!java.util.Objects.equals(beforeVal, afterVal)) {
+                    buffer.append("| `").append(field.getName()).append("` | ")
+                        .append(beforeVal != null ? "`" + beforeVal + "`" : "null")
+                        .append(" | ")
+                        .append(afterVal != null ? "`" + afterVal + "`" : "null")
+                        .append(" |\n");
+                }
+            }
+        } catch (Exception e) {
+            buffer.append("| *(Error: ").append(e.getMessage()).append(")* | — | — |\n");
+        }
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {
+        if (method == null) return;
+        buffer.append("### Control Flow Graph: `").append(method.getName()).append("`\n\n");
+        buffer.append("> CFG visualization requires Java 26+ with `@CodeReflection` annotation.\n\n");
+    }
+
+    @Override
+    public void sayCallGraph(Class<?> clazz) {
+        if (clazz == null) return;
+        buffer.append("### Call Graph: `").append(clazz.getSimpleName()).append("`\n\n");
+        buffer.append("> Call graph visualization requires Java 26+ with `@CodeReflection` annotation.\n\n");
+    }
+
+    @Override
+    public void sayOpProfile(java.lang.reflect.Method method) {
+        if (method == null) return;
+        buffer.append("### Op Profile: `").append(method.getName()).append("`\n\n");
+        buffer.append("> Op profile requires Java 26+ with `@CodeReflection` annotation.\n\n");
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task) {
+        sayBenchmark(label, task, 50, 500);
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        if (label == null || task == null) return;
+
+        // Warmup
+        for (int i = 0; i < warmupRounds; i++) {
+            task.run();
+        }
+
+        // Measure
+        long[] times = new long[measureRounds];
+        for (int i = 0; i < measureRounds; i++) {
+            long start = System.nanoTime();
+            task.run();
+            times[i] = System.nanoTime() - start;
+        }
+
+        // Calculate stats
+        Arrays.sort(times);
+        long min = times[0];
+        long max = times[measureRounds - 1];
+        long sum = 0;
+        for (long t : times) sum += t;
+        double avg = (double) sum / measureRounds;
+        long p99 = times[(int) (measureRounds * 0.99)];
+        double opsPerSec = 1_000_000_000.0 / avg;
+
+        buffer.append("### Benchmark: ").append(label).append("\n\n");
+        buffer.append("| Metric | Value |\n| --- | --- |\n");
+        buffer.append(String.format("| Average | `%.0f ns` |\n", avg));
+        buffer.append(String.format("| Min | `%d ns` |\n", min));
+        buffer.append(String.format("| Max | `%d ns` |\n", max));
+        buffer.append(String.format("| P99 | `%d ns` |\n", p99));
+        buffer.append(String.format("| Throughput | `%.0f ops/sec` |\n", opsPerSec));
+        buffer.append("\n*").append(measureRounds).append(" measured rounds after ")
+            .append(warmupRounds).append(" warmup rounds*\n\n");
+    }
+
+    @Override
+    public void sayMermaid(String diagramDsl) {
+        if (diagramDsl == null || diagramDsl.isEmpty()) return;
+        buffer.append("```mermaid\n").append(diagramDsl).append("\n```\n\n");
+    }
+
+    @Override
+    public void sayClassDiagram(Class<?>... classes) {
+        if (classes == null || classes.length == 0) return;
+        buffer.append("```mermaid\nclassDiagram\n");
+        for (Class<?> clazz : classes) {
+            if (clazz == null) continue;
+            buffer.append("    class ").append(clazz.getSimpleName()).append(" {\n");
+            for (var method : clazz.getDeclaredMethods()) {
+                buffer.append("        +").append(method.getName()).append("()\n");
+            }
+            buffer.append("    }\n");
+        }
+        buffer.append("```\n\n");
+    }
+
+    @Override
+    public void sayDocCoverage(Class<?>... classes) {
+        if (classes == null || classes.length == 0) return;
+        buffer.append("### Documentation Coverage\n\n");
+        buffer.append("> Documentation coverage analysis available in primary markdown output.\n\n");
+    }
+
+    @Override
+    public void sayEnvProfile() {
+        buffer.append("### Environment Profile\n\n");
+        buffer.append("| Property | Value |\n| --- | --- |\n");
+        buffer.append("| Java Version | `").append(System.getProperty("java.version")).append("` |\n");
+        buffer.append("| OS | `").append(System.getProperty("os.name")).append(" ").append(System.getProperty("os.version")).append("`\n");
+        buffer.append("| Available Processors | `").append(Runtime.getRuntime().availableProcessors()).append("` |\n");
+        buffer.append("| Max Memory | `").append(Runtime.getRuntime().maxMemory() / (1024 * 1024)).append(" MB` |\n");
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayRecordComponents(Class<? extends Record> recordClass) {
+        if (recordClass == null) return;
+        buffer.append("### Record Schema: `").append(recordClass.getSimpleName()).append("`\n\n");
+
+        var components = recordClass.getRecordComponents();
+        if (components == null || components.length == 0) {
+            buffer.append("*(No record components)*\n\n");
+            return;
+        }
+
+        buffer.append("| Component | Type |\n| --- | --- |\n");
+        for (var comp : components) {
+            buffer.append("| `").append(comp.getName()).append("` | `")
+                .append(comp.getType().getSimpleName()).append("` |\n");
+        }
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayException(Throwable t) {
+        if (t == null) return;
+        buffer.append("### Exception: `").append(t.getClass().getSimpleName()).append("`\n\n");
+        buffer.append("**Message:** ").append(t.getMessage() != null ? t.getMessage() : "*(no message)*").append("\n\n");
+
+        // Cause chain
+        List<String> causeChain = new ArrayList<>();
+        Throwable cause = t.getCause();
+        while (cause != null) {
+            causeChain.add("`" + cause.getClass().getSimpleName() + "`" +
+                (cause.getMessage() != null ? ": " + cause.getMessage() : ""));
+            cause = cause.getCause();
+        }
+        if (!causeChain.isEmpty()) {
+            buffer.append("**Cause chain:**\n");
+            for (String c : causeChain) {
+                buffer.append("- ").append(c).append("\n");
+            }
+            buffer.append("\n");
+        }
+
+        // Stack trace
+        var frames = t.getStackTrace();
+        int limit = Math.min(5, frames.length);
+        if (limit > 0) {
+            buffer.append("**Top stack frames:**\n");
+            for (int i = 0; i < limit; i++) {
+                buffer.append("- `").append(frames[i].getClassName()).append("#")
+                    .append(frames[i].getMethodName()).append(":")
+                    .append(frames[i].getLineNumber()).append("`\n");
+            }
+        }
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        if (label == null || values == null || values.length == 0) return;
+
+        buffer.append("### ").append(label).append("\n\n```\n");
+        double max = Arrays.stream(values).max().orElse(1.0);
+        if (max == 0) max = 1.0;
+        int barWidth = 20;
+
+        for (int i = 0; i < values.length; i++) {
+            String rowLabel = (xLabels != null && i < xLabels.length) ? xLabels[i] : ("" + i);
+            int filled = (int) Math.round((values[i] / max) * barWidth);
+            int empty = barWidth - filled;
+            String bar = "█".repeat(filled) + "░".repeat(empty);
+            buffer.append(String.format("%-6s %s  %.0f\n", rowLabel, bar, values[i]));
+        }
+        buffer.append("```\n\n");
+    }
+
+    @Override
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        if (contract == null) return;
+        buffer.append("### Contract: `").append(contract.getSimpleName()).append("`\n\n");
+
+        var rows = ContractVerifier.verify(contract, implementations);
+        if (rows.isEmpty()) {
+            buffer.append("> No methods found in contract interface.\n\n");
+            return;
+        }
+
+        // Build header row
+        buffer.append("| Method |");
+        for (Class<?> impl : implementations) {
+            if (impl != null) {
+                buffer.append(" `").append(impl.getSimpleName()).append("` |");
+            }
+        }
+        buffer.append("\n| --- |");
+        for (Class<?> impl : implementations) {
+            if (impl != null) {
+                buffer.append(" --- |");
+            }
+        }
+        buffer.append("\n");
+
+        // Build data rows
+        for (var row : rows) {
+            buffer.append("| `").append(row.methodSig()).append("` |");
+            for (var entry : row.implStatus().entrySet()) {
+                buffer.append(" ").append(entry.getValue()).append(" |");
+            }
+            buffer.append("\n");
+        }
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        if (clazz == null) return;
+        buffer.append("### Evolution Timeline: `").append(clazz.getSimpleName()).append("`\n\n");
+
+        int limit = maxEntries > 0 ? maxEntries : 10;
+        var entries = GitHistoryReader.read(clazz, limit);
+
+        if (entries.isEmpty()) {
+            buffer.append("> Git history unavailable (not in a git repository or file not tracked).\n\n");
+            return;
+        }
+
+        buffer.append("| Commit | Date | Author | Subject |\n| --- | --- | --- | --- |\n");
+        for (var entry : entries) {
+            buffer.append("| `").append(entry.hash()).append("` | ")
+                .append(entry.date()).append(" | ")
+                .append(entry.author()).append(" | ")
+                .append(entry.subject()).append(" |\n");
+        }
+        buffer.append("\n*").append(entries.size()).append(" commits shown*\n\n");
+    }
+
+    @Override
+    public void sayJavadoc(java.lang.reflect.Method method) {
+        if (method == null) return;
+        buffer.append("### Javadoc: `").append(method.getName()).append("`\n\n");
+
+        var entryOpt = JavadocIndex.lookup(method);
+        if (entryOpt.isEmpty()) {
+            buffer.append("> Javadoc not available (run `make extract-javadoc` to generate).\n\n");
+            return;
+        }
+
+        var entry = entryOpt.get();
+
+        // Description
+        if (entry.description() != null && !entry.description().isEmpty()) {
+            buffer.append("**Description:** ").append(entry.description()).append("\n\n");
+        }
+
+        // Parameters table
+        if (entry.params() != null && !entry.params().isEmpty()) {
+            buffer.append("**Parameters:**\n\n| Parameter | Description |\n| --- | --- |\n");
+            for (var param : entry.params()) {
+                buffer.append("| `").append(param.name()).append("` | ")
+                    .append(param.description()).append(" |\n");
+            }
+            buffer.append("\n");
+        }
+
+        // Return value
+        if (entry.returns() != null && !entry.returns().isEmpty()) {
+            buffer.append("**Returns:** ").append(entry.returns()).append("\n\n");
+        }
+
+        // Throws
+        if (entry.throws_() != null && !entry.throws_().isEmpty()) {
+            buffer.append("**Throws:**\n\n| Exception | Description |\n| --- | --- |\n");
+            for (var thr : entry.throws_()) {
+                buffer.append("| `").append(thr.exception()).append("` | ")
+                    .append(thr.description()).append(" |\n");
+            }
+            buffer.append("\n");
+        }
+
+        // Since
+        if (entry.since() != null && !entry.since().isEmpty()) {
+            buffer.append("**Since:** `").append(entry.since()).append("`\n\n");
+        }
+
+        // Deprecated
+        if (entry.deprecated() != null && !entry.deprecated().isEmpty()) {
+            buffer.append("> **Deprecated:** ").append(entry.deprecated()).append("\n\n");
+        }
+
+        // See also
+        if (entry.see() != null && !entry.see().isEmpty()) {
+            buffer.append("**See Also:**\n");
+            for (String see : entry.see()) {
+                buffer.append("- `").append(see).append("`\n");
+            }
+            buffer.append("\n");
+        }
+    }
+
+    @Override
+    public void saySystemProperties() {
+        saySystemProperties(null);
+    }
+
+    @Override
+    public void saySystemProperties(String regexFilter) {
+        var props = System.getProperties();
+        var entryStream = props.entrySet().stream();
+        if (regexFilter != null && !regexFilter.isBlank()) {
+            var pattern = java.util.regex.Pattern.compile(regexFilter);
+            var predicate = pattern.asPredicate();
+            entryStream = entryStream.filter(e -> predicate.test(e.getKey().toString()));
+        }
+
+        var sortedEntries = entryStream
+                .sorted(Comparator.comparing(e -> e.getKey().toString()))
+                .toList();
+
+        if (sortedEntries.isEmpty()) {
+            buffer.append("> No system properties found matching filter: `").append(regexFilter).append("`\n\n");
+            return;
+        }
+
+        buffer.append("### JVM System Properties");
+        if (regexFilter != null && !regexFilter.isBlank()) {
+            buffer.append(" (filtered: `").append(regexFilter).append("`)");
+        }
+        buffer.append("\n\n| Property | Value |\n| --- | --- |\n");
+
+        for (var entry : sortedEntries) {
+            buffer.append("| `").append(entry.getKey()).append("` | `")
+                .append(entry.getValue().toString().replace("|", "\\|")).append("` |\n");
+        }
+        buffer.append("\n*").append(sortedEntries.size()).append(" properties*\n\n");
+    }
+
+    @Override
+    public void saySecurityManager() {
+        buffer.append("### Security Environment\n\n");
+
+        // Security Manager status
+        var sm = System.getSecurityManager();
+        buffer.append("| Property | Status |\n| --- | --- |\n");
+        buffer.append("| Security Manager | `").append(sm != null ? "PRESENT" : "ABSENT").append("` |\n\n");
+
+        // Providers
+        buffer.append("**Security Providers:**\n");
+        var providers = java.security.Security.getProviders();
+        for (var provider : providers) {
+            buffer.append("- `").append(provider.getName()).append("` (v").append(provider.getVersion()).append(")\n");
+        }
+        buffer.append("\n");
+    }
+
+    @Override
+    public void sayModuleDependencies(Class<?>... classes) {
+        if (classes == null || classes.length == 0) {
+            buffer.append("> No classes provided for module dependency analysis.\n\n");
+            return;
+        }
+
+        buffer.append("### Module Dependencies\n\n");
+
+        Map<Module, List<Class<?>>> moduleMap = Arrays.stream(classes)
+                .filter(clazz -> clazz != null)
+                .collect(Collectors.groupingBy(Class::getModule, LinkedHashMap::new, Collectors.toList()));
+
+        for (var entry : moduleMap.entrySet()) {
+            Module module = entry.getKey();
+            String moduleName = module.isNamed() ? "`" + module.getName() + "`" : "**Unnamed Module** (classpath)";
+            buffer.append("#### ").append(moduleName).append("\n\n");
+
+            if (!module.isNamed()) {
+                buffer.append("Classes from this module:\n");
+                for (Class<?> c : entry.getValue()) {
+                    buffer.append("- `").append(c.getName()).append("`\n");
+                }
+            } else {
+                var descriptor = module.getDescriptor();
+                if (descriptor != null) {
+                    buffer.append("| Property | Value |\n| --- | --- |\n");
+                    buffer.append("| Name | `").append(descriptor.name()).append("` |\n");
+                    buffer.append("| Automatic | `").append(descriptor.isAutomatic()).append("` |\n");
+                }
+            }
+            buffer.append("\n");
+        }
+    }
+
+    @Override
+    public void sayThreadDump() {
+        var threadMXBean = ManagementFactory.getThreadMXBean();
+
+        buffer.append("### Thread Summary\n\n");
+        buffer.append("| Metric | Value |\n| --- | --- |\n");
+        buffer.append("| Thread Count | `").append(threadMXBean.getThreadCount()).append("` |\n");
+        buffer.append("| Daemon Thread Count | `").append(threadMXBean.getDaemonThreadCount()).append("` |\n");
+        buffer.append("| Peak Thread Count | `").append(threadMXBean.getPeakThreadCount()).append("` |\n");
+        buffer.append("\n### Thread Details\n\n");
+        buffer.append("| ID | Name | State |\n| --- | --- | --- |\n");
+
+        long[] threadIds = threadMXBean.getAllThreadIds();
+        for (long threadId : threadIds) {
+            var threadInfo = threadMXBean.getThreadInfo(threadId);
+            if (threadInfo != null) {
+                buffer.append("| `").append(threadId).append("` | `")
+                    .append(threadInfo.getThreadName().replace("|", "\\|")).append("` | `")
+                    .append(threadInfo.getThreadState()).append("` |\n");
+            }
+        }
+        buffer.append("\n*").append(threadIds.length).append(" live threads*\n\n");
+    }
+
+    @Override
+    public void sayOperatingSystem() {
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+
+        buffer.append("### Operating System Metrics\n\n");
+        buffer.append("| Metric | Value |\n| --- | --- |\n");
+        buffer.append("| OS Name | `").append(osBean.getName()).append("` |\n");
+        buffer.append("| OS Version | `").append(osBean.getVersion()).append("` |\n");
+        buffer.append("| OS Architecture | `").append(osBean.getArch()).append("` |\n");
+        buffer.append("| Available Processors | `").append(osBean.getAvailableProcessors()).append("` |\n");
+
+        double loadAvg = osBean.getSystemLoadAverage();
+        buffer.append("| System Load Average | `").append(loadAvg >= 0 ? String.format("%.2f", loadAvg) : "N/A").append("` |\n");
+
+        // Extended metrics if available
+        try {
+            var sunOsBean = (com.sun.management.OperatingSystemMXBean) osBean;
+            buffer.append("| Process CPU Load | `").append(String.format("%.1f%%", sunOsBean.getProcessCpuLoad() * 100)).append("` |\n");
+            buffer.append("| Total Physical Memory | `").append(sunOsBean.getTotalPhysicalMemorySize() / (1024 * 1024)).append(" MB` |\n");
+            buffer.append("| Free Physical Memory | `").append(sunOsBean.getFreePhysicalMemorySize() / (1024 * 1024)).append(" MB` |\n");
+        } catch (ClassCastException e) {
+            // Extended metrics not available
+        }
+        buffer.append("\n");
     }
 
     @Override

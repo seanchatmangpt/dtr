@@ -126,6 +126,9 @@ jobs:
 
       - name: Set up Java 26 via SDKMAN
         run: |
+          # Fix: SDKMAN may be partially installed on runners
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
@@ -219,6 +222,9 @@ jobs:
 
       - name: Set up Java 26 via SDKMAN
         run: |
+          # Fix: SDKMAN may be partially installed on runners
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
@@ -233,25 +239,18 @@ jobs:
           echo "🔍 Checking GPG secrets..."
 
           # Check if required secrets are present (explicit checks for act compatibility)
-          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
-            echo "❌ Missing secret: GPG_PRIVATE_KEY"
+          if [ -z "${{ secrets.GPG_SIGNING_KEY }}" ]; then
+            echo "❌ Missing secret: GPG_SIGNING_KEY"
             exit 1
           else
-            echo "✅ Secret GPG_PRIVATE_KEY is present"
+            echo "✅ Secret GPG_SIGNING_KEY is present"
           fi
 
-          if [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
-            echo "❌ Missing secret: GPG_PASSPHRASE"
+          if [ -z "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}" ]; then
+            echo "❌ Missing secret: GPG_SIGNING_KEY_PASSWORD"
             exit 1
           else
-            echo "✅ Secret GPG_PASSPHRASE is present"
-          fi
-
-          if [ -z "${{ secrets.GPG_KEY_ID }}" ]; then
-            echo "❌ Missing secret: GPG_KEY_ID"
-            exit 1
-          else
-            echo "✅ Secret GPG_KEY_ID is present"
+            echo "✅ Secret GPG_SIGNING_KEY_PASSWORD is present"
           fi
 
       - name: Test GPG key import
@@ -259,15 +258,16 @@ jobs:
           echo "🔐 Testing GPG key import..."
 
           # Import and test GPG key
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | gpg --import --batch --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
 
           # List keys
           gpg --list-secret-keys --keyid-format=long
           gpg --list-keys --keyid-format=long
 
-          # Verify key exists
-          if gpg --list-keys "${{ secrets.GPG_KEY_ID }}" > /dev/null 2>&1; then
-            echo "✅ GPG key is valid"
+          # Extract key ID and verify key exists
+          KEY_ID=$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)
+          if [ -n "$KEY_ID" ]; then
+            echo "✅ GPG key is valid (Key ID: $KEY_ID)"
           else
             echo "❌ GPG key is not valid"
             exit 1
@@ -288,18 +288,18 @@ jobs:
           echo "🔍 Checking Central Portal credentials..."
 
           # Check required secrets (explicit checks for act compatibility)
-          if [ -z "${{ secrets.CENTRAL_USERNAME }}" ]; then
-            echo "❌ Missing secret: CENTRAL_USERNAME"
+          if [ -z "${{ secrets.CENTRAL_TOKEN_USERNAME }}" ]; then
+            echo "❌ Missing secret: CENTRAL_TOKEN_USERNAME"
             exit 1
           else
-            echo "✅ Secret CENTRAL_USERNAME is present"
+            echo "✅ Secret CENTRAL_TOKEN_USERNAME is present"
           fi
 
-          if [ -z "${{ secrets.CENTRAL_TOKEN }}" ]; then
-            echo "❌ Missing secret: CENTRAL_TOKEN"
+          if [ -z "${{ secrets.CENTRAL_TOKEN_PASSWORD }}" ]; then
+            echo "❌ Missing secret: CENTRAL_TOKEN_PASSWORD"
             exit 1
           else
-            echo "✅ Secret CENTRAL_TOKEN is present"
+            echo "✅ Secret CENTRAL_TOKEN_PASSWORD is present"
           fi
 
       - name: Test Central Portal API

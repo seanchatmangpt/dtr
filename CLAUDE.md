@@ -119,4 +119,227 @@ make release-year    # "Explicit year boundary" (Jan 1)     → YYYY.1.0
 
 ---
 
+## say* API Reference
+
+Complete reference for all 50+ documentation methods available on `DtrContext`.
+
+### Core API
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `say` | `void say(String text)` | Render a paragraph (supports markdown) |
+| `sayNextSection` | `void sayNextSection(String headline)` | H1 heading with TOC entry |
+| `sayRaw` | `void sayRaw(String rawMarkdown)` | Inject raw markdown/HTML bypassing formatting |
+
+### Formatting & Structure
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayTable` | `void sayTable(String[][] data)` | 2D array → table (first row = headers) |
+| `sayCode` | `void sayCode(String code, String language)` | Fenced code block with syntax highlighting |
+| `sayWarning` | `void sayWarning(String message)` | GitHub-style [!WARNING] alert block |
+| `sayNote` | `void sayNote(String message)` | GitHub-style [!NOTE] alert block |
+| `sayKeyValue` | `void sayKeyValue(Map<String, String> pairs)` | 2-column metadata table |
+| `sayUnorderedList` | `void sayUnorderedList(List<String> items)` | Bullet list |
+| `sayOrderedList` | `void sayOrderedList(List<String> items)` | Numbered list |
+| `sayJson` | `void sayJson(Object object)` | Pretty-printed JSON in code block |
+| `sayAssertions` | `void sayAssertions(Map<String, String> assertions)` | Table of assertions (Check ✓ / Result) |
+
+### Cross-References
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayRef` | `void sayRef(DocTestRef ref)` | Link to another DocTest section |
+| `sayRef` | `void sayRef(Class<?> docTestClass, String anchor)` | Link to specific test class + anchor |
+| `sayCite` | `void sayCite(String citationKey)` | BibTeX citation reference |
+| `sayCite` | `void sayCite(String citationKey, String pageRef)` | BibTeX citation with page number |
+| `sayFootnote` | `void sayFootnote(String text)` | Footnote content |
+
+### Code Model (Reflection-Based)
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayCodeModel` | `void sayCodeModel(Class<?> clazz)` | Class structure: sealed hierarchy, methods, signatures |
+| `sayCodeModel` | `void sayCodeModel(Method method)` | Method structure with Java 26 Code Reflection |
+| `sayCallSite` | `void sayCallSite()` | Document caller location (class, method, line) via StackWalker |
+| `sayAnnotationProfile` | `void sayAnnotationProfile(Class<?> clazz)` | All annotations on class and methods |
+| `sayClassHierarchy` | `void sayClassHierarchy(Class<?> clazz)` | Inheritance tree (superclass + interfaces) |
+| `sayStringProfile` | `void sayStringProfile(String text)` | Word count, line count, Unicode metrics |
+| `sayReflectiveDiff` | `void sayReflectiveDiff(Object before, Object after)` | Field-by-field comparison table |
+
+### Java 26 Code Reflection (JEP 516)
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayControlFlowGraph` | `void sayControlFlowGraph(Method method)` | Mermaid flowchart of method CFG (requires @CodeReflection) |
+| `sayCallGraph` | `void sayCallGraph(Class<?> clazz)` | Mermaid graph of method-to-method calls |
+| `sayOpProfile` | `void sayOpProfile(Method method)` | Operation count table from Code Reflection IR |
+
+### Benchmarking
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayBenchmark` | `void sayBenchmark(String label, Runnable task)` | Measure with default 50 warmup / 500 measure rounds |
+| `sayBenchmark` | `void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds)` | Measure with explicit round counts |
+
+### Mermaid Diagrams
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayMermaid` | `void sayMermaid(String diagramDsl)` | Raw Mermaid diagram (flowchart, sequence, etc.) |
+| `sayClassDiagram` | `void sayClassDiagram(Class<?>... classes)` | Auto-generated classDiagram from reflection |
+
+### Coverage & Quality
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayDocCoverage` | `void sayDocCoverage(Class<?>... classes)` | Report which public methods were documented |
+
+### 80/20 Low-Hanging Fruit
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayEnvProfile` | `void sayEnvProfile()` | Java version, OS, processors, heap, timezone, DTR version |
+| `sayRecordComponents` | `void sayRecordComponents(Class<? extends Record> recordClass)` | Record schema table (names, types, annotations) |
+| `sayException` | `void sayException(Throwable t)` | Exception type, message, cause chain, top 5 frames |
+| `sayAsciiChart` | `void sayAsciiChart(String label, double[] values, String[] xLabels)` | Horizontal bar chart with Unicode blocks |
+
+### Bonus Features
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayContractVerification` | `void sayContractVerification(Class<?> contract, Class<?>... implementations)` | Interface implementation coverage (✓ direct, ↗ inherited, ❌ missing) |
+| `sayEvolutionTimeline` | `void sayEvolutionTimeline(Class<?> clazz, int maxEntries)` | Git log --follow for class source file (commit, date, author, subject) |
+| `sayJavadoc` | `void sayJavadoc(Method method)` | Extracted Javadoc from docs/meta/javadoc.json |
+
+### Slide/Blog-Specific Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `saySlideOnly` | `void saySlideOnly(String text)` | Text appears only in slide deck, not docs |
+| `sayDocOnly` | `void sayDocOnly(String text)` | Text appears only in docs, not slides |
+| `saySpeakerNote` | `void saySpeakerNote(String text)` | Presenter notes (slides only) |
+| `sayHeroImage` | `void sayHeroImage(String altText)` | Hero image section |
+| `sayTweetable` | `void sayTweetable(String text)` | Social-media quote box |
+| `sayTldr` | `void sayTldr(String text)` | TL;DR summary box |
+| `sayCallToAction` | `void sayCallToAction(String url)` | CTA button/link |
+
+### Assertion Combos (DtrTest Base Class)
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sayAndAssertThat` | `<T> void sayAndAssertThat(String label, T actual, Matcher<? super T> matcher)` | Assert + document in one call (generic) |
+| `sayAndAssertThat` | `void sayAndAssertThat(String label, long actual, Matcher<Long> matcher)` | Assert + document (long primitive) |
+| `sayAndAssertThat` | `void sayAndAssertThat(String label, int actual, Matcher<Integer> matcher)` | Assert + document (int primitive) |
+| `sayAndAssertThat` | `void sayAndAssertThat(String label, boolean actual, Matcher<Boolean> matcher)` | Assert + document (boolean primitive) |
+
+---
+
+## Extended say* API Reference (80/20 Guide)
+
+### Quick Start: When to Use Each Method
+
+#### 🎯 Core Methods (Use These 80% of the Time)
+- **`say(text)`** - Simple paragraphs, most common use case
+- **`sayCode(code, language)`** - Code blocks with syntax highlighting
+- **`sayTable(data)`** - Structured data tables
+- **`sayWarning(message)`** - Important warnings
+- **`sayNote(message)`** - Additional context
+- **`sayKeyValue(pairs)`** - Metadata, configuration, key facts
+
+#### 📊 Formatting & Structure
+- **`sayUnorderedList(items)`** - Bullet points for lists
+- **`sayOrderedList(items)`** - Numbered sequences
+- **`sayJson(object)`** - JSON data dumps
+- **`sayAssertions(assertions)`** - Test results summary
+
+#### 🔗 Cross-References
+- **`sayRef(otherClass, anchor)`** - Link to other documentation sections
+- **`sayCite(citationKey)`** - Academic citations
+
+#### 🛠️ Code Analysis (Advanced)
+- **`sayCodeModel(clazz)`** - Class structure overview
+- **`sayCallSite()`** - Current execution context
+- **`sayEnvProfile()`** - System environment snapshot
+
+#### 🎨 Presentation-Specific
+- **`saySlideOnly(text)`** - Content for slides only
+- **`sayDocOnly(text)`** - Content for docs only
+- **`saySpeakerNote(text)`** - Presenter notes
+- **`sayTweetable(text)`** - Social media quotes
+- **`sayTldr(text)`** - Summary boxes
+- **`sayHeroImage(altText)`** - Featured images
+- **`sayCallToAction(url)`** - Clickable links
+
+#### ✅ Testing & Validation
+- **`sayAndAssertThat(label, actual, matcher)`** - Assert + document in one call
+
+### Method Selection Decision Tree
+
+```
+Are you documenting simple text?
+  ├── Yes → use `say(text)`
+  └── No → Continue
+
+Is it code or configuration?
+  ├── Yes → use `sayCode(code, language)` or `sayJson(object)`
+  └── No → Continue
+
+Is it structured data?
+  ├── Yes → use `sayTable(data)` for tables or `sayKeyValue(pairs)` for metadata
+  └── No → Continue
+
+Is it a list?
+  ├── Yes → `sayUnorderedList(items)` or `sayOrderedList(items)`
+  └── No → Continue
+
+Is it important context?
+  ├── Yes → `sayNote(message)` for notes
+  └── Is it a warning?
+       ├── Yes → `sayWarning(message)`
+       └── No → Continue
+
+Are you testing something?
+  ├── Yes → `sayAndAssertThat(label, actual, matcher)`
+  └── No → Continue
+
+Are you creating slides/blogs?
+  ├── Yes → Choose from presentation-specific methods above
+  └── No → Use core methods
+```
+
+### Common Patterns
+
+#### Basic Documentation
+```java
+say("This is a simple paragraph of documentation.");
+sayCode("int x = 42;", "java");
+```
+
+#### Warning and Notes
+```java
+sayWarning("This feature is experimental and may change.");
+sayNote("For more details, see the full API documentation.");
+```
+
+#### Data Tables
+```java
+sayTable(new String[][]{
+    {"Feature", "Status", "Priority"},
+    {"REST API", "✓ Implemented", "High"},
+    {"GraphQL", "🔄 In Progress", "Medium"}
+});
+```
+
+#### Testing with Documentation
+```java
+sayAndAssertThat("HTTP Status", response.getStatusCode(), equalTo(200));
+```
+
+#### Cross-References
+```java
+sayRef(OtherDocumentation.class, "user-registration");
+sayCite("smith2023");
+```
+
 **Invariant:** The pipeline is the specification of done. Everything else is execution detail.

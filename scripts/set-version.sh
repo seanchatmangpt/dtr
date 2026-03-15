@@ -31,11 +31,25 @@ def update_root(text, old, new):
     return text
 
 def update_child(text, old, new):
-    return re.sub(
+    # Update parent version reference
+    text = re.sub(
         r'(<parent>(?:(?!</parent>).)*?<version>)' + re.escape(old) + r'(?:-rc\.\d+)?(</version>(?:(?!</parent>).)*?</parent>)',
         r'\g<1>' + new + r'\2',
         text, flags=re.DOTALL
     )
+    # Update child module's own <version> tag (first occurrence after <modelVersion>)
+    text = re.sub(
+        r'(<modelVersion>4\.0\.0</modelVersion>.*?<version>)' + re.escape(old) + r'(?:-rc\.\d+)?(</version>)',
+        r'\g<1>' + new + r'\2',
+        text, flags=re.DOTALL, count=1
+    )
+    # Update SCM <tag> in child modules
+    text = re.sub(
+        r'<tag>(?:v?' + re.escape(old) + r'(?:-rc\.\d+)?|HEAD)</tag>',
+        f'<tag>v{new}</tag>',
+        text
+    )
+    return text
 
 root = pathlib.Path('pom.xml')
 root.write_text(update_root(root.read_text(), old_base, new))

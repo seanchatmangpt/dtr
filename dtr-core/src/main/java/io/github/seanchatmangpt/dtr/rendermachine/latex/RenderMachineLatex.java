@@ -21,13 +21,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.seanchatmangpt.dtr.bibliography.BibliographyManager;
 import io.github.seanchatmangpt.dtr.crossref.DocTestRef;
+import io.github.seanchatmangpt.dtr.evolution.GitHistoryReader;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocEntry;
+import io.github.seanchatmangpt.dtr.javadoc.JavadocIndex;
 import io.github.seanchatmangpt.dtr.metadata.DocMetadata;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import org.slf4j.Logger;
@@ -127,7 +136,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (text == null || text.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.escapeLatex(text));
     }
@@ -137,7 +145,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (heading == null || heading.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatSection(heading));
     }
@@ -147,7 +154,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (data == null || data.length == 0) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatTable(data));
     }
@@ -157,7 +163,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (code == null || code.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatCodeBlock(code, language));
     }
@@ -167,7 +172,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (message == null || message.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatWarning(message));
     }
@@ -177,7 +181,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (message == null || message.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatNote(message));
     }
@@ -187,7 +190,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (pairs == null || pairs.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatKeyValue(pairs));
     }
@@ -197,7 +199,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (items == null || items.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatUnorderedList(items));
     }
@@ -207,7 +208,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (items == null || items.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatOrderedList(items));
     }
@@ -217,7 +217,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (object == null) {
             return;
         }
-
         try {
             String jsonString = objectMapper.writerWithDefaultPrettyPrinter()
                     .writeValueAsString(object);
@@ -235,7 +234,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (assertions == null || assertions.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(template.formatAssertions(assertions));
     }
@@ -245,7 +243,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (citationKey == null || citationKey.isEmpty()) {
             return;
         }
-
         texDocument.add("\\cite{" + citationKey + "}");
     }
 
@@ -254,7 +251,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (citationKey == null || citationKey.isEmpty()) {
             return;
         }
-
         texDocument.add("\\cite[p. " + pageRef + "]{" + citationKey + "}");
     }
 
@@ -263,7 +259,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (text == null || text.isEmpty()) {
             return;
         }
-
         texDocument.add("\\footnote{" + template.escapeLatex(text) + "}");
     }
 
@@ -272,7 +267,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (ref == null) {
             return;
         }
-
         texDocument.add("");
         // Generate LaTeX \ref{} command for two-pass compilation
         // The reference resolver will have mapped the anchor to a LaTeX label
@@ -286,7 +280,6 @@ public final class RenderMachineLatex extends RenderMachine {
         if (latex == null || latex.isEmpty()) {
             return;
         }
-
         texDocument.add("");
         texDocument.add(latex);
     }
@@ -391,5 +384,557 @@ public final class RenderMachineLatex extends RenderMachine {
                 .replaceAll("[^a-z0-9-]", "")
                 .replaceAll("-+", "-")
                 .replaceAll("^-|-$", "");
+    }
+
+    // ========================================================================
+    // Code Model Methods
+    // ========================================================================
+
+    @Override
+    public void sayCodeModel(Class<?> clazz) {
+        if (clazz == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Class: \\texttt{" + template.escapeLatex(clazz.getSimpleName()) + "}}");
+        texDocument.add("");
+        texDocument.add("\\textbf{Package:} \\texttt{" + template.escapeLatex(clazz.getPackageName()) + "}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        if (method == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Method: \\texttt{" + template.escapeLatex(method.getName()) + "}}");
+        texDocument.add("");
+        texDocument.add("\\textbf{Return Type:} \\texttt{" + template.escapeLatex(method.getReturnType().getSimpleName()) + "}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayCallSite() {
+        var walker = java.lang.StackWalker.getInstance(java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        walker.walk(frames -> {
+            frames.skip(2).findFirst().ifPresent(frame -> {
+                texDocument.add("");
+                texDocument.add("\\textbf{Call Site:} \\texttt{" +
+                    template.escapeLatex(frame.getClassName()) + "\\#" +
+                    template.escapeLatex(frame.getMethodName()) + ":" +
+                    frame.getLineNumber() + "}");
+            });
+            return null;
+        });
+    }
+
+    @Override
+    public void sayAnnotationProfile(Class<?> clazz) {
+        if (clazz == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Annotation Profile}");
+        texDocument.add("");
+
+        var annotations = clazz.getAnnotations();
+        if (annotations.length > 0) {
+            texDocument.add("\\begin{itemize}");
+            for (var a : annotations) {
+                texDocument.add("  \\item \\texttt{@" + a.annotationType().getSimpleName() + "}");
+            }
+            texDocument.add("\\end{itemize}");
+        }
+    }
+
+    @Override
+    public void sayClassHierarchy(Class<?> clazz) {
+        if (clazz == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Class Hierarchy}");
+        texDocument.add("");
+
+        List<String> hierarchy = new ArrayList<>();
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            hierarchy.add("\\texttt{" + current.getSimpleName() + "}");
+            current = current.getSuperclass();
+        }
+        texDocument.add(String.join(" $\\rightarrow$ ", hierarchy));
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayStringProfile(String text) {
+        if (text == null || text.isEmpty()) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{String Profile}");
+        texDocument.add("");
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("Length & " + text.length() + " \\\\");
+        texDocument.add("Words & " + text.split("\\s+").length + " \\\\");
+        texDocument.add("Lines & " + text.lines().count() + " \\\\");
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayReflectiveDiff(Object before, Object after) {
+        if (before == null || after == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Reflective Diff}");
+        texDocument.add("");
+
+        try {
+            texDocument.add("\\begin{tabular}{lll}");
+            texDocument.add("Field & Before & After \\\\");
+            texDocument.add("\\hline");
+            for (var field : before.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                Object beforeVal = field.get(before);
+                Object afterVal = field.get(after);
+                if (!java.util.Objects.equals(beforeVal, afterVal)) {
+                    texDocument.add("\\texttt{" + field.getName() + "} & " +
+                        (beforeVal != null ? beforeVal.toString() : "null") + " & " +
+                        (afterVal != null ? afterVal.toString() : "null") + " \\\\");
+                }
+            }
+            texDocument.add("\\end{tabular}");
+        } catch (Exception e) {
+            texDocument.add("Error: " + template.escapeLatex(e.getMessage()));
+        }
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayControlFlowGraph(java.lang.reflect.Method method) {
+        if (method == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Control Flow Graph: \\texttt{" + method.getName() + "}}");
+        texDocument.add("");
+        texDocument.add("\\textit{CFG visualization requires Java 26+ with @CodeReflection annotation.}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayCallGraph(Class<?> clazz) {
+        if (clazz == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Call Graph: \\texttt{" + clazz.getSimpleName() + "}}");
+        texDocument.add("");
+        texDocument.add("\\textit{Call graph visualization requires Java 26+ with @CodeReflection annotation.}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayOpProfile(java.lang.reflect.Method method) {
+        if (method == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Op Profile: \\texttt{" + method.getName() + "}}");
+        texDocument.add("");
+        texDocument.add("\\textit{Op profile requires Java 26+ with @CodeReflection annotation.}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task) {
+        sayBenchmark(label, task, 50, 500);
+    }
+
+    @Override
+    public void sayBenchmark(String label, Runnable task, int warmupRounds, int measureRounds) {
+        if (label == null || task == null) return;
+
+        // Warmup
+        for (int i = 0; i < warmupRounds; i++) {
+            task.run();
+        }
+
+        // Measure
+        long[] times = new long[measureRounds];
+        for (int i = 0; i < measureRounds; i++) {
+            long start = System.nanoTime();
+            task.run();
+            times[i] = System.nanoTime() - start;
+        }
+
+        Arrays.sort(times);
+        double avg = Arrays.stream(times).average().orElse(0);
+        long min = times[0];
+        long max = times[measureRounds - 1];
+        long p99 = times[(int)(measureRounds * 0.99)];
+
+        texDocument.add("");
+        texDocument.add("\\subsection{Benchmark: " + template.escapeLatex(label) + "}");
+        texDocument.add("");
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("Average & " + String.format("%.0f ns", avg) + " \\\\");
+        texDocument.add("Min & " + min + " ns \\\\");
+        texDocument.add("Max & " + max + " ns \\\\");
+        texDocument.add("P99 & " + p99 + " ns \\\\");
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayMermaid(String diagramDsl) {
+        if (diagramDsl == null || diagramDsl.isEmpty()) return;
+        texDocument.add("");
+        texDocument.add("% Mermaid diagram (not supported in LaTeX)");
+        texDocument.add("\\begin{verbatim}");
+        texDocument.add(diagramDsl);
+        texDocument.add("\\end{verbatim}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayClassDiagram(Class<?>... classes) {
+        if (classes == null || classes.length == 0) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Class Diagram}");
+        texDocument.add("");
+        texDocument.add("\\begin{itemize}");
+        for (Class<?> c : classes) {
+            if (c != null) {
+                texDocument.add("  \\item \\texttt{" + c.getSimpleName() + "}");
+            }
+        }
+        texDocument.add("\\end{itemize}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayDocCoverage(Class<?>... classes) {
+        if (classes == null || classes.length == 0) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Documentation Coverage}");
+        texDocument.add("");
+
+        // Doc coverage requires coverage tracking which is only available in DtrContext
+        // List the classes that would be analyzed
+        texDocument.add("\\textbf{Classes analyzed:}");
+        texDocument.add("\\begin{itemize}");
+        for (Class<?> c : classes) {
+            if (c != null) {
+                texDocument.add("  \\item \\texttt{" + c.getSimpleName() + "}");
+            }
+        }
+        texDocument.add("\\end{itemize}");
+        texDocument.add("");
+        texDocument.add("\\textit{Full coverage analysis requires DtrContext test execution.}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayEnvProfile() {
+        texDocument.add("");
+        texDocument.add("\\subsection{Environment Profile}");
+        texDocument.add("");
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("Java Version & \\texttt{" + System.getProperty("java.version") + "} \\\\");
+        texDocument.add("OS & \\texttt{" + System.getProperty("os.name") + " " + System.getProperty("os.version") + "} \\\\");
+        texDocument.add("Processors & " + Runtime.getRuntime().availableProcessors() + " \\\\");
+        texDocument.add("Max Memory & " + (Runtime.getRuntime().maxMemory() / (1024 * 1024)) + " MB \\\\");
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayRecordComponents(Class<? extends Record> recordClass) {
+        if (recordClass == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Record Schema: \\texttt{" + recordClass.getSimpleName() + "}}");
+        texDocument.add("");
+
+        var components = recordClass.getRecordComponents();
+        if (components == null || components.length == 0) {
+            texDocument.add("\\textit{No record components.}");
+            return;
+        }
+
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("Component & Type \\\\");
+        texDocument.add("\\hline");
+        for (var comp : components) {
+            texDocument.add("\\texttt{" + comp.getName() + "} & \\texttt{" + comp.getType().getSimpleName() + "} \\\\");
+        }
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayException(Throwable t) {
+        if (t == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Exception: \\texttt{" + t.getClass().getSimpleName() + "}}");
+        texDocument.add("");
+        texDocument.add("\\textbf{Message:} " + template.escapeLatex(t.getMessage() != null ? t.getMessage() : "no message"));
+        texDocument.add("");
+
+        // Cause chain
+        List<String> causeChain = new ArrayList<>();
+        Throwable cause = t.getCause();
+        while (cause != null) {
+            causeChain.add(cause.getClass().getSimpleName() +
+                (cause.getMessage() != null ? ": " + cause.getMessage() : ""));
+            cause = cause.getCause();
+        }
+        if (!causeChain.isEmpty()) {
+            texDocument.add("\\textbf{Cause chain:}");
+            texDocument.add("\\begin{itemize}");
+            for (String c : causeChain) {
+                texDocument.add("  \\item " + template.escapeLatex(c));
+            }
+            texDocument.add("\\end{itemize}");
+        }
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayAsciiChart(String label, double[] values, String[] xLabels) {
+        if (label == null || values == null || values.length == 0) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{" + template.escapeLatex(label) + "}");
+        texDocument.add("");
+
+        double max = Arrays.stream(values).max().orElse(1.0);
+        if (max == 0) max = 1.0;
+        int barWidth = 15;
+
+        texDocument.add("\\begin{verbatim}");
+        for (int i = 0; i < values.length; i++) {
+            String rowLabel = (xLabels != null && i < xLabels.length) ? xLabels[i] : ("" + i);
+            int filled = (int) Math.round((values[i] / max) * barWidth);
+            String bar = "X".repeat(filled) + ".".repeat(barWidth - filled);
+            texDocument.add(String.format("%-6s %s  %.0f", rowLabel, bar, values[i]));
+        }
+        texDocument.add("\\end{verbatim}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayContractVerification(Class<?> contract, Class<?>... implementations) {
+        if (contract == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Contract: \\texttt{" + contract.getSimpleName() + "}}");
+        texDocument.add("");
+        if (implementations != null && implementations.length > 0) {
+            texDocument.add("\\textbf{Implementations:}");
+            texDocument.add("\\begin{itemize}");
+            for (Class<?> impl : implementations) {
+                if (impl != null) {
+                    texDocument.add("  \\item \\texttt{" + impl.getSimpleName() + "}");
+                }
+            }
+            texDocument.add("\\end{itemize}");
+        }
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayEvolutionTimeline(Class<?> clazz, int maxEntries) {
+        if (clazz == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Evolution Timeline: \\texttt{" + clazz.getSimpleName() + "}}");
+        texDocument.add("");
+
+        int limit = maxEntries > 0 ? maxEntries : 10;
+        var entries = GitHistoryReader.read(clazz, limit);
+
+        if (entries.isEmpty()) {
+            texDocument.add("\\textit{Git history unavailable (not in a git repository or file not tracked).}");
+        } else {
+            texDocument.add("\\begin{tabular}{llll}");
+            texDocument.add("\\textbf{Commit} & \\textbf{Date} & \\textbf{Author} & \\textbf{Subject} \\\\");
+            texDocument.add("\\hline");
+            for (var entry : entries) {
+                texDocument.add("\\texttt{" + entry.hash() + "} & " +
+                    entry.date() + " & " +
+                    template.escapeLatex(entry.author()) + " & " +
+                    template.escapeLatex(entry.subject()) + " \\\\");
+            }
+            texDocument.add("\\end{tabular}");
+            texDocument.add("");
+            texDocument.add("\\textit{" + entries.size() + " commits shown.}");
+        }
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayJavadoc(java.lang.reflect.Method method) {
+        if (method == null) return;
+        texDocument.add("");
+        texDocument.add("\\subsection{Javadoc: \\texttt{" + method.getName() + "}}");
+        texDocument.add("");
+
+        var entry = JavadocIndex.lookup(method);
+
+        if (entry.isEmpty()) {
+            texDocument.add("\\textit{Javadoc not available for this method.}");
+        } else {
+            JavadocEntry je = entry.get();
+
+            // Description
+            if (je.description() != null && !je.description().isEmpty()) {
+                texDocument.add(template.escapeLatex(je.description()));
+                texDocument.add("");
+            }
+
+            // Parameters table
+            if (je.params() != null && !je.params().isEmpty()) {
+                texDocument.add("\\textbf{Parameters:}");
+                texDocument.add("\\begin{tabular}{ll}");
+                texDocument.add("Parameter & Description \\\\");
+                texDocument.add("\\hline");
+                for (var param : je.params()) {
+                    texDocument.add("\\texttt{" + param.name() + "} & " +
+                            template.escapeLatex(param.description()) + " \\\\");
+                }
+                texDocument.add("\\end{tabular}");
+                texDocument.add("");
+            }
+
+            // Returns
+            if (je.returns() != null && !je.returns().isEmpty()) {
+                texDocument.add("\\textbf{Returns:} " + template.escapeLatex(je.returns()));
+                texDocument.add("");
+            }
+
+            // Since
+            if (je.since() != null && !je.since().isEmpty()) {
+                texDocument.add("\\textbf{Since:} \\texttt{" + je.since() + "}");
+                texDocument.add("");
+            }
+        }
+        texDocument.add("");
+    }
+
+    @Override
+    public void saySystemProperties() {
+        saySystemProperties(null);
+    }
+
+    @Override
+    public void saySystemProperties(String regexFilter) {
+        var props = System.getProperties();
+
+        var entryStream = props.entrySet().stream();
+        if (regexFilter != null && !regexFilter.isBlank()) {
+            var pattern = java.util.regex.Pattern.compile(regexFilter);
+            var predicate = pattern.asPredicate();
+            entryStream = entryStream.filter(e -> predicate.test(e.getKey().toString()));
+        }
+
+        var sortedEntries = entryStream
+                .sorted(Comparator.comparing(e -> e.getKey().toString()))
+                .limit(50)
+                .toList();
+
+        texDocument.add("");
+        texDocument.add("\\subsection{JVM System Properties}");
+        if (regexFilter != null && !regexFilter.isBlank()) {
+            texDocument.add("\\textit{Filter: \\texttt{" + template.escapeLatex(regexFilter) + "}}");
+        }
+        texDocument.add("");
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("Property & Value \\\\");
+        texDocument.add("\\hline");
+        for (var entry : sortedEntries) {
+            String key = entry.getKey().toString();
+            String value = entry.getValue().toString();
+            if (value.length() > 50) value = value.substring(0, 47) + "...";
+            texDocument.add("\\texttt{" + template.escapeLatex(key) + "} & \\texttt{" + template.escapeLatex(value) + "} \\\\");
+        }
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void saySecurityManager() {
+        texDocument.add("");
+        texDocument.add("\\subsection{Security Environment}");
+        texDocument.add("");
+
+        var sm = System.getSecurityManager();
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("Security Manager & " + (sm != null ? "PRESENT" : "ABSENT") + " \\\\");
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
+
+        // Providers
+        texDocument.add("\\textbf{Security Providers:}");
+        texDocument.add("\\begin{enumerate}");
+        var providers = java.security.Security.getProviders();
+        for (var provider : providers) {
+            texDocument.add("  \\item \\texttt{" + provider.getName() + "} (v" + provider.getVersion() + ")");
+        }
+        texDocument.add("\\end{enumerate}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayModuleDependencies(Class<?>... classes) {
+        if (classes == null || classes.length == 0) {
+            texDocument.add("");
+            texDocument.add("\\textit{No classes provided for module dependency analysis.}");
+            return;
+        }
+
+        texDocument.add("");
+        texDocument.add("\\subsection{Module Dependencies}");
+        texDocument.add("");
+
+        Map<Module, List<Class<?>>> moduleMap = Arrays.stream(classes)
+                .filter(clazz -> clazz != null)
+                .collect(Collectors.groupingBy(Class::getModule, LinkedHashMap::new, Collectors.toList()));
+
+        for (var entry : moduleMap.entrySet()) {
+            Module module = entry.getKey();
+            String moduleName = module.isNamed() ? module.getName() : "Unnamed Module";
+            texDocument.add("\\textbf{" + moduleName + "}");
+            texDocument.add("\\begin{itemize}");
+            for (Class<?> c : entry.getValue()) {
+                texDocument.add("  \\item \\texttt{" + c.getSimpleName() + "}");
+            }
+            texDocument.add("\\end{itemize}");
+        }
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayThreadDump() {
+        var threadMXBean = ManagementFactory.getThreadMXBean();
+
+        texDocument.add("");
+        texDocument.add("\\subsection{Thread Summary}");
+        texDocument.add("");
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("Thread Count & " + threadMXBean.getThreadCount() + " \\\\");
+        texDocument.add("Daemon Threads & " + threadMXBean.getDaemonThreadCount() + " \\\\");
+        texDocument.add("Peak Threads & " + threadMXBean.getPeakThreadCount() + " \\\\");
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
+    }
+
+    @Override
+    public void sayOperatingSystem() {
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+
+        texDocument.add("");
+        texDocument.add("\\subsection{Operating System Metrics}");
+        texDocument.add("");
+        texDocument.add("\\begin{tabular}{ll}");
+        texDocument.add("OS Name & \\texttt{" + template.escapeLatex(osBean.getName()) + "} \\\\");
+        texDocument.add("OS Version & \\texttt{" + template.escapeLatex(osBean.getVersion()) + "} \\\\");
+        texDocument.add("Architecture & \\texttt{" + template.escapeLatex(osBean.getArch()) + "} \\\\");
+        texDocument.add("Processors & " + osBean.getAvailableProcessors() + " \\\\");
+
+        double loadAvg = osBean.getSystemLoadAverage();
+        texDocument.add("Load Average & " + (loadAvg >= 0 ? String.format("%.2f", loadAvg) : "N/A") + " \\\\");
+
+        try {
+            var sunOsBean = (com.sun.management.OperatingSystemMXBean) osBean;
+            texDocument.add("Process CPU & " + String.format("%.1f%%", sunOsBean.getProcessCpuLoad() * 100) + " \\\\");
+            texDocument.add("Total Memory & " + (sunOsBean.getTotalPhysicalMemorySize() / (1024 * 1024)) + " MB \\\\");
+        } catch (ClassCastException e) {
+            // Extended metrics not available
+        }
+        texDocument.add("\\end{tabular}");
+        texDocument.add("");
     }
 }

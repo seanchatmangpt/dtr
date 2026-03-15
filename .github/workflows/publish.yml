@@ -6,6 +6,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g., v2026.1.0)'
+        required: true
+        type: string
 
 env:
   JAVA_VERSION: '26'
@@ -40,6 +46,9 @@ jobs:
       - name: Set up Java 26 via SDKMAN
         run: |
           set -e
+          # Fix: SDKMAN may be partially installed on runners
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
@@ -92,6 +101,9 @@ jobs:
       - name: Set up Java 26 via SDKMAN
         run: |
           set -e
+          # Fix: SDKMAN may be partially installed on runners
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
@@ -116,9 +128,10 @@ jobs:
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           gpgconf --kill gpg-agent || true
 
-      - name: Import GPG key
+      - name: Import GPG key and extract key ID
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --import --batch --yes --passphrase "${{ secrets.GPG_PASSPHRASE }}"
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | base64 --decode | gpg --import --batch --yes --passphrase "${{ secrets.GPG_SIGNING_KEY_PASSWORD }}"
+          echo "GPG_KEY_ID=$(gpg --list-keys --with-colons | grep '^fpr' | head -1 | cut -d: -f10)" >> $GITHUB_ENV
 
       - name: Configure Maven settings
         run: |
@@ -128,8 +141,8 @@ jobs:
             <servers>
               <server>
                 <id>central</id>
-                <username>${env.CENTRAL_USERNAME}</username>
-                <password>${env.CENTRAL_TOKEN}</password>
+                <username>${env.CENTRAL_TOKEN_USERNAME}</username>
+                <password>${env.CENTRAL_TOKEN_PASSWORD}</password>
               </server>
             </servers>
             <profiles>
@@ -138,25 +151,25 @@ jobs:
                 <activation><activeByDefault>true</activeByDefault></activation>
                 <properties>
                   <gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
-                  <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                  <gpg.passphrase>${env.GPG_SIGNING_KEY_PASSWORD}</gpg.passphrase>
                 </properties>
               </profile>
             </profiles>
           </settings>
           EOF
         env:
-          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
-          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+          GPG_SIGNING_KEY_PASSWORD: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
+          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
 
-      - name: Deploy
-        run: ./mvnw clean deploy -Prelease -DskipTests --no-transfer-progress
+      - name: Deploy to Maven Central
+        run: ./mvnw clean verify org.sonatype.central:central-publishing-maven-plugin:0.10.0:publish -Prelease -DskipTests --no-transfer-progress
         env:
-          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
-          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+          GPG_SIGNING_KEY_PASSWORD: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
+          GPG_KEY_ID: ${{ env.GPG_KEY_ID }}
 
   # ── 3. Create GitHub Release ───────────────────────────────────────────────
   release:

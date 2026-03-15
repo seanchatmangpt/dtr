@@ -28,6 +28,7 @@ rayon = { workspace = true }
 [[bench]]
 name = "latency"
 path = "benches/latency.rs"
+harness = false
 
 [[bench]]
 name = "end_to_end"

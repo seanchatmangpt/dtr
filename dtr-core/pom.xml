@@ -19,17 +19,47 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dtr-core</artifactId>
-    <name>DTR Core</name>
-    <description>Core library for DTR: HTTP test browser and Markdown documentation generator for JUnit tests.</description>
-    <packaging>jar</packaging>
-
     <!-- Deploy to Maven Central via the Sonatype Central Publisher Portal -->
     <parent>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr</artifactId>
-        <version>2026.1.1-rc.1</version>
+        <version>2026.3.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
+
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-core</artifactId>
+    <version>2026.3.0</version>
+    <name>DTR Core</name>
+    <description>Core library for DTR: HTTP test browser and Markdown documentation generator for JUnit tests.</description>
+    <packaging>jar</packaging>
+
+    <url>https://github.com/seanchatmangpt/dtr</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/seanchatmangpt/dtr</url>
+        <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
+        <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
+        <tag>v2026.3.0</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>seanchatmangpt</id>
+            <name>Sean Chatman</name>
+            <url>https://github.com/seanchatmangpt</url>
+            <organization>seanchatmangpt</organization>
+            <organizationUrl>https://github.com/seanchatmangpt</organizationUrl>
+        </developer>
+    </developers>
 
 
     <build>
@@ -102,12 +132,14 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <version>33.5.0-jre</version>
         </dependency>
 
         <!-- Testing -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <version>5.22.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -120,6 +152,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>provided</scope>
         </dependency>
 
@@ -127,27 +160,32 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <version>2.21.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>2.21.1</version>
         </dependency>
 
         <!-- We use slf4j for logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>2.0.17</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
+            <version>2.0.17</version>
             <scope>test</scope>
         </dependency>
 
@@ -161,26 +199,31 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <version>6.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
         <!-- Mockito JUnit 5 integration for extension testing -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.22.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -189,6 +232,7 @@
         <dependency>
             <groupId>net.jqwik</groupId>
             <artifactId>jqwik</artifactId>
+            <version>1.9.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -196,6 +240,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.77</version>
         </dependency>
 
     </dependencies>

@@ -11,13 +11,14 @@ the specific language governing permissions and limitations under the License. -
 
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr</artifactId>
-    <version>2026.1.0</version>
+    <version>2026.3.0</version>
     <packaging>pom</packaging>
 
     <name>DTR - Documentation Testing Runtime</name>
     <description>A Java testing framework that generates HTML documentation while running JUnit tests.
         Provides a fluent API for making HTTP requests and documenting REST API responses.</description>
     <url>https://github.com/seanchatmangpt/dtr</url>
+    <inceptionYear>2013</inceptionYear>
 
     <modules>
         <module>dtr-core</module>
@@ -39,7 +40,7 @@ the specific language governing permissions and limitations under the License. -
         <url>https://github.com/seanchatmangpt/dtr</url>
         <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
         <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v2026.3.0</tag>
     </scm>
 
     <issueManagement>
@@ -365,7 +366,7 @@ the specific language governing permissions and limitations under the License. -
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.6.0</version>
+                        <version>0.10.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>

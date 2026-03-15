@@ -512,3 +512,451 @@ Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
 ### Pipeline
 dx pipeline: red | {'Observatory': {'status': 'green', 'message': 'facts refreshed', 'elapsed_ms': 13}, 'Git': {'status': 'red', 'message': 'Uncommitted changes detected. Commit and push before ending the session.', 'elapsed_ms': 12}, 'H-Guards': {'status': 'red', 'message': '98 violations', 'elapsed_ms': 8, 'violations': 98}, 'Build': {'status': 'skip', 'message': "phase 'Build' skipped", 'elapsed_ms': 0}}
 
+
+---
+
+## Session: 2026-03-15T03:33:13Z
+**Session ID:** 3e2d6cd1-6611-4fb4-b001-7b4187ef9815
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+f9428d3 docs: update generated test documentation
+cc04481 docs: update generated documentation
+118b1e7 chore: remove temporary implementation doc
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T03:43:46Z
+**Session ID:** 650e0e5b-b1da-4992-bb49-4e73d53a1ff2
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+d82c2b0 docs: update session log
+f9428d3 docs: update generated test documentation
+cc04481 docs: update generated documentation
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T03:46:30Z
+**Session ID:** 650e0e5b-b1da-4992-bb49-4e73d53a1ff2
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+777b521 fix(ci): update workflow secret names to match GitHub secrets
+d82c2b0 docs: update session log
+f9428d3 docs: update generated test documentation
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T03:49:09Z
+**Session ID:** 650e0e5b-b1da-4992-bb49-4e73d53a1ff2
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+38d9484 fix(latex): RenderMachineLatex updates
+c6f4b42 docs: update session log + RenderMachine classes
+777b521 fix(ci): update workflow secret names to match GitHub secrets
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T03:52:33Z
+**Session ID:** 650e0e5b-b1da-4992-bb49-4e73d53a1ff2
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+bdacbe0 fix(ci): handle partial SDKMAN installation on GitHub Actions
+21dce4c docs: update session log + generated docs
+38d9484 fix(latex): RenderMachineLatex updates
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T03:55:38Z
+**Session ID:** 650e0e5b-b1da-4992-bb49-4e73d53a1ff2
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+025e352 fix(ci): always clean reinstall SDKMAN to fix partial installation
+bdacbe0 fix(ci): handle partial SDKMAN installation on GitHub Actions
+21dce4c docs: update session log + generated docs
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T04:26:37Z
+**Session ID:** 39c58c1e-7943-4641-9b2f-f9644392f52f
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+8b74939 fix(ci): disable Trivy scan and remove Java 21/22 builds
+de2ccd1 fix(ci): handle partial SDKMAN installation on GitHub Actions
+955212b chore: release v2026.1.0
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T04:34:52Z
+**Session ID:** 39c58c1e-7943-4641-9b2f-f9644392f52f
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+a94c40a docs: update session log
+3f71ba0 feat: add workflow_dispatch to publish.yml for manual triggering
+8b74939 fix(ci): disable Trivy scan and remove Java 21/22 builds
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T04:45:02Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+50b63a5 chore(ci): simplify workflows - remove redundant CI gates
+a59fd5f docs: update session log
+a94c40a docs: update session log
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T05:01:53Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+53956c4 docs: regenerate test documentation for v2026.2.0-rc.1
+8f47415 chore: release candidate v2026.2.0-rc.1
+5fca90b docs: update session log
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T05:09:05Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+cdf5c26 docs: update session log
+89a92dc chore: release v2026.2.0
+53956c4 docs: regenerate test documentation for v2026.2.0-rc.1
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T05:15:49Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+60560f2 docs: update session log
+cdf5c26 docs: update session log
+89a92dc chore: release v2026.2.0
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T05:19:12Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+5ef4400 docs: update session log
+60560f2 docs: update session log
+cdf5c26 docs: update session log
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T05:32:44Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+b63664c chore(ci): add Maven Central deployment metadata and flatten plugin
+5ef4400 docs: update session log
+60560f2 docs: update session log
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T05:46:09Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+328f792 fix: add explicit dependency versions for Maven Central deployment
+b63664c chore(ci): add Maven Central deployment metadata and flatten plugin
+5ef4400 docs: update session log
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
+
+---
+
+## Session: 2026-03-15T05:47:16Z
+**Session ID:** 20e1cf98-435c-41ef-bea3-8acb8b291915
+**Branch:** environment-validation
+
+### Last 3 Commits
+```
+817157e fix(ci): update GitHub Actions to use correct Maven Central publish goal
+328f792 fix: add explicit dependency versions for Maven Central deployment
+b63664c chore(ci): add Maven Central deployment metadata and flatten plugin
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+

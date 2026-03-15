@@ -349,6 +349,41 @@ public final class MultiRenderMachine extends RenderMachine {
     }
 
     @Override
+    public void sayJavadoc(java.lang.reflect.Method method) {
+        dispatchToAll(m -> m.sayJavadoc(method));
+    }
+
+    @Override
+    public void saySystemProperties() {
+        dispatchToAll(RenderMachine::saySystemProperties);
+    }
+
+    @Override
+    public void saySystemProperties(String regexFilter) {
+        dispatchToAll(m -> m.saySystemProperties(regexFilter));
+    }
+
+    @Override
+    public void saySecurityManager() {
+        dispatchToAll(RenderMachine::saySecurityManager);
+    }
+
+    @Override
+    public void sayModuleDependencies(Class<?>... classes) {
+        dispatchToAll(m -> m.sayModuleDependencies(classes));
+    }
+
+    @Override
+    public void sayThreadDump() {
+        dispatchToAll(RenderMachine::sayThreadDump);
+    }
+
+    @Override
+    public void sayOperatingSystem() {
+        dispatchToAll(RenderMachine::sayOperatingSystem);
+    }
+
+    @Override
     public void saySlideOnly(String text) {
         dispatchToAll(m -> m.saySlideOnly(text));
     }
