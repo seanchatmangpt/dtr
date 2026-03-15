@@ -592,4 +592,81 @@ public interface RenderMachineCommands {
      * }</pre>
      */
     void sayOperatingSystem();
+
+    /**
+     * Renders a unified diff between two versions of code or configuration with syntax highlighting.
+     *
+     * <p>Produces a GitHub-style diff with:
+     * <ul>
+     *   <li>{@code --- before} and {@code +++ after} headers</li>
+     *   <li>Green-highlighted added lines (prefixed with {@code +})</li>
+     *   <li>Red-highlighted removed lines (prefixed with {@code -})</li>
+     *   <li>Context lines for clarity</li>
+     * </ul>
+     *
+     * <p>Supports syntax highlighting for Java, YAML, JSON, XML, properties, and other languages.
+     * Output is rendered as a markdown fenced code block with the {@code diff} language hint.</p>
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * sayDiff(
+     *     "public String getName() { return name; }",
+     *     "public String getName() { return this.name; }",
+     *     "java"
+     * );
+     * // Renders:
+     * // ```diff
+     * // --- before java
+     * // +++ after java
+     * // -public String getName() { return name; }
+     * // +public String getName() { return this.name; }
+     * // ```
+     * }</pre>
+     *
+     * @param before   the original version (can be code, YAML, JSON, properties, etc.)
+     * @param after    the modified version
+     * @param language the language for syntax highlighting (e.g., "java", "yaml", "json", "xml", "properties")
+     */
+    void sayDiff(String before, String after, String language);
+
+    /**
+     * Documents a breaking API change with machine-readable migration guidance.
+     *
+     * <p>Renders as a GitHub-style [!WARNING] alert in documentation and produces structured
+     * JSON for release notes, enabling automated tooling to:
+     * <ul>
+     *   <li>Parse breaking changes in CI/CD pipelines</li>
+     *   <li>Generate migration guides programmatically</li>
+     *   <li>Track deprecation timelines across versions</li>
+     *   <li>Validate library upgrades for compatibility</li>
+     * </ul>
+     *
+     * <p><strong>Output Format:</strong></p>
+     * <p>Markdown alert (for human readers):</p>
+     * <pre>{@code
+     * > [!WARNING]
+     * > **Breaking Change:** sayFoo() method removed in v2027.0
+     * >
+     * > Use sayBar() instead
+     * }</pre>
+     *
+     * <p>Structured JSON (for release notes and migration tools):</p>
+     * <pre>{@code
+     * {
+     *   "removed": "sayFoo() method",
+     *   "version": "v2027.0",
+     *   "migration": "Use sayBar() instead"
+     * }
+     * }</pre>
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * sayBreakingChange("sayFoo() method", "v2027.0", "Use sayBar() instead");
+     * }</pre>
+     *
+     * @param what          the API element that was removed (e.g., "sayFoo() method", "deprecated param X")
+     * @param removedIn     the version where removal takes effect (e.g., "v2027.0")
+     * @param migrateWith   the recommended replacement or migration path
+     */
+    void sayBreakingChange(String what, String removedIn, String migrateWith);
 }

@@ -343,3 +343,56 @@ sayCite("smith2023");
 ```
 
 **Invariant:** The pipeline is the specification of done. Everything else is execution detail.
+
+---
+
+## DX IMPROVEMENTS: --dry-run Safety Flag
+
+### Problem
+Developers can accidentally push to `main` with a single `make release-minor` command. There's no confirmation or preview of what will happen before git operations execute.
+
+### Solution: --dry-run flag
+Preview release operations without executing any git changes. All destructive operations (git push, git tag, git commit) are wrapped with dry-run checks that print "Would..." messages instead of executing.
+
+### Usage
+
+**Preview a minor release:**
+```bash
+make release-minor ARGS="--dry-run"
+```
+
+**Output (example):**
+```
+==> DRY RUN: Final Release v2026.3.0
+
+Would stage the following files:
+./pom.xml ./dtr-core/pom.xml ./dtr-cli/pom.xml
+  docs/CHANGELOG.md
+  docs/releases/2026.3.0.md
+
+Would execute:
+  git add [pom files, changelog, release docs]
+  git commit -m "chore: release v2026.3.0"
+  git tag -a "v2026.3.0" -m "Release v2026.3.0"
+  git push origin HEAD "v2026.3.0"
+
+Would trigger on GitHub:
+  GitHub Actions: verify → sign → publish to Maven Central
+  Track at: https://github.com/seanchatmangpt/dtr/actions
+```
+
+**Preview release candidates:**
+```bash
+make release-rc-minor ARGS="--dry-run"
+make release-rc-patch ARGS="--dry-run"
+```
+
+### Implementation Details
+- **release.sh** — Accepts `--dry-run` flag; prints git operations without executing
+- **release-rc.sh** — Accepts `--dry-run` flag; prints RC operations without executing
+- **Makefile** — Propagates `ARGS` variable to release scripts; updated help text
+- **Exit code 0** — Both dry-run and real operations return success on completion
+- **No side effects** — Dry-run mode removes `.release-version` temp file even in preview mode
+
+### Safety First
+This feature prevents "oops, I pushed to main" accidents by making the release impact transparent before execution. Use `--dry-run` to verify the release plan, then run the actual release without the flag.

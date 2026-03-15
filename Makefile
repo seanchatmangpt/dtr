@@ -73,6 +73,9 @@ help:
 	@echo "  dx                 full five-phase pipeline (Ψ→H→Λ→Ω)"
 	@echo "  dx-fast            skip mvnd verify (Ψ+H+Ω — faster iteration)"
 	@echo ""
+	@echo "Build Performance:"
+	@echo "  cache-stats        show mvnd cache statistics and performance metrics"
+	@echo ""
 
 compile:
 	$(MVND) compile
@@ -239,4 +242,9 @@ cct-test: ## Run cct toolkit unit tests
 
 clean-cct: ## Clean cct toolkit build artifacts
 	cd scripts/rust/claude-code-toolkit && cargo clean
+
+# ─── Build Cache Management ────────────────────────────────────────────────────
+
+cache-stats: ## Show mvnd cache statistics and performance metrics
+	@bash scripts/cache-stats.sh
 
