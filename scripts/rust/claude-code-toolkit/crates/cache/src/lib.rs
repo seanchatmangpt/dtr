@@ -257,6 +257,9 @@ pub mod store {
         }
 
         /// Check if a hash exists in the cache.
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction fails.
         pub fn contains(&self, hash: &[u8; 32]) -> Result<bool> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(SCAN_RESULTS_TABLE)?;
@@ -264,6 +267,9 @@ pub mod store {
         }
 
         /// Get the number of cached results (for testing/stats).
+        ///
+        /// # Errors
+        /// Returns an error if opening a read transaction fails.
         pub fn count(&self) -> Result<usize> {
             let read_txn = self.db.begin_read()?;
             let table = read_txn.open_table(SCAN_RESULTS_TABLE)?;
@@ -427,6 +433,9 @@ pub mod manager {
 
     impl CacheManager {
         /// Create a new cache manager with a database at `db_path`.
+        ///
+        /// # Errors
+        /// Returns an error if the database cannot be created or initialized.
         pub fn new(db_path: &Path) -> Result<Self> {
             let store = Store::new(db_path)?;
             Ok(CacheManager {
