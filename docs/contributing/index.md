@@ -2,20 +2,35 @@
 
 This section is for developers who want to contribute to DTR itself — fix bugs, add `say*` methods, improve documentation, or cut a release.
 
+## First Time Contributors
+
+Welcome! If you're new to DTR, we recommend starting with our **30-minute quick start**:
+
+- **[Quick Start Guide](../CONTRIBUTING_QUICKSTART.md)** — Get up and running in 30 minutes
+- **[Good First Issues](https://github.com/seanchatmangpt/dtr/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** — Beginner-friendly issues to tackle
+
 ## Contribution Guides
 
 | Guide | When to read it |
 |---|---|
-| [Development Setup](setup.md) | First time setting up the project |
-| [Codebase Tour](codebase-tour.md) | Orientation before making changes |
+| [Quick Start (30 min)](../CONTRIBUTING_QUICKSTART.md) | New contributors — fastest path to your first PR |
+| [Setup](setup.md) | First time setting up the project (detailed environment setup) |
+| [Codebase Tour](codebase-tour.md) | Orientation before making changes — project structure overview |
 | [Making Changes](making-changes.md) | Adding a `say*` method, coding standards, PR process |
-| [Releasing](releasing.md) | How to publish a release to Maven Central |
+| [Releasing](releasing.md) | **Maintainers only** — How to publish a release to Maven Central |
+
+## Additional Resources
+
+| Resource | Description |
+|---|---|
+| [Architecture](../ARCHITECTURE.md) | System design, layers, and key abstractions |
+| [Troubleshooting](../TROUBLESHOOTING.md) | Common issues and solutions |
 
 ---
 
 ## Required Toolchain
 
-DTR 2.6.0 requires:
+DTR 2026.3.0 requires:
 
 - **Java 26** with `--enable-preview` (Java 24 and below are not supported)
 - **Maven 4.0.0-rc-5+** or **mvnd 2.x** (the Maven Daemon is preferred for local development)
@@ -32,7 +47,7 @@ git clone https://github.com/seanchatmangpt/dtr.git
 cd dtr
 
 # Verify toolchain
-java -version          # must be openjdk 25.x.x
+java -version          # must be openjdk 26.x.x
 mvnd --version         # must be mvnd 2.x / Maven 4.x
 
 # Build and test
@@ -46,7 +61,7 @@ See [Development Setup](setup.md) for full installation instructions.
 
 ## Branch Naming Convention
 
-Work on feature branches, never directly on `main`:
+Work on feature branches, never directly on `master`:
 
 ```
 feature/<short-description>

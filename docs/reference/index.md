@@ -1,8 +1,10 @@
 # Reference
 
-Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DTR 2.6.0's API. Use it when you need to look up a specific method, class, or configuration option.
+Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DTR's API. Use it when you need to look up a specific method, class, or configuration option.
 
-**Version:** 2.6.0 | **Maven:** `io.github.seanchatmangpt.dtr:dtr-core:2.6.0` | **Java:** 25+ with `--enable-preview`
+**Version:** 2026.3.0 | **Maven:** `io.github.seanchatmangpt:dtr-core:2026.3.0` | **Java:** 26+ with `--enable-preview`
+
+> **See also:** [Architecture](../architecture.md) | [Tutorials](../tutorials/)
 
 ---
 
@@ -10,9 +12,10 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 
 | Topic | Description |
 |-------|-------------|
-| [80/20 Quick Reference](80-20-quick-reference.md) | One-page cheat sheet — all 37 say* methods, RenderMachine implementations, removed APIs |
-| [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) | Migration from v2.5.x, removed API questions, build issues, rendering problems |
-| [Known Issues and Limitations](KNOWN_ISSUES.md) | v2.6.0 breaking changes, WireMock warnings, workarounds |
+| [80/20 Quick Reference](80-20-quick-reference.md) | One-page cheat sheet — the 50+ say* methods you'll use 80% of the time |
+| [say* API Complete Reference](say-api-methods.md) | Complete API reference for all say* methods with signatures and examples |
+| [FAQ and Troubleshooting](FAQ_AND_TROUBLESHOOTING.md) | Migration guide, build issues, rendering problems, common questions |
+| [Known Issues and Limitations](KNOWN_ISSUES.md) | Current version limitations, workarounds, planned fixes |
 
 ---
 
@@ -20,40 +23,17 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 
 | Topic | Description |
 |-------|-------------|
-| [say* Core API Reference](request-api.md) | All 37 say* method signatures, parameters, return types, output formats |
-| [DtrContext and DtrExtension API Reference](testbrowser-api.md) | JUnit 5 extension lifecycle, DtrContext methods, test class template |
-| [DtrContext and DtrTest Reference](doctester-base-class.md) | DtrContext details, migration from DTR base class, full test class template |
-| [RenderMachine API](rendermachine-api.md) | Abstract base, all implementations, virtual thread dispatch, custom renderers |
+| [say* API Complete Reference](say-api-methods.md) | All 50+ say* method signatures, parameters, return types, usage examples |
+| [80/20 Quick Reference](80-20-quick-reference.md) | Condensed guide to the most commonly used say* methods |
 
 ---
 
-## v2.6.0 New API
+## Base Classes
 
 | Topic | Description |
 |-------|-------------|
-| [Benchmarking API Reference](url-builder.md) | `sayBenchmark` overloads, warmup methodology, reporting guidelines |
-| [Mermaid Diagram API Reference](http-constants.md) | `sayMermaid`, `sayClassDiagram`, `sayControlFlowGraph`, `sayCallGraph`, `sayOpProfile` |
-| [Coverage and Contract API Reference](websockets-reference.md) | `sayDocCoverage`, `sayContractVerification`, `sayEvolutionTimeline` |
-| [Utility API Reference](sse-reference.md) | `sayEnvProfile`, `sayRecordComponents`, `sayException`, `sayAsciiChart` |
-
----
-
-## JVM and Code Introspection
-
-| Topic | Description |
-|-------|-------------|
-| [JVM Introspection API Reference](realtime-protocols-reference.md) | `sayCallSite`, `sayAnnotationProfile`, `sayClassHierarchy`, `sayStringProfile`, `sayReflectiveDiff` |
-| [Code Reflection API Reference](grpc-reference.md) | `sayCodeModel`, `sayControlFlowGraph`, `sayCallGraph`, `sayOpProfile` — JEP 516 integration |
-
----
-
-## Java 26 Language Features
-
-| Topic | Description |
-|-------|-------------|
-| [Java 26 Features Reference](java25-features-reference.md) | Records, sealed classes, pattern matching, text blocks, virtual threads, JEP 516, v2.6.0 examples |
-| [Records and Sealed Classes](records-sealed-reference.md) | Records, sealed types, pattern matching syntax; RenderMachine is abstract (not sealed) since v2.5.0 |
-| [Virtual Threads API](virtual-threads-reference.md) | ExecutorService, Future, Thread.ofVirtual(); MultiRenderMachine dispatch; sayBenchmark warmup |
+| [DtrTest API Reference](doctester-base-class.md) | Base class for documentation tests — test lifecycle, assertion helpers |
+| [RenderMachine API Reference](rendermachine-api.md) | Abstract renderer base class, implementations, virtual thread dispatch |
 
 ---
 
@@ -61,14 +41,32 @@ Reference documentation is **information-oriented**. It is the authoritative, ex
 
 | Topic | Description |
 |-------|-------------|
-| [Configuration](configuration.md) | Output directory, output formats, system properties, Maven settings, Java toolchain |
+| [Configuration Reference](configuration.md) | Output directory, output formats, system properties, Maven settings, Java toolchain |
 
 ---
 
-## Removed in v2.6.0
+## Java 26 Features
 
-The following pages document APIs that no longer exist. They have been replaced with content for current v2.6.0 APIs.
+| Topic | Description |
+|-------|-------------|
+| [Java 26 Features Reference](java25-features-reference.md) | Records, sealed classes, pattern matching, text blocks, virtual threads, JEP 516 |
+| [Records and Sealed Classes](records-sealed-reference.md) | Records, sealed types, pattern matching syntax — RenderMachine design rationale |
+| [Virtual Threads API](virtual-threads-reference.md) | ExecutorService, Future, Thread.ofVirtual() — MultiRenderMachine dispatch |
 
-> **Removed APIs:** `TestBrowser`, `TestBrowserImpl`, `Request`, `Response`, `Url`, `sayAndMakeRequest`, `sayAndAssertThat`, `WebSocketClient`, `WebSocketSession`, `ServerSentEventsClient`, SSE stream API, `BearerTokenAuth`, `ApiKeyAuth`, `BasicAuth`, `HttpConstants`
+---
 
-If you encounter compilation errors for any of these, see [FAQ and Troubleshooting — v2.6.0 Migration Questions](FAQ_AND_TROUBLESHOOTING.md).
+## Historical Reference
+
+The following pages document APIs that were removed in v2.6.0. They are preserved for historical context only.
+
+| Removed API | Description |
+|-------------|-------------|
+| [TestBrowser API](testbrowser-api.md) | ~~JUnit 5 extension lifecycle, DtrContext methods~~ (removed in v2.6.0) |
+| [HTTP Client APIs](request-api.md), [response-api.md), [http-constants.md](http-constants.md) | ~~Request/Response building, HTTP constants~~ (removed in v2.6.0) |
+| [WebSocket APIs](websockets-reference.md) | ~~WebSocket client, session management~~ (removed in v2.6.0) |
+| [Server-Sent Events APIs](sse-reference.md) | ~~SSE stream client, event handling~~ (removed in v2.6.0) |
+| [gRPC APIs](grpc-reference.md) | ~~gRPC client, streaming~~ (removed in v2.6.0) |
+| [Real-time Protocols](realtime-protocols-reference.md) | ~~Unified real-time protocol client~~ (removed in v2.6.0) |
+| [URL Builder](url-builder.md) | ~~Fluent URL construction~~ (removed in v2.6.0) |
+
+> **Note:** These APIs were removed to focus DTR on its core mission: documentation testing. If you need HTTP/WebSocket/gRPC testing, use dedicated libraries like [WireMock](https://wiremock.org/), [OkHttp](https://square.github.io/okhttp/), or [gRPC testing utilities](https://grpc.github.io/grpc-java/javadoc/io/grpc/testing/grpc-in-process.html).

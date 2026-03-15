@@ -2,6 +2,8 @@
 
 This document describes the lifecycle of a DTR documentation run — from test startup through multi-format file output. Understanding this helps you predict what will appear in the generated documentation and reason about unexpected behavior.
 
+> **Note**: DTR was previously called "Doctester". References to the old name have been updated throughout the codebase.
+
 ---
 
 ## The Fundamental Model
@@ -9,6 +11,79 @@ This document describes the lifecycle of a DTR documentation run — from test s
 DTR is a JUnit 5 extension. When a test class annotated with `@ExtendWith(DtrExtension.class)` runs, DTR intercepts the JUnit lifecycle, injects a `DtrContext` parameter into each test method, captures every `say*()` call as a typed `SayEvent`, and then — when all test methods have run — flushes those events through a `MultiRenderMachine` that writes Markdown, LaTeX, HTML, and JSON output in parallel.
 
 The key insight is that **DTR decouples documentation capture from documentation rendering**. `say*()` calls do not immediately write anything. They create `SayEvent` records and queue them. Rendering happens once, at the end, using virtual threads.
+
+### Architecture Overview
+
+```mermaid
+graph TB
+    subgraph TestLayer["Test Layer"]
+        TestClass["@ExtendWith DtrExtension.class"]
+        TestMethod["@Test void example DtrContext ctx"]
+        DtrTest["extends DtrTest optional"]
+    end
+
+    subgraph ExtensionLayer["Extension Layer"]
+        DtrExtension["DtrExtension<br/>JUnit 5 Extension"]
+        ParameterResolver["ParameterResolver<br/>injects DtrContext"]
+    end
+
+    subgraph ExecutionLayer["Execution Layer"]
+        DtrContext["DtrContext<br/>say* API"]
+        EventQueue["EventQueue<br/>thread-safe SayEvent stream"]
+        MultiRenderMachine["MultiRenderMachine<br/>coordinates output"]
+    end
+
+    subgraph RenderLayer["Render Layer"]
+        Markdown["MarkdownRenderMachine"]
+        LaTeX["LatexRenderMachine"]
+        HTML["HtmlRenderMachine"]
+        JSON["JsonRenderMachine"]
+    end
+
+    subgraph OutputLayer["Output Layer"]
+        OutputFiles["target/docs/test-results/<br/>{TestClassName}.{md,tex,html,json}"]
+    end
+
+    TestClass -->|JUnit 5 lifecycle| DtrExtension
+    TestMethod -->|parameter| ParameterResolver
+    ParameterResolver -->|injects| DtrContext
+    DtrTest -.->|optional base class| TestClass
+    DtrContext -->|say* calls| EventQueue
+    EventQueue -->|accumulates| MultiRenderMachine
+    MultiRenderMachine -->|parallel virtual threads| Markdown
+    MultiRenderMachine -->|parallel virtual threads| LaTeX
+    MultiRenderMachine -->|parallel virtual threads| HTML
+    MultiRenderMachine -->|parallel virtual threads| JSON
+    Markdown -->|writes| OutputFiles
+    LaTeX -->|writes| OutputFiles
+    HTML -->|writes| OutputFiles
+    JSON -->|writes| OutputFiles
+
+    style TestLayer fill:#e1f5fe
+    style ExtensionLayer fill:#fff3e0
+    style ExecutionLayer fill:#f3e5f5
+    style RenderLayer fill:#e8f5e9
+    style OutputLayer fill:#fce4ec
+```
+
+### Basic Usage Example
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest extends DtrTest {
+    @Test
+    void example(DtrContext ctx) {
+        ctx.say("Documentation generated during test execution");
+        ctx.sayCode("int x = 42;", "java");
+        ctx.sayTable(new String[][]{
+            {"Feature", "Status"},
+            {"REST API", "✓ Implemented"}
+        });
+    }
+}
+```
+
+**Note**: `DtrTest` is an optional base class that provides convenience methods. The only required annotation is `@ExtendWith(DtrExtension.class)`.
 
 ---
 
@@ -57,24 +132,27 @@ After each test method, `DtrExtension.afterEach()` closes any open section marke
 
 After all test methods complete, `DtrExtension.afterAll()` calls `finishAndWriteOut()` on the `MultiRenderMachine`. This triggers the parallel rendering pass:
 
-```
-finishAndWriteOut()
-    │
-    │  creates virtual thread per render machine
-    ▼
-┌─────────────────────────────────────────────┐
-│  MarkdownRenderMachine   │                  │
-│  LatexRenderMachine      │  pattern match   │
-│  HtmlRenderMachine       │  on each event   │
-│  JsonRenderMachine       │  (in parallel)   │
-└─────────────────────────────────────────────┘
-    │
-    ▼
-target/docs/test-results/
-    ├── PhDThesisDocTest.md
-    ├── PhDThesisDocTest.tex
-    ├── PhDThesisDocTest.html
-    └── PhDThesisDocTest.json
+```mermaid
+graph TD
+    Start[finishAndWriteOut]-->VT[Create virtual thread per render machine]
+
+    VT-->RM1[MarkdownRenderMachine]
+    VT-->RM2[LatexRenderMachine]
+    VT-->RM3[HtmlRenderMachine]
+    VT-->RM4[JsonRenderMachine]
+
+    RM1-->PM[Pattern match on each event]
+    RM2-->PM
+    RM3-->PM
+    RM4-->PM
+
+    PM-->Output[target/docs/test-results/<br/>{TestClassName}.{ext}]
+
+    style RM1 fill:#e8f5e9
+    style RM2 fill:#e8f5e9
+    style RM3 fill:#e8f5e9
+    style RM4 fill:#e8f5e9
+    style Output fill:#fce4ec
 ```
 
 Because `SayEvent` records are immutable, sharing them across virtual threads requires no synchronization.
@@ -114,6 +192,8 @@ DTR uses the Code Reflection API (JEP 516, Project Babylon), a preview feature i
 A stack walk (`Thread.currentThread().getStackTrace()`) would work but costs microseconds and allocates. The Code Reflection API is designed specifically for this kind of source-location capture and has lower runtime cost. It is in preview because Project Babylon is evolving. DTR will update to the stable API when it graduates from preview.
 
 The flag is set in `.mvn/maven.config` and propagates automatically to compile, test, and runtime phases.
+
+> **For complete architecture details**: See [ARCHITECTURE.md](../ARCHITECTURE.md) for full component diagrams, module structure, and design patterns.
 
 ---
 
