@@ -148,14 +148,10 @@ jobs:
         run: |
           set -e
           # Fix: SDKMAN may be partially installed on runners
-          if [ -f "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
-            source "$HOME/.sdkman/bin/sdkman-init.sh"
-          else
-            # Remove partial installation and reinstall
-            rm -rf "$HOME/.sdkman"
-            curl -s "https://get.sdkman.io" | bash
-            source "$HOME/.sdkman/bin/sdkman-init.sh"
-          fi
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
           echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
           echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
@@ -226,14 +222,10 @@ jobs:
         run: |
           set -e
           # Fix: SDKMAN may be partially installed on runners
-          if [ -f "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
-            source "$HOME/.sdkman/bin/sdkman-init.sh"
-          else
-            # Remove partial installation and reinstall
-            rm -rf "$HOME/.sdkman"
-            curl -s "https://get.sdkman.io" | bash
-            source "$HOME/.sdkman/bin/sdkman-init.sh"
-          fi
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
           echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
           echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH

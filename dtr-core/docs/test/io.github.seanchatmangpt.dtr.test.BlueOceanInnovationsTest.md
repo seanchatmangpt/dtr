@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `285 ns` |
-| Min | `83 ns` |
-| Max | `39583 ns` |
-| p99 | `916 ns` |
-| Ops/sec | `3,508,771` |
+| Avg | `301 ns` |
+| Min | `42 ns` |
+| Max | `56750 ns` |
+| p99 | `875 ns` |
+| Ops/sec | `3,322,259` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `784 ns` |
-| Min | `125 ns` |
-| Max | `89458 ns` |
-| p99 | `7375 ns` |
-| Ops/sec | `1,275,510` |
+| Avg | `495 ns` |
+| Min | `208 ns` |
+| Max | `30959 ns` |
+| p99 | `7167 ns` |
+| Ops/sec | `2,020,202` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-15T03:49:40.283534Z` |
+| Timestamp | `2026-03-15T03:53:34.508820Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -276,8 +276,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayClassDiagram(Class[])` | ✅ direct |
 | `void sayClassHierarchy(Class)` | ✅ direct |
 | `void sayCode(String, String)` | ✅ direct |
-| `void sayCodeModel(Method)` | ✅ direct |
 | `void sayCodeModel(Class)` | ✅ direct |
+| `void sayCodeModel(Method)` | ✅ direct |
 | `void sayContractVerification(Class, Class[])` | ✅ direct |
 | `void sayControlFlowGraph(Method)` | ✅ direct |
 | `void sayDocCoverage(Class[])` | ✅ direct |
@@ -301,8 +301,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayReflectiveDiff(Object, Object)` | ✅ direct |
 | `void saySecurityManager()` | ✅ direct |
 | `void sayStringProfile(String)` | ✅ direct |
-| `void saySystemProperties(String)` | ✅ direct |
 | `void saySystemProperties()` | ✅ direct |
+| `void saySystemProperties(String)` | ✅ direct |
 | `void sayTable(String[][])` | ✅ direct |
 | `void sayThreadDump()` | ✅ direct |
 | `void sayUnorderedList(List)` | ✅ direct |
@@ -359,11 +359,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `82 ns` |
+| Avg | `88 ns` |
 | Min | `41 ns` |
-| Max | `291 ns` |
-| p99 | `291 ns` |
-| Ops/sec | `12,195,121` |
+| Max | `333 ns` |
+| p99 | `333 ns` |
+| Ops/sec | `11,363,636` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -463,10 +463,10 @@ sayThreadDump();
 
 | Metric | Value |
 | --- | --- |
-| Thread Count | `17` |
-| Daemon Thread Count | `16` |
-| Peak Thread Count | `17` |
-| Total Started Thread Count | `17` |
+| Thread Count | `16` |
+| Daemon Thread Count | `15` |
+| Peak Thread Count | `16` |
+| Total Started Thread Count | `16` |
 
 ### Thread Details
 
@@ -481,16 +481,15 @@ sayThreadDump();
 | `34` | `surefire-forkedjvm-stream-flusher` | `TIMED_WAITING` | `true` | `N/A` |
 | `36` | `surefire-forkedjvm-command-thread` | `RUNNABLE` | `true` | `N/A` |
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
-| `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
+| `52` | `ForkJoinPool-1-worker-1` | `TIMED_WAITING` | `true` | `N/A` |
+| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
 | `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
-| `56` | `ForkJoinPool-1-worker-3` | `TIMED_WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
-| `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
 | `59` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
-| `65` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
-| `66` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
+| `64` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
+| `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
 
-*17 live threads*
+*16 live threads*
 
 > [!NOTE]
 > On Java 21+, virtual threads appear alongside platform threads. Thread states include NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, and TERMINATED. The peak thread count shows the maximum concurrent threads since JVM start.
