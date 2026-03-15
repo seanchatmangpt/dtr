@@ -196,6 +196,7 @@ dependencies = [
  "cct-pipeline",
  "cct-remediate",
  "cct-scanner",
+ "regex",
  "serde",
  "serde_json",
  "walkdir",
