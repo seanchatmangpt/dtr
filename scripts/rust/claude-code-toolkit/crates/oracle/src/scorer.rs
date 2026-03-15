@@ -63,6 +63,7 @@ impl DecayCache {
 /// Risk scorer that computes a normalized [0, 1] risk score.
 /// Uses temporal decay: recent violations weight more than old ones.
 /// Optimized with decay weight caching, pattern map pooling, and fast sigmoid.
+#[derive(Clone, Debug)]
 pub struct RiskScorer {
     /// Decay factor (0-1): how much weight to give to violations older than the decay window
     pub decay_factor: f64,
