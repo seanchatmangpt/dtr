@@ -607,4 +607,237 @@ public class Clean {
 
         Ok(())
     }
+
+    // ── Integration Tests ──────────────────────────────────────────────────
+
+    #[test]
+    fn test_scan_verb_integration_with_empty_root() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        let root = temp_dir.path();
+
+        // No Java files created, scan should return GREEN
+        cmd_scan(root, true, false)?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_scan_receipt_data_structure_comprehensive() -> Result<()> {
+        let violations = vec![
+            ScanViolation {
+                file: PathBuf::from("A.java"),
+                line: 10,
+                pattern: "H_TODO".to_string(),
+                matched: "// TODO".to_string(),
+                fix: "Implement".to_string(),
+            },
+            ScanViolation {
+                file: PathBuf::from("B.java"),
+                line: 20,
+                pattern: "H_MOCK".to_string(),
+                matched: "mock".to_string(),
+                fix: "Remove mock".to_string(),
+            },
+        ];
+
+        let receipt = ScanReceipt::new(violations.clone(), 15, 3, 10.5, 500.0);
+
+        // Verify all required fields
+        assert_eq!(receipt.status, "RED");
+        assert_eq!(receipt.violation_count, 2);
+        assert_eq!(receipt.violations.len(), 2);
+        assert_eq!(receipt.elapsed_ms, 500.0);
+
+        // Verify data payload
+        assert_eq!(receipt.data.files_scanned, 15);
+        assert_eq!(receipt.data.cache_hits, 3);
+        assert!(receipt.data.cached);
+        assert_eq!(receipt.data.priority_order_time_ms, 10.5);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_observe_receipt_data_structure_comprehensive() -> Result<()> {
+        let root = PathBuf::from("/workspace/project");
+        let output_dir = PathBuf::from("/workspace/project/docs/facts");
+
+        let receipt = ObserveReceipt::new(root.clone(), output_dir.clone(), 7, 125.5);
+
+        // Verify all required fields
+        assert_eq!(receipt.status, "SUCCESS");
+        assert!(receipt.message.contains("7 facts"));
+        assert_eq!(receipt.elapsed_ms, 125.5);
+
+        // Verify data payload
+        assert_eq!(receipt.data.root, root);
+        assert_eq!(receipt.data.output_dir, output_dir);
+        assert_eq!(receipt.data.facts_count, 7);
+        assert!(!receipt.data.timestamp.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_remediation_receipt_data_structure_comprehensive() -> Result<()> {
+        let target_file = PathBuf::from("app/src/Main.java");
+
+        let receipt = RemediationReceipt::new(target_file.clone(), 5, 5, 250.0);
+
+        // Verify all required fields
+        assert_eq!(receipt.status, "SUCCESS");
+        assert!(receipt.message.contains("5 of 5"));
+        assert_eq!(receipt.elapsed_ms, 250.0);
+
+        // Verify data payload
+        assert_eq!(receipt.data.file, target_file);
+        assert_eq!(receipt.data.edits_applied, 5);
+        assert_eq!(receipt.data.edits_planned, 5);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_observe_verb_integration_with_custom_output() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        let root = temp_dir.path();
+        let custom_output = temp_dir.path().join("custom_output");
+
+        cmd_observe(root, Some(custom_output.clone()))?;
+
+        // Verify custom output directory was created
+        assert!(custom_output.exists());
+        assert!(custom_output.join("_scan.json").exists());
+
+        // Verify the facts file is valid JSON
+        let facts_content = fs::read_to_string(custom_output.join("_scan.json"))?;
+        let _facts: serde_json::Value = serde_json::from_str(&facts_content)?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_remediate_verb_with_valid_plan() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+        let target_file = temp_dir.path().join("Target.java");
+
+        // Create the target file
+        fs::write(
+            &target_file,
+            r#"public class Target {
+    public void method() {
+        // TODO: implement
+    }
+}"#,
+        )?;
+
+        // Create a remediation plan
+        let plan = RemediationPlan {
+            file: target_file.clone(),
+            edits: vec![
+                RemediationEdit {
+                    pattern: "TODO".to_string(),
+                    line: 3,
+                    replacement: "DONE".to_string(),
+                },
+            ],
+        };
+
+        // Write plan to a file
+        let plan_file = temp_dir.path().join("plan.json");
+        fs::write(&plan_file, serde_json::to_string_pretty(&plan)?)?;
+
+        // Execute remediation
+        cmd_remediate(&plan_file)?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_scan_receipt_json_format_complete() -> Result<()> {
+        let violation = ScanViolation {
+            file: PathBuf::from("src/Example.java"),
+            line: 42,
+            pattern: "H_STUB_NULL".to_string(),
+            matched: "return null;".to_string(),
+            fix: "Implement the method body".to_string(),
+        };
+
+        let receipt = ScanReceipt::new(vec![violation], 10, 2, 8.5, 200.0);
+        let json = serde_json::to_string_pretty(&receipt)?;
+
+        // Verify JSON structure
+        let parsed: serde_json::Value = serde_json::from_str(&json)?;
+        assert!(parsed.is_object());
+        assert!(parsed.get("status").is_some());
+        assert!(parsed.get("message").is_some());
+        assert!(parsed.get("elapsed_ms").is_some());
+        assert!(parsed.get("violation_count").is_some());
+        assert!(parsed.get("violations").is_some());
+        assert!(parsed.get("data").is_some());
+
+        // Verify data payload exists
+        let data = parsed.get("data").unwrap();
+        assert!(data.get("files_scanned").is_some());
+        assert!(data.get("cache_hits").is_some());
+        assert!(data.get("cached").is_some());
+        assert!(data.get("priority_order_time_ms").is_some());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_observe_receipt_json_format_complete() -> Result<()> {
+        let receipt = ObserveReceipt::new(
+            PathBuf::from("/root"),
+            PathBuf::from("/root/output"),
+            5,
+            50.0,
+        );
+        let json = serde_json::to_string_pretty(&receipt)?;
+
+        // Verify JSON structure
+        let parsed: serde_json::Value = serde_json::from_str(&json)?;
+        assert!(parsed.is_object());
+        assert!(parsed.get("status").is_some());
+        assert!(parsed.get("message").is_some());
+        assert!(parsed.get("elapsed_ms").is_some());
+        assert!(parsed.get("data").is_some());
+
+        // Verify data payload exists
+        let data = parsed.get("data").unwrap();
+        assert!(data.get("root").is_some());
+        assert!(data.get("output_dir").is_some());
+        assert!(data.get("facts_count").is_some());
+        assert!(data.get("timestamp").is_some());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_remediation_receipt_json_format_complete() -> Result<()> {
+        let receipt = RemediationReceipt::new(
+            PathBuf::from("app.java"),
+            3,
+            3,
+            100.0,
+        );
+        let json = serde_json::to_string_pretty(&receipt)?;
+
+        // Verify JSON structure
+        let parsed: serde_json::Value = serde_json::from_str(&json)?;
+        assert!(parsed.is_object());
+        assert!(parsed.get("status").is_some());
+        assert!(parsed.get("message").is_some());
+        assert!(parsed.get("elapsed_ms").is_some());
+        assert!(parsed.get("data").is_some());
+
+        // Verify data payload exists
+        let data = parsed.get("data").unwrap();
+        assert!(data.get("file").is_some());
+        assert!(data.get("edits_applied").is_some());
+        assert!(data.get("edits_planned").is_some());
+
+        Ok(())
+    }
 }
