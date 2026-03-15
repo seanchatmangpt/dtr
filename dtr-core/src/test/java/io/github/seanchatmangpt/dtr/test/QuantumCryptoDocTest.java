@@ -54,6 +54,11 @@ public class QuantumCryptoDocTest extends DtrTest {
     private static final byte[] TEST_MESSAGE =
         "DTR quantum-resistant signing test — Java 26 JEP 496".getBytes(StandardCharsets.UTF_8);
 
+    /** Result record for key-generation benchmarks, shared across test and helper methods. */
+    private record AlgoResult(String algorithm, String type, long avgNs,
+                               int pubBytes, int privBytes,
+                               String quantumSafe, String available) {}
+
     @AfterAll
     static void afterAll() {
         finishDocTest();
@@ -312,10 +317,6 @@ public class QuantumCryptoDocTest extends DtrTest {
             "multiple iterations for statistical stability.");
 
         final int ITERATIONS = 30;
-
-        // Helper record for results.
-        record AlgoResult(String algorithm, String type, long avgNs, int pubBytes, int privBytes,
-                          String quantumSafe, String available) {}
 
         AlgoResult[] results = new AlgoResult[4];
 
