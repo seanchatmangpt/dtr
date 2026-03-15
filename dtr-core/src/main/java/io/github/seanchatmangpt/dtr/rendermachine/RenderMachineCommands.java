@@ -592,4 +592,202 @@ public interface RenderMachineCommands {
      * }</pre>
      */
     void sayOperatingSystem();
+
+    // -------------------------------------------------------------------------
+    // Blue-Ocean Innovations (80/20 swarm — 10 new capabilities)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Empirically measures an algorithm's runtime at increasing input sizes
+     * and infers its complexity class (O(1), O(log n), O(n), O(n log n),
+     * O(n²), O(n³)) via log-log regression.
+     */
+    default void sayTimeComplexity(String label,
+            java.util.function.IntFunction<Runnable> factory) {
+        var result = io.github.seanchatmangpt.dtr.complexity.TimeComplexityAnalyzer
+                .analyze(label, factory);
+        String[][] table = new String[result.measurements().length + 1][3];
+        table[0] = new String[]{"n", "Avg (ns)", "Relative"};
+        long base = result.measurements()[0].nanosAvg();
+        for (int i = 0; i < result.measurements().length; i++) {
+            var m = result.measurements()[i];
+            table[i + 1] = new String[]{
+                String.valueOf(m.n()), String.valueOf(m.nanosAvg()),
+                String.format("%.1fx", (double) m.nanosAvg() / base)};
+        }
+        sayTable(table);
+        say("Inferred complexity: **" + result.inferredClass() + "**");
+    }
+
+    /**
+     * Measures heap allocation before and after running {@code work},
+     * then renders bytes allocated and GC collections triggered.
+     */
+    default void sayHeapDelta(String label, Runnable work) {
+        var result = io.github.seanchatmangpt.dtr.memory.HeapDeltaTracker
+                .track(label, work);
+        sayTable(new String[][]{
+            {"Metric", "Value"},
+            {"Label",        result.label()},
+            {"Delta",        result.deltaHuman()},
+            {"GC triggered", result.gcCollectionsDelta() > 0
+                             ? "yes (" + result.gcCollectionsDelta() + ")" : "no"}
+        });
+    }
+
+    /**
+     * Reflects over a sealed interface or abstract class and renders its
+     * complete permitted-subtype tree with record components and depth.
+     */
+    default void saySealedHierarchy(Class<?> sealedRoot) {
+        var result = io.github.seanchatmangpt.dtr.reflectiontoolkit
+                .SealedHierarchyAnalyzer.analyze(sealedRoot);
+        say("Sealed hierarchy: **" + result.rootName() + "** ("
+                + result.subtypes().size() + " permitted subtypes)");
+        String[][] table = new String[result.subtypes().size() + 1][4];
+        table[0] = new String[]{"Subtype", "Kind", "Components", "Depth"};
+        for (int i = 0; i < result.subtypes().size(); i++) {
+            var s = result.subtypes().get(i);
+            table[i + 1] = new String[]{
+                "  ".repeat(s.depth() - 1) + s.name(), s.kind(),
+                s.components().isEmpty() ? "—" : s.components(),
+                String.valueOf(s.depth())};
+        }
+        sayTable(table);
+    }
+
+    /**
+     * Reads the JPMS {@code ModuleDescriptor} for the given class's module
+     * and renders requires / exports / opens / uses / provides directives.
+     */
+    default void sayModuleDescriptor(Class<?> clazz) {
+        var report = io.github.seanchatmangpt.dtr.reflectiontoolkit
+                .ModuleDescriptorRenderer.render(clazz);
+        sayTable(new String[][]{
+            {"Property", "Value"},
+            {"Module",    report.moduleName()},
+            {"Version",   report.version()},
+            {"Open",      String.valueOf(report.isOpen())},
+            {"Automatic", String.valueOf(report.isAutomatic())}
+        });
+    }
+
+    /**
+     * Times two or more alternative implementations of the same operation
+     * and renders a ranked comparison table (name, avg ns, relative speed).
+     */
+    default void sayAlternatives(
+            java.util.List<io.github.seanchatmangpt.dtr.comparison.AlternativesComparer.Alternative> alternatives) {
+        var result = io.github.seanchatmangpt.dtr.comparison.AlternativesComparer
+                .compare(alternatives);
+        String[][] table = new String[result.results().size() + 1][4];
+        table[0] = new String[]{"Implementation", "Avg (ns)", "Relative", "Rank"};
+        for (int i = 0; i < result.results().size(); i++) {
+            var r = result.results().get(i);
+            table[i + 1] = new String[]{r.name(), String.valueOf(r.avgNanos()),
+                String.format("%.2fx", r.relativeToFastest()), r.rank()};
+        }
+        sayTable(table);
+        say("Fastest: **" + result.fastestName() + "**");
+    }
+
+    /**
+     * Probes a shared operation from N virtual threads simultaneously,
+     * reports exceptions detected and thread-safety verdict.
+     */
+    default void sayThreadSafety(String label, Runnable sharedOperation,
+            int threads, int operationsEach) {
+        var result = io.github.seanchatmangpt.dtr.concurrency.ThreadSafetyProbe
+                .probe(label, sharedOperation, threads, operationsEach);
+        sayTable(new String[][]{
+            {"Metric", "Value"},
+            {"Threads",     String.valueOf(result.threads())},
+            {"Total ops",   String.valueOf(result.totalOperations())},
+            {"Exceptions",  String.valueOf(result.exceptionsDetected())},
+            {"Throughput",  String.format("%.0f ops/s", result.operationsPerSecond())},
+            {"Thread-safe", result.appearsThreadSafe() ? "✓ yes" : "✗ NO"}
+        });
+    }
+
+    /**
+     * Evaluates named pre/post/invariant conditions and renders a ✓/✗ table
+     * proving each contract holds at documentation time.
+     */
+    default void sayInvariantTable(
+            io.github.seanchatmangpt.dtr.contract.InvariantTable.InvariantResult result) {
+        String[][] table = new String[result.rows().size() + 1][3];
+        table[0] = new String[]{"Invariant", "Kind", "Result"};
+        for (int i = 0; i < result.rows().size(); i++) {
+            var row = result.rows().get(i);
+            table[i + 1] = new String[]{row.name(), row.kind(), row.symbol()};
+        }
+        sayTable(table);
+        say("**" + result.passing() + " passing**, **" + result.failing() + " failing**");
+    }
+
+    /**
+     * Executes named steps sequentially, captures each step's string output
+     * and elapsed time, renders a step → output → timing table.
+     */
+    default void sayCallTrace(
+            java.util.List<io.github.seanchatmangpt.dtr.trace.CallTraceRecorder.Step> steps) {
+        var trace = io.github.seanchatmangpt.dtr.trace.CallTraceRecorder.record(steps);
+        String[][] table = new String[trace.steps().size() + 1][4];
+        table[0] = new String[]{"#", "Step", "Output", "Elapsed"};
+        for (int i = 0; i < trace.steps().size(); i++) {
+            var s = trace.steps().get(i);
+            table[i + 1] = new String[]{String.valueOf(s.index()),
+                s.name(), s.output(), s.elapsedHuman()};
+        }
+        sayTable(table);
+        say("Total: **" + io.github.seanchatmangpt.dtr.trace.CallTraceRecorder
+                .humanNs(trace.totalNs()) + "**");
+    }
+
+    /**
+     * Renders a feature × version compatibility matrix with ✓/✗/⚡ cells.
+     */
+    default void sayVersionMatrix(
+            io.github.seanchatmangpt.dtr.versioning.VersionMatrixBuilder.MatrixResult matrix) {
+        int cols = matrix.versions().size() + 2;
+        String[][] table = new String[matrix.rows().size() + 1][cols];
+        table[0] = new String[cols];
+        table[0][0] = "Feature"; table[0][1] = "JEP";
+        for (int v = 0; v < matrix.versions().size(); v++) table[0][v + 2] = matrix.versions().get(v);
+        for (int r = 0; r < matrix.rows().size(); r++) {
+            var row = matrix.rows().get(r);
+            table[r + 1] = new String[cols];
+            table[r + 1][0] = row.featureName(); table[r + 1][1] = row.jepRef();
+            for (int v = 0; v < matrix.versions().size(); v++) {
+                table[r + 1][v + 2] = row.versionValues()
+                    .getOrDefault(matrix.versions().get(v),
+                        io.github.seanchatmangpt.dtr.versioning.VersionMatrixBuilder.CellValue.NA)
+                    .symbol();
+            }
+        }
+        sayTable(table);
+    }
+
+    /**
+     * Generates {@code samples} random inputs, categorizes each, and renders
+     * a distribution table with counts, percentages, and Unicode bar chart.
+     */
+    default <T> void sayFuzzProfile(String label,
+            java.util.function.Supplier<T> generator,
+            java.util.function.Function<T, String> categorizer,
+            int samples) {
+        var result = io.github.seanchatmangpt.dtr.fuzz.FuzzProfiler
+                .profile(label, generator, categorizer, samples);
+        String[][] table = new String[result.distribution().size() + 1][4];
+        table[0] = new String[]{"Category", "Count", "Pct", "Distribution"};
+        for (int i = 0; i < result.distribution().size(); i++) {
+            var c = result.distribution().get(i);
+            table[i + 1] = new String[]{c.category(), String.valueOf(c.count()),
+                String.format("%.1f%%", c.percentage()), c.bar()};
+        }
+        sayTable(table);
+        say("Most common: **" + result.mostCommon() + "** | "
+                + "Least common: **" + result.leastCommon() + "** | "
+                + "Total samples: " + result.sampleCount());
+    }
 }
