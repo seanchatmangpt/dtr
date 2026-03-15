@@ -42,12 +42,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Test Maven settings
         run: |
@@ -107,12 +122,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
@@ -121,6 +148,9 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Generate GPG key
         run: |
@@ -148,12 +178,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
@@ -162,6 +204,9 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Generate GPG key
         run: |
@@ -195,12 +240,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
@@ -209,6 +266,9 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Generate GPG key
         run: |
@@ -243,12 +303,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Simulate rollback
         run: |
@@ -273,12 +348,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Build performance test
         run: |
@@ -307,12 +397,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Run dependency check
         uses: dependency-check/actions/dependency-check@v3

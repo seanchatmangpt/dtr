@@ -113,12 +113,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Validate pom.xml with Maven
         id: validate-pom
@@ -191,12 +206,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java 26 via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 26.ea.13-graal
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Check GPG secrets
         run: |
@@ -290,18 +320,35 @@ jobs:
     needs: validate-structure
     if: needs.validate-structure.outputs.is-valid == 'true'
     strategy:
+      fail-fast: false
       matrix:
         java-version: ['21', '22', '26']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java ${{ matrix.java-version }}
-        uses: actions/setup-java@v4
+      - name: Cache SDKMAN
+        uses: actions/cache@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java-version }}
-          java-package: 'jdk'
+          path: |
+            ~/.sdkman/candidates/java
+            ~/.sdkman/archives
+          key: ${{ runner.os }}-sdkman-java-26-ea-13-${{ hashFiles('.github/workflows/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-sdkman-java-26-ea-13-
+            ${{ runner.os }}-sdkman-
+
+      - name: Set up Java ${{ matrix.java-version }} via SDKMAN
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          if [ "${{ matrix.java-version }}" == "26" ]; then
+            sdk install java 26.ea.13-graal
+          else
+            sdk install java ${{ matrix.java-version }}-tem
+          fi
+          echo "JAVA_HOME=$HOME/.sdkman/candidates/java/current" >> $GITHUB_ENV
+          echo "$HOME/.sdkman/candidates/java/current/bin" >> $GITHUB_PATH
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
@@ -310,6 +357,9 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Build and test
         run: |
@@ -334,6 +384,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Run security scan
         run: |
