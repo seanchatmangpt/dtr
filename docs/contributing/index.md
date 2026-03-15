@@ -30,7 +30,7 @@ Welcome! If you're new to DTR, we recommend starting with our **30-minute quick 
 
 ## Required Toolchain
 
-DTR 2026.3.0 requires:
+DTR 2026.2.0 requires:
 
 - **Java 26** with `--enable-preview` (Java 24 and below are not supported)
 - **Maven 4.0.0-rc-5+** or **mvnd 2.x** (the Maven Daemon is preferred for local development)

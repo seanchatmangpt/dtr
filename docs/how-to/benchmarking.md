@@ -2,7 +2,7 @@
 
 Quick recipes for measuring performance using `sayBenchmark`.
 
-**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
+**DTR Version:** 2026.2.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
@@ -229,4 +229,4 @@ ctx.sayBenchmark("database query", () -> database.executeQuery("SELECT * FROM us
 
 ---
 
-**Version:** 2026.3.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+
+**Version:** 2026.2.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+

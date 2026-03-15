@@ -1,6 +1,6 @@
 # Known Issues and Limitations
 
-**DTR 2026.3.0** — Current limitations, workarounds, and version-specific notes.
+**DTR 2026.2.0** — Current limitations, workarounds, and version-specific notes.
 
 > **Looking for help with a specific problem?** Start with the [Troubleshooting Guide](../TROUBLESHOOTING.md) for symptom-based solutions. For bugs and feature requests, see [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues).
 
@@ -10,7 +10,7 @@
 
 | Property | Value |
 |----------|-------|
-| Current version | 2026.3.0 |
+| Current version | 2026.2.0 |
 | Java requirement | 26+ with `--enable-preview` |
 | Maven requirement | 4.0.0-rc-3+ |
 | mvnd requirement | 2.0.0+ |
@@ -104,7 +104,7 @@ JEP 516 Code Reflection is a preview feature in Java 26. All `sayCodeModel`, `sa
 
 `sayEvolutionTimeline` reads git history for version tags matching `v[0-9]+\.[0-9]+\.[0-9]+`. If the repository has no such tags, the method renders a warning and skips the timeline output.
 
-**Workaround:** Create semver tags: `git tag v2026.3.0`
+**Workaround:** Create semver tags: `git tag v2026.2.0`
 
 ---
 

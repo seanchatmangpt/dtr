@@ -470,7 +470,7 @@ act -j quality-check
 
 **Last Updated:** March 14, 2026
 **Branch:** feat/java-26-with-calver
-**Version:** 2026.1.0 (CalVer YYYY.MINOR.PATCH)
+**Version:** 2026.2.0 (CalVer YYYY.MINOR.PATCH)
 
 ---
 

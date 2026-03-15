@@ -2,7 +2,7 @@
 
 **Symptom-based problem solving** — Find your issue by what you SEE, not the technical cause.
 
-**Version:** 2026.1.0+ | **Last Updated:** 2026-03-14
+**Version:** 2026.2.0+ | **Last Updated:** 2026-03-14
 
 ---
 
@@ -122,7 +122,7 @@ java.lang.ClassNotFoundException: io.github.seanchatmangpt.dtr.junit5.DtrExtensi
    <dependency>
        <groupId>io.github.seanchatmangpt.dtr</groupId>
        <artifactId>dtr-core</artifactId>
-       <version>2026.1.0</version>
+       <version>2026.2.0</version>
        <scope>test</scope>  <!-- CRITICAL: must be test scope -->
    </dependency>
    ```
@@ -147,7 +147,7 @@ mvnd dependency:tree -Dinclude=io.github.seanchatmangpt.dtr:dtr-core
 Unsupported class version 65.0 (Java 26 required)
 ```
 
-**Cause:** Using Java 25 or earlier with DTR 2026.1.0+.
+**Cause:** Using Java 25 or earlier with DTR 2026.2.0+.
 
 **Fix:**
 
@@ -201,7 +201,7 @@ error: package io.github.seanchatmangpt.dtr.junit5 does not exist
 
 **Fix:**
 
-**For DTR 2026.1.0+ (current):**
+**For DTR 2026.2.0+ (current):**
 ```java
 import io.github.seanchatmangpt.dtr.junit5.DtrContext;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
@@ -702,7 +702,7 @@ ps aux | grep mvnd
 
 **Symptom:** Code that worked with DTR 2.x no longer compiles or runs.
 
-**Key Changes in DTR 2026.1.0+:**
+**Key Changes in DTR 2026.2.0+:**
 
 #### 1. Package Structure Changed
 
@@ -712,7 +712,7 @@ import io.github.seanchatmangpt.dtr.core.DtrContext;
 import io.github.seanchatmangpt.dtr.core.DtrExtension;
 ```
 
-**New (2026.1.0+):**
+**New (2026.2.0+):**
 ```java
 import io.github.seanchatmangpt.dtr.junit5.DtrContext;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
@@ -730,7 +730,7 @@ class MyDocTest extends DtrTest {
 }
 ```
 
-**New (2026.1.0+ - recommended):**
+**New (2026.2.0+ - recommended):**
 ```java
 @ExtendWith(DtrExtension.class)
 class MyDocTest {
@@ -745,12 +745,12 @@ class MyDocTest {
 
 **Old (2.x):** `DtrTest` base class with `say*` methods
 
-**New (2026.1.0+):** `DtrTest` still exists, but `DtrExtension` + `DtrContext` is preferred
+**New (2026.2.0+):** `DtrTest` still exists, but `DtrExtension` + `DtrContext` is preferred
 
 **Migration Path:**
 ```bash
 # 1. Update dependency version
-sed -i 's/<version>2\.[0-9]\.[0-9]<\/version>/<version>2026.1.0<\/version>/' pom.xml
+sed -i 's/<version>2\.[0-9]\.[0-9]<\/version>/<version>2026.2.0<\/version>/' pom.xml
 
 # 2. Update imports
 find src/test/java -name "*.java" -exec sed -i 's/io\.github\.seanchatmangpt\.dtr\.core\./io.github.seanchatmangpt.dtr.junit5./g' {} \;
@@ -925,5 +925,5 @@ mvnd test -Dtest=MyDocTest -v
 ---
 
 **Last Updated:** 2026-03-14
-**DTR Version:** 2026.1.0+
+**DTR Version:** 2026.2.0+
 **For version history and migration guides, see [CHANGELOG.md](../CHANGELOG.md)**

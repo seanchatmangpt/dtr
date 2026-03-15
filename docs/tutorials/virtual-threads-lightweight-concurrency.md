@@ -5,7 +5,7 @@
 Learn how to measure and document performance using DTR's `sayBenchmark` method. This tutorial uses Java 26 virtual threads as a real-world subject: you will benchmark virtual thread creation overhead, compare warmup strategies, and document results directly in generated Markdown.
 
 **Time:** ~30 minutes
-**Prerequisites:** Java 26, DTR 2026.3.0, completion of [Tutorial 1: Your First DocTest](your-first-doctest.md)
+**Prerequisites:** Java 26, DTR 2026.2.0, completion of [Tutorial 1: Your First DocTest](your-first-doctest.md)
 **What you'll learn:** How `sayBenchmark` works, when to use explicit warmup rounds, and how to embed benchmark results in living documentation
 
 **Related tutorials:**
