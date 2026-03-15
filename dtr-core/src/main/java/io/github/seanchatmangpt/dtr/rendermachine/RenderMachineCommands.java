@@ -592,4 +592,86 @@ public interface RenderMachineCommands {
      * }</pre>
      */
     void sayOperatingSystem();
+
+    // =========================================================================
+    // Innovation Support Methods
+    // =========================================================================
+
+    /**
+     * Documents a live HTTP endpoint contract — calls the URL, validates JSON fields, renders result.
+     * @param url the HTTP GET endpoint to test
+     * @param expectedFields String[][] of [fieldName, expectedJsonType] rows (e.g. "id","string")
+     */
+    void sayHttpContract(String url, String[][] expectedFields);
+
+    /**
+     * Documents and asserts performance regression against a baseline.
+     * @param label description of the operation
+     * @param baselineNs baseline latency in nanoseconds to compare against
+     * @param task the operation to measure
+     */
+    void sayPerformanceRegression(String label, long baselineNs, Runnable task);
+
+    /**
+     * Documents platform-thread vs virtual-thread throughput comparison for a task.
+     * @param label description of the workload
+     * @param taskCount number of concurrent tasks to run on each executor
+     * @param task the work unit to run on each thread
+     */
+    void sayVirtualThreadComparison(String label, int taskCount, Runnable task);
+
+    /**
+     * Documents a BDD-style narrative scenario (Given/When/Then) as executable documentation.
+     * @param given precondition description
+     * @param when trigger/action description
+     * @param then expected outcome description
+     * @param action the action to execute and verify
+     */
+    void sayNarrativeScenario(String given, String when, String then, Runnable action);
+
+    /**
+     * Samples a List of objects, infers schema via reflection, documents shape and statistics.
+     * @param data the list to sample and analyze
+     * @param maxSampleRows maximum rows to include in the sample table
+     */
+    void sayDataSample(java.util.List<?> data, int maxSampleRows);
+
+    /**
+     * Renders an Architecture Decision Record (ADR) as structured documentation.
+     * @param id ADR identifier (e.g., "001")
+     * @param title short decision title
+     * @param context the context and problem statement
+     * @param decision the decision made
+     * @param consequences outcomes and trade-offs
+     */
+    void sayDecisionRecord(String id, String title, String context, String decision, String consequences);
+
+    /**
+     * Runs a concurrent load test and documents throughput and latency percentiles.
+     * @param label description of the load scenario
+     * @param threads number of concurrent threads
+     * @param durationMs duration to run the load test in milliseconds
+     * @param task the unit of work to run under load
+     */
+    void sayLoadProfile(String label, int threads, long durationMs, Runnable task);
+
+    /**
+     * Compares two class versions via reflection and documents API compatibility changes.
+     * @param v1 the original/older class
+     * @param v2 the new/updated class
+     */
+    void sayTypeCompat(Class<?> v1, Class<?> v2);
+
+    /**
+     * Documents the security surface of a class — public API exposure, sensitive fields, Serializable check.
+     * @param clazz the class to analyze
+     */
+    void saySecurityProfile(Class<?> clazz);
+
+    /**
+     * Documents git commit history and author churn for a class's source file.
+     * @param clazz the class to analyze
+     * @param projectRoot absolute path to the git repository root
+     */
+    void sayGitHotspot(Class<?> clazz, String projectRoot);
 }

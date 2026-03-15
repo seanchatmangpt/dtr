@@ -195,6 +195,36 @@ public abstract class RenderMachine implements RenderMachineCommands {
     /** Javadoc documentation from dtr-javadoc index — no-op in base class. */
     public void sayJavadoc(java.lang.reflect.Method method) {}
 
+    /** HTTP contract check — no-op in base class. */
+    public void sayHttpContract(String url, String[][] expectedFields) {}
+
+    /** Performance regression check — no-op in base class. */
+    public void sayPerformanceRegression(String label, long baselineNs, Runnable task) {}
+
+    /** Virtual thread comparison — no-op in base class. */
+    public void sayVirtualThreadComparison(String label, int taskCount, Runnable task) {}
+
+    /** Narrative scenario — no-op in base class. */
+    public void sayNarrativeScenario(String given, String when, String then, Runnable action) {}
+
+    /** Data sample — no-op in base class. */
+    public void sayDataSample(java.util.List<?> data, int maxSampleRows) {}
+
+    /** Decision record — no-op in base class. */
+    public void sayDecisionRecord(String id, String title, String context, String decision, String consequences) {}
+
+    /** Load profile — no-op in base class. */
+    public void sayLoadProfile(String label, int threads, long durationMs, Runnable task) {}
+
+    /** Type compat — no-op in base class. */
+    public void sayTypeCompat(Class<?> v1, Class<?> v2) {}
+
+    /** Security profile — no-op in base class. */
+    public void saySecurityProfile(Class<?> clazz) {}
+
+    /** Git hotspot — no-op in base class. */
+    public void sayGitHotspot(Class<?> clazz, String projectRoot) {}
+
     /**
      * Finishes documentation generation and writes output to disk.
      */

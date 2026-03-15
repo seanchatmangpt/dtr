@@ -419,6 +419,56 @@ public final class MultiRenderMachine extends RenderMachine {
     }
 
     @Override
+    public void sayHttpContract(String url, String[][] expectedFields) {
+        dispatchToAll(m -> m.sayHttpContract(url, expectedFields));
+    }
+
+    @Override
+    public void sayPerformanceRegression(String label, long baselineNs, Runnable task) {
+        dispatchToAll(m -> m.sayPerformanceRegression(label, baselineNs, task));
+    }
+
+    @Override
+    public void sayVirtualThreadComparison(String label, int taskCount, Runnable task) {
+        dispatchToAll(m -> m.sayVirtualThreadComparison(label, taskCount, task));
+    }
+
+    @Override
+    public void sayNarrativeScenario(String given, String when, String then, Runnable action) {
+        dispatchToAll(m -> m.sayNarrativeScenario(given, when, then, action));
+    }
+
+    @Override
+    public void sayDataSample(java.util.List<?> data, int maxSampleRows) {
+        dispatchToAll(m -> m.sayDataSample(data, maxSampleRows));
+    }
+
+    @Override
+    public void sayDecisionRecord(String id, String title, String context, String decision, String consequences) {
+        dispatchToAll(m -> m.sayDecisionRecord(id, title, context, decision, consequences));
+    }
+
+    @Override
+    public void sayLoadProfile(String label, int threads, long durationMs, Runnable task) {
+        dispatchToAll(m -> m.sayLoadProfile(label, threads, durationMs, task));
+    }
+
+    @Override
+    public void sayTypeCompat(Class<?> v1, Class<?> v2) {
+        dispatchToAll(m -> m.sayTypeCompat(v1, v2));
+    }
+
+    @Override
+    public void saySecurityProfile(Class<?> clazz) {
+        dispatchToAll(m -> m.saySecurityProfile(clazz));
+    }
+
+    @Override
+    public void sayGitHotspot(Class<?> clazz, String projectRoot) {
+        dispatchToAll(m -> m.sayGitHotspot(clazz, projectRoot));
+    }
+
+    @Override
     public void setFileName(String fileName) {
         for (RenderMachine machine : machines) {
             machine.setFileName(fileName);

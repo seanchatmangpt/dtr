@@ -313,6 +313,66 @@ public class DtrContext implements RenderMachineCommands {
         renderMachine.sayOperatingSystem();
     }
 
+    /** Documents a live HTTP endpoint contract. */
+    @Override
+    public void sayHttpContract(String url, String[][] expectedFields) {
+        renderMachine.sayHttpContract(url, expectedFields);
+    }
+
+    /** Documents performance regression against a baseline. */
+    @Override
+    public void sayPerformanceRegression(String label, long baselineNs, Runnable task) {
+        renderMachine.sayPerformanceRegression(label, baselineNs, task);
+    }
+
+    /** Documents platform-thread vs virtual-thread throughput comparison. */
+    @Override
+    public void sayVirtualThreadComparison(String label, int taskCount, Runnable task) {
+        renderMachine.sayVirtualThreadComparison(label, taskCount, task);
+    }
+
+    /** Documents a BDD narrative scenario. */
+    @Override
+    public void sayNarrativeScenario(String given, String when, String then, Runnable action) {
+        renderMachine.sayNarrativeScenario(given, when, then, action);
+    }
+
+    /** Samples a List and documents its shape and statistics. */
+    @Override
+    public void sayDataSample(java.util.List<?> data, int maxSampleRows) {
+        renderMachine.sayDataSample(data, maxSampleRows);
+    }
+
+    /** Documents an Architecture Decision Record. */
+    @Override
+    public void sayDecisionRecord(String id, String title, String context, String decision, String consequences) {
+        renderMachine.sayDecisionRecord(id, title, context, decision, consequences);
+    }
+
+    /** Documents load test throughput and latency percentiles. */
+    @Override
+    public void sayLoadProfile(String label, int threads, long durationMs, Runnable task) {
+        renderMachine.sayLoadProfile(label, threads, durationMs, task);
+    }
+
+    /** Documents API compatibility diff between two class versions. */
+    @Override
+    public void sayTypeCompat(Class<?> v1, Class<?> v2) {
+        renderMachine.sayTypeCompat(v1, v2);
+    }
+
+    /** Documents the security surface of a class. */
+    @Override
+    public void saySecurityProfile(Class<?> clazz) {
+        renderMachine.saySecurityProfile(clazz);
+    }
+
+    /** Documents git hotspot stats for a class's source file. */
+    @Override
+    public void sayGitHotspot(Class<?> clazz, String projectRoot) {
+        renderMachine.sayGitHotspot(clazz, projectRoot);
+    }
+
     // ========================================================================
     // Accessors for internal components
     // ========================================================================

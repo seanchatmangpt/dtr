@@ -1650,4 +1650,83 @@ public final class RenderMachineImpl extends RenderMachine {
         }
         markdownDocument.add("");
     }
+
+    @Override
+    public void sayHttpContract(String url, String[][] expectedFields) {
+        var result = io.github.seanchatmangpt.dtr.http.HttpContractAnalyzer.analyze(url, expectedFields);
+        io.github.seanchatmangpt.dtr.http.HttpContractAnalyzer.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayPerformanceRegression(String label, long baselineNs, Runnable task) {
+        var result = io.github.seanchatmangpt.dtr.perf.PerformanceRegressionRunner.run(label, baselineNs, task);
+        io.github.seanchatmangpt.dtr.perf.PerformanceRegressionRunner.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayVirtualThreadComparison(String label, int taskCount, Runnable task) {
+        var result = io.github.seanchatmangpt.dtr.vthread.VirtualThreadComparator.compare(label, taskCount, task);
+        io.github.seanchatmangpt.dtr.vthread.VirtualThreadComparator.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayNarrativeScenario(String given, String when, String then, Runnable action) {
+        var result = io.github.seanchatmangpt.dtr.narrative.NarrativeScenarioRenderer.run(
+            "Scenario", given, when, then, action, () -> "completed");
+        io.github.seanchatmangpt.dtr.narrative.NarrativeScenarioRenderer.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayDataSample(java.util.List<?> data, int maxSampleRows) {
+        var result = io.github.seanchatmangpt.dtr.datasample.DataSampleAnalyzer.analyze(data, maxSampleRows);
+        // Sample table
+        markdownDocument.add("**Data Sample (" + result.sampledRows() + " of " + result.totalRows() + " rows)**");
+        markdownDocument.add("");
+        var sampleTable = io.github.seanchatmangpt.dtr.datasample.DataSampleAnalyzer.toSampleTable(result);
+        sayTable(sampleTable);
+        markdownDocument.add("**Field Statistics**");
+        markdownDocument.add("");
+        var statsTable = io.github.seanchatmangpt.dtr.datasample.DataSampleAnalyzer.toStatsTable(result);
+        sayTable(statsTable);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayDecisionRecord(String id, String title, String context, String decision, String consequences) {
+        var adr = io.github.seanchatmangpt.dtr.adr.DecisionRecord.accepted(id, title, context, decision, consequences);
+        io.github.seanchatmangpt.dtr.adr.DecisionRecord.toMarkdown(adr).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayLoadProfile(String label, int threads, long durationMs, Runnable task) {
+        var result = io.github.seanchatmangpt.dtr.load.LoadProfileRunner.run(label, threads, durationMs, task);
+        io.github.seanchatmangpt.dtr.load.LoadProfileRunner.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayTypeCompat(Class<?> v1, Class<?> v2) {
+        var result = io.github.seanchatmangpt.dtr.typecompat.TypeCompatAnalyzer.analyze(v1, v2);
+        io.github.seanchatmangpt.dtr.typecompat.TypeCompatAnalyzer.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void saySecurityProfile(Class<?> clazz) {
+        var result = io.github.seanchatmangpt.dtr.security.SecurityProfileAnalyzer.analyze(clazz);
+        io.github.seanchatmangpt.dtr.security.SecurityProfileAnalyzer.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
+
+    @Override
+    public void sayGitHotspot(Class<?> clazz, String projectRoot) {
+        var result = io.github.seanchatmangpt.dtr.githotspot.GitHotspotAnalyzer.analyze(clazz, projectRoot);
+        io.github.seanchatmangpt.dtr.githotspot.GitHotspotAnalyzer.toMarkdown(result).forEach(markdownDocument::add);
+        markdownDocument.add("");
+    }
 }
