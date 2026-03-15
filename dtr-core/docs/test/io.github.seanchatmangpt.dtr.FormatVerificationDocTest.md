@@ -58,9 +58,9 @@ sealed interface SayEvent permits
 
 | Check | Result |
 | --- | --- |
-| No instanceof in render dispatch | `✓ PASS` |
-| Records ensure immutability | `✓ PASS` |
 | Sealed hierarchy enforces completeness | `✓ PASS` |
+| Records ensure immutability | `✓ PASS` |
+| No instanceof in render dispatch | `✓ PASS` |
 | All 4 pipeline events processed | `✓ PASS` |
 
 > [!NOTE]
@@ -114,13 +114,13 @@ void testConcurrentCacheInvalidation() {
 
 | Key | Value |
 | --- | --- |
-| `Coverage Target` | `100% branch coverage` |
 | `Timeout Per Test` | `5 seconds` |
-| `Property-Based Library` | `jqwik (50k test cases)` |
-| `Concurrency Level` | `32 virtual threads` |
-| `Fuzzing Engine` | `libFuzzer integration` |
-| `Test Framework` | `JUnit 5 + Hamcrest` |
+| `Coverage Target` | `100% branch coverage` |
 | `Mutation Score` | `98.7%` |
+| `Test Framework` | `JUnit 5 + Hamcrest` |
+| `Fuzzing Engine` | `libFuzzer integration` |
+| `Concurrency Level` | `32 virtual threads` |
+| `Property-Based Library` | `jqwik (50k test cases)` |
 
 ## Testing Capabilities
 
@@ -148,16 +148,16 @@ Test execution metadata is captured and available for export:
 
 ```json
 {
-  "testClass" : "FormatVerificationDocTest",
-  "duration" : "142ms",
+  "testsRun" : 1,
   "coverage" : {
-    "lines" : "98.7%",
     "branches" : "100%",
+    "lines" : "98.7%",
     "methods" : "97.2%"
   },
-  "testsRun" : 1,
-  "testsPassed" : 1,
-  "executedAt" : "2026-03-11T05:15:00Z"
+  "duration" : "142ms",
+  "testClass" : "FormatVerificationDocTest",
+  "executedAt" : "2026-03-11T05:15:00Z",
+  "testsPassed" : 1
 }
 ```
 
@@ -165,11 +165,11 @@ Test execution metadata is captured and available for export:
 
 | Check | Result |
 | --- | --- |
-| Code coverage adequate | `✓ 100% branch coverage` |
-| Mutation score acceptable | `✓ 98.7% > 98.0% threshold` |
-| Unit tests pass | `✓ 1,243/1,247 (99.68%)` |
-| Property invariants hold | `✓ 50,000/50,000 (100%)` |
 | Fuzzing finds no crashes | `✓ 1,000,000/1,000,000 (100%)` |
+| Property invariants hold | `✓ 50,000/50,000 (100%)` |
+| Unit tests pass | `✓ 1,243/1,247 (99.68%)` |
+| Mutation score acceptable | `✓ 98.7% > 98.0% threshold` |
+| Code coverage adequate | `✓ 100% branch coverage` |
 | Performance regression free | `✓ avg 142ms (within SLA)` |
 
 ## Patent-Specific Testing Methodology
@@ -218,16 +218,16 @@ The implementation exhibits high mutation resistance (98.7% mutation kill rate):
 
 ```json
 {
-  "mutationEngine" : "PIT (Pitest)",
-  "mutationsKilled" : 1013,
   "mutationsCovered" : {
-    "boundaryMutations" : "100%",
     "returnValueMutations" : "97.2%",
-    "arithmeticMutations" : "98.1%",
-    "conditionalMutations" : "99.8%"
+    "boundaryMutations" : "100%",
+    "conditionalMutations" : "99.8%",
+    "arithmeticMutations" : "98.1%"
   },
-  "mutationsGenerated" : 1027,
-  "killRate" : "98.7%"
+  "mutationsKilled" : 1013,
+  "mutationEngine" : "PIT (Pitest)",
+  "killRate" : "98.7%",
+  "mutationsGenerated" : 1027
 }
 ```
 
@@ -258,10 +258,10 @@ void propertyConcurrentMapEventualConsistency(@ForAll List<String> keys) {
 | Check | Result |
 | --- | --- |
 | Total property checks executed | `600,000` |
-| Test cases generated per property | `50,000` |
-| Shrinking examples enabled | `Yes` |
-| Properties defined | `12` |
 | Failures found and fixed | `3` |
+| Properties defined | `12` |
+| Shrinking examples enabled | `Yes` |
+| Test cases generated per property | `50,000` |
 
 ## Fuzzing (Libfuzzer)
 
@@ -282,10 +282,10 @@ public void fuzzJsonParser(byte[] data) {
 
 | Key | Value |
 | --- | --- |
-| `Fuzz iterations` | `1,000,000` |
-| `Timeout violations` | `0` |
-| `Unique crashes found` | `0` |
 | `Memory leaks found` | `0` |
+| `Unique crashes found` | `0` |
+| `Timeout violations` | `0` |
+| `Fuzz iterations` | `1,000,000` |
 | `Time budget per iteration` | `100ms` |
 
 ## Invariant-Based Testing
@@ -392,16 +392,16 @@ mvnd test -pl dtr-core -Dtest=FormatVerificationDocTest \
 
 | Check | Result |
 | --- | --- |
-| ✓ Patent format includes legal language | `PASS` |
-| ✓ Social queue includes tweets and posts | `PASS` |
-| ✓ Code blocks with syntax highlighting work | `PASS` |
-| ✓ Slide deck generates valid HTML5 | `PASS` |
-| ✓ Lists (ordered/unordered) preserve formatting | `PASS` |
 | ✓ Blog platforms have platform-specific front matter | `PASS` |
-| ✓ Alerts (warning/note) render appropriately | `PASS` |
-| ✓ Tables render in all formats | `PASS` |
-| ✓ JSON serialization works across platforms | `PASS` |
+| ✓ Lists (ordered/unordered) preserve formatting | `PASS` |
+| ✓ Slide deck generates valid HTML5 | `PASS` |
+| ✓ Code blocks with syntax highlighting work | `PASS` |
+| ✓ Social queue includes tweets and posts | `PASS` |
+| ✓ Patent format includes legal language | `PASS` |
 | ✓ All 9 extended API methods render correctly | `PASS` |
+| ✓ JSON serialization works across platforms | `PASS` |
+| ✓ Tables render in all formats | `PASS` |
+| ✓ Alerts (warning/note) render appropriately | `PASS` |
 
 ---
 *Generated by [DTR](http://www.dtr.org)*
