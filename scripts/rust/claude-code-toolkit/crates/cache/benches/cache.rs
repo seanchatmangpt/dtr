@@ -20,7 +20,7 @@ fn bench_blake3_hash_micro(c: &mut Criterion) {
         }".repeat(4);
     let medium_body = black_box(medium_src.as_bytes());
     group.throughput(Throughput::Bytes(medium_body.len() as u64));
-    group.bench_function("method_512b", |b| b.iter(|| hash_method_body(&medium_body)));
+    group.bench_function("method_512b", |b| b.iter(|| hash_method_body(medium_body)));
 
     // Large method (1KB+)
     let large_src = "public void largeMethod() {
@@ -30,7 +30,7 @@ fn bench_blake3_hash_micro(c: &mut Criterion) {
         }".repeat(8);
     let large_body = black_box(large_src.as_bytes());
     group.throughput(Throughput::Bytes(large_body.len() as u64));
-    group.bench_function("method_1kb", |b| b.iter(|| hash_method_body(&large_body)));
+    group.bench_function("method_1kb", |b| b.iter(|| hash_method_body(large_body)));
 
     group.finish();
 }
