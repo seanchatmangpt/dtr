@@ -225,6 +225,10 @@ jobs:
 
       - name: Set up Java 26 via SDKMAN
         run: |
+          set -e
+          # Fix: SDKMAN may be partially installed on runners
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
@@ -274,6 +278,9 @@ jobs:
         if: matrix.java-version == '26'
         run: |
           set -e
+          # Fix: SDKMAN may be partially installed on runners
+          # Always clean reinstall to ensure sdkman-init.sh exists
+          rm -rf "$HOME/.sdkman"
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install java 26.ea.13-graal
