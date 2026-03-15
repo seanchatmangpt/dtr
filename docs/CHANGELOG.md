@@ -1,3 +1,24 @@
+## v2026.2.0 — 2026-03-14
+
+- docs: regenerate test documentation for v2026.2.0-rc.1
+- docs: update session log
+- chore(ci): simplify workflows - remove redundant CI gates
+- docs: update session log
+- docs: update session log
+- feat: add workflow_dispatch to publish.yml for manual triggering
+
+### Install
+
+```xml
+<dependency>
+  <groupId>io.github.seanchatmangpt.dtr</groupId>
+  <artifactId>dtr-core</artifactId>
+  <version>2026.2.0</version>
+</dependency>
+```
+
+Year-bounded range (recommended for libraries): `[2026.1.0,2027)`
+
 ## v2026.1.0 — 2026-03-14
 
 - docs: update javadoc extraction and test docs
