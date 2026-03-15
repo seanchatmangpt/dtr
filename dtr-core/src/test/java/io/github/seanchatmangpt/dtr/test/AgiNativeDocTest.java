@@ -139,15 +139,15 @@ public class AgiNativeDocTest extends DtrTest {
 
         // Model the three eras as a sealed hierarchy (JEP 500 exhaustive switch)
         var eras = List.of(
-                (DocumentationEra) new Static(
+                (DocumentationEra) new EraStatic(
                         "Static Documentation (1970–2010)",
                         "Goes stale the moment code changes",
                         "None — relies on human discipline"),
-                new Dynamic(
+                new EraDynamic(
                         "Dynamic Documentation (2010–2024)",
                         "Generated from annotations, but claims are still unverified",
                         "Swagger / Javadoc — structure without proof"),
-                new AgiNative(
+                new EraAgiNative(
                         "AGI-Native Documentation (2025+)",
                         "None — every claim is a test assertion",
                         "DTR: documentation AS executable JUnit 5 test")
@@ -159,9 +159,9 @@ public class AgiNativeDocTest extends DtrTest {
             var era = eras.get(i);
             // Exhaustive pattern match — no default needed (sealed)
             String type = switch (era) {
-                case Static s    -> "Static";
-                case Dynamic d   -> "Dynamic";
-                case AgiNative a -> "AGI-Native";
+                case EraStatic s    -> "Static";
+                case EraDynamic d   -> "Dynamic";
+                case EraAgiNative a -> "AGI-Native";
             };
             eraTable[i + 1] = new String[]{type, era.label(), era.problem(), era.solution()};
         }
