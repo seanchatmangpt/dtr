@@ -1,0 +1,171 @@
+# ggen.toml — jotp DTR documentation generator
+#
+# Generates DTR test Java files for jotp's OTP primitives from an RDF ontology.
+# Run: ggen sync   (from this directory)
+# Output: generated/src/test/java/io/github/seanchatmangpt/dtr/test/jotp/
+#
+# Each rule:
+#   sparql    — inline SPARQL SELECT query against ontology/jotp-api.ttl
+#   template  — Tera template (see templates/)
+#   output    — destination file written by ggen
+#
+# Install ggen-cli: cargo build --release -p ggen-cli-lib   (from ggen repo root)
+
+ontology = "ontology/jotp-api.ttl"
+
+# ── Rule 1: Overview DocTest — table of all primitives across all categories ──
+[[rules]]
+name = "jotp-overview"
+sparql = """
+PREFIX otp:  <https://ggen.io/ontology/otp#>
+PREFIX jotp: <https://github.com/seanchatmangpt/jotp#>
+
+SELECT ?name ?javaClass ?description ?category ?jepNote
+WHERE {
+  ?primitive a otp:Primitive ;
+             otp:name        ?name ;
+             otp:javaClass   ?javaClass ;
+             otp:description ?description ;
+             otp:category    ?category .
+  OPTIONAL { ?primitive otp:jepNote ?jepNote }
+}
+ORDER BY ?category ?name
+"""
+template = "templates/doc-test-overview.tera"
+output   = "generated/src/test/java/io/github/seanchatmangpt/dtr/test/jotp/JotpOverviewDocTest.java"
+
+# ── Rule 2: Core Processes DocTest — Proc, ProcRef, ProcMonitor, ProcLink, ProcTimer ──
+[[rules]]
+name = "core-process-doc-test"
+sparql = """
+PREFIX otp:  <https://ggen.io/ontology/otp#>
+PREFIX jotp: <https://github.com/seanchatmangpt/jotp#>
+
+SELECT ?name ?javaClass ?javaGenerics ?description ?methodName ?methodSig ?methodDesc
+WHERE {
+  ?primitive a otp:Primitive ;
+             otp:name        ?name ;
+             otp:javaClass   ?javaClass ;
+             otp:description ?description ;
+             otp:category    "core" .
+  OPTIONAL { ?primitive otp:javaGenerics ?javaGenerics }
+  OPTIONAL {
+    ?primitive otp:hasMethod ?method .
+    ?method otp:methodName      ?methodName ;
+            otp:methodSignature ?methodSig ;
+            otp:methodDesc      ?methodDesc .
+  }
+}
+ORDER BY ?name ?methodName
+"""
+template = "templates/doc-test-class.tera"
+output   = "generated/src/test/java/io/github/seanchatmangpt/dtr/test/jotp/CoreProcessDocTest.java"
+
+# ── Rule 3: Supervision DocTest — Supervisor ──────────────────────────────────
+[[rules]]
+name = "supervision-doc-test"
+sparql = """
+PREFIX otp:  <https://ggen.io/ontology/otp#>
+PREFIX jotp: <https://github.com/seanchatmangpt/jotp#>
+
+SELECT ?name ?javaClass ?javaGenerics ?description ?methodName ?methodSig ?methodDesc ?jepNote
+WHERE {
+  ?primitive a otp:Primitive ;
+             otp:name        ?name ;
+             otp:javaClass   ?javaClass ;
+             otp:description ?description ;
+             otp:category    "supervision" .
+  OPTIONAL { ?primitive otp:javaGenerics ?javaGenerics }
+  OPTIONAL { ?primitive otp:jepNote ?jepNote }
+  OPTIONAL {
+    ?primitive otp:hasMethod ?method .
+    ?method otp:methodName      ?methodName ;
+            otp:methodSignature ?methodSig ;
+            otp:methodDesc      ?methodDesc .
+  }
+}
+ORDER BY ?name ?methodName
+"""
+template = "templates/doc-test-class.tera"
+output   = "generated/src/test/java/io/github/seanchatmangpt/dtr/test/jotp/SupervisorDocTest.java"
+
+# ── Rule 4: State Management DocTest — StateMachine, EventManager ─────────────
+[[rules]]
+name = "state-doc-test"
+sparql = """
+PREFIX otp:  <https://ggen.io/ontology/otp#>
+PREFIX jotp: <https://github.com/seanchatmangpt/jotp#>
+
+SELECT ?name ?javaClass ?javaGenerics ?description ?methodName ?methodSig ?methodDesc
+WHERE {
+  ?primitive a otp:Primitive ;
+             otp:name        ?name ;
+             otp:javaClass   ?javaClass ;
+             otp:description ?description ;
+             otp:category    "state" .
+  OPTIONAL { ?primitive otp:javaGenerics ?javaGenerics }
+  OPTIONAL {
+    ?primitive otp:hasMethod ?method .
+    ?method otp:methodName      ?methodName ;
+            otp:methodSignature ?methodSig ;
+            otp:methodDesc      ?methodDesc .
+  }
+}
+ORDER BY ?name ?methodName
+"""
+template = "templates/doc-test-class.tera"
+output   = "generated/src/test/java/io/github/seanchatmangpt/dtr/test/jotp/StateManagementDocTest.java"
+
+# ── Rule 5: Error Handling DocTest — Result, Parallel ─────────────────────────
+[[rules]]
+name = "error-doc-test"
+sparql = """
+PREFIX otp:  <https://ggen.io/ontology/otp#>
+PREFIX jotp: <https://github.com/seanchatmangpt/jotp#>
+
+SELECT ?name ?javaClass ?javaGenerics ?description ?methodName ?methodSig ?methodDesc
+WHERE {
+  ?primitive a otp:Primitive ;
+             otp:name        ?name ;
+             otp:javaClass   ?javaClass ;
+             otp:description ?description ;
+             otp:category    "error" .
+  OPTIONAL { ?primitive otp:javaGenerics ?javaGenerics }
+  OPTIONAL {
+    ?primitive otp:hasMethod ?method .
+    ?method otp:methodName      ?methodName ;
+            otp:methodSignature ?methodSig ;
+            otp:methodDesc      ?methodDesc .
+  }
+}
+ORDER BY ?name ?methodName
+"""
+template = "templates/doc-test-class.tera"
+output   = "generated/src/test/java/io/github/seanchatmangpt/dtr/test/jotp/ErrorHandlingDocTest.java"
+
+# ── Rule 6: Runtime Services DocTest — ProcRegistry, ProcSys, ProcLib ─────────
+[[rules]]
+name = "runtime-doc-test"
+sparql = """
+PREFIX otp:  <https://ggen.io/ontology/otp#>
+PREFIX jotp: <https://github.com/seanchatmangpt/jotp#>
+
+SELECT ?name ?javaClass ?javaGenerics ?description ?methodName ?methodSig ?methodDesc
+WHERE {
+  ?primitive a otp:Primitive ;
+             otp:name        ?name ;
+             otp:javaClass   ?javaClass ;
+             otp:description ?description ;
+             otp:category    "runtime" .
+  OPTIONAL { ?primitive otp:javaGenerics ?javaGenerics }
+  OPTIONAL {
+    ?primitive otp:hasMethod ?method .
+    ?method otp:methodName      ?methodName ;
+            otp:methodSignature ?methodSig ;
+            otp:methodDesc      ?methodDesc .
+  }
+}
+ORDER BY ?name ?methodName
+"""
+template = "templates/doc-test-class.tera"
+output   = "generated/src/test/java/io/github/seanchatmangpt/dtr/test/jotp/RuntimeServicesDocTest.java"

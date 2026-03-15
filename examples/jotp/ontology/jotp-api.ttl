@@ -1,0 +1,295 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix otp:  <https://ggen.io/ontology/otp#> .
+@prefix jotp: <https://github.com/seanchatmangpt/jotp#> .
+
+# ---------------------------------------------------------------------------
+# OTP Primitives — jotp Java OTP library for Java 26
+# Each jotp: resource is a primitive modelled as otp:Primitive.
+# Category values: "core" | "supervision" | "state" | "error" | "runtime"
+# ---------------------------------------------------------------------------
+
+# ── Core: Processes ────────────────────────────────────────────────────────
+
+jotp:Proc a otp:Primitive ;
+    otp:name         "Proc" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.Proc" ;
+    otp:javaGenerics "<S,M>" ;
+    otp:description  "Lightweight supervised process with a virtual-thread mailbox" ;
+    otp:category     "core" ;
+    otp:jepNote      "Virtual threads (JEP 444) enable 10M+ concurrent Proc instances" ;
+    otp:hasMethod    jotp:Proc_start ;
+    otp:hasMethod    jotp:Proc_stop ;
+    otp:hasMethod    jotp:Proc_send .
+
+jotp:Proc_start a otp:Method ;
+    otp:methodName      "start" ;
+    otp:methodSignature "ProcRef<S,M> start(S initialState, BiFunction<S,M,S> handler)" ;
+    otp:methodDesc      "Starts the process, returns a ProcRef for subsequent communication" .
+
+jotp:Proc_stop a otp:Method ;
+    otp:methodName      "stop" ;
+    otp:methodSignature "void stop(ProcRef<S,M> ref)" ;
+    otp:methodDesc      "Gracefully terminates the process and releases the virtual thread" .
+
+jotp:Proc_send a otp:Method ;
+    otp:methodName      "send" ;
+    otp:methodSignature "void send(ProcRef<S,M> ref, M message)" ;
+    otp:methodDesc      "Delivers a message to the process mailbox asynchronously" .
+
+# ── Core: References & Linking ─────────────────────────────────────────────
+
+jotp:ProcRef a otp:Primitive ;
+    otp:name         "ProcRef" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.ProcRef" ;
+    otp:javaGenerics "<S,M>" ;
+    otp:description  "Opaque handle to a running Proc; used for messaging and monitoring" ;
+    otp:category     "core" ;
+    otp:hasMethod    jotp:ProcRef_pid ;
+    otp:hasMethod    jotp:ProcRef_isAlive .
+
+jotp:ProcRef_pid a otp:Method ;
+    otp:methodName      "pid" ;
+    otp:methodSignature "long pid()" ;
+    otp:methodDesc      "Returns the unique process identifier" .
+
+jotp:ProcRef_isAlive a otp:Method ;
+    otp:methodName      "isAlive" ;
+    otp:methodSignature "boolean isAlive()" ;
+    otp:methodDesc      "Returns true if the process is still running" .
+
+jotp:ProcMonitor a otp:Primitive ;
+    otp:name         "ProcMonitor" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.ProcMonitor" ;
+    otp:javaGenerics "<S,M>" ;
+    otp:description  "One-way watcher that receives a DOWN signal when a process terminates" ;
+    otp:category     "core" ;
+    otp:hasMethod    jotp:ProcMonitor_monitor ;
+    otp:hasMethod    jotp:ProcMonitor_demonitor .
+
+jotp:ProcMonitor_monitor a otp:Method ;
+    otp:methodName      "monitor" ;
+    otp:methodSignature "MonitorRef monitor(ProcRef<S,M> target)" ;
+    otp:methodDesc      "Starts monitoring; sends DOWN message to caller on target exit" .
+
+jotp:ProcMonitor_demonitor a otp:Method ;
+    otp:methodName      "demonitor" ;
+    otp:methodSignature "void demonitor(MonitorRef ref)" ;
+    otp:methodDesc      "Cancels the monitor before the target has exited" .
+
+jotp:ProcLink a otp:Primitive ;
+    otp:name         "ProcLink" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.ProcLink" ;
+    otp:javaGenerics "<S,M>" ;
+    otp:description  "Bidirectional crash link — if either process dies the other is notified" ;
+    otp:category     "core" ;
+    otp:hasMethod    jotp:ProcLink_link ;
+    otp:hasMethod    jotp:ProcLink_unlink .
+
+jotp:ProcLink_link a otp:Method ;
+    otp:methodName      "link" ;
+    otp:methodSignature "void link(ProcRef<?,?> a, ProcRef<?,?> b)" ;
+    otp:methodDesc      "Creates a bidirectional link between two processes" .
+
+jotp:ProcLink_unlink a otp:Method ;
+    otp:methodName      "unlink" ;
+    otp:methodSignature "void unlink(ProcRef<?,?> a, ProcRef<?,?> b)" ;
+    otp:methodDesc      "Removes an existing link without killing either process" .
+
+jotp:ProcTimer a otp:Primitive ;
+    otp:name         "ProcTimer" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.ProcTimer" ;
+    otp:javaGenerics "<M>" ;
+    otp:description  "Delivers a message to a process mailbox after a fixed delay" ;
+    otp:category     "core" ;
+    otp:hasMethod    jotp:ProcTimer_sendAfter ;
+    otp:hasMethod    jotp:ProcTimer_cancel .
+
+jotp:ProcTimer_sendAfter a otp:Method ;
+    otp:methodName      "sendAfter" ;
+    otp:methodSignature "TimerRef sendAfter(Duration delay, ProcRef<?,M> target, M message)" ;
+    otp:methodDesc      "Schedules a message delivery after the specified delay" .
+
+jotp:ProcTimer_cancel a otp:Method ;
+    otp:methodName      "cancel" ;
+    otp:methodSignature "boolean cancel(TimerRef ref)" ;
+    otp:methodDesc      "Cancels a pending timer; returns true if cancelled before firing" .
+
+# ── Supervision ────────────────────────────────────────────────────────────
+
+jotp:Supervisor a otp:Primitive ;
+    otp:name         "Supervisor" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.Supervisor" ;
+    otp:javaGenerics "" ;
+    otp:description  "Fault-recovery tree that automatically restarts crashed child processes" ;
+    otp:category     "supervision" ;
+    otp:jepNote      "Restart latency ~200µs measured on Java 26.ea.13 with virtual threads" ;
+    otp:hasMethod    jotp:Supervisor_startChild ;
+    otp:hasMethod    jotp:Supervisor_stopChild ;
+    otp:hasMethod    jotp:Supervisor_strategy .
+
+jotp:Supervisor_startChild a otp:Method ;
+    otp:methodName      "startChild" ;
+    otp:methodSignature "ChildRef startChild(ChildSpec spec)" ;
+    otp:methodDesc      "Registers and starts a child process under this supervisor" .
+
+jotp:Supervisor_stopChild a otp:Method ;
+    otp:methodName      "stopChild" ;
+    otp:methodSignature "void stopChild(ChildRef ref)" ;
+    otp:methodDesc      "Stops and deregisters a child from the supervision tree" .
+
+jotp:Supervisor_strategy a otp:Method ;
+    otp:methodName      "strategy" ;
+    otp:methodSignature "RestartStrategy strategy()" ;
+    otp:methodDesc      "Returns ONE_FOR_ONE, ONE_FOR_ALL, or REST_FOR_ONE" .
+
+# ── State Management ───────────────────────────────────────────────────────
+
+jotp:StateMachine a otp:Primitive ;
+    otp:name         "StateMachine" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.StateMachine" ;
+    otp:javaGenerics "<S,E,D>" ;
+    otp:description  "Complex workflow engine with sealed-type state and event transitions" ;
+    otp:category     "state" ;
+    otp:hasMethod    jotp:StateMachine_transition ;
+    otp:hasMethod    jotp:StateMachine_currentState .
+
+jotp:StateMachine_transition a otp:Method ;
+    otp:methodName      "transition" ;
+    otp:methodSignature "S transition(S current, E event, D data)" ;
+    otp:methodDesc      "Applies an event to the current state and returns the next state" .
+
+jotp:StateMachine_currentState a otp:Method ;
+    otp:methodName      "currentState" ;
+    otp:methodSignature "S currentState()" ;
+    otp:methodDesc      "Returns the current state of the machine without advancing it" .
+
+jotp:EventManager a otp:Primitive ;
+    otp:name         "EventManager" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.EventManager" ;
+    otp:javaGenerics "<E>" ;
+    otp:description  "Typed event broadcasting to all registered handler processes" ;
+    otp:category     "state" ;
+    otp:hasMethod    jotp:EventManager_subscribe ;
+    otp:hasMethod    jotp:EventManager_notify .
+
+jotp:EventManager_subscribe a otp:Method ;
+    otp:methodName      "subscribe" ;
+    otp:methodSignature "void subscribe(ProcRef<?,E> handler)" ;
+    otp:methodDesc      "Registers a process to receive all future events" .
+
+jotp:EventManager_notify a otp:Method ;
+    otp:methodName      "notify" ;
+    otp:methodSignature "void notify(E event)" ;
+    otp:methodDesc      "Broadcasts the event to all subscribed handlers" .
+
+# ── Error Handling ─────────────────────────────────────────────────────────
+
+jotp:Result a otp:Primitive ;
+    otp:name         "Result" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.Result" ;
+    otp:javaGenerics "<T,E>" ;
+    otp:description  "Railway-oriented error handling: Success<T> or Failure<E>" ;
+    otp:category     "error" ;
+    otp:hasMethod    jotp:Result_success ;
+    otp:hasMethod    jotp:Result_failure ;
+    otp:hasMethod    jotp:Result_map ;
+    otp:hasMethod    jotp:Result_fold .
+
+jotp:Result_success a otp:Method ;
+    otp:methodName      "success" ;
+    otp:methodSignature "static <T,E> Result<T,E> success(T value)" ;
+    otp:methodDesc      "Wraps a successful value in a Success record" .
+
+jotp:Result_failure a otp:Method ;
+    otp:methodName      "failure" ;
+    otp:methodSignature "static <T,E> Result<T,E> failure(E error)" ;
+    otp:methodDesc      "Wraps an error in a Failure record" .
+
+jotp:Result_map a otp:Method ;
+    otp:methodName      "map" ;
+    otp:methodSignature "<U> Result<U,E> map(Function<T,U> f)" ;
+    otp:methodDesc      "Transforms the success value; leaves Failure unchanged" .
+
+jotp:Result_fold a otp:Method ;
+    otp:methodName      "fold" ;
+    otp:methodSignature "<R> R fold(Function<T,R> onSuccess, Function<E,R> onFailure)" ;
+    otp:methodDesc      "Exhaustive pattern: applies one of two functions to extract R" .
+
+jotp:Parallel a otp:Primitive ;
+    otp:name         "Parallel" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.Parallel" ;
+    otp:javaGenerics "<T>" ;
+    otp:description  "Structured concurrency with fail-fast semantics across multiple tasks" ;
+    otp:category     "error" ;
+    otp:hasMethod    jotp:Parallel_all ;
+    otp:hasMethod    jotp:Parallel_race .
+
+jotp:Parallel_all a otp:Method ;
+    otp:methodName      "all" ;
+    otp:methodSignature "List<T> all(List<Callable<T>> tasks)" ;
+    otp:methodDesc      "Runs all tasks in parallel; fails fast if any task throws" .
+
+jotp:Parallel_race a otp:Method ;
+    otp:methodName      "race" ;
+    otp:methodSignature "T race(List<Callable<T>> tasks)" ;
+    otp:methodDesc      "Returns the first task to complete; cancels all remaining tasks" .
+
+# ── Runtime Services ───────────────────────────────────────────────────────
+
+jotp:ProcRegistry a otp:Primitive ;
+    otp:name         "ProcRegistry" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.ProcRegistry" ;
+    otp:javaGenerics "" ;
+    otp:description  "Named-process registry: register, lookup, and unregister ProcRefs by name" ;
+    otp:category     "runtime" ;
+    otp:hasMethod    jotp:ProcRegistry_register ;
+    otp:hasMethod    jotp:ProcRegistry_whereis .
+
+jotp:ProcRegistry_register a otp:Method ;
+    otp:methodName      "register" ;
+    otp:methodSignature "void register(String name, ProcRef<?,?> ref)" ;
+    otp:methodDesc      "Associates a name with a ProcRef for global lookup" .
+
+jotp:ProcRegistry_whereis a otp:Method ;
+    otp:methodName      "whereis" ;
+    otp:methodSignature "Optional<ProcRef<?,?>> whereis(String name)" ;
+    otp:methodDesc      "Returns the ProcRef registered under name, or empty if absent" .
+
+jotp:ProcSys a otp:Primitive ;
+    otp:name         "ProcSys" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.ProcSys" ;
+    otp:javaGenerics "" ;
+    otp:description  "System introspection: list all live processes, counts, and stats" ;
+    otp:category     "runtime" ;
+    otp:hasMethod    jotp:ProcSys_list ;
+    otp:hasMethod    jotp:ProcSys_count .
+
+jotp:ProcSys_list a otp:Method ;
+    otp:methodName      "list" ;
+    otp:methodSignature "List<ProcRef<?,?>> list()" ;
+    otp:methodDesc      "Returns a snapshot of all currently live process references" .
+
+jotp:ProcSys_count a otp:Method ;
+    otp:methodName      "count" ;
+    otp:methodSignature "long count()" ;
+    otp:methodDesc      "Returns the current number of live processes in the runtime" .
+
+jotp:ProcLib a otp:Primitive ;
+    otp:name         "ProcLib" ;
+    otp:javaClass    "io.github.seanchatmangpt.jotp.ProcLib" ;
+    otp:javaGenerics "" ;
+    otp:description  "Application startup coordination: ensures processes are ready before serving" ;
+    otp:category     "runtime" ;
+    otp:hasMethod    jotp:ProcLib_start ;
+    otp:hasMethod    jotp:ProcLib_awaitReady .
+
+jotp:ProcLib_start a otp:Method ;
+    otp:methodName      "start" ;
+    otp:methodSignature "AppRef start(AppSpec spec)" ;
+    otp:methodDesc      "Starts the OTP application from a declarative spec" .
+
+jotp:ProcLib_awaitReady a otp:Method ;
+    otp:methodName      "awaitReady" ;
+    otp:methodSignature "void awaitReady(AppRef ref, Duration timeout)" ;
+    otp:methodDesc      "Blocks until all supervised children report ready or timeout expires" .
