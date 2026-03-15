@@ -1,0 +1,80 @@
+# Java H-Guard patterns — semantic lie enforcement
+# Part of the claude-code-toolkit. Copy/extend for your project.
+#
+# Each pattern enforces one of the seven forbidden YAWL patterns.
+# All exit 2 on match, blocking the Write/Edit tool in Claude Code.
+
+extensions = [".java"]
+exclude_paths = ["/src/test/", "Test.java", "DocTest.java", "/target/"]
+
+# ─── H_TODO ──────────────────────────────────────────────────────────────────
+# Forbidden: placeholder comments and UnsupportedOperationException stubs
+[[patterns]]
+name = "H_TODO"
+regex = '(?i)//\s*(TODO|FIXME|HACK|XXX)[:\s]'
+fix = "Implement the method body or remove the placeholder comment."
+severity = "error"
+
+# ─── H_MOCK ──────────────────────────────────────────────────────────────────
+# Forbidden: variables that signal fake data (mockX, stubX, fakeX, demoX)
+[[patterns]]
+name = "H_MOCK"
+regex = '\b(mock|stub|fake|dummy|demo)[A-Z_]'
+fix = "Use a real implementation. Remove mock/stub/fake/demo variables from production code."
+severity = "error"
+
+# ─── H_MOCK_CLASS ────────────────────────────────────────────────────────────
+# Forbidden: class/interface declarations with mock/stub/fake in the name
+[[patterns]]
+name = "H_MOCK_CLASS"
+regex = '(?i)\b(class|interface|record)\s+(Mock|Stub|Fake|Dummy|Demo)\w+'
+fix = "Move mock classes to src/test/. Production code must not contain mock class declarations."
+severity = "error"
+
+# ─── H_STUB_NULL ─────────────────────────────────────────────────────────────
+# Forbidden: returning null as a placeholder (not as a valid sentinel)
+[[patterns]]
+name = "H_STUB_NULL"
+regex = '^\s*return\s+null\s*;\s*$'
+fix = "throw new UnsupportedOperationException(\"Not implemented\");"
+severity = "error"
+
+# ─── H_STUB_EMPTY_STRING ─────────────────────────────────────────────────────
+# Forbidden: returning empty string as a placeholder
+[[patterns]]
+name = "H_STUB_EMPTY_STRING"
+regex = '^\s*return\s+""\s*;\s*$'
+fix = "throw new UnsupportedOperationException(\"Not implemented\");"
+severity = "error"
+
+# ─── H_STUB_EMPTY_COLLECTION ─────────────────────────────────────────────────
+# Forbidden: returning empty collections as placeholders
+[[patterns]]
+name = "H_STUB_EMPTY_COLLECTION"
+regex = 'return\s+(Collections\.(emptyList|emptyMap|emptySet|EMPTY_LIST|EMPTY_MAP)\s*\(\s*\)|new\s+(ArrayList|HashMap|HashSet|LinkedList|TreeMap|TreeSet)\s*(<[^>]*>)?\s*\(\s*\))\s*;'
+fix = "throw new UnsupportedOperationException(\"Not implemented\");"
+severity = "error"
+
+# ─── H_EMPTY ─────────────────────────────────────────────────────────────────
+# Forbidden: inline empty method body { } used as a stub
+[[patterns]]
+name = "H_EMPTY"
+regex = '(public|protected|private)\s+\w[\w<>\[\]]*\s+\w+\s*\([^)]*\)\s*\{\s*\}'
+fix = "throw new UnsupportedOperationException(\"Not implemented\"); inside the method body."
+severity = "error"
+
+# ─── H_FALLBACK ──────────────────────────────────────────────────────────────
+# Forbidden: catch blocks that return fake/empty data instead of rethrowing
+[[patterns]]
+name = "H_FALLBACK"
+regex = 'catch\s*\([^)]+\)\s*\{\s*return\s+(null|""|0|Collections\.|new\s+(Array|Hash|Linked))'
+fix = "Rethrow as a RuntimeException or let the exception propagate."
+severity = "error"
+
+# ─── H_SILENT ────────────────────────────────────────────────────────────────
+# Forbidden: logging "not implemented" instead of throwing
+[[patterns]]
+name = "H_SILENT"
+regex = '(?i)(log|logger)\.(warn|info|error|debug)\s*\(\s*".*not\s+implemented.*"\s*\)'
+fix = "throw new UnsupportedOperationException(\"Not implemented\");"
+severity = "error"

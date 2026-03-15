@@ -211,7 +211,20 @@ PATH="$JAVA26_HOME/bin:$MAVEN4_HOME/bin:$MVND_HOME/bin:$PATH" \
     || log "Cache warm-up skipped (network/proxy issue — will resolve on first build)"
 log "Cache warm-up complete."
 
-# ─── 8. Final verification ────────────────────────────────────────────────────
+# ─── 8. Observatory: generate compact codebase facts ─────────────────────────
+OBSERVE_BIN="${CLAUDE_PROJECT_DIR}/scripts/rust/dtr-observatory/target/release/dtr-observe"
+if [[ -x "$OBSERVE_BIN" ]]; then
+    log "Observatory: generating docs/facts/ ..."
+    "$OBSERVE_BIN" \
+        --root "${CLAUDE_PROJECT_DIR}" \
+        --output "${CLAUDE_PROJECT_DIR}/docs/facts" \
+        --quiet 2>&1 || log "Observatory skipped (non-fatal)"
+    log "Observatory: facts written to docs/facts/"
+else
+    log "Observatory binary not found — run: make build-observatory"
+fi
+
+# ─── 9. Final verification ────────────────────────────────────────────────────
 log "=== Toolchain Verification ==="
 log "OS:    $OS ($ARCH)"
 log "Java:  $("$JAVA26_HOME/bin/java" -version 2>&1 | grep -i 'openjdk version')"

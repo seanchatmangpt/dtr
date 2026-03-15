@@ -1,0 +1,14 @@
+[package]
+name = "cct-patterns"
+version = "0.1.0"
+edition = "2021"
+description = "Configurable code pattern scanner with Blake3 content cache and Naive Bayes priority ordering"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+regex = { workspace = true }
+blake3 = { workspace = true }
+toml = { workspace = true }
+walkdir = { workspace = true }

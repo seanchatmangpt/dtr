@@ -23,7 +23,11 @@ CURRENT_VERSION := $(shell scripts/current-version.sh)
         release-minor release-patch release-year \
         release-rc-minor release-rc-patch \
         publish version check \
-        build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs
+        build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs \
+        build-guard guard-scan guard-scan-json guard-test clean-guard \
+        build-observatory observe observe-test clean-observatory \
+        dx dx-fast \
+        build-cct cct-test clean-cct
 
 help:
 	@echo ""
@@ -58,6 +62,10 @@ help:
 	@echo ""
 	@echo "Breaking changes: use @Deprecated with min 1-year removal window."
 	@echo "The year boundary is the breaking change window, not a major bump."
+	@echo ""
+	@echo "DX Pipeline:"
+	@echo "  dx                 full five-phase pipeline (Ψ→H→Λ→Ω)"
+	@echo "  dx-fast            skip mvnd verify (Ψ+H+Ω — faster iteration)"
 	@echo ""
 
 compile:
@@ -158,3 +166,65 @@ gen-javadoc-docs: build-dtr-javadoc
 		--output docs/meta/javadoc.json \
 		--docs docs/api \
 		--allow-missing-docs
+
+# ─── H-Guard Enforcement ──────────────────────────────────────────────────────
+
+## Build the dtr-guard-scan binary (H-Guard semantic lie detector)
+build-guard: ## Build dtr-guard-scan binary
+	cd scripts/rust/dtr-guard && cargo build --release
+
+## Scan main Java sources for H-Guard violations (exits 2 on any violation)
+guard-scan: build-guard ## Scan src for semantic lies — exits 2 on violations
+	@echo "==> H-Guard scan: dtr-core/src/main/java"
+	@find dtr-core/src/main/java -name "*.java" | xargs \
+		scripts/rust/dtr-guard/target/release/dtr-guard-scan || \
+		{ echo ""; echo "Run 'make guard-scan-json' for machine-readable receipt."; exit 2; }
+
+## Run H-Guard scan with JSON receipt output
+guard-scan-json: build-guard ## H-Guard scan with JSON receipt
+	@find dtr-core/src/main/java -name "*.java" | xargs \
+		scripts/rust/dtr-guard/target/release/dtr-guard-scan --json
+
+## Run H-Guard unit tests
+guard-test: ## Run Rust unit tests for H-Guard patterns
+	cd scripts/rust/dtr-guard && cargo test
+
+## Clean H-Guard build artifacts
+clean-guard: ## Clean dtr-guard build artifacts
+	cd scripts/rust/dtr-guard && cargo clean
+
+# ─── Observatory ──────────────────────────────────────────────────────────────
+
+build-observatory: ## Build dtr-observe binary (Observatory fact generator)
+	cd scripts/rust/dtr-observatory && cargo build --release
+
+observe: build-observatory ## Generate compact codebase facts to docs/facts/
+	scripts/rust/dtr-observatory/target/release/dtr-observe \
+		--root . \
+		--output docs/facts
+
+observe-test: ## Run Observatory Rust unit tests
+	cd scripts/rust/dtr-observatory && cargo test
+
+clean-observatory: ## Clean Observatory build artifacts
+	cd scripts/rust/dtr-observatory && cargo clean
+
+# ─── DX Pipeline ──────────────────────────────────────────────────────────────
+
+dx: ## Run full five-phase validation pipeline (Ψ→H→Λ→Ω)
+	bash scripts/dx.sh
+
+dx-fast: ## Run dx.sh without mvnd verify (phases Ψ+H+Ω only — faster iteration)
+	bash scripts/dx.sh --skip-verify
+
+# ─── Claude Code Toolkit ──────────────────────────────────────────────────────
+
+build-cct: ## Build the cct Claude Code Toolkit binary
+	cd scripts/rust/claude-code-toolkit && cargo build --release
+
+cct-test: ## Run cct toolkit unit tests
+	cd scripts/rust/claude-code-toolkit && cargo test
+
+clean-cct: ## Clean cct toolkit build artifacts
+	cd scripts/rust/claude-code-toolkit && cargo clean
+

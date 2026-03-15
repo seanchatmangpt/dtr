@@ -1,0 +1,10 @@
+[package]
+name = "cct-hooks"
+version = "0.1.0"
+edition = "2021"
+description = "Claude Code hook payload types — deserialize stdin, serialize block decisions"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
