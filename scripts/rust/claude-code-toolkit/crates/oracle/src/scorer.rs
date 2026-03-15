@@ -320,8 +320,8 @@ mod tests {
         let minimal_score = scorer.score_risk(&minimal);
         let heavy_score = scorer.score_risk(&heavy);
 
-        assert!(minimal_score >= 0.0 && minimal_score <= 1.0);
-        assert!(heavy_score >= 0.0 && heavy_score <= 1.0);
+        assert!((0.0..=1.0).contains(&minimal_score));
+        assert!((0.0..=1.0).contains(&heavy_score));
     }
 
     #[test]

@@ -75,7 +75,7 @@ fn bench_per_file_latency(c: &mut Criterion) {
 
     for file_count in [1, 10, 100].iter() {
         let scenario = if *file_count == 1 {
-            format!("cold_1_file")
+            "cold_1_file".to_string()
         } else {
             format!("cold_{}_files", file_count)
         };
@@ -197,7 +197,7 @@ fn bench_cache_hit_rate(c: &mut Criterion) {
     // Create 50 identical files (high cache hit potential)
     let content = sample_java_with_violations();
     for i in 0..50 {
-        create_test_java_file(&temp_dir.path(), &format!("Identical{}.java", i), &content);
+        create_test_java_file(temp_dir.path(), format!("Identical{}.java", i).as_str(), &content);
     }
 
     let root = black_box(temp_dir.path().to_path_buf());
