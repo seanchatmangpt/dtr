@@ -604,7 +604,19 @@ public final class RenderMachineLatex extends RenderMachine {
         texDocument.add("");
         texDocument.add("\\subsection{Documentation Coverage}");
         texDocument.add("");
-        texDocument.add("\\textit{Documentation coverage analysis available in primary markdown output.}");
+
+        // Doc coverage requires coverage tracking which is only available in DtrContext
+        // List the classes that would be analyzed
+        texDocument.add("\\textbf{Classes analyzed:}");
+        texDocument.add("\\begin{itemize}");
+        for (Class<?> c : classes) {
+            if (c != null) {
+                texDocument.add("  \\item \\texttt{" + c.getSimpleName() + "}");
+            }
+        }
+        texDocument.add("\\end{itemize}");
+        texDocument.add("");
+        texDocument.add("\\textit{Full coverage analysis requires DtrContext test execution.}");
         texDocument.add("");
     }
 
