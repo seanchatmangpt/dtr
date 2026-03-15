@@ -17,17 +17,14 @@ package io.github.seanchatmangpt.dtr.test;
 
 import io.github.seanchatmangpt.dtr.DtrTest;
 import io.github.seanchatmangpt.dtr.dependencies.MavenDependencyReader;
-import io.github.seanchatmangpt.dtr.dependencies.MavenDependencyReader.DependencyGraphResult;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Documentation test for {@link MavenDependencyReader}.
