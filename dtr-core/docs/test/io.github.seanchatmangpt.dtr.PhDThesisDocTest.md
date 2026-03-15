@@ -644,6 +644,7 @@ Live reflection measurement — test methods in this class:
 
 | Key | Value |
 | --- | --- |
+| `Citation keys registered` | `16` |
 | `say* API methods available` | `22` |
 | `Lines in this test class` | `600+` |
 | `Test methods in PhDThesisDocTest` | `11` |
@@ -651,7 +652,6 @@ Live reflection measurement — test methods in this class:
 | `Output formats supported` | `11` |
 | `say* methods used in this file` | `22 (all of them)` |
 | `Documentation drift incidents` | `0` |
-| `Citation keys registered` | `16` |
 
 | Evaluation Criterion | Target | Measured | Result |
 | --- | --- | --- | --- |
@@ -669,6 +669,7 @@ Live reflection measurement — test methods in this class:
 
 | Check | Result |
 | --- | --- |
+| File compiles on Java 26 with --enable-preview | `✓ PASS` |
 | Zero documentation drift — structural, not procedural guarantee | `✓ PASS` |
 | All 22 say* methods appear in this file | `✓ PASS` |
 | Live reflection counts 11 @Test methods | `✓ PASS` |
@@ -676,7 +677,6 @@ Live reflection measurement — test methods in this class:
 | All 16 BibTeX citations registered in @BeforeAll | `✓ PASS` |
 | AI-augmented development workflow documented in chapter 5 | `✓ PASS` |
 | Five Blue Ocean innovations demonstrated in chapter 6 | `✓ PASS` |
-| File compiles on Java 26 with --enable-preview | `✓ PASS` |
 
 The most important evaluation result is the one that cannot be measured empirically: the experience of reading a document that you trust. Documentation written in DTR's style does not require the reader to wonder "is this still accurate?". If it were not accurate, the test would fail. The document and the test are the same file. Trust is structural, not procedural.
 
