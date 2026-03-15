@@ -1183,4 +1183,477 @@ public final class RenderMachineImpl extends RenderMachine {
 
         return sb.toString();
     }
+
+    // =========================================================================
+    // 80/20 Blue Ocean Innovations — v2.7.0
+    // =========================================================================
+
+    @Override
+    public void sayTimeSeries(String label, long[] values, String[] timestamps) {
+        if (label == null || values == null || values.length == 0) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Time Series: " + label);
+        markdownDocument.add("");
+
+        // Sparkline using Unicode block chars ▁▂▃▄▅▆▇█
+        String[] blocks = {"▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"};
+        long min = Long.MAX_VALUE, max = Long.MIN_VALUE;
+        long sum = 0;
+        for (long v : values) {
+            if (v < min) min = v;
+            if (v > max) max = v;
+            sum += v;
+        }
+        long mean = sum / values.length;
+        long range = (max - min) == 0 ? 1 : (max - min);
+
+        StringBuilder sparkline = new StringBuilder();
+        for (long v : values) {
+            int idx = (int) Math.round(((double)(v - min) / range) * (blocks.length - 1));
+            idx = Math.max(0, Math.min(idx, blocks.length - 1));
+            sparkline.append(blocks[idx]);
+        }
+
+        // Trend direction
+        long firstHalfMean = 0, secondHalfMean = 0;
+        int half = values.length / 2;
+        for (int i = 0; i < half; i++) firstHalfMean += values[i];
+        for (int i = half; i < values.length; i++) secondHalfMean += values[i];
+        firstHalfMean /= Math.max(half, 1);
+        secondHalfMean /= Math.max(values.length - half, 1);
+        String trend = secondHalfMean > firstHalfMean ? "↑ rising" :
+                       secondHalfMean < firstHalfMean ? "↓ falling" : "→ stable";
+
+        markdownDocument.add("`" + sparkline + "`");
+        markdownDocument.add("");
+        markdownDocument.add("| Metric | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Min | `" + min + "` |");
+        markdownDocument.add("| Max | `" + max + "` |");
+        markdownDocument.add("| Mean | `" + mean + "` |");
+        markdownDocument.add("| Trend | " + trend + " |");
+        markdownDocument.add("| Samples | `" + values.length + "` |");
+
+        if (timestamps != null && timestamps.length > 0) {
+            markdownDocument.add("");
+            markdownDocument.add("| Timestamp | Value |");
+            markdownDocument.add("| --- | --- |");
+            for (int i = 0; i < Math.min(values.length, timestamps.length); i++) {
+                markdownDocument.add("| " + timestamps[i] + " | `" + values[i] + "` |");
+            }
+        }
+    }
+
+    @Override
+    public void sayComplexityProfile(String label,
+                                     java.util.function.IntFunction<Runnable> taskFactory,
+                                     int[] ns) {
+        if (label == null || taskFactory == null || ns == null || ns.length == 0) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Complexity Profile: " + label);
+        markdownDocument.add("");
+
+        long[] times = new long[ns.length];
+        // Warmup first input
+        try { taskFactory.apply(ns[0]).run(); } catch (Exception ignored) {}
+
+        for (int i = 0; i < ns.length; i++) {
+            Runnable task;
+            try { task = taskFactory.apply(ns[i]); } catch (Exception e) { continue; }
+            int warmup = 5;
+            for (int w = 0; w < warmup; w++) { try { task.run(); } catch (Exception ignored) {} }
+            long start = System.nanoTime();
+            int rounds = 10;
+            for (int r = 0; r < rounds; r++) { try { task.run(); } catch (Exception ignored) {} }
+            times[i] = (System.nanoTime() - start) / rounds;
+        }
+
+        markdownDocument.add("| n | Time (ns) | Ratio vs n[0] | Inferred |");
+        markdownDocument.add("| --- | --- | --- | --- |");
+        long baseTime = times[0] == 0 ? 1 : times[0];
+        double baseN = ns[0];
+        for (int i = 0; i < ns.length; i++) {
+            double ratio = (double) times[i] / baseTime;
+            double nRatio = (double) ns[i] / baseN;
+            String inferred;
+            if (i == 0) {
+                inferred = "baseline";
+            } else if (ratio < 1.5) {
+                inferred = "O(1)";
+            } else if (ratio < nRatio * 1.5) {
+                inferred = "O(n)";
+            } else if (ratio < nRatio * Math.log(nRatio) * 2) {
+                inferred = "O(n log n)";
+            } else if (ratio < nRatio * nRatio * 1.5) {
+                inferred = "O(n²)";
+            } else {
+                inferred = "O(n²+)";
+            }
+            markdownDocument.add("| `" + ns[i] + "` | `" + times[i] + "` | `" +
+                    "%.2fx".formatted(ratio) + "` | " + inferred + " |");
+        }
+    }
+
+    @Override
+    public void sayStateMachine(String title, java.util.Map<String, String> transitions) {
+        if (title == null || transitions == null || transitions.isEmpty()) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### State Machine: " + title);
+        markdownDocument.add("");
+        markdownDocument.add("```mermaid");
+        markdownDocument.add("stateDiagram-v2");
+
+        // Determine initial state from first entry
+        String firstKey = transitions.keySet().iterator().next();
+        String initialState = firstKey.contains(":") ? firstKey.split(":", 2)[0] : firstKey;
+        markdownDocument.add("    [*] --> " + sanitizeId(initialState));
+
+        for (var entry : transitions.entrySet()) {
+            String key = entry.getKey();
+            String toState = entry.getValue();
+            String fromState, event;
+            if (key.contains(":")) {
+                String[] parts = key.split(":", 2);
+                fromState = parts[0];
+                event = parts[1];
+            } else {
+                fromState = key;
+                event = "";
+            }
+            String arrow = event.isBlank()
+                    ? "    " + sanitizeId(fromState) + " --> " + sanitizeId(toState)
+                    : "    " + sanitizeId(fromState) + " --> " + sanitizeId(toState) + " : " + event;
+            markdownDocument.add(arrow);
+        }
+        markdownDocument.add("```");
+    }
+
+    @Override
+    public void sayDataFlow(String title,
+                            java.util.List<String> stages,
+                            java.util.List<java.util.function.Function<Object, Object>> transforms,
+                            Object sample) {
+        if (title == null || stages == null || stages.isEmpty()) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Data Flow: " + title);
+        markdownDocument.add("");
+
+        // Execute pipeline on sample
+        List<Object> outputs = new ArrayList<>();
+        outputs.add(sample);
+        Object current = sample;
+        for (var fn : transforms) {
+            try { current = fn.apply(current); } catch (Exception e) { current = "ERROR: " + e.getMessage(); }
+            outputs.add(current);
+        }
+
+        // Mermaid flowchart
+        markdownDocument.add("```mermaid");
+        markdownDocument.add("flowchart LR");
+        markdownDocument.add("    INPUT[\"Input\"]");
+        for (int i = 0; i < stages.size(); i++) {
+            markdownDocument.add("    S" + i + "[\"" + stages.get(i) + "\"]");
+        }
+        markdownDocument.add("    OUTPUT[\"Output\"]");
+        markdownDocument.add("    INPUT --> S0");
+        for (int i = 0; i < stages.size() - 1; i++) {
+            markdownDocument.add("    S" + i + " --> S" + (i + 1));
+        }
+        if (!stages.isEmpty()) {
+            markdownDocument.add("    S" + (stages.size() - 1) + " --> OUTPUT");
+        }
+        markdownDocument.add("```");
+
+        // Sample trace table
+        markdownDocument.add("");
+        markdownDocument.add("**Sample trace:**");
+        markdownDocument.add("");
+        markdownDocument.add("| Stage | Value |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Input | `" + truncate(String.valueOf(outputs.get(0)), 60) + "` |");
+        for (int i = 0; i < stages.size() && i + 1 < outputs.size(); i++) {
+            markdownDocument.add("| " + stages.get(i) + " | `" +
+                    truncate(String.valueOf(outputs.get(i + 1)), 60) + "` |");
+        }
+    }
+
+    @Override
+    public void sayApiDiff(Class<?> before, Class<?> after) {
+        if (before == null || after == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### API Diff: `" + before.getSimpleName() + "` → `" + after.getSimpleName() + "`");
+        markdownDocument.add("");
+
+        // Collect method signatures
+        java.util.Set<String> beforeSigs = new java.util.LinkedHashSet<>();
+        java.util.Set<String> afterSigs = new java.util.LinkedHashSet<>();
+        for (var m : before.getDeclaredMethods()) {
+            if (java.lang.reflect.Modifier.isPublic(m.getModifiers()))
+                beforeSigs.add(methodSig(m));
+        }
+        for (var m : after.getDeclaredMethods()) {
+            if (java.lang.reflect.Modifier.isPublic(m.getModifiers()))
+                afterSigs.add(methodSig(m));
+        }
+
+        List<String> added = afterSigs.stream().filter(s -> !beforeSigs.contains(s)).toList();
+        List<String> removed = beforeSigs.stream().filter(s -> !afterSigs.contains(s)).toList();
+
+        if (added.isEmpty() && removed.isEmpty()) {
+            markdownDocument.add("*(No API changes detected)*");
+            return;
+        }
+
+        if (!added.isEmpty()) {
+            markdownDocument.add("**Added (" + added.size() + "):**");
+            markdownDocument.add("");
+            markdownDocument.add("| Method |");
+            markdownDocument.add("| --- |");
+            for (String sig : added) markdownDocument.add("| ✅ `" + sig + "` |");
+            markdownDocument.add("");
+        }
+
+        if (!removed.isEmpty()) {
+            markdownDocument.add("**Removed (" + removed.size() + "):**");
+            markdownDocument.add("");
+            markdownDocument.add("| Method |");
+            markdownDocument.add("| --- |");
+            for (String sig : removed) markdownDocument.add("| ❌ `" + sig + "` |");
+        }
+    }
+
+    @Override
+    public void sayHeatmap(String title, double[][] matrix, String[] rowLabels, String[] colLabels) {
+        if (title == null || matrix == null || matrix.length == 0) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Heatmap: " + title);
+        markdownDocument.add("");
+
+        // Find global min/max for normalisation
+        double min = Double.MAX_VALUE, max = Double.MIN_VALUE;
+        for (double[] row : matrix) {
+            for (double v : row) {
+                if (v < min) min = v;
+                if (v > max) max = v;
+            }
+        }
+        double range = (max - min) == 0 ? 1 : (max - min);
+        String[] intensities = {"░", "▒", "▓", "█"};
+
+        // Build header
+        StringBuilder header = new StringBuilder("| |");
+        StringBuilder sep = new StringBuilder("| --- |");
+        int cols = matrix[0].length;
+        for (int c = 0; c < cols; c++) {
+            String cl = (colLabels != null && c < colLabels.length) ? colLabels[c] : ("C" + c);
+            header.append(" ").append(cl).append(" |");
+            sep.append(" --- |");
+        }
+        markdownDocument.add("```");
+        // ASCII heatmap in code block
+        if (colLabels != null) {
+            StringBuilder colHeader = new StringBuilder("     ");
+            for (int c = 0; c < cols; c++) {
+                String cl = (c < colLabels.length) ? colLabels[c] : ("C" + c);
+                colHeader.append(" %-4s".formatted(cl.length() > 4 ? cl.substring(0, 4) : cl));
+            }
+            markdownDocument.add(colHeader.toString());
+        }
+        for (int r = 0; r < matrix.length; r++) {
+            String rl = (rowLabels != null && r < rowLabels.length) ? rowLabels[r] : ("R" + r);
+            StringBuilder row = new StringBuilder("%-4s ".formatted(rl.length() > 4 ? rl.substring(0, 4) : rl));
+            for (int c = 0; c < matrix[r].length; c++) {
+                int idx = (int) Math.round(((matrix[r][c] - min) / range) * (intensities.length - 1));
+                idx = Math.max(0, Math.min(idx, intensities.length - 1));
+                row.append(" ").append(intensities[idx]).append("  ").append(" ");
+            }
+            markdownDocument.add(row.toString());
+        }
+        markdownDocument.add("```");
+
+        markdownDocument.add("Scale: `░` low → `█` high  |  range `[%.2f, %.2f]`".formatted(min, max));
+    }
+
+    @Override
+    public void sayPropertyBased(String property,
+                                 java.util.function.Predicate<Object> check,
+                                 java.util.List<Object> inputs) {
+        if (property == null || check == null || inputs == null || inputs.isEmpty()) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Property: " + property);
+        markdownDocument.add("");
+        markdownDocument.add("| Input | Result | Status |");
+        markdownDocument.add("| --- | --- | --- |");
+
+        int passed = 0, failed = 0;
+        List<Object> failures = new ArrayList<>();
+        for (Object input : inputs) {
+            boolean holds;
+            try { holds = check.test(input); } catch (Exception e) { holds = false; }
+            if (holds) {
+                passed++;
+                markdownDocument.add("| `" + truncate(String.valueOf(input), 40) + "` | true | ✅ PASS |");
+            } else {
+                failed++;
+                failures.add(input);
+                markdownDocument.add("| `" + truncate(String.valueOf(input), 40) + "` | false | ❌ FAIL |");
+            }
+        }
+
+        markdownDocument.add("");
+        markdownDocument.add("**Result: %d/%d inputs satisfied the property.**".formatted(passed, inputs.size()));
+
+        if (failed > 0) {
+            markdownDocument.add("");
+            markdownDocument.add("> [!WARNING]");
+            markdownDocument.add("> Property violated for " + failed + " input(s): " +
+                    failures.stream().map(String::valueOf).collect(Collectors.joining(", ")));
+            // Throw to fail the test
+            throw new AssertionError("Property '" + property + "' violated for inputs: " + failures);
+        }
+    }
+
+    @Override
+    public void sayParallelTrace(String title,
+                                 java.util.List<String> agents,
+                                 java.util.List<long[]> timeSlots) {
+        if (title == null || agents == null || agents.isEmpty()) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Parallel Trace: " + title);
+        markdownDocument.add("");
+        markdownDocument.add("```mermaid");
+        markdownDocument.add("gantt");
+        markdownDocument.add("    title " + title);
+        markdownDocument.add("    dateFormat x");
+        markdownDocument.add("    axisFormat %L ms");
+
+        for (int i = 0; i < Math.min(agents.size(), timeSlots.size()); i++) {
+            long[] slot = timeSlots.get(i);
+            long start = slot.length > 0 ? slot[0] : 0;
+            long duration = slot.length > 1 ? slot[1] : 100;
+            markdownDocument.add("    section " + agents.get(i));
+            markdownDocument.add("    " + agents.get(i) + " :a" + i + ", " + start + ", " + duration + "ms");
+        }
+        markdownDocument.add("```");
+    }
+
+    @Override
+    public void sayDecisionTree(String title, java.util.Map<String, Object> branches) {
+        if (title == null || branches == null || branches.isEmpty()) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Decision Tree: " + title);
+        markdownDocument.add("");
+        markdownDocument.add("```mermaid");
+        markdownDocument.add("flowchart TD");
+
+        // Render root node
+        String rootId = "ROOT";
+        markdownDocument.add("    " + rootId + "{\"" + title + "\"}");
+
+        // Render branches recursively (max 3 levels via counter)
+        int[] counter = {0};
+        renderDecisionBranches(rootId, branches, counter, 0);
+
+        markdownDocument.add("```");
+    }
+
+    @SuppressWarnings("unchecked")
+    private void renderDecisionBranches(String parentId,
+                                         java.util.Map<String, Object> branches,
+                                         int[] counter,
+                                         int depth) {
+        if (depth > 4) return;
+        for (var entry : branches.entrySet()) {
+            String nodeId = "N" + (counter[0]++);
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (value instanceof java.util.Map<?,?> subMap) {
+                // Intermediate decision node
+                markdownDocument.add("    " + nodeId + "{\"" + key + "\"}");
+                markdownDocument.add("    " + parentId + " --> " + nodeId);
+                renderDecisionBranches(nodeId, (java.util.Map<String,Object>) subMap, counter, depth + 1);
+            } else {
+                // Leaf node
+                String leafId = "L" + (counter[0]++);
+                markdownDocument.add("    " + nodeId + "[\"" + key + "\"]");
+                markdownDocument.add("    " + parentId + " --> " + nodeId);
+                markdownDocument.add("    " + leafId + "([\"" + value + "\"])");
+                markdownDocument.add("    " + nodeId + " --> " + leafId);
+            }
+        }
+    }
+
+    @Override
+    public void sayAgentLoop(String agentName,
+                             java.util.List<String> observations,
+                             java.util.List<String> decisions,
+                             java.util.List<String> tools) {
+        if (agentName == null) return;
+
+        markdownDocument.add("");
+        markdownDocument.add("### Agent Loop: " + agentName);
+        markdownDocument.add("");
+        markdownDocument.add("```mermaid");
+        markdownDocument.add("sequenceDiagram");
+        markdownDocument.add("    participant Env as Environment");
+        markdownDocument.add("    participant Agent as " + agentName);
+        markdownDocument.add("    participant Tool as Tools");
+
+        int maxSteps = Math.max(
+                observations == null ? 0 : observations.size(),
+                Math.max(decisions == null ? 0 : decisions.size(),
+                         tools == null ? 0 : tools.size()));
+
+        for (int i = 0; i < maxSteps; i++) {
+            if (observations != null && i < observations.size()) {
+                String obs = observations.get(i).replace("\"", "'");
+                markdownDocument.add("    Env->>Agent: observe: " + truncate(obs, 50));
+            }
+            if (tools != null && i < tools.size()) {
+                String tool = tools.get(i).replace("\"", "'");
+                markdownDocument.add("    Agent->>Tool: call: " + truncate(tool, 50));
+                markdownDocument.add("    Tool-->>Agent: result");
+            }
+            if (decisions != null && i < decisions.size()) {
+                String dec = decisions.get(i).replace("\"", "'");
+                markdownDocument.add("    Agent->>Env: act: " + truncate(dec, 50));
+            }
+        }
+        markdownDocument.add("```");
+
+        // Summary table
+        markdownDocument.add("");
+        markdownDocument.add("| Dimension | Count |");
+        markdownDocument.add("| --- | --- |");
+        markdownDocument.add("| Observations | `" + (observations == null ? 0 : observations.size()) + "` |");
+        markdownDocument.add("| Decisions | `" + (decisions == null ? 0 : decisions.size()) + "` |");
+        markdownDocument.add("| Tool calls | `" + (tools == null ? 0 : tools.size()) + "` |");
+    }
+
+    // ── helpers ────────────────────────────────────────────────────────────────
+
+    private String sanitizeId(String s) {
+        return s.replaceAll("[^a-zA-Z0-9_]", "_");
+    }
+
+    private String methodSig(java.lang.reflect.Method m) {
+        String params = Arrays.stream(m.getParameterTypes())
+                .map(Class::getSimpleName)
+                .collect(Collectors.joining(", "));
+        return m.getReturnType().getSimpleName() + " " + m.getName() + "(" + params + ")";
+    }
+
+    private String truncate(String s, int max) {
+        return s.length() <= max ? s : s.substring(0, max - 3) + "...";
+    }
 }

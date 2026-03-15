@@ -577,6 +577,77 @@ public abstract class DtrTest implements RenderMachineCommands {
         renderMachine.sayJavadoc(method);
     }
 
+    // =========================================================================
+    // 80/20 Blue Ocean Innovations — v2.7.0 delegations
+    // =========================================================================
+
+    /** Documents a metric time-series with ASCII sparkline and trend summary. */
+    public final void sayTimeSeries(String label, long[] values, String[] timestamps) {
+        renderMachine.sayTimeSeries(label, values, timestamps);
+    }
+
+    /** Empirically profiles algorithmic complexity at increasing input sizes. */
+    public final void sayComplexityProfile(String label,
+                                           java.util.function.IntFunction<Runnable> taskFactory,
+                                           int[] ns) {
+        renderMachine.sayComplexityProfile(label, taskFactory, ns);
+    }
+
+    /** Renders a finite state machine as a Mermaid stateDiagram-v2. */
+    public final void sayStateMachine(String title,
+                                      java.util.Map<String, String> transitions) {
+        renderMachine.sayStateMachine(title, transitions);
+    }
+
+    /** Documents a data transformation pipeline by running samples through stages. */
+    public final void sayDataFlow(String title,
+                                  java.util.List<String> stages,
+                                  java.util.List<java.util.function.Function<Object, Object>> transforms,
+                                  Object sample) {
+        renderMachine.sayDataFlow(title, stages, transforms, sample);
+    }
+
+    /** Computes the semantic diff between two API class versions. */
+    public final void sayApiDiff(Class<?> before, Class<?> after) {
+        renderMachine.sayApiDiff(before, after);
+    }
+
+    /** Renders a 2-D ASCII heatmap for matrix data. */
+    public final void sayHeatmap(String title,
+                                  double[][] matrix,
+                                  String[] rowLabels,
+                                  String[] colLabels) {
+        renderMachine.sayHeatmap(title, matrix, rowLabels, colLabels);
+    }
+
+    /** Documents a property-based invariant with verification across sample inputs. */
+    public final void sayPropertyBased(String property,
+                                       java.util.function.Predicate<Object> check,
+                                       java.util.List<Object> inputs) {
+        renderMachine.sayPropertyBased(property, check, inputs);
+    }
+
+    /** Renders a parallel execution trace as a Mermaid Gantt chart. */
+    public final void sayParallelTrace(String title,
+                                       java.util.List<String> agents,
+                                       java.util.List<long[]> timeSlots) {
+        renderMachine.sayParallelTrace(title, agents, timeSlots);
+    }
+
+    /** Documents a decision algorithm as a Mermaid flowchart. */
+    public final void sayDecisionTree(String title,
+                                      java.util.Map<String, Object> branches) {
+        renderMachine.sayDecisionTree(title, branches);
+    }
+
+    /** Documents an AI agent's reasoning loop as a sequence diagram. */
+    public final void sayAgentLoop(String agentName,
+                                   java.util.List<String> observations,
+                                   java.util.List<String> decisions,
+                                   java.util.List<String> tools) {
+        renderMachine.sayAgentLoop(agentName, observations, decisions, tools);
+    }
+
     /**
      * Runs a Hamcrest assertion and documents the result as a table row.
      * Passes a {@code ✓ PASS} label on success; rethrows on failure.

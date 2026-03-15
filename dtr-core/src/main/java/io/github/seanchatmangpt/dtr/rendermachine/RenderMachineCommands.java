@@ -429,4 +429,167 @@ public interface RenderMachineCommands {
      * @param method the method whose Javadoc to render (must not be null)
      */
     void sayJavadoc(java.lang.reflect.Method method);
+
+    // =========================================================================
+    // 80/20 Blue Ocean Innovations — v2.7.0
+    // =========================================================================
+
+    /**
+     * Documents how a metric evolves over time with an ASCII sparkline and
+     * trend summary (min, max, mean, direction). Zero dependencies — pure Java
+     * string math using Unicode block characters (▁▂▃▄▅▆▇█).
+     *
+     * <p>Blue ocean: no existing documentation framework shows metric trends
+     * inline alongside the narrative.</p>
+     *
+     * @param label      descriptive label for the metric (e.g. "GC pause (ms)")
+     * @param values     numeric samples in chronological order
+     * @param timestamps human-readable timestamp strings (same length as values)
+     */
+    void sayTimeSeries(String label, long[] values, String[] timestamps);
+
+    /**
+     * Empirically profiles algorithmic complexity by running a task factory
+     * at increasing input sizes and measuring wall-clock time. Renders a
+     * measurement table and infers the growth class (O(1), O(n), O(n²), etc.).
+     *
+     * <p>Blue ocean: documentation that PROVES complexity instead of asserting it.</p>
+     *
+     * @param label       descriptive label (e.g. "ArrayList.contains()")
+     * @param taskFactory produces a {@code Runnable} for the given input size {@code n}
+     * @param ns          array of input sizes to measure (e.g. {100, 1_000, 10_000})
+     */
+    void sayComplexityProfile(String label,
+                              java.util.function.IntFunction<Runnable> taskFactory,
+                              int[] ns);
+
+    /**
+     * Renders a finite state machine as a Mermaid {@code stateDiagram-v2} diagram.
+     * Keys in {@code transitions} are "FROM:EVENT" strings; values are destination
+     * state names. The initial state is taken as the first key's source.
+     *
+     * <p>Blue ocean: state machines pervade systems yet are almost never documented
+     * in a living, executable form.</p>
+     *
+     * @param title       human-readable title shown above the diagram
+     * @param transitions map of "FROM:EVENT" → "TO_STATE"
+     */
+    void sayStateMachine(String title,
+                         java.util.Map<String, String> transitions);
+
+    /**
+     * Documents a data transformation pipeline by executing each stage against
+     * sample inputs and capturing intermediate outputs. Renders a flowchart and
+     * a table showing input → stage output at each step.
+     *
+     * <p>Blue ocean: ETL / pipeline docs are perpetually stale; this makes
+     * them executable so they cannot drift.</p>
+     *
+     * @param title  pipeline name (e.g. "Order Processing Pipeline")
+     * @param stages ordered list of stage labels
+     * @param transforms ordered list of {@code java.util.function.Function<Object,Object>}
+     *                   applied sequentially to the sample input
+     * @param sample     representative input value for the first stage
+     */
+    void sayDataFlow(String title,
+                     java.util.List<String> stages,
+                     java.util.List<java.util.function.Function<Object, Object>> transforms,
+                     Object sample);
+
+    /**
+     * Computes the semantic diff between two class versions (e.g. old API vs.
+     * new API) using reflection. Produces three tables: added methods, removed
+     * methods, and signature-changed methods.
+     *
+     * <p>Blue ocean: breaking-change documentation that is automatically complete
+     * — no manual "CHANGELOG" entries needed.</p>
+     *
+     * @param before class representing the previous API version
+     * @param after  class representing the new API version
+     */
+    void sayApiDiff(Class<?> before, Class<?> after);
+
+    /**
+     * Renders a 2-D ASCII heatmap using Unicode block characters (░▒▓█) for
+     * matrix data. Normalises values to [0, 1] and maps to four intensity levels.
+     * Ideal for correlation matrices, confusion matrices, and perf heat maps.
+     *
+     * <p>Blue ocean: 2-D visualisation in plain text — works in any terminal,
+     * any Markdown renderer, and any CI log.</p>
+     *
+     * @param title     descriptive title shown above the heatmap
+     * @param matrix    2-D data array [rows][cols]
+     * @param rowLabels labels for each row
+     * @param colLabels labels for each column
+     */
+    void sayHeatmap(String title,
+                    double[][] matrix,
+                    String[] rowLabels,
+                    String[] colLabels);
+
+    /**
+     * Documents a logical property by evaluating a predicate against a list of
+     * sample inputs. Renders a table showing each input, the predicate result,
+     * and a PASS/FAIL marker. Fails the test if any input violates the property.
+     *
+     * <p>Blue ocean: property-based invariant documentation — proves correctness
+     * across representative examples inline with the narrative.</p>
+     *
+     * @param property description of the invariant (e.g. "result is always positive")
+     * @param check    predicate that must hold for every input
+     * @param inputs   representative sample inputs
+     */
+    void sayPropertyBased(String property,
+                          java.util.function.Predicate<Object> check,
+                          java.util.List<Object> inputs);
+
+    /**
+     * Renders a parallel execution trace as a Mermaid Gantt chart. Each agent
+     * is a section; each {@code timeSlot} is a {@code long[2]} of
+     * {startMs, endMs} relative to trace start.
+     *
+     * <p>Blue ocean: multi-agent / multi-thread execution is hard to reason about
+     * from logs; this makes the timeline visual and living.</p>
+     *
+     * @param title     chart title
+     * @param agents    agent/thread names (same length as timeSlots)
+     * @param timeSlots parallel list of {startMs, durationMs} per agent
+     */
+    void sayParallelTrace(String title,
+                          java.util.List<String> agents,
+                          java.util.List<long[]> timeSlots);
+
+    /**
+     * Documents a decision algorithm as a Mermaid {@code flowchart TD}.
+     * The {@code branches} map encodes the tree: keys are node labels (questions
+     * / conditions); values are either a {@code String} (leaf answer) or a nested
+     * {@code Map<String,Object>} (sub-tree). Renders at most 5 levels deep.
+     *
+     * <p>Blue ocean: decision logic is usually buried in code; this surfaces it
+     * as an auto-generated, always-current diagram.</p>
+     *
+     * @param title    chart title / root question label
+     * @param branches decision tree encoded as nested map
+     */
+    void sayDecisionTree(String title,
+                         java.util.Map<String, Object> branches);
+
+    /**
+     * Documents an AI agent's reasoning loop: observations (inputs the agent
+     * perceives), decisions (actions it chose), and tools (external calls it
+     * made). Renders a sequence diagram showing the agent ↔ environment
+     * interaction over one full loop iteration.
+     *
+     * <p>Blue ocean: the first documentation primitive designed specifically for
+     * agentic AI workflows — no other documentation framework has this.</p>
+     *
+     * @param agentName    name of the agent (e.g. "DTR Documentation Agent")
+     * @param observations what the agent observed (in order)
+     * @param decisions    what the agent decided (in order)
+     * @param tools        external tool calls the agent made (in order)
+     */
+    void sayAgentLoop(String agentName,
+                      java.util.List<String> observations,
+                      java.util.List<String> decisions,
+                      java.util.List<String> tools);
 }

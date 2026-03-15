@@ -195,6 +195,57 @@ public abstract class RenderMachine implements RenderMachineCommands {
     /** Javadoc documentation from dtr-javadoc index — no-op in base class. */
     public void sayJavadoc(java.lang.reflect.Method method) {}
 
+    // =========================================================================
+    // 80/20 Blue Ocean Innovations — v2.7.0 no-ops
+    // =========================================================================
+
+    /** Time-series sparkline + trend — no-op in base class. */
+    public void sayTimeSeries(String label, long[] values, String[] timestamps) {}
+
+    /** Empirical complexity profile — no-op in base class. */
+    public void sayComplexityProfile(String label,
+                                     java.util.function.IntFunction<Runnable> taskFactory,
+                                     int[] ns) {}
+
+    /** State machine Mermaid stateDiagram-v2 — no-op in base class. */
+    public void sayStateMachine(String title,
+                                java.util.Map<String, String> transitions) {}
+
+    /** Data transformation pipeline flowchart — no-op in base class. */
+    public void sayDataFlow(String title,
+                            java.util.List<String> stages,
+                            java.util.List<java.util.function.Function<Object, Object>> transforms,
+                            Object sample) {}
+
+    /** Semantic API diff between two class versions — no-op in base class. */
+    public void sayApiDiff(Class<?> before, Class<?> after) {}
+
+    /** 2-D ASCII heatmap — no-op in base class. */
+    public void sayHeatmap(String title,
+                           double[][] matrix,
+                           String[] rowLabels,
+                           String[] colLabels) {}
+
+    /** Property-based invariant documentation — no-op in base class. */
+    public void sayPropertyBased(String property,
+                                 java.util.function.Predicate<Object> check,
+                                 java.util.List<Object> inputs) {}
+
+    /** Parallel execution Gantt trace — no-op in base class. */
+    public void sayParallelTrace(String title,
+                                 java.util.List<String> agents,
+                                 java.util.List<long[]> timeSlots) {}
+
+    /** Decision tree flowchart — no-op in base class. */
+    public void sayDecisionTree(String title,
+                                java.util.Map<String, Object> branches) {}
+
+    /** AI agent loop sequence diagram — no-op in base class. */
+    public void sayAgentLoop(String agentName,
+                             java.util.List<String> observations,
+                             java.util.List<String> decisions,
+                             java.util.List<String> tools) {}
+
     /**
      * Finishes documentation generation and writes output to disk.
      */
