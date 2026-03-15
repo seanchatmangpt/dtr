@@ -3,7 +3,7 @@
 > **Package:** `io.github.seanchatmangpt.dtr`  
 > **Since:** `1.0.0`  
 
-Abstract base class for documentation testing framework using JUnit Jupiter 6. <p>DtrTest bridges test execution and documentation generation, allowing developers to write tests that simultaneously verify behavior and auto-generate comprehensive documentation. Supports multiple output formats: Markdown, LaTeX/PDF, blog posts, and presentation slides.</p> <p><strong>Core Features:</strong></p> <ul>   <li>Documentation generation via {@link RenderMachine} (multiple output formats)</li>   <li>Annotation-driven documentation: {@link DocSection}, {@link DocDescription}, etc.</li>   <li>Reflection-based code introspection: {@link #sayCodeModel(Class)}, {@link #sayAnnotationProfile(Class)}</li>   <li>Cross-references between DocTests with automatic section numbering</li> </ul> <p><strong>Basic Usage:</strong></p> <pre>{@code @ExtendWith(DtrExtension.class) class MyDocTest extends DtrTest {     @Test     @DocSection("Overview")     @DocDescription("Describes the feature.")     void testFeature() {         say("Feature works as expected.");         sayCode("System.out.println(\"Hello\");", "java");     } } }</pre> <p><strong>JUnit Jupiter 6 Integration:</strong></p> <p>While this class is abstract and doesn't require {@code @ExtendWith(DtrExtension.class)}, it is designed to work seamlessly with that extension. The extension manages the RenderMachine lifecycle (one per test class).</p> <p><strong>Annotation Processing:</strong></p> <p>The following annotations on test methods are automatically processed and rendered:</p> <ul>   <li>{@code @DocSection("title")} → H2 heading in output</li>   <li>{@code @DocDescription({"line1", "line2"})} → narrative paragraphs</li>   <li>{@code @DocNote({"note"})} → GitHub-style [!NOTE] alert boxes</li>   <li>{@code @DocWarning({"warn"})} → GitHub-style [!WARNING] alert boxes</li>   <li>{@code @DocCode({"code line"}, language="java")} → syntax-highlighted code blocks</li> </ul> <p><strong>Output Lifecycle:</strong></p> <p>Documentation is accumulated during test execution and written to disk after all tests in the class complete (via {@code @AfterAll} hook). Output location: {@code docs/test/&lt;ClassName&gt;.*}</p>
+Abstract base class for documentation testing framework using JUnit 5. <p>DtrTest bridges test execution and documentation generation, allowing developers to write tests that simultaneously verify behavior and auto-generate comprehensive documentation. Supports multiple output formats: Markdown, LaTeX/PDF, blog posts, and presentation slides.</p> <p><strong>Core Features:</strong></p> <ul>   <li>Documentation generation via {@link RenderMachine} (multiple output formats)</li>   <li>Annotation-driven documentation: {@link DocSection}, {@link DocDescription}, etc.</li>   <li>Reflection-based code introspection: {@link #sayCodeModel(Class)}, {@link #sayAnnotationProfile(Class)}</li>   <li>Cross-references between DocTests with automatic section numbering</li> </ul> <p><strong>Basic Usage:</strong></p> <pre>{@code @ExtendWith(DtrExtension.class) class MyDocTest extends DtrTest {     @Test     @DocSection("Overview")     @DocDescription("Describes the feature.")     void testFeature() {         say("Feature works as expected.");         sayCode("System.out.println(\"Hello\");", "java");     } } }</pre> <p><strong>JUnit 5 Integration:</strong></p> <p>While this class is abstract and doesn't require {@code @ExtendWith(DtrExtension.class)}, it is designed to work seamlessly with that extension. The extension manages the RenderMachine lifecycle (one per test class).</p> <p><strong>Annotation Processing:</strong></p> <p>The following annotations on test methods are automatically processed and rendered:</p> <ul>   <li>{@code @DocSection("title")} → H2 heading in output</li>   <li>{@code @DocDescription({"line1", "line2"})} → narrative paragraphs</li>   <li>{@code @DocNote({"note"})} → GitHub-style [!NOTE] alert boxes</li>   <li>{@code @DocWarning({"warn"})} → GitHub-style [!WARNING] alert boxes</li>   <li>{@code @DocCode({"code line"}, language="java")} → syntax-highlighted code blocks</li> </ul> <p><strong>Output Lifecycle:</strong></p> <p>Documentation is accumulated during test execution and written to disk after all tests in the class complete (via {@code @AfterAll} hook). Output location: {@code docs/test/&lt;ClassName&gt;.*}</p>
 
 ```java
 public abstract class DtrTest implements RenderMachineCommands {
@@ -17,7 +17,7 @@ public abstract class DtrTest implements RenderMachineCommands {
 
 ### `finishDocTest`
 
-JUnit Jupiter 6 {@code @AfterAll} lifecycle hook that flushes and finalises the shared render machine after all test methods in the class have run. Calls {@code finishAndWriteOut()} to close output streams and write the final document files, then nulls the reference so the next test class starts fresh.
+JUnit 5 {@code @AfterAll} lifecycle hook that flushes and finalises the shared render machine after all test methods in the class have run. Calls {@code finishAndWriteOut()} to close output streams and write the final document files, then nulls the reference so the next test class starts fresh.
 
 ---
 
@@ -315,11 +315,11 @@ Alternative way to set the output file name. This can be handy when DTR is not p
 
 ### `setupForTestCaseMethod`
 
-JUnit Jupiter 6 {@code @BeforeEach} lifecycle hook that wires the test class name and current test method into the render machine before each test method runs. Processes any {@link DocSection}, {@link DocDescription}, {@link DocNote}, {@link DocWarning}, and {@link DocCode} annotations present on the test method.
+JUnit 5 {@code @BeforeEach} lifecycle hook that wires the test class name and current test method into the render machine before each test method runs. Processes any {@link DocSection}, {@link DocDescription}, {@link DocNote}, {@link DocWarning}, and {@link DocCode} annotations present on the test method.
 
 | Parameter | Description |
 | --- | --- |
-| `testInfo` | JUnit Jupiter 6 test metadata (class name, method reference) |
+| `testInfo` | JUnit 5 test metadata (class name, method reference) |
 
 ---
 

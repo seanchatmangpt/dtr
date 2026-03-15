@@ -15,7 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr.jotp;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import io.github.seanchatmangpt.dtr.DtrTest;
 
 import static org.hamcrest.CoreMatchers.is;

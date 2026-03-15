@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `262 ns` |
+| Avg | `236 ns` |
 | Min | `83 ns` |
-| Max | `31750 ns` |
-| p99 | `1500 ns` |
-| Ops/sec | `3,816,793` |
+| Max | `30375 ns` |
+| p99 | `1459 ns` |
+| Ops/sec | `4,237,288` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `794 ns` |
-| Min | `208 ns` |
-| Max | `64875 ns` |
-| p99 | `29166 ns` |
-| Ops/sec | `1,259,445` |
+| Avg | `636 ns` |
+| Min | `125 ns` |
+| Max | `56333 ns` |
+| p99 | `10791 ns` |
+| Ops/sec | `1,572,327` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -169,8 +169,8 @@ classDiagram
         +sayAnnotationProfile(Class)
         +sayAsciiChart(String, double[], String[])
         +sayAssertions(Map)
-        +sayBenchmark(String, Runnable)
         +sayBenchmark(String, Runnable, int, int)
+        +sayBenchmark(String, Runnable)
     }
 ```
 
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-15T04:50:46.665759Z` |
+| Timestamp | `2026-03-15T23:35:57.799212Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -267,8 +267,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayAnnotationProfile(Class)` | ✅ direct |
 | `void sayAsciiChart(String, double[], String[])` | ✅ direct |
 | `void sayAssertions(Map)` | ✅ direct |
-| `void sayBenchmark(String, Runnable)` | ✅ direct |
 | `void sayBenchmark(String, Runnable, int, int)` | ✅ direct |
+| `void sayBenchmark(String, Runnable)` | ✅ direct |
 | `void sayCallGraph(Class)` | ✅ direct |
 | `void sayCallSite()` | ✅ direct |
 | `void sayCite(String)` | ✅ direct |
@@ -301,8 +301,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayReflectiveDiff(Object, Object)` | ✅ direct |
 | `void saySecurityManager()` | ✅ direct |
 | `void sayStringProfile(String)` | ✅ direct |
-| `void saySystemProperties(String)` | ✅ direct |
 | `void saySystemProperties()` | ✅ direct |
+| `void saySystemProperties(String)` | ✅ direct |
 | `void sayTable(String[][])` | ✅ direct |
 | `void sayThreadDump()` | ✅ direct |
 | `void sayUnorderedList(List)` | ✅ direct |
@@ -359,11 +359,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `350 ns` |
+| Avg | `63 ns` |
 | Min | `41 ns` |
-| Max | `27125 ns` |
-| p99 | `27125 ns` |
-| Ops/sec | `2,857,142` |
+| Max | `458 ns` |
+| p99 | `458 ns` |
+| Ops/sec | `15,873,015` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -481,14 +481,14 @@ sayThreadDump();
 | `34` | `surefire-forkedjvm-stream-flusher` | `TIMED_WAITING` | `true` | `N/A` |
 | `36` | `surefire-forkedjvm-command-thread` | `RUNNABLE` | `true` | `N/A` |
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
-| `52` | `ForkJoinPool-1-worker-1` | `TIMED_WAITING` | `true` | `N/A` |
-| `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
-| `56` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
+| `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
+| `54` | `ForkJoinPool-1-worker-2` | `TIMED_WAITING` | `true` | `N/A` |
+| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
-| `59` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
+| `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
 | `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
-| `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
-| `70` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
+| `65` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
+| `66` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
 
 *17 live threads*
 

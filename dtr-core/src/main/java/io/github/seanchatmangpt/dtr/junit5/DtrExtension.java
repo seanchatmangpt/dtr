@@ -18,6 +18,8 @@ package io.github.seanchatmangpt.dtr.junit5;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolver;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
 
@@ -49,7 +51,7 @@ import java.util.Optional;
  *   <li>Documentation output generation after all tests complete</li>
  * </ul>
  */
-public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
+public class DtrExtension implements BeforeEachCallback, AfterAllCallback, ParameterResolver {
 
     private static final String RENDER_MACHINE_KEY = "dtr.renderMachine";
     private static final String FILE_NAME_KEY = "dtr.fileName";
@@ -72,6 +74,17 @@ public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
             renderMachine.finishAndWriteOut();
             store.remove(RENDER_MACHINE_KEY);
         }
+    }
+
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        return parameterContext.getParameter().getType() == DtrContext.class;
+    }
+
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        RenderMachine renderMachine = getOrCreateRenderMachine(extensionContext);
+        return new DtrContext(renderMachine);
     }
 
     /**

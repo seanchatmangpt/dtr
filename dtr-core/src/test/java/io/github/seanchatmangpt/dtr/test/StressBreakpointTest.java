@@ -15,7 +15,7 @@
  */
 package io.github.seanchatmangpt.dtr;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;

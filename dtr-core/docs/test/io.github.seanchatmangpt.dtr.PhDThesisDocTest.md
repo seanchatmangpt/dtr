@@ -285,8 +285,8 @@ void saySecurityManager()
 void saySlideOnly(String arg0)
 void saySpeakerNote(String arg0)
 void sayStringProfile(String arg0)
-void saySystemProperties(String arg0)
 void saySystemProperties()
+void saySystemProperties(String arg0)
 void sayTable(String[][] arg0)
 void sayThreadDump()
 void sayTldr(String arg0)
@@ -409,7 +409,7 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 | --- | --- |
 | `Concurrency model` | `Virtual threads (JEP 444)` |
 | `Threads created` | `8` |
-| `Wall-clock time` | `2 ms` |
+| `Wall-clock time` | `1 ms` |
 | `Formats dispatched` | `8` |
 | `Thread pool to size` | `None required` |
 
