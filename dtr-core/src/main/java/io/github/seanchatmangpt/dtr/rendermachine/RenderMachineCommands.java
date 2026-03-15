@@ -1265,4 +1265,59 @@ public interface RenderMachineCommands {
         }
     }
 
+    // =========================================================================
+    // Blue Ocean: Erlang OTP Supervision Tree
+    // =========================================================================
+
+    /**
+     * Documents a {@link io.github.seanchatmangpt.dtr.erlang.SupervisionTree.SupervisionReport}
+     * as a structured table plus summary lines following Joe Armstrong's OTP supervision
+     * philosophy.
+     *
+     * <p>Renders a 5-column table (Child | State | Restarts | Crash Reasons | Total Time)
+     * with one row per child report, followed by a bold summary line showing total crashes,
+     * total restarts, and the active strategy. Emits a warning when the supervisor is
+     * unhealthy (any child exceeded {@code maxRestarts}) and a note with a Joe Armstrong
+     * quote.</p>
+     *
+     * @param report the supervision report produced by
+     *               {@link io.github.seanchatmangpt.dtr.erlang.SupervisionTree#supervise}
+     */
+    default void sayErlangSupervisor(
+            io.github.seanchatmangpt.dtr.erlang.SupervisionTree.SupervisionReport report) {
+
+        say("**Supervision Tree: " + report.supervisorName()
+                + "** | Strategy: **" + report.strategy()
+                + "** | Health: " + (report.supervisorHealthy() ? "\u2713" : "\u2717"));
+
+        var children = report.children();
+        String[][] table = new String[children.size() + 1][5];
+        table[0] = new String[]{"Child", "State", "Restarts", "Crash Reasons", "Total Time"};
+        for (int i = 0; i < children.size(); i++) {
+            var c = children.get(i);
+            String reasons = c.crashReasons().isEmpty()
+                    ? "\u2014"
+                    : String.join("; ", c.crashReasons());
+            table[i + 1] = new String[]{
+                c.name(),
+                c.state().name(),
+                String.valueOf(c.restartCount()),
+                reasons,
+                io.github.seanchatmangpt.dtr.erlang.SupervisionTree.humanNs(c.totalNs())
+            };
+        }
+        sayTable(table);
+
+        say("Crashes: **" + report.totalCrashes()
+                + "** | Restarts: **" + report.totalRestarts()
+                + "** | Strategy: **" + report.strategy() + "**");
+
+        if (!report.supervisorHealthy()) {
+            sayWarning("Supervisor unhealthy \u2014 child exceeded maxRestarts. "
+                    + "Process escalation required.");
+        }
+
+        sayNote("Erlang OTP: 'supervisors are the backbone of fault-tolerant systems'"
+                + " \u2014 Joe Armstrong");
+    }
 }
