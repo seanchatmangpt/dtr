@@ -39,7 +39,7 @@ Add this to your `pom.xml`:
     <dependency>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>2026.3.0</version>
+        <version>2026.4.1</version>
         <scope>test</scope>
     </dependency>
 
@@ -103,35 +103,40 @@ If you see no errors, you're ready to write your first test.
 
 ## Your First Test
 
-### The Modern Way (DTR 2026.4.0+)
+### The Modern Way with Field Injection (DTR 2026.4.1+)
 
-Create a file named `src/test/java/com/example/MyFirstDocTest.java`:
+The recommended approach uses field injection for cleaner code and better test isolation:
 
 ```java
 package com.example;
 
-import io.github.seanchatmangpt.dtr.DtrTest; // Note: @DtrTest annotation
+import io.github.seanchatmangpt.dtr.DtrTest;
 import io.github.seanchatmangpt.dtr.Doc;
+import io.github.seanchatmangpt.dtr.DtrContext;
 import org.junit.jupiter.api.Test;
 
 // Single annotation - no @ExtendWith needed!
 @DtrTest
 class MyFirstDocTest {
 
+    // Field injection: DTR automatically provides a context instance
+    private DtrContext dtr;
+
     @Test
     @Doc(
         section = "Hello DTR",
-        description = "This is my first documentation test!"
+        description = "This is my first documentation test with field injection!"
     )
     void helloDtr() {
-        sayNextSection("Code Example");
-        sayCode("System.out.println(\"Hello, DTR!\");", "java");
-        sayNote("Documentation is generated from this test.");
+        // Use the injected context to generate documentation
+        dtr.sayNextSection("Code Example");
+        dtr.sayCode("System.out.println(\"Hello, DTR!\");", "java");
+        dtr.sayNote("Documentation is generated from this test.");
     }
 }
 ```
 
-### Using Static Imports (Even Cleaner)
+### Using Static Imports (Cleaner Syntax)
 
 For the cleanest syntax, use static imports:
 
@@ -140,6 +145,7 @@ package com.example;
 
 import io.github.seanchatmangpt.dtr.DtrTest;
 import io.github.seanchatmangpt.dtr.Doc;
+import io.github.seanchatmangpt.dtr.DtrContext;
 import org.junit.jupiter.api.Test;
 
 import static io.github.seanchatmangpt.dtr.Dtr.*; // Static imports
@@ -147,20 +153,24 @@ import static io.github.seanchatmangpt.dtr.Dtr.*; // Static imports
 @DtrTest
 class MyFirstDocTest {
 
+    // Field injection - automatic context provision
+    private DtrContext dtr;
+
     @Test
     @Doc(section = "Hello DTR", description = "This is my first documentation test!")
     void helloDtr() {
-        // No "say" qualification needed - clean and Python-like!
+        // Clean syntax without qualification
         sayNextSection("Code Example");
         sayCode("System.out.println(\"Hello, DTR!\");", "java");
         sayNote("Documentation is generated from this test.");
     }
 }
 ```
+```
 
-### The Classic Way (Still Supported)
+### Legacy Approach (Still Supported)
 
-If you prefer the traditional approach:
+The traditional "extends DtrTest" approach is still supported but not recommended for new projects:
 
 ```java
 package com.example;
@@ -184,7 +194,7 @@ class MyFirstDocTest extends DtrTest {
 }
 ```
 
-**All three approaches work identically** — choose the style you prefer!
+**Recommended Approach:** Use field injection with @DtrTest annotation for better test isolation and cleaner code. The "extends DtrTest" approach is considered legacy for new development.
 
 ## Running the Test
 
@@ -308,12 +318,12 @@ mvn clean test -X | grep "enable-preview"
 
 **Solutions:**
 
-1. Check test extends `DtrTest`:
+1. Check test uses `@DtrTest` annotation:
    ```bash
-   grep "extends DtrTest" src/test/java/**/*.java
+   grep "@DtrTest" src/test/java/**/*.java
    ```
 
-2. Verify `@ExtendWith(DtrExtension.class)` is present:
+2. For legacy tests, verify `@ExtendWith(DtrExtension.class)` is present:
    ```bash
    grep "@ExtendWith(DtrExtension.class)" src/test/java/**/*.java
    ```
@@ -321,6 +331,11 @@ mvn clean test -X | grep "enable-preview"
 3. Check system property configuration:
    ```bash
    mvn test -Ddtr.output.dir=docs/test -Ddtr.format=markdown
+   ```
+
+4. For field injection tests, ensure `DtrContext` field is properly injected:
+   ```bash
+   grep "private DtrContext dtr" src/test/java/**/*.java
    ```
 
 ### mvnd is Faster than mvn

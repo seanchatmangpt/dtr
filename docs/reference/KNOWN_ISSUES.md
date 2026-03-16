@@ -1,6 +1,8 @@
 # Known Issues and Limitations
 
-**DTR 2026.3.0** — Current limitations, workarounds, and version-specific notes.
+**DTR 2026.4.1** — Current limitations, workarounds, and version-specific notes.
+
+> **Migration Note:** Version 2026.4.1 introduces field injection via `@DtrContextField` and composite testing via `@DtrTest`. Legacy inheritance patterns remain supported but are deprecated.
 
 > **Looking for help with a specific problem?** Start with the [Troubleshooting Guide](../TROUBLESHOOTING.md) for symptom-based solutions. For bugs and feature requests, see [GitHub Issues](https://github.com/seanchatmangpt/dtr/issues).
 
@@ -10,10 +12,85 @@
 
 | Property | Value |
 |----------|-------|
-| Current version | 2026.3.0 |
+| Current version | 2026.4.1 |
 | Java requirement | 26+ with `--enable-preview` |
 | Maven requirement | 4.0.0-rc-3+ |
 | mvnd requirement | 2.0.0+ |
+| Field injection | Stable (recommended) |
+| Inheritance patterns | Legacy (deprecated) |
+
+---
+
+## Field Injection and @DtrTest
+
+### Field injection field type validation
+
+**Status:** By design
+**Severity:** Low
+
+`@DtrContextField` requires the field to be of type `DtrContext`. Using it with any other type throws `IllegalStateException` with a clear error message.
+
+**Workaround:** Ensure all `@DtrContextField` annotated fields have type `DtrContext`.
+
+### @DtrTest field inheritance
+
+**Status:** Known limitation
+**Severity:** Low
+
+`@DtrTest` processes fields from the test class and its superclass chain. However, the injected contexts are separate instances - each field gets its own `DtrContext` sharing the same underlying `RenderMachine`.
+
+**Workaround:** Use a single field per class, or understand that different fields are independent but produce the same output file.
+
+### Field injection with static fields
+
+**Status:** Experimental
+**Severity:** Low
+
+Static fields annotated with `@DtrContextField` receive the same `DtrContext` instance across all test methods in the class. This can lead to test state contamination if not handled carefully.
+
+**Workaround:** Prefer instance fields for true test isolation. If using static fields, ensure test methods don't modify shared state.
+
+### Migration from inheritance to field injection
+
+**Status:** Legacy patterns supported
+**Severity:** Informational
+
+The inheritance pattern (`extends DtrTest`) remains fully supported but is deprecated in favor of field injection for new code.
+
+**Migration Path:**
+```java
+// Before (Inheritance - Legacy)
+public class MyTest extends DtrTest {
+    @Test
+    public void testSomething() {
+        say("Documentation here");
+    }
+}
+
+// After (Field Injection - Recommended)
+@ExtendWith(DtrExtension.class)
+public class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    public void testSomething() {
+        ctx.say("Documentation here");
+    }
+}
+
+// Even More Concise
+@DtrTest
+public class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    public void testSomething() {
+        ctx.say("Documentation here");
+    }
+}
+```
 
 ---
 
@@ -104,7 +181,7 @@ JEP 516 Code Reflection is a preview feature in Java 26. All `sayCodeModel`, `sa
 
 `sayEvolutionTimeline` reads git history for version tags matching `v[0-9]+\.[0-9]+\.[0-9]+`. If the repository has no such tags, the method renders a warning and skips the timeline output.
 
-**Workaround:** Create semver tags: `git tag v2026.3.0`
+**Workaround:** Create semver tags: `git tag v2026.4.1`
 
 ---
 
@@ -230,6 +307,8 @@ class SpringDocTest {
 | sayBenchmark same-JVM noise | Low | Use high iteration counts; call sayEnvProfile |
 | Memory on large test suites | Low | Set `MAVEN_OPTS="-Xmx2g"` |
 | Spring Boot no auto-wire | Low | Use `@LocalServerPort` and inject URL manually |
+| Field injection field type | Low | Ensure @DtrContextField fields are DtrContext type |
+| Static field injection state | Low | Prefer instance fields for test isolation |
 
 ---
 
@@ -266,5 +345,7 @@ The following items are planned for future releases:
 - [ ] Blog platform API integration for direct publish from `BlogRenderMachine`
 - [ ] `sayDocCoverage` integration with JaCoCo for line-level coverage data
 - [ ] Quarkus native image support for reflection-heavy methods
+- [ ] Field injection improvements: support for custom configuration injection
+- [ ] @DtrTest enhancements: module-level documentation composition
 
 Last updated: 2026-03-15

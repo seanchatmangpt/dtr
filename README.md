@@ -8,7 +8,7 @@
 [![Java 26](https://img.shields.io/badge/Java-26-orange.svg)](https://openjdk.org/projects/jdk/26/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**Version:** 2026.4.0 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
+**Version:** 2026.4.1 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
 
 ---
 
@@ -36,7 +36,7 @@ Documentation stays in sync with code because it's generated from live test exec
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.4.0</version>
+    <version>2026.4.1</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -126,11 +126,11 @@ Output is pure, portable Markdown — committed to your repository, diffable, an
 
 ## Context Injection Patterns
 
-DTR supports two patterns for accessing `DtrContext` in your tests:
+DTR supports multiple patterns for accessing `DtrContext` in your tests. The primary modern approach is field injection, while parameter injection is recommended for specific use cases, and inheritance is considered a legacy pattern.
 
-### Field Injection (Recommended)
+### Field Injection (Primary Pattern)
 
-Declare the context once at the class level:
+Declare the context once at the class level - this is the **recommended approach for most use cases**:
 
 ```java
 @ExtendWith(DtrExtension.class)
@@ -155,9 +155,9 @@ class MyApiTest {
 - One declaration for entire test class
 - Less repetition for tests with many methods
 
-### Parameter Injection (Alternative)
+### Parameter Injection (For Specific Use Cases)
 
-Inject the context as a method parameter:
+Inject the context as a method parameter - this is recommended when you need different setup for each test:
 
 ```java
 @ExtendWith(DtrExtension.class)
@@ -190,11 +190,32 @@ class MyApiTest {
 
 **Default recommendation:** Start with **field injection** for cleaner, more maintainable test classes.
 
+### Inheritance (Legacy Pattern)
+
+**Legacy pattern:** Extend the `DtrTest` base class - this is an older approach that is now considered legacy:
+
+```java
+class MyLegacyTest extends DtrTest {  // Legacy pattern
+    @Test
+    void listUsers() {
+        ctx.say("Returns all users");
+    }
+}
+```
+
+**Legacy pattern drawbacks:**
+- Tightly couples test classes to DTR
+- Cannot combine with other base classes
+- Less flexible configuration
+- Considered superseded by field injection
+
+**Migration path:** Switch to field injection for new tests when possible.
+
 See **[Field Injection Guide](docs/tutorials/field-injection-guide.md)** for complete details including advanced patterns, thread safety, and migration guides.
 
 ---
 
-## What's New in 2026.4.0
+## What's New in 2026.4.1
 
 ### Critical Bug Fix: DtrContext Parameter Injection
 
@@ -235,7 +256,7 @@ class MyTest {
 }
 ```
 
-Field injection is now the **recommended pattern** for most test classes. See **[Field Injection Guide](docs/tutorials/field-injection-guide.md)** for details.
+Field injection is the **primary pattern** for modern DTR testing. See **[Field Injection Guide](docs/tutorials/field-injection-guide.md)** for complete details.
 
 #### Assertion + Documentation Combined
 
@@ -252,7 +273,7 @@ New methods for slides, blogs, and social media:
 ```java
 ctx.sayTldr("Quick summary for busy readers");
 ctx.saySlideOnly("Simplified bullet points for slides");
-ctx.sayTweetable("DTR 2026.4.0 adds 12 new say* methods!");
+ctx.sayTweetable("DTR 2026.4.1 adds field injection as the primary pattern!");
 ```
 
 #### Configuration Annotations

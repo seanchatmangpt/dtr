@@ -2,6 +2,7 @@
 
 **Welcome to DTR** — the Documentation Testing Runtime that transforms your Java tests into living, breathing documentation.
 
+**Version:** DTR 2026.4.1
 **Time:** 15 minutes
 **Prerequisites:** Java 26 installed, Maven/mvnd installed, basic JUnit Jupiter 6 knowledge
 
@@ -174,8 +175,8 @@ class HelloDtrTest {
 
 - **`@ExtendWith(DtrExtension.class)`** — Registers DTR with JUnit Jupiter 6
 - **`@DtrTest`** — Marks the class as a DTR documentation test
-- **`@DtrContextField`** — Injects a `DtrContext` instance for accessing `say*` methods
-- **`private DtrContext dtr`** — Field that provides access to all documentation methods
+- **`@DtrContextField`** — **Required:** Injects a `DtrContext` instance for accessing `say*` methods
+- **`private DtrContext dtr`** — **Required:** Field that provides access to all documentation methods
 - **`@DocSection("...")`** — Creates section headings in documentation
 - **`dtr.say(...)`** — Adds paragraph text
 - **`dtr.sayNextSection(...)`** — Creates major section breaks
@@ -183,9 +184,9 @@ class HelloDtrTest {
 - **`dtr.sayTable(...)`** — Formats tables from 2D arrays
 - **`dtr.sayAssertions(...)`** — Documents test results
 
-### Alternative: Inheritance Pattern
+### Legacy Pattern: Inheritance
 
-DTR also supports the classic inheritance pattern for backwards compatibility:
+⚠️ **DEPRECATED:** The inheritance pattern is maintained for backwards compatibility but is not recommended for new projects.
 
 ```java
 @ExtendWith(DtrExtension.class)
@@ -197,9 +198,33 @@ class HelloDtrTest extends DtrTest {
 }
 ```
 
-**When to use each approach:**
-- **Field injection (recommended):** Use for new projects — more flexible, works with multiple test base classes
-- **Inheritance:** Use if migrating existing code or if you prefer direct method access without the `dtr.` prefix
+**Migration:** All new projects should use field injection (see below). Inheritance will be removed in a future version.
+
+### Primary Pattern: Field Injection
+
+DTR recommends **field injection** for all new projects. This approach is more flexible and integrates better with modern Java testing practices:
+
+```java
+@ExtendWith(DtrExtension.class)
+@DtrTest
+class HelloDtrTest {
+
+    @DtrContextField
+    private DtrContext dtr;
+
+    @Test
+    void gettingStarted() {
+        dtr.say("Access to say* methods through injected DtrContext");
+    }
+}
+```
+
+**Why field injection is preferred:**
+- ✅ **Modern Java practices** - Uses dependency injection instead of inheritance
+- ✅ **Flexibility** - Works with multiple test base classes
+- ✅ **Testability** - Easier to mock DtrContext in unit tests
+- ✅ **IntelliSense** - IDE auto-completion works reliably with field access
+- ✅ **No conflicts** - Avoids issues with test framework inheritance chains
 
 ---
 
@@ -313,7 +338,40 @@ void callSiteInfo() {
 
 ## Common Patterns
 
-Here are practical patterns you'll use frequently:
+Here are practical patterns you'll use frequently, all using the modern **field injection** approach:
+
+### Pattern 1: Documenting a Feature
+
+```java
+@ExtendWith(DtrExtension.class)
+@DtrTest
+class FeatureDocumentation {
+
+    // Step 1: Add the required field injection
+    @DtrContextField
+    private DtrContext dtr;
+
+    @Test
+    @DocSection("Feature: User Registration")
+    void documentUserRegistration() {
+        // Step 2: Use the injected dtr field to generate documentation
+        dtr.say("User registration requires email and password:");
+
+        dtr.sayNextSection("Code Examples");
+        dtr.sayCode("""
+            User user = new User("alice@example.com", "securePass123");
+            userService.register(user);
+            """, "java");
+
+        // Step 3: Test the functionality and document results
+        User user = new User("alice@example.com", "securePass123");
+        boolean registered = userService.register(user);
+
+        assertThat("Registration succeeds", registered, equalTo(true));
+        dtr.sayAssertions(Map.of("User registered", "✓ PASS"));
+    }
+}
+```
 
 ### Pattern 1: Documenting a Feature
 
@@ -351,6 +409,7 @@ class FeatureDocumentation {
 @DtrTest
 class ApiDocumentation {
 
+    // Always add this field injection for documentation capabilities
     @DtrContextField
     private DtrContext dtr;
 
@@ -359,12 +418,23 @@ class ApiDocumentation {
     void documentApiResponse() {
         dtr.say("API endpoints return JSON with this structure:");
 
+        // Step 1: Create sample data
         Map<String, Object> response = Map.of(
             "status", 200,
             "message", "Success",
             "data", List.of("item1", "item2")
         );
 
+        // Step 2: Document the structure with syntax highlighting
+        dtr.sayCode("""
+            {
+              "status": 200,
+              "message": "Success",
+              "data": ["item1", "item2"]
+            }
+            """, "json");
+
+        // Step 3: Show actual JSON output
         dtr.sayJson(response);
     }
 }
@@ -377,6 +447,7 @@ class ApiDocumentation {
 @DtrTest
 class ConfigurationDocumentation {
 
+    // Required field injection for all DTR tests
     @DtrContextField
     private DtrContext dtr;
 
@@ -385,10 +456,19 @@ class ConfigurationDocumentation {
     void documentConfiguration() {
         dtr.say("DTR supports these configuration options:");
 
+        // Step 1: Document configuration in a table format
+        dtr.sayTable(new String[][]{
+            {"Property", "Value", "Description"},
+            {"output.format", "markdown, html, latex, json", "Supported output formats"},
+            {"output.directory", "target/docs/test-results/", "Where docs are generated"},
+            {"filename.strategy", "class-based", "How to name output files"}
+        });
+
+        // Step 2: Show key-value pairs for quick reference
         dtr.sayKeyValue(Map.of(
-            "output.format", "markdown, html, latex, json",
-            "output.directory", "target/docs/test-results/",
-            "filename.strategy", "class-based"
+            "Default format", "markdown",
+            "Minimum Java", "26",
+            "JUnit Jupiter", "6+"
         ));
     }
 }
@@ -401,33 +481,114 @@ class ConfigurationDocumentation {
 @DtrTest
 class ProgressiveDocumentation {
 
+    // Always add this field injection for documentation capabilities
     @DtrContextField
     private DtrContext dtr;
 
     @Test
     @DocSection("Building a Complex Example")
     void buildComplexExample() {
-        dtr.say("Start with the basics...");
+        // Step 1: Start with the basics
+        dtr.say("Let's build a complete example step by step:");
         dtr.sayCode("int base = 10;", "java");
 
-        dtr.sayNextSection("Add Complexity");
-        dtr.say("Layer on additional concepts:");
+        // Step 2: Add complexity and explain the change
+        dtr.sayNextSection("Add Multiplier");
+        dtr.say("Now let's add a multiplier to demonstrate progressive concepts:");
         dtr.sayCode("""
             int base = 10;
             int multiplier = 5;
             int result = base * multiplier;
             """, "java");
 
-        dtr.sayNextSection("Final Result");
+        // Step 3: Show the final result with validation
+        dtr.sayNextSection("Final Implementation");
+        dtr.say("Here's the complete working example:");
+
         int base = 10;
         int multiplier = 5;
         int result = base * multiplier;
 
+        // Step 4: Test and document the result
         assertThat("Calculation correct", result, equalTo(50));
-        dtr.sayAssertions(Map.of("10 * 5", "50"));
+        dtr.sayAssertions(Map.of(
+            "Base value", "10",
+            "Multiplier", "5",
+            "Result", "50",
+            "Status", "✓ PASS"
+        ));
     }
 }
 ```
+
+---
+
+## Migration Guide: From Inheritance to Field Injection
+
+If you have existing DTR tests using the inheritance pattern, here's how to migrate to the modern field injection approach:
+
+### Before: Inheritance Pattern (Legacy)
+
+```java
+@ExtendWith(DtrExtension.class)
+class LegacyCalculatorTest extends DtrTest {
+
+    @Test
+    @DocSection("Basic Operations")
+    void basicOperations() {
+        // Direct method access without 'dtr.' prefix
+        say("This test documents basic calculator operations:");
+        sayCode("int result = 2 + 2;", "java");
+        sayAssertions(Map.of("2 + 2", "4"));
+    }
+}
+```
+
+### After: Field Injection (Recommended)
+
+```java
+@ExtendWith(DtrExtension.class)
+@DtrTest  // Required annotation for field injection
+class ModernCalculatorTest {
+
+    // Step 1: Add the field injection
+    @DtrContextField
+    private DtrContext dtr;
+
+    @Test
+    @DocSection("Basic Operations")
+    void basicOperations() {
+        // Step 2: Use 'dtr.' prefix for all documentation methods
+        dtr.say("This test documents basic calculator operations:");
+        dtr.sayCode("int result = 2 + 2;", "java");
+
+        // Step 3: Add actual testing logic
+        int result = 2 + 2;
+        assertThat("Addition works", result, equalTo(4));
+        dtr.sayAssertions(Map.of("2 + 2", "4", "Status", "✓ PASS"));
+    }
+}
+```
+
+### Migration Steps
+
+1. **Add `@DtrTest` annotation** to your test class
+2. **Remove `extends DtrTest`**
+3. **Add field injection:**
+   ```java
+   @DtrContextField
+   private DtrContext dtr;
+   ```
+4. **Prefix all `say*` methods** with `dtr.` (e.g., `say()` → `dtr.say()`)
+5. **Add actual test logic** to verify functionality (optional but recommended)
+
+### Migration Benefits
+
+✅ **More flexible** - Works with other test frameworks and base classes
+✅ **Better IDE support** - Reliable auto-completion and refactoring
+✅ **Easier testing** - Can mock DtrContext in unit tests
+✅ **Modern practices** - Uses dependency injection over inheritance
+✅ **Future-proof** - Inheritance will be removed in future versions
 
 ---
 
@@ -486,19 +647,21 @@ You'll need:
 In this tutorial, you learned:
 
 - **The DTR mental model** — tests generate documentation automatically
-- **How to write a DTR test** — `@ExtendWith(DtrExtension.class)` + `@DtrTest` + `@DtrContextField`
+- **Modern DTR test structure** — `@ExtendWith(DtrExtension.class)` + `@DtrTest` + `@DtrContextField`
 - **Core `say*` methods** — `dtr.say()`, `dtr.sayCode()`, `dtr.sayTable()`, `dtr.sayNextSection()`, etc.
 - **Running tests** — `mvnd test -Dtest=YourTest`
 - **Output location** — `target/docs/test-results/`
-- **Common patterns** — practical examples for everyday use
-- **Field injection vs inheritance** — two approaches, same results
+- **Common patterns** — practical field injection examples for everyday use
+- **Migration guide** — how to convert legacy inheritance patterns to field injection
 
 ### Key Takeaways
 
+- **Field injection is primary** — Use `@DtrContextField` for all new projects
 - **Tests are documentation** — No separate docs to maintain
 - **Always up-to-date** — Regenerated on every test run
 - **Verified examples** — Code samples actually run and pass
 - **Multiple formats** — One test generates Markdown, HTML, LaTeX, JSON
+- **Inheritance is legacy** — Migrate existing code to field injection
 
 ---
 
@@ -526,4 +689,4 @@ Ready to continue? [Go to Tutorial 2](./testing-a-rest-api.md)
 
 ---
 
-**Version:** DTR 2.6.0 | **Last Updated:** March 2026 | **Java:** 26+
+**Version:** DTR 2026.4.1 | **Last Updated:** March 2026 | **Java:** 26+

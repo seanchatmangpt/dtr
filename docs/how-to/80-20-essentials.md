@@ -1,33 +1,42 @@
 # DTR 80/20 Essentials: The Minimal Path to Productivity
 
-**Goal:** Master the core DTR 2026.3.0 `say*` API in 30 minutes — covering the 8 essential methods that handle 80% of documentation scenarios.
+**Goal:** Master the core DTR 2026.4.1 `say*` API in 30 minutes — covering the 8 essential methods that handle 80% of documentation scenarios.
 
-**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
+**DTR Version:** 2026.4.1 | **Java:** 26+ with `--enable-preview`
 
 ---
 
-## The JUnit Jupiter 6 Test Pattern
+## The Modern DTR Test Pattern (Field Injection)
 
-Every DTR test follows this structure:
+**Primary Pattern:** Use `@DtrTest` with field injection for cleaner, more maintainable tests.
 
 ```java
 import io.github.seanchatmangpt.dtr.core.DtrContext;
-import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import io.github.seanchatmangpt.dtr.junit5.DtrTest;
+import io.github.seanchatmangpt.dtr.junit5.DtrContextField;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(DtrExtension.class)
+@DtrTest
 class MyDocTest {
 
+    @DtrContextField
+    private DtrContext ctx;
+
     @Test
-    void myTest(DtrContext ctx) {
+    void myTest() {
         ctx.sayNextSection("My Section");
         ctx.say("Content here.");
     }
 }
 ```
 
-`DtrContext` is injected by JUnit Jupiter 6 via `DtrExtension`. All `say*` calls on `ctx` produce output in `target/docs/test-results/MyDocTest.md`.
+**Why Field Injection?**
+- ✅ Context declared once at class level
+- ✅ Cleaner method signatures (no parameters)
+- ✅ Reusable across multiple test methods
+- ✅ Reduced boilerplate code
+
+**Legacy Pattern:** `extends DtrTest` is still supported but field injection is preferred for new tests.
 
 ---
 
@@ -145,10 +154,57 @@ ctx.sayWarning("Deleting a user is irreversible and cannot be undone.");
 ```java
 ctx.sayKeyValue(Map.of(
     "Java Version", "26.ea.13",
-    "DTR Version", "2026.3.0",
+    "DTR Version", "2026.4.1",
     "Build Status", "Passing ✓",
     "Coverage", "87%"
 ));
+```
+
+---
+
+## Field Injection: The Modern DTR Pattern
+
+**Field injection with `@DtrContextField` is the recommended approach for new DTR tests.**
+
+### Why Field Injection?
+
+| Aspect | Field Injection (@DtrContextField) | Parameter Injection (DtrContext ctx) |
+|--------|------------------------------------|----------------------------------------|
+| **Method Clarity** | ✅ Clean signatures - no parameters | ❌ Requires ctx parameter in every method |
+| **Code Duplication** | ✅ Single field declaration | ❌ Repeated parameter declarations |
+| **Test Count** | ✅ Ideal for tests with many methods | ✅ Better for single-method tests |
+| **Refactoring** | ✅ Easy to add/remove test methods | �️ Requires changing method signatures |
+
+### Field Injection vs. Legacy Inheritance
+
+```java
+// ✅ MODERN: Field Injection (Recommended)
+@DtrTest
+class ModernApiTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void getUsers() { ctx.say("Users list"); }
+    @Test
+    void createUser() { ctx.say("Create user"); }
+    @Test
+    void updateUser() { ctx.say("Update user"); }
+}
+
+// ❌ LEGACY: Inheritance (Still supported but discouraged)
+@DtrTest
+class LegacyApiTest extends io.github.seanchatmangpt.dtr.DtrTest {
+    @Test
+    void getUsers() { say("Users list"); }  // Direct method access
+}
+
+// ⚠️ Older: Parameter Injection (Still supported)
+@ExtendWith(DtrExtension.class)
+class OldApiTest {
+    @Test
+    void getUsers(DtrContext ctx) { ctx.say("Users list"); }
+}
 ```
 
 ---
@@ -157,53 +213,60 @@ ctx.sayKeyValue(Map.of(
 
 Real-world documentation often requires combining multiple methods. Here are proven patterns:
 
-### Pattern 1: Document an API Endpoint
+### Pattern 1: Document an API Endpoint (Modern Field Injection)
 
 ```java
-@Test
-void documentGetUserEndpoint(DtrContext ctx) {
-    ctx.sayNextSection("GET /users/{id}");
+@DtrTest
+class UserApiDocTest {
 
-    // Description
-    ctx.say("Retrieves a single user by their unique ID.");
+    @DtrContextField
+    private DtrContext ctx;
 
-    // Request details
-    ctx.sayKeyValue(Map.of(
-        "Method", "GET",
-        "Endpoint", "/users/{id}",
-        "Auth Required", "Yes"
-    ));
+    @Test
+    void documentGetUserEndpoint() {
+        ctx.sayNextSection("GET /users/{id}");
 
-    // Code example
-    ctx.sayCode("""
-        var response = client.send(
-            HttpRequest.newBuilder()
-                .uri(URI.create("https://api.example.com/users/42"))
-                .GET()
-                .header("Authorization", "Bearer " + token)
-                .build(),
-            HttpResponse.BodyHandlers.ofString()
-        );
-        """, "java");
+        // Description
+        ctx.say("Retrieves a single user by their unique ID.");
 
-    // Response example
-    ctx.say("Success response (200 OK):");
-    ctx.sayJson(Map.of(
-        "id", 42,
-        "name", "Alice",
-        "email", "alice@example.com"
-    ));
+        // Request details
+        ctx.sayKeyValue(Map.of(
+            "Method", "GET",
+            "Endpoint", "/users/{id}",
+            "Auth Required", "Yes"
+        ));
 
-    // Error cases
-    ctx.sayTable(new String[][] {
-        {"Status", "Description"},
-        {"200", "User found"},
-        {"404", "User not found"},
-        {"401", "Unauthorized"}
-    });
+        // Code example
+        ctx.sayCode("""
+            var response = client.send(
+                HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.example.com/users/42"))
+                    .GET()
+                    .header("Authorization", "Bearer " + token)
+                    .build(),
+                HttpResponse.BodyHandlers.ofString()
+            );
+            """, "java");
 
-    // Warning
-    ctx.sayWarning("User IDs are assigned by the server. Never create your own IDs.");
+        // Response example
+        ctx.say("Success response (200 OK):");
+        ctx.sayJson(Map.of(
+            "id", 42,
+            "name", "Alice",
+            "email", "alice@example.com"
+        ));
+
+        // Error cases
+        ctx.sayTable(new String[][] {
+            {"Status", "Description"},
+            {"200", "User found"},
+            {"404", "User not found"},
+            {"401", "Unauthorized"}
+        });
+
+        // Warning
+        ctx.sayWarning("User IDs are assigned by the server. Never create your own IDs.");
+    }
 }
 ```
 
@@ -211,35 +274,42 @@ void documentGetUserEndpoint(DtrContext ctx) {
 
 ---
 
-### Pattern 2: Document a Configuration Option
+### Pattern 2: Document a Configuration Option (Modern Field Injection)
 
 ```java
-@Test
-void documentRateLimiting(DtrContext ctx) {
-    ctx.sayNextSection("Rate Limiting");
+@DtrTest
+class RateLimitingDocTest {
 
-    ctx.say("The API implements rate limiting to prevent abuse.");
+    @DtrContextField
+    private DtrContext ctx;
 
-    ctx.sayKeyValue(Map.of(
-        "Default Limit", "1000 requests/hour",
-        "Per-IP", "Yes",
-        "Customizable", "Yes"
-    ));
+    @Test
+    void documentRateLimiting() {
+        ctx.sayNextSection("Rate Limiting");
 
-    ctx.sayCode("""
+        ctx.say("The API implements rate limiting to prevent abuse.");
+
+        ctx.sayKeyValue(Map.of(
+            "Default Limit", "1000 requests/hour",
+            "Per-IP", "Yes",
+            "Customizable", "Yes"
+        ));
+
+        ctx.sayCode("""
     # Configure rate limit in application.properties
     api.rate.limit=2000
     api.rate.window=1h
     """, "properties");
 
-    ctx.sayNote("Premium accounts have higher limits. Contact sales for details.");
+        ctx.sayNote("Premium accounts have higher limits. Contact sales for details.");
 
-    ctx.say("Response when limit exceeded:");
-    ctx.sayJson(Map.of(
-        "error", "rate_limit_exceeded",
-        "message", "Too many requests. Try again in 5 minutes.",
-        "retryAfter", 300
-    ));
+        ctx.say("Response when limit exceeded:");
+        ctx.sayJson(Map.of(
+            "error", "rate_limit_exceeded",
+            "message", "Too many requests. Try again in 5 minutes.",
+            "retryAfter", 300
+        ));
+    }
 }
 ```
 
@@ -247,27 +317,34 @@ void documentRateLimiting(DtrContext ctx) {
 
 ---
 
-### Pattern 3: Document a Multi-Step Process
+### Pattern 3: Document a Multi-Step Process (Modern Field Injection)
 
 ```java
-@Test
-void documentUserRegistration(DtrContext ctx) {
-    ctx.sayNextSection("User Registration Flow");
+@DtrTest
+class UserRegistrationDocTest {
 
-    ctx.say("New user registration requires three steps:");
+    @DtrContextField
+    private DtrContext ctx;
 
-    ctx.sayOrderedList(List.of(
-        "Submit registration form with email and password",
-        "Verify email address via confirmation link",
-        "Complete profile setup"
-    ));
+    @Test
+    void documentUserRegistration() {
+        ctx.sayNextSection("User Registration Flow");
 
-    ctx.say("Each step is documented below:");
-    ctx.sayRef(UserRegistrationDocTest.class, "step-1-submit");
-    ctx.sayRef(UserRegistrationDocTest.class, "step-2-verify");
-    ctx.sayRef(UserRegistrationDocTest.class, "step-3-profile");
+        ctx.say("New user registration requires three steps:");
 
-    ctx.sayWarning("Unverified accounts are deleted after 24 hours.");
+        ctx.sayOrderedList(List.of(
+            "Submit registration form with email and password",
+            "Verify email address via confirmation link",
+            "Complete profile setup"
+        ));
+
+        ctx.say("Each step is documented below:");
+        ctx.sayRef(UserRegistrationDocTest.class, "step-1-submit");
+        ctx.sayRef(UserRegistrationDocTest.class, "step-2-verify");
+        ctx.sayRef(UserRegistrationDocTest.class, "step-3-profile");
+
+        ctx.sayWarning("Unverified accounts are deleted after 24 hours.");
+    }
 }
 ```
 
@@ -311,21 +388,26 @@ Need to document...
 
 ## Complete Working Example
 
+### Complete Working Example (Modern Field Injection)
+
 ```java
 import io.github.seanchatmangpt.dtr.core.DtrContext;
-import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import io.github.seanchatmangpt.dtr.junit5.DtrTest;
+import io.github.seanchatmangpt.dtr.junit5.DtrContextField;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import java.util.List;
 import java.util.Map;
 
-@ExtendWith(DtrExtension.class)
+@DtrTest
 class UserApiDocTest {
+
+    @DtrContextField
+    private DtrContext ctx;
 
     record User(long id, String name, String email) {}
 
     @Test
-    void documentUserApi(DtrContext ctx) {
+    void documentUserApi() {
         // 1. Section heading
         ctx.sayNextSection("User Management API");
 
@@ -382,6 +464,21 @@ class UserApiDocTest {
         // 9. Cross-reference to auth docs
         ctx.say("See authentication details:");
         ctx.sayRef(AuthDocTest.class, "bearer-token-setup");
+    }
+}
+```
+
+### Legacy Pattern Comparison
+
+For reference, here's the **legacy pattern** (still supported but not recommended for new tests):
+
+```java
+@ExtendWith(DtrExtension.class)
+class LegacyUserApiDocTest {
+
+    @Test
+    void documentUserApi(DtrContext ctx) {
+        ctx.say("Direct parameter injection - legacy approach");
     }
 }
 ```

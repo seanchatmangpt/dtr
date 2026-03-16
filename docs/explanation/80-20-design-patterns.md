@@ -1,6 +1,6 @@
-# Explanation: The 80/20 Design Patterns of DTR 2026.3.0
+# Explanation: The 80/20 Design Patterns of DTR 2026.4.1
 
-This document explains the reasoning behind DTR's design decisions in version 2026.3.0 — not how to use the features, but why they were designed the way they were.
+This document explains the reasoning behind DTR's design decisions in version 2026.4.1 — not how to use the features, but why they were designed the way they were.
 
 ---
 
@@ -95,7 +95,7 @@ sayWarning("This feature requires Java 26+ with --enable-preview.");
 
 ```java
 sayKeyValue(Map.of(
-    "Version", "2026.3.0",
+    "Version", "2026.4.1",
     "Java", "26.ea.13+",
     "License", "EPL-2.0"
 ));
@@ -112,6 +112,36 @@ The remaining 36 methods are **precise instruments for precise problems**. Use t
 - **`sayClassHierarchy(Class)`** — Showing inheritance trees and interface implementations
 - **`sayAnnotationProfile(Class)`** — Analyzing annotation usage across classes
 - **`sayRecordComponents(Class)`** — Documenting record schemas (names, types, annotations)
+
+### Field Injection Pattern Examples
+```java
+@DtrTest(description = "Advanced field injection with multiple contexts")
+public class AdvancedFieldInjectionExample {
+
+    @DtrContextField
+    private DtrContext context;
+
+    @DtrContextField
+    private ProfileData profile;
+
+    @DtrContextField
+    private BenchmarkConfig benchmarks;
+
+    @Test
+    void documentClassAnalysis() {
+        context.sayNextSection("Advanced Class Analysis");
+
+        // Use field-injected context for documentation
+        context.sayCodeModel(MyService.class);
+        context.sayClassHierarchy(MyService.class);
+
+        // Document with injected benchmark data
+        context.sayBenchmark("Performance", () -> {
+            MyService service = new MyService();
+            service.processData(1000);
+        });
+    }
+}
 
 ### Performance & Benchmarking
 - **`sayBenchmark(String, Runnable)`** — Documenting reproducible performance measurements
@@ -144,6 +174,10 @@ The remaining 36 methods are **precise instruments for precise problems**. Use t
 - **`sayAsciiChart(String, double[], String[])`** — Horizontal bar charts with Unicode blocks
 
 **Rule of thumb:** If a core method can express it clearly, use the core method. Advanced methods add power but also complexity.
+
+### Modern Field Injection Pattern Integration
+
+All DTR 2026.4.1 examples use field injection (@DtrContextField) as the primary pattern for context management, offering superior composability and maintainability compared to the legacy inheritance approach.
 
 ---
 
@@ -211,6 +245,125 @@ Applied to DTR: instead of being a better HTML reporter, a better API doc genera
 **The problem.** What exceptions a method throws, under what conditions, is rarely documented systematically. Developers read source code to find out.
 
 **The capability.** `sayException(Throwable t)` captures and documents exception behavior through controlled test invocation, making the exception contract part of the test-generated documentation.
+
+---
+
+## Primary Design Pattern: Field Injection (Modern Approach)
+
+### Why Field Injection is the Primary Pattern
+
+DTR 2026.4.1 promotes field injection as the primary design pattern for documentation testing, replacing the legacy inheritance-based approach. This shift represents a fundamental improvement in test clarity, maintainability, and composability.
+
+### Field Injection Benefits vs. Inheritance
+
+| Aspect | Field Injection (@DtrContextField) | Legacy Inheritance (extends DtrTest) |
+|--------|-----------------------------------|------------------------------------|
+| **Test Definition** | Interface implementation with fields | Class extension and method overriding |
+| **Context Setup** | Fields directly injected by framework | Abstract method implementations required |
+| **Composability** | Multiple contexts via composite annotations | Single inheritance limitation |
+| **Readability** | Clear field declarations for context | Abstract method indirection |
+| **Maintenance** | Decoupled from test class hierarchy | Tightly coupled to inheritance chain |
+
+### Field Injection Pattern Implementation
+
+The modern approach uses the `@DtrContextField` annotation for context injection:
+
+```java
+@DtrTest(description = "Validates String operations through field injection")
+public class StringOperationsTest {
+
+    @DtrContextField
+    private DtrContext context; // Automatically injected by DTR framework
+
+    @DtrContextField
+    private StringTestData testData; // Custom context type
+
+    @Test
+    void documentStringOperations() {
+        context.say("This documentation demonstrates String operations.");
+        context.sayCode("String result = input.toUpperCase();", "java");
+        context.sayAndAssertThat("Uppercase conversion",
+            "HELLO".equals("hello".toUpperCase()), is(true));
+    }
+}
+```
+
+### @DtrTest Composite Annotation
+
+The `@DtrTest` annotation serves as the primary entry point, combining context injection with test execution:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface DtrTest {
+    String description() default "";
+    Class<?>[] contexts() default {};
+    boolean includeEnvProfile() default true;
+    boolean includeSourceInfo() default false;
+}
+```
+
+**Key Benefits:**
+1. **Automatic Context Management**: Fields are automatically resolved and injected
+2. **Test Metadata**: Clear description and configuration annotations
+3. **Flexible Composition**: Can specify additional context types as needed
+4. **Environment Integration**: Optional environment profiling and source information
+
+### Migration Guidance: Inheritance Pattern
+
+#### Legacy Pattern (Still Supported but Discouraged)
+
+```java
+// OLD WAY: Inheritance-based approach
+@Deprecated
+public class StringOperationsLegacy extends DtrTest {
+
+    @Override
+    protected void setupContext(DtrContext context) {
+        context.say("Legacy documentation using inheritance...");
+    }
+
+    @Test
+    void testStringOperations() {
+        // Test implementation
+    }
+}
+```
+
+#### Migration Path to Field Injection
+
+1. **Convert class inheritance to interface-style implementation**
+2. **Add @DtrTest annotation with clear description**
+3. **Replace setupContext() method with @DtrContextField annotated fields**
+4. **Remove abstract method overrides**
+
+```java
+// NEW WAY: Field injection approach
+@DtrTest(description = "Modern String operations documentation")
+public class StringOperationsModern {
+
+    @DtrContextField
+    private DtrContext context;
+
+    @Test
+    void documentStringOperations() {
+        context.say("This is modern documentation using field injection.");
+        // Direct context usage - no setup method required
+    }
+}
+```
+
+### Practical Benefits of Field Injection
+
+1. **Clear Context Boundaries**: Each field clearly defines its purpose
+2. **Reduced Boilerplate**: No need for setup/teardown method overrides
+3. **Better IDE Support**: Field-level completion and type safety
+4. **Easier Testing**: Context fields can be mocked independently
+5. **Documentation Clarity**: Fields serve as clear documentation for context requirements
+
+### Pattern Adoption in DTR 2026.4.1
+
+All new examples in DTR 2026.4.1 use field injection as the default pattern. The inheritance-based approach remains available for backward compatibility but is marked as legacy in all documentation.
 
 ---
 

@@ -1,6 +1,6 @@
 # Reference: Annotation Reference
 
-**Version:** 2026.3.0
+**Version:** 2026.4.1
 
 ---
 
@@ -8,7 +8,7 @@
 
 DTR provides 13 annotations for configuring test execution, documentation generation, and development workflow. These annotations are organized into four categories:
 
-- **Test Setup** — Enable DTR and inject context
+- **Test Setup** — Enable DTR and inject context (field injection recommended)
 - **Documentation** — Declarative documentation via annotations
 - **Lifecycle** — Control when documentation is written
 - **Configuration** — Customize output format and behavior
@@ -16,40 +16,12 @@ DTR provides 13 annotations for configuring test execution, documentation genera
 
 ---
 
-## Quick Reference
+## Getting Started: Modern DTR Approach
 
-| Annotation | Category | Target | Purpose |
-|------------|----------|--------|---------|
-| `@DtrTest` | Test Setup | TYPE | Composite: enables DTR + auto-finish |
-| `@DtrContextField` | Test Setup | FIELD | Inject DtrContext into class fields |
-| `@TestSetup` | Test Setup | METHOD | DTR-aware test setup (alternative to @BeforeEach) |
-| `@DocSection` | Documentation | METHOD | Section heading (H2) |
-| `@DocDescription` | Documentation | METHOD | Narrative paragraphs |
-| `@DocNote` | Documentation | METHOD | Informational callout boxes |
-| `@DocWarning` | Documentation | METHOD | Warning callout boxes |
-| `@DocCode` | Documentation | METHOD | Fenced code blocks |
-| `@AutoFinishDocTest` | Lifecycle | TYPE, METHOD | Auto-call `finishAndWriteOut()` after tests |
-| `@DtrConfig` | Configuration | TYPE, METHOD, PACKAGE | Hierarchical output configuration |
-| `@LivePreview` | Development Tools | TYPE, METHOD | IDE live preview support |
-| `@AuthenticatedTest` | Development Tools | METHOD | Marker for auth-required tests |
+### Recommended Pattern for New Tests
 
----
+Start with these two annotations for **all new DTR tests**:
 
-## Test Setup Annotations
-
-### @DtrTest
-
-**Purpose:** Composite annotation that combines `@ExtendWith(DtrExtension.class)` and `@AutoFinishDocTest` for streamlined DTR test configuration.
-
-**Target:** `TYPE` (class-level)
-
-**Attributes:**
-- `autoFinish` (boolean, default `true`) — Auto-finish after each test method
-- `fileName` (String, default `""`) — Custom output filename
-
-**Usage Examples:**
-
-**Field Injection (Recommended for multi-method tests):**
 ```java
 @DtrTest
 class MyApiTest {
@@ -63,7 +35,83 @@ class MyApiTest {
 }
 ```
 
-**Parameter Injection (Explicit dependencies):**
+### Why This Pattern is Recommended
+
+1. **Minimal Configuration** - Just two annotations for full DTR functionality
+2. **Clean Test Methods** - No parameter passing needed
+3. **Auto-Finish Enabled** - Documentation written automatically after each test
+4. **Better IDE Support** - Full autocomplete for `ctx.say*()` methods
+5. **Future-Proof** - Uses the latest DTR features
+
+### Quick Reference: Modern vs Legacy
+
+| Pattern | Annotations | Recommended | Use Case |
+|---------|------------|-------------|----------|
+| **Modern** | `@DtrTest` + `@DtrContextField` | ✅ **YES** | All new tests |
+| Legacy (Param) | `@ExtendWith` + `@AutoFinishDocTest` | ❌ NO | Legacy migration only |
+| Legacy (Inheritance) | `extends DtrTest` | ❌ NO | Legacy migration only |
+
+---
+
+## Quick Reference
+
+| Annotation | Category | Target | Purpose |
+|------------|----------|--------|---------|
+| `@DtrTest` | Test Setup | TYPE | **Primary**: enables DTR + auto-finish + field injection |
+| `@DtrContextField` | Test Setup | FIELD | **Recommended**: Inject DtrContext into class fields |
+| `@TestSetup` | Test Setup | METHOD | DTR-aware test setup (alternative to @BeforeEach) |
+| `@DocSection` | Documentation | METHOD | Section heading (H2) |
+| `@DocDescription` | Documentation | METHOD | Narrative paragraphs |
+| `@DocNote` | Documentation | METHOD | Informational callout boxes |
+| `@DocWarning` | Documentation | METHOD | Warning callout boxes |
+| `@DocCode` | Documentation | METHOD | Fenced code blocks |
+| `@AutoFinishDocTest` | Lifecycle | TYPE, METHOD | Legacy: auto-call `finishAndWriteOut()` after tests |
+| `@DtrConfig` | Configuration | TYPE, METHOD, PACKAGE | Hierarchical output configuration |
+| `@LivePreview` | Development Tools | TYPE, METHOD | IDE live preview support |
+| `@AuthenticatedTest` | Development Tools | METHOD | Marker for auth-required tests |
+
+---
+
+## Test Setup Annotations
+
+### @DtrTest
+
+**Purpose:** **Primary annotation** for DTR test configuration. Composite annotation that combines `@ExtendWith(DtrExtension.class)`, `@AutoFinishDocTest`, and optimized for field injection with `@DtrContextField`. This is the recommended approach for all new DTR tests.
+
+**Target:** `TYPE` (class-level)
+
+**Attributes:**
+- `autoFinish` (boolean, default `true`) — Auto-finish after each test method
+- `fileName` (String, default `""`) — Custom output filename
+
+**Recommended Pattern (Field Injection):**
+```java
+@DtrTest
+class MyApiTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void listUsers() {
+        ctx.say("Returns all users");
+    }
+
+    @Test
+    void createUser() {
+        ctx.say("Creates a new user");
+    }
+}
+```
+
+**Why Field Injection is Recommended:**
+- **Cleaner method signatures** - No `DtrContext` parameter in every test method
+- **Better IDE support** - Autocomplete for `ctx.say*()` methods
+- **Context reuse** - Same context instance used across all test methods in the class
+- **Minimal boilerplate** - Just `@DtrTest` + `@DtrContextField` required
+
+**Alternative Patterns:**
+
+**Parameter Injection (For specialized cases):**
 ```java
 @DtrTest
 class MyApiTest {
@@ -74,9 +122,20 @@ class MyApiTest {
 }
 ```
 
-**Inheritance Pattern (Legacy, still supported):**
+**Legacy Pattern (Not recommended for new code):**
 ```java
-@DtrTest
+@ExtendWith(DtrExtension.class)  // LEGACY: Use @DtrTest instead
+class MyApiTest {
+    @Test
+    void listUsers(DtrContext ctx) {
+        ctx.say("Returns all users");
+    }
+}
+```
+
+**Inheritance Pattern (Legacy - not recommended):**
+```java
+@DtrTest  // Still works but field injection is preferred
 class MyApiTest extends io.github.seanchatmangpt.dtr.DtrTest {
     @Test
     void listUsers() {
@@ -86,14 +145,40 @@ class MyApiTest extends io.github.seanchatmangpt.dtr.DtrTest {
 ```
 
 **Best Practices:**
-- Use field injection (`@DtrContextField`) for test classes with many documentation methods
-- Use parameter injection when each test needs different documentation setup
-- Use inheritance pattern (`extends DtrTest`) for legacy codebases or when direct `say*` access is preferred
+- **Always start with `@DtrTest` + `@DtrContextField`** for new tests
+- Use field injection for test classes with 2+ methods
+- Use parameter injection only when each test needs different setup
+- Avoid manual `@ExtendWith(DtrExtension.class)` for new code
+
+**Migration from Legacy:**
+```java
+// OLD (Legacy)
+@ExtendWith(DtrExtension.class)
+@AutoFinishDocTest
+class MyLegacyTest {
+    @Test
+    void test(DtrContext ctx) {
+        ctx.say("Content");
+    }
+}
+
+// NEW (Recommended)
+@DtrTest
+class MyNewTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("Content");
+    }
+}
+```
 
 **See Also:**
-- [@DtrContextField](#dtrcontextfield) — Field-level context injection
-- [@AutoFinishDocTest](#autofinishdoctest) — Auto-finish behavior
-- [DtrExtension API Reference](testbrowser-api.md) — Complete context API
+- [@DtrContextField](#dtrcontextfield) — Field-level context injection (essential partner)
+- [@AutoFinishDocTest](#autofinishdoctest) — Legacy auto-finish behavior
+- [Complete API Reference](complete-api-reference.md) — All 50+ `say*` methods
 
 **Since:** 2026.4.0
 
@@ -101,17 +186,17 @@ class MyApiTest extends io.github.seanchatmangpt.dtr.DtrTest {
 
 ### @DtrContextField
 
-**Purpose:** Marks a field to receive automatic `DtrContext` injection by `DtrExtension`. Provides class-level field injection as an alternative to method parameter injection.
+**Purpose:** **Essential partner annotation** for `@DtrTest`. Marks a field to receive automatic `DtrContext` injection by `DtrExtension`. Provides class-level field injection as the recommended approach for all new DTR tests.
 
 **Target:** `FIELD`
 
 **Attributes:** None
 
-**Usage Example:**
+**Recommended Usage (with @DtrTest):**
 ```java
-@ExtendWith(DtrExtension.class)
+@DtrTest  // Primary annotation - provides auto-finish and extension setup
 class MyApiTest {
-    @DtrContextField
+    @DtrContextField  // Essential partner - provides field injection
     private DtrContext ctx;
 
     @Test
@@ -127,6 +212,12 @@ class MyApiTest {
 }
 ```
 
+**Why @DtrContextField + @DtrTest is Recommended:**
+- **Minimal configuration** - Just two annotations for full DTR functionality
+- **Clean test methods** - No parameter passing needed
+- **Context consistency** - Same context used across all tests in the class
+- **Better IDE support** - Full autocomplete for `ctx.say*()` methods
+
 **Field Injection vs Parameter Injection:**
 
 | Aspect | Field Injection (`@DtrContextField`) | Parameter Injection |
@@ -134,22 +225,50 @@ class MyApiTest {
 | Declaration | Once at class level | Per-method parameter |
 | Accessibility | All test methods | Specific test methods |
 | Method signatures | Cleaner (no ctx parameter) | More explicit |
-| Use case | Many methods needing context | Different setup per test |
+| Use case | **Recommended for most tests** | Specialized cases only |
+| Best with | `@DtrTest` | `@ExtendWith(DtrExtension.class)` |
 
 **Supported Field Types:**
-- Instance fields (non-static) — each test gets its own instance
+- Instance fields (non-static) — each test gets its own instance (recommended)
 - Static fields — shared across all test methods in the class
 - Any access modifier (private, protected, package-private, public)
 
 **Thread Safety:** Each test method receives its own `DtrContext` instance, but all instances share the same underlying `RenderMachine`. This ensures test isolation while maintaining a single documentation output per test class.
 
 **Best Practices:**
-- Use field injection for test classes with 5+ methods that all need documentation
+- **Always use `@DtrContextField` with `@DtrTest`** for new tests
 - Use private fields for encapsulation (DTR uses reflection to inject)
+- Use instance fields (non-static) for test isolation
 - Consider static fields for shared documentation setup across tests
+- Field injection is **required** for the recommended `@DtrTest` pattern
+
+**Migration from Parameter Injection:**
+```java
+// OLD (Parameter Injection)
+@ExtendWith(DtrExtension.class)
+@AutoFinishDocTest
+class MyApiTest {
+    @Test
+    void listUsers(DtrContext ctx) {
+        ctx.say("Returns all users");
+    }
+}
+
+// NEW (Field Injection - Recommended)
+@DtrTest
+class MyApiTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void listUsers() {
+        ctx.say("Returns all users");
+    }
+}
+```
 
 **See Also:**
-- [@DtrTest](#dtrtest) — Composite annotation including field injection
+- [@DtrTest](#dtrtest) — Primary annotation that enables field injection
 - [DtrContext API](testbrowser-api.md) — Complete context method reference
 
 **Since:** 2026.4.0
@@ -158,29 +277,44 @@ class MyApiTest {
 
 ### @TestSetup
 
-**Purpose:** Marks a method to be executed before each test for setup purposes. Alternative to JUnit's `@BeforeEach` with DTR-specific lifecycle integration.
+**Purpose:** Marks a method to be executed before each test for setup purposes. Alternative to JUnit's `@BeforeEach` with DTR-specific lifecycle integration. Works with the recommended `@DtrTest + @DtrContextField` pattern.
 
 **Target:** `METHOD`
 
 **Attributes:** None
 
-**Usage Example:**
+**Usage Example (Recommended Pattern):**
 ```java
-@ExtendWith(DtrExtension.class)
+@DtrTest
 class MyApiTest {
+    @DtrContextField
     private DtrContext ctx;
-    private String baseUrl;
 
     @TestSetup
-    void setupDocumentation(DtrContext ctx) {
-        this.ctx = ctx;
+    void setupDocumentation() {
         ctx.sayNextSection("API Documentation");
         ctx.say("This section documents the REST API.");
     }
 
     @Test
-    void testEndpoint() {
-        ctx.say("Testing endpoint...");
+    void listUsers() {
+        ctx.say("Testing user list endpoint...");
+    }
+
+    @Test
+    void createUser() {
+        ctx.say("Testing user creation endpoint...");
+    }
+}
+```
+
+**Legacy Pattern (Not recommended):**
+```java
+@ExtendWith(DtrExtension.class)  // LEGACY: Use @DtrTest instead
+class MyLegacyApiTest {
+    @TestSetup
+    void setupDocumentation(DtrContext ctx) {
+        ctx.say("Setup with parameter injection");
     }
 }
 ```
@@ -189,14 +323,45 @@ class MyApiTest {
 - Can accept `DtrContext` as a parameter (injected by DTR)
 - Executes before `@Test` methods
 - Can be used for documentation initialization
+- Works with both field and parameter injection patterns
 
 **Best Practices:**
-- Use `@TestSetup` when you need DTR-aware setup logic
+- Use `@TestSetup` with `@DtrTest + @DtrContextField` for DTR-aware setup
 - Use JUnit's `@BeforeEach` for general test setup (data, mocks, etc.)
 - Combine both if needed: `@TestSetup` for documentation, `@BeforeEach` for test data
+- **Always use field injection in setup methods** when using `@DtrTest`
+
+**Migration from Legacy:**
+```java
+// OLD (Legacy)
+@ExtendWith(DtrExtension.class)
+@AutoFinishDocTest
+class MyLegacyTest {
+    private DtrContext ctx;
+
+    @TestSetup
+    void setup(DtrContext ctx) {
+        this.ctx = ctx;
+        ctx.say("Setup");
+    }
+}
+
+// NEW (Recommended)
+@DtrTest
+class MyNewTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @TestSetup
+    void setup() {
+        ctx.say("Setup");
+    }
+}
+```
 
 **See Also:**
-- [@DtrTest](#dtrtest) — Composite test setup annotation
+- [@DtrTest](#dtrtest) — Primary test setup annotation
+- [@DtrContextField](#dtrcontextfield) — Field injection (required for recommended pattern)
 - [JUnit 5 @BeforeEach](https://junit.org/junit5/docs/current/api/org/junit/jupiter/api/BeforeEach.html) — Standard setup hook
 
 ---
@@ -507,70 +672,81 @@ public void testCurlExample() {
 
 ### @AutoFinishDocTest
 
-**Purpose:** Automatically calls `finishAndWriteOut()` after each test method. Eliminates the need for manual `ctx.finishAndWriteOut()` calls.
+**Purpose:** **Legacy annotation** that automatically calls `finishAndWriteOut()` after each test method. Replaced by `@DtrTest` which includes this functionality by default.
 
 **Target:** `TYPE`, `METHOD`
 
 **Attributes:** None
 
-**Usage Examples:**
-
-**Class-level (all tests auto-finish):**
+**Legacy Usage (Not recommended for new code):**
 ```java
-@ExtendWith(DtrExtension.class)
-@AutoFinishDocTest
-class MyDocumentationTest {
+@ExtendWith(DtrExtension.class)  // LEGACY: Use @DtrTest instead
+@AutoFinishDocTest                // LEGACY: Included in @DtrTest
+class MyLegacyDocumentationTest {
     @Test
     void documentFeature(DtrContext ctx) {
         ctx.say("Content");
         // No need to call finishAndWriteOut()
     }
-
-    @Test
-    void documentAnotherFeature(DtrContext ctx) {
-        ctx.say("More content");
-        // Automatically writes to separate file
-    }
 }
 ```
 
-**Method-level (selective auto-finish):**
+**Recommended Replacement:**
 ```java
-@ExtendWith(DtrExtension.class)
-class MixedDocumentationTest {
-    @Test
-    @AutoFinishDocTest
-    void autoFinishedTest(DtrContext ctx) {
-        ctx.say("This test auto-finishes");
-        // Generates: MyTest.autoFinishedTest.md
-    }
+@DtrTest  // Modern equivalent - includes auto-finish by default
+class MyModernDocumentationTest {
+    @DtrContextField
+    private DtrContext ctx;
 
     @Test
-    void manualTest(DtrContext ctx) {
-        ctx.say("This test requires manual finishAndWriteOut()");
-        ctx.finishAndWriteOut();
-        // Generates: MyTest.manualTest.md
+    void documentFeature() {
+        ctx.say("Content");
+        // Auto-finish is enabled by default with @DtrTest
     }
 }
 ```
 
-**When to Use:**
-- Granular per-test output files (each test gets its own documentation)
-- Tests that need immediate documentation output for later steps
-- Eliminating boilerplate `finishAndWriteOut()` calls
-- Combined with `@DtrTest` for streamlined setup
+**When to Use (Legacy):**
+- **Only for legacy codebases** migrating from older versions
+- When you need selective auto-finish behavior (method-level only)
+- When you cannot migrate to `@DtrTest` due to existing constraints
 
-**Best Practices:**
-- Use class-level `@AutoFinishDocTest` when all tests should auto-finish
-- Use method-level for mixed auto/manual finish behavior
+**Migration from Legacy to Modern:**
+```java
+// OLD (Legacy)
+@ExtendWith(DtrExtension.class)
+@AutoFinishDocTest
+class MyLegacyTest {
+    @Test
+    void test(DtrContext ctx) {
+        ctx.say("Legacy approach");
+    }
+}
+
+// NEW (Recommended)
+@DtrTest
+class MyModernTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("Modern approach");
+    }
+}
+```
+
+**Performance Considerations:**
 - Each auto-finished test generates a separate output file
-- Consider performance: more files = more I/O overhead
+- More files = more I/O overhead
+- `@DtrTest` provides the same functionality with better organization
 
 **See Also:**
-- [@DtrTest](#dtrtest) — Composite annotation including auto-finish
+- [@DtrTest](#dtrtest) — Modern replacement that includes auto-finish
+- [@DtrContextField](#dtrcontextfield) — Field injection (required for recommended pattern)
 - [finishAndWriteOut()](testbrowser-api.md) — Manual finish method
 
-**Since:** 2026.4.0
+**Since:** 2026.4.0 (Legacy)
 
 ---
 
@@ -857,15 +1033,15 @@ public class MyClassTest {
 
 ## Common Patterns
 
-### Complete Documentation Test
+### Complete Documentation Test (Recommended Pattern)
 
-Combining multiple annotations for comprehensive documentation:
+The modern approach combines `@DtrTest` + `@DtrContextField` for maximum simplicity and functionality:
 
 ```java
-@DtrTest  // Extends DtrTest + @AutoFinishDocTest
+@DtrTest
 class UserApiDocumentationTest {
 
-    @DtrContextField
+    @DtrContextField  // Essential partner for clean test methods
     private DtrContext ctx;
 
     @Test
@@ -895,6 +1071,12 @@ class UserApiDocumentationTest {
 }
 ```
 
+**Why This Pattern is Recommended:**
+- **Minimal Annotations** - Just `@DtrTest` + `@DtrContextField`
+- **Clean Methods** - No parameters in test methods
+- **Auto-Finish Enabled** - Documentation written automatically
+- **Better IDE Support** - Full autocomplete for `ctx.say*()` methods
+
 ### Package-Level Configuration
 
 Organizing documentation by package:
@@ -916,12 +1098,13 @@ package com.example.api.public_;
 package com.example.api.internal;
 ```
 
-### Selective Auto-Finish
+### Legacy Pattern (Not Recommended)
 
-Mixed auto/manual finish behavior:
+For reference only - used for migrating older codebases:
 
 ```java
-@ExtendWith(DtrExtension.class)
+@ExtendWith(DtrExtension.class)  // LEGACY: Use @DtrTest instead
+@AutoFinishDocTest                // LEGACY: Included in @DtrTest
 class MixedDocumentationTest {
 
     @Test
@@ -946,6 +1129,129 @@ class MixedDocumentationTest {
 
 ---
 
+## Migration Guide: Legacy to Modern
+
+### From Legacy Parameter Injection
+
+**Old Way (Legacy):**
+```java
+@ExtendWith(DtrExtension.class)      // ❌ LEGACY
+@AutoFinishDocTest                   // ❌ LEGACY
+class MyLegacyApiTest {
+
+    @Test
+    void getUser(DtrContext ctx) {    // ❌ Parameter injection
+        ctx.say("Gets a user");
+        ctx.finishAndWriteOut();      // ❌ Manual finish
+    }
+}
+```
+
+**New Way (Recommended):**
+```java
+@DtrTest                             // ✅ Modern - includes extension + auto-finish
+class MyModernApiTest {
+
+    @DtrContextField                  // ✅ Essential partner
+    private DtrContext ctx;
+
+    @Test
+    void getUser() {                   // ✅ Clean method signature
+        ctx.say("Gets a user");        // ✅ Auto-finish enabled
+    }
+}
+```
+
+### From Legacy Inheritance
+
+**Old Way (Legacy):**
+```java
+@ExtendWith(DtrExtension.class)      // ❌ LEGACY
+class MyLegacyApiTest extends DtrTest {  // ❌ Inheritance
+
+    @Test
+    void getUser() {
+        say("Gets a user");           // ❌ Direct method access
+    }
+}
+```
+
+**New Way (Recommended):**
+```java
+@DtrTest                             // ✅ Modern - no inheritance needed
+class MyModernApiTest {
+
+    @DtrContextField                  // ✅ Essential partner
+    private DtrContext ctx;
+
+    @Test
+    void getUser() {                   // ✅ Clean method signature
+        ctx.say("Gets a user");        // ✅ Auto-finish enabled
+    }
+}
+```
+
+### Migration Checklist
+
+1. **Replace `@ExtendWith(DtrExtension.class)`** with `@DtrTest`
+2. **Replace `@AutoFinishDocTest`** - it's included in `@DtrTest`
+3. **Add `@DtrContextField`** for field injection
+4. **Remove `DtrContext` parameters** from test methods
+5. **Remove inheritance** from `DtrTest`
+6. **Update method calls** from `say()` to `ctx.say()`
+
+### Common Migration Issues
+
+**Issue:** Missing `@DtrContextField`
+```java
+// ❌ Wrong - context not injected
+@DtrTest
+class MissingFieldTest {
+    @Test
+    void test() {
+        ctx.say("This will fail - ctx is null");
+    }
+}
+
+// ✅ Correct - field injection
+@DtrTest
+class CorrectTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("This works");
+    }
+}
+```
+
+**Issue:** Old syntax with parameter injection
+```java
+// ❌ Legacy
+@DtrTest
+class LegacySyntaxTest {
+    @Test
+    void test(DtrContext ctx) {  // ❌ Parameter injection (old pattern)
+        ctx.say("Works but not recommended");
+    }
+}
+
+// ✅ Modern
+@DtrTest
+class ModernSyntaxTest {
+    @DtrContextField
+    private DtrContext ctx;      // ✅ Field injection (recommended)
+
+    @Test
+    void test() {                // ✅ Clean method signature
+        ctx.say("Recommended approach");
+    }
+}
+```
+
+---
+
 ## See Also
 
 - **[Complete API Reference](complete-api-reference.md)** — All 50+ `say*` methods documented
@@ -953,3 +1259,4 @@ class MixedDocumentationTest {
 - **[DtrContext and DtrExtension API Reference](testbrowser-api.md)** — API surface
 - **[Testing with Documentation](../tutorials/03-testing-with-documentation.md)** — Assertions combined with docs
 - **[Advanced Patterns](../tutorials/06-advanced-patterns.md)** — Benchmarking, diagrams, and quality metrics
+- **[Field Injection Guide](../tutorials/field-injection-guide.md)** — Detailed field injection tutorial
