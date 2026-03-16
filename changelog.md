@@ -163,46 +163,22 @@ No ParameterResolver registered for parameter [io.github.seanchatmangpt.dtr.juni
 
 ### Breaking Changes
 
-#### RenderConfig Removed
+#### Method Signature Changes
 
-**REMOVED:** `RenderConfig` class has been removed.
+**REMOVED:** `sayCodeModel(Method method)` has been removed.
 
-**REPLACEMENT:** Use `@DtrConfig` annotation or `DtrConfiguration` builder instead.
-
-**Impact:** Low — affects only users who programmatically created `RenderMachine` instances.
-
-**Migration guide:**
-```java
-// Before (2026.3.0)
-RenderConfig config = new RenderConfig();
-List<RenderMachine> machines = config.createRenderMachines();
-
-// After (2026.4.0) - Annotation-based (recommended)
-@DtrConfig(format = OutputFormat.MARKDOWN)
-class MyTest { }
-
-// After (2026.4.0) - Programmatic
-DtrConfiguration config = DtrConfiguration.builder()
-    .format(OutputFormat.MARKDOWN)
-    .build();
-```
-
-#### Method Deprecation
-
-**DEPRECATED:** `sayCodeModel(Method method)` — Use `sayMethodSignature(Method method)` instead.
+**REPLACEMENT:** Use `sayMethodSignature(Method method)` instead.
 
 **Rationale:** The original `sayCodeModel(Method)` method name was ambiguous — it suggested
 full code model rendering (like `sayCodeModel(Class)`), but only rendered the method signature.
 The new name `sayMethodSignature` more accurately reflects the method's behavior.
 
-**Timeline:** Removal planned for 2027.1.0
-
 **Migration guide:**
 ```java
-// Old (deprecated, still works)
+// Old (no longer compiles)
 sayCodeModel(myMethod);
 
-// New (recommended)
+// New
 sayMethodSignature(myMethod);
 ```
 
