@@ -3,10 +3,8 @@ package io.github.seanchatmangpt.dtr.config;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DtrConfigurationTest {
 
@@ -32,11 +30,11 @@ public class DtrConfigurationTest {
     public void testBuilderWithDefaults() {
         DtrConfiguration config = DtrConfiguration.builder().build();
 
-        assertThat(config.getFormat(), equalTo(DtrConfig.OutputFormat.MARKDOWN));
-        assertThat(config.getLatexTemplate(), equalTo(DtrConfig.LatexTemplate.ARTICLE));
-        assertThat(config.getOutputDir(), equalTo("docs/test"));
-        assertThat(config.isIncludeEnvProfile(), equalTo(false));
-        assertThat(config.isGenerateToc(), equalTo(true));
+        assertEquals(DtrConfig.OutputFormat.MARKDOWN, config.getFormat());
+        assertEquals(DtrConfig.LatexTemplate.ARTICLE, config.getLatexTemplate());
+        assertEquals("docs/test", config.getOutputDir());
+        assertEquals(false, config.isIncludeEnvProfile());
+        assertEquals(true, config.isGenerateToc());
     }
 
     @Test
@@ -49,11 +47,11 @@ public class DtrConfigurationTest {
             .generateToc(false)
             .build();
 
-        assertThat(config.getFormat(), equalTo(DtrConfig.OutputFormat.PDF));
-        assertThat(config.getLatexTemplate(), equalTo(DtrConfig.LatexTemplate.BEAMER));
-        assertThat(config.getOutputDir(), equalTo("custom/path"));
-        assertThat(config.isIncludeEnvProfile(), equalTo(true));
-        assertThat(config.isGenerateToc(), equalTo(false));
+        assertEquals(DtrConfig.OutputFormat.PDF, config.getFormat());
+        assertEquals(DtrConfig.LatexTemplate.BEAMER, config.getLatexTemplate());
+        assertEquals("custom/path", config.getOutputDir());
+        assertEquals(true, config.isIncludeEnvProfile());
+        assertEquals(false, config.isGenerateToc());
     }
 
     @Test
@@ -64,7 +62,7 @@ public class DtrConfigurationTest {
             .applySystemProperties()
             .build();
 
-        assertThat(config.getFormat(), equalTo(DtrConfig.OutputFormat.PDF));
+        assertEquals(DtrConfig.OutputFormat.PDF, config.getFormat());
     }
 
     @Test
@@ -75,7 +73,7 @@ public class DtrConfigurationTest {
             .applySystemProperties()
             .build();
 
-        assertThat(config.getOutputDir(), equalTo("build/custom-docs"));
+        assertEquals("build/custom-docs", config.getOutputDir());
     }
 
     @Test
@@ -86,7 +84,7 @@ public class DtrConfigurationTest {
             .applySystemProperties()
             .build();
 
-        assertThat(config.getLatexTemplate(), equalTo(DtrConfig.LatexTemplate.BEAMER));
+        assertEquals(DtrConfig.LatexTemplate.BEAMER, config.getLatexTemplate());
     }
 
     @Test
@@ -97,7 +95,7 @@ public class DtrConfigurationTest {
             .applySystemProperties()
             .build();
 
-        assertThat(config.isIncludeEnvProfile(), equalTo(true));
+        assertEquals(true, config.isIncludeEnvProfile());
     }
 
     @Test
@@ -108,7 +106,7 @@ public class DtrConfigurationTest {
             .applySystemProperties()
             .build();
 
-        assertThat(config.isGenerateToc(), equalTo(false));
+        assertEquals(false, config.isGenerateToc());
     }
 
     @Test
@@ -124,9 +122,9 @@ public class DtrConfigurationTest {
 
         DtrConfiguration config = builder.applySystemProperties().build();
 
-        assertThat(config.getFormat(), equalTo(DtrConfig.OutputFormat.LATEX));
-        assertThat(config.getOutputDir(), equalTo("system/path"));
-        assertThat(config.isIncludeEnvProfile(), equalTo(true));
+        assertEquals(DtrConfig.OutputFormat.LATEX, config.getFormat());
+        assertEquals("system/path", config.getOutputDir());
+        assertEquals(true, config.isIncludeEnvProfile());
     }
 
     @Test
@@ -136,8 +134,8 @@ public class DtrConfigurationTest {
 
         DtrConfiguration config = DtrConfiguration.fromSystemProperties();
 
-        assertThat(config.getFormat(), equalTo(DtrConfig.OutputFormat.PDF));
-        assertThat(config.getOutputDir(), equalTo("system/docs"));
+        assertEquals(DtrConfig.OutputFormat.PDF, config.getFormat());
+        assertEquals("system/docs", config.getOutputDir());
     }
 
     @Test
@@ -148,8 +146,8 @@ public class DtrConfigurationTest {
             .build();
 
         String str = config.toString();
-        assertThat(str, containsString("format=HTML"));
-        assertThat(str, containsString("outputDir='docs/test'"));
+        assertTrue(str.contains("format=HTML"));
+        assertTrue(str.contains("outputDir='docs/test'"));
     }
 
     @Test
@@ -174,8 +172,8 @@ public class DtrConfigurationTest {
             .format(DtrConfig.OutputFormat.HTML)
             .build();
 
-        assertThat(config1, equalTo(config2));
-        assertThat(config1.hashCode(), equalTo(config2.hashCode()));
-        assertThat(config1, not(equalTo(config3)));
+        assertEquals(config1, config2);
+        assertEquals(config1.hashCode(), config2.hashCode());
+        assertTrue(!config1.equals(config3));
     }
 }
