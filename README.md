@@ -11,29 +11,7 @@
 
 ---
 
-## 80/20: The Most Efficient Pattern
-
-```java
-import io.github.seanchatmangpt.dtr.DtrContext;
-import io.github.seanchatmangpt.dtr.junit5.*;
-import static org.hamcrest.Matchers.*;
-
-class ApiTest {
-    @DtrContextField private DtrContext ctx;
-
-    @DtrTest void endpoint() {
-        ctx.say("Returns user by ID");
-        ctx.sayCode("GET /users/{id}", "http");
-        ctx.sayKeyValue(Map.of(
-            "Auth", "Bearer token",
-            "Rate Limit", "100/hour"
-        ));
-        ctx.sayAndAssertThat("status", response.getStatus(), equalTo(200));
-    }
-}
-```
-
-**Setup:**
+## Quick Start
 
 ```xml
 <dependency>
@@ -44,7 +22,177 @@ class ApiTest {
 </dependency>
 ```
 
-Run: `mvnd test` → Output: `target/docs/test-results/ApiTest.md`
+```java
+import io.github.seanchatmangpt.dtr.DtrContext;
+import io.github.seanchatmangpt.dtr.junit5.*;
+
+class MyDocTest {
+    @DtrContextField private DtrContext ctx;
+
+    @DtrTest void page() {
+        ctx.say("Documentation is generated from passing tests");
+    }
+}
+```
+
+Run: `mvnd test` → Output: `target/docs/test-results/MyDocTest.md`
+
+---
+
+## 1. Make a Doc Page
+
+Generate Markdown documentation from tests:
+
+```java
+class ApiDocTest {
+    @DtrContextField private DtrContext ctx;
+
+    @DtrTest void userEndpoint() {
+        ctx.sayNextSection("GET /users/{id}");
+        ctx.say("Returns user details by ID.");
+
+        ctx.sayCode("""
+            GET /users/123
+            Authorization: Bearer token
+            """, "http");
+
+        ctx.sayKeyValue(Map.of(
+            "Status", "200 OK",
+            "Content-Type", "application/json"
+        ));
+
+        ctx.sayCode("""
+            {
+              "id": 123,
+              "name": "Alice",
+              "email": "alice@example.com"
+            }
+            """, "json");
+    }
+}
+```
+
+**Output:** `target/docs/test-results/ApiDocTest.md` — GitHub-ready Markdown
+
+**Key methods:** `say()`, `sayNextSection()`, `sayCode()`, `sayKeyValue()`, `sayTable()`
+
+---
+
+## 2. Make an arXiv Paper
+
+Generate LaTeX for academic papers:
+
+```java
+class PaperTest {
+    @DtrContextField private DtrContext ctx;
+
+    @DtrTest void abstractSection() {
+        ctx.sayNextSection("Abstract");
+        ctx.say("We present a novel approach to documentation testing...");
+    }
+
+    @DtrTest void methodology() {
+        ctx.sayNextSection("Methodology");
+        ctx.say("Our approach combines JUnit 5 with...");
+
+        ctx.sayCite("knuth1984");
+        ctx.sayCite("hatta2006", "p42");
+
+        ctx.sayCode("""
+            public void testFeature() {
+                assertEquals(expected, actual);
+            }
+            """, "java");
+    }
+
+    @DtrTest void results() {
+        ctx.sayNextSection("Results");
+        ctx.sayTable(new String[][]{
+            {"Method", "Accuracy", "Time"},
+            {"Ours", "98.5%", "12ms"},
+            {"Baseline", "92.1%", "45ms"}
+        });
+    }
+}
+```
+
+**Output:** `target/docs/test-results/PaperTest.tex` — arXiv-ready LaTeX
+
+**Key methods:** `sayCite()`, `sayTable()`, `sayCode()`, `sayRef()`
+
+---
+
+## 3. Make a Presentation
+
+Generate Reveal.js slides:
+
+```java
+class TalkTest {
+    @DtrContextField private DtrContext ctx;
+
+    @DtrTest void titleSlide() {
+        ctx.sayNextSection("Documentation Testing Runtime");
+        ctx.sayTldr("Transform tests into living documentation");
+
+        ctx.saySpeakerNote("Welcome everyone, today I'll present...");
+        ctx.sayCallToAction("https://github.com/seanchatmangpt/dtr");
+    }
+
+    @DtrTest void problemSlide() {
+        ctx.sayNextSection("The Problem");
+        ctx.say("Documentation drifts from code");
+
+        ctx.sayUnorderedList(List.of(
+            "Docs written separately",
+            "Code changes, docs don't",
+            "Users encounter outdated info"
+        ));
+
+        ctx.sayWarning("This causes production bugs");
+    }
+
+    @DtrTest void solutionSlide() {
+        ctx.sayNextSection("Our Solution");
+        ctx.sayTweetable("Tests are the single source of truth");
+
+        ctx.sayDocOnly("This text only appears in docs, not slides");
+
+        ctx.saySlideOnly("""
+            **DTR: Documentation Testing Runtime**
+
+            - Write tests → Generate docs
+            - Test passes → Docs accurate
+            - Java 26 + JUnit 5
+            """);
+    }
+
+    @DtrTest void demoSlide() {
+        ctx.sayNextSection("Live Demo");
+        ctx.sayCode("""
+            @DtrTest void example() {
+                ctx.say("Generated from test");
+            }
+            """, "java");
+    }
+}
+```
+
+**Output:** `target/docs/test-results/TalkTest.html` — Reveal.js presentation
+
+**Key methods:** `saySlideOnly()`, `saySpeakerNote()`, `sayTldr()`, `sayTweetable()`, `sayCallToAction()`, `sayUnorderedList()`
+
+---
+
+## 4. All Output Formats
+
+| Format | Output File | Use Case |
+|--------|-------------|----------|
+| **Markdown** | `*.md` | GitHub, GitLab, docs sites |
+| **LaTeX** | `*.tex` | arXiv, academic papers |
+| **Reveal.js** | `*.html` | Presentations, talks |
+| **Blog** | `*.md` | Jekyll, Hugo, SSG |
+| **HTML** | `*.html` | Standalone web pages |
+| **JSON** | `*.json` | API docs, tooling |
 
 ---
 
@@ -62,108 +210,88 @@ Run: `mvnd test` → Output: `target/docs/test-results/ApiTest.md`
 
 | Method | Description | Example |
 |--------|-------------|---------|
-| `sayCode(String, String)` | Fenced code block | `ctx.sayCode("x=1", "java")` |
+| `sayCode(String, String)` | Fenced code | `ctx.sayCode("x=1", "java")` |
 | `sayTable(String[][])` | 2D array → table | `ctx.sayTable(new String[][]{{"A","B"},{"1","2"}})` |
 | `sayKeyValue(Map)` | 2-column table | `ctx.sayKeyValue(Map.of("k","v"))` |
 | `sayJson(Object)` | Pretty JSON | `ctx.sayJson(obj)` |
-| `sayAssertions(Map)` | Assertion table | `ctx.sayAssertions(Map.of("check","✓ Pass"))` |
+| `sayAssertions(Map)` | Assertion table | `ctx.sayAssertions(Map.of("check","✓"))` |
 
 ### Formatting
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayNote(String)` | [!NOTE] block | `ctx.sayNote("info")` |
-| `sayWarning(String)` | [!WARNING] block | `ctx.sayWarning("caution")` |
-| `sayUnorderedList(List)` | Bullet list | `ctx.sayUnorderedList(List.of("a","b"))` |
-| `sayOrderedList(List)` | Numbered list | `ctx.sayOrderedList(List.of("1","2"))` |
+| Method | Description |
+|--------|-------------|
+| `sayNote(String)` | [!NOTE] block |
+| `sayWarning(String)` | [!WARNING] block |
+| `sayUnorderedList(List)` | Bullet list |
+| `sayOrderedList(List)` | Numbered list |
 
 ### Cross-References
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayRef(DocTestRef)` | Link to DocTest | `ctx.sayRef(ref)` |
-| `sayRef(Class, String)` | Link to class+anchor | `ctx.sayRef(MyClass.class, "api")` |
-| `sayCite(String)` | BibTeX citation | `ctx.sayCite("smith2023")` |
-| `sayCite(String, String)` | Citation + page | `ctx.sayCite("key", "p42")` |
-| `sayFootnote(String)` | Footnote | `ctx.sayFootnote("text")` |
+| Method | Description |
+|--------|-------------|
+| `sayRef(Class, String)` | Link to section |
+| `sayCite(String)` | BibTeX citation |
+| `sayFootnote(String)` | Footnote |
 
-### Code Model (Reflection)
+### Code Analysis
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayCodeModel(Class)` | Class structure | `ctx.sayCodeModel(MyClass.class)` |
-| `sayCodeModel(Method)` | Method signature | `ctx.sayCodeModel(method)` |
-| `sayCallSite()` | Caller location | `ctx.sayCallSite()` |
-| `sayAnnotationProfile(Class)` | All annotations | `ctx.sayAnnotationProfile(MyClass.class)` |
-| `sayClassHierarchy(Class)` | Inheritance tree | `ctx.sayClassHierarchy(MyClass.class)` |
-| `sayStringProfile(String)` | Text metrics | `ctx.sayStringProfile("text")` |
-| `sayReflectiveDiff(Object, Object)` | Field comparison | `ctx.sayReflectiveDiff(before, after)` |
-
-### Java 26 Code Reflection (JEP 516)
-
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayControlFlowGraph(Method)` | Mermaid CFG | `ctx.sayControlFlowGraph(method)` |
-| `sayCallGraph(Class)` | Mermaid call graph | `ctx.sayCallGraph(MyClass.class)` |
-| `sayOpProfile(Method)` | Operation counts | `ctx.sayOpProfile(method)` |
+| Method | Description |
+|--------|-------------|
+| `sayCodeModel(Class)` | Class structure |
+| `sayCallSite()` | Caller location |
+| `sayClassHierarchy(Class)` | Inheritance tree |
+| `sayControlFlowGraph(Method)` | Mermaid CFG |
+| `sayCallGraph(Class)` | Mermaid call graph |
 
 ### Benchmarking
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayBenchmark(String, Runnable)` | 50 warmup / 500 measure | `ctx.sayBenchmark("label", () -> code)` |
-| `sayBenchmark(String, Runnable, int, int)` | Custom rounds | `ctx.sayBenchmark("l", () -> c, 100, 1000)` |
+| Method | Description |
+|--------|-------------|
+| `sayBenchmark(String, Runnable)` | 50/500 rounds |
+| `sayBenchmark(String, Runnable, int, int)` | Custom rounds |
 
 ### Diagrams
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayMermaid(String)` | Raw Mermaid | `ctx.sayMermaid("flowchart LR-->A-->B")` |
-| `sayClassDiagram(Class...)` | Auto class diagram | `ctx.sayClassDiagram(A.class, B.class)` |
+| Method | Description |
+|--------|-------------|
+| `sayMermaid(String)` | Raw Mermaid |
+| `sayClassDiagram(Class...)` | Auto class diagram |
 
-### Quality & Coverage
+### Quality
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayDocCoverage(Class...)` | Coverage report | `ctx.sayDocCoverage(A.class, B.class)` |
-| `sayContractVerification(Class, Class...)` | Interface impl matrix | `ctx.sayContractVerification(IFace.class, Impl.class)` |
+| Method | Description |
+|--------|-------------|
+| `sayDocCoverage(Class...)` | Coverage report |
+| `sayContractVerification(Class, Class...)` | Impl matrix |
 
-### Presentation-Specific
+### Presentation
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `saySlideOnly(String)` | Slides-only content | `ctx.saySlideOnly("slides only")` |
-| `sayDocOnly(String)` | Docs-only content | `ctx.sayDocOnly("docs only")` |
-| `saySpeakerNote(String)` | Presenter notes | `ctx.saySpeakerNote("note")` |
-| `sayHeroImage(String)` | Hero image section | `ctx.sayHeroImage("alt text")` |
-| `sayTweetable(String)` | Social quote box | `ctx.sayTweetable("quote")` |
-| `sayTldr(String)` | TL;DR summary box | `ctx.sayTldr("summary")` |
-| `sayCallToAction(String)` | CTA button/link | `ctx.sayCallToAction("https://...")` |
+| Method | Description |
+|--------|-------------|
+| `saySlideOnly(String)` | Slides-only |
+| `sayDocOnly(String)` | Docs-only |
+| `saySpeakerNote(String)` | Notes |
+| `sayHeroImage(String)` | Hero |
+| `sayTweetable(String)` | Quote |
+| `sayTldr(String)` | Summary |
+| `sayCallToAction(String)` | CTA |
 
-### Testing (Assertions + Documentation)
+### Testing
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayAndAssertThat(String, T, Matcher)` | Assert + doc (generic) | `ctx.sayAndAssertThat("x", val, equalTo(1))` |
-| `sayAndAssertThat(String, long, Matcher)` | Assert + doc (long) | `ctx.sayAndAssertThat("x", 42L, greaterThan(40L))` |
-| `sayAndAssertThat(String, int, Matcher)` | Assert + doc (int) | `ctx.sayAndAssertThat("x", 42, equalTo(42))` |
-| `sayAndAssertThat(String, boolean, Matcher)` | Assert + doc (boolean) | `ctx.sayAndAssertThat("x", true, is(true))` |
-
-### Environment & Debugging
-
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayEnvProfile()` | System snapshot | `ctx.sayEnvProfile()` |
-| `sayException(Throwable)` | Exception details | `ctx.sayException(error)` |
+| Method | Description |
+|--------|-------------|
+| `sayAndAssertThat(String, T, Matcher)` | Assert + doc |
+| `sayEnvProfile()` | System info |
+| `sayException(Throwable)` | Error details |
 
 ### Specialized
 
-| Method | Description | Example |
-|--------|-------------|---------|
-| `sayRecordComponents(Class)` | Record schema | `ctx.sayRecordComponents(MyRecord.class)` |
-| `sayAsciiChart(String, double[], String[])` | Horizontal bar chart | `ctx.sayAsciiChart("x", vals, labels)` |
-| `sayEvolutionTimeline(Class, int)` | Git log for file | `ctx.sayEvolutionTimeline(MyClass.class, 10)` |
-| `sayJavadoc(Method)` | Extract Javadoc | `ctx.sayJavadoc(method)` |
+| Method | Description |
+|--------|-------------|
+| `sayRecordComponents(Class)` | Record schema |
+| `sayAsciiChart(String, double[], String[])` | Bar chart |
+| `sayEvolutionTimeline(Class, int)` | Git log |
+| `sayJavadoc(Method)` | Extract Javadoc |
 
 ---
 
@@ -171,41 +299,9 @@ Run: `mvnd test` → Output: `target/docs/test-results/ApiTest.md`
 
 | Annotation | Purpose |
 |------------|---------|
-| `@DtrTest` | `@Test` + `@ExtendWith(DtrExtension.class)` + auto-finish |
-| `@DtrTest(autoFinish=true)` | Auto-call `ctx.finish()` after test |
-| `@DtrTest(fileName="custom.md")` | Custom output filename |
+| `@DtrTest` | `@Test` + `@ExtendWith(DtrExtension.class)` |
 | `@DtrContextField` | Field injection for `DtrContext` |
-| `@DtrConfig(outputDir="path")` | Configuration override |
-
----
-
-## Patterns
-
-### Field Injection (Primary)
-
-```java
-class Test {
-    @DtrContextField private DtrContext ctx;
-
-    @DtrTest void test() { ctx.say("text"); }
-}
-```
-
-### Parameter Injection
-
-```java
-class Test {
-    @Test void test(DtrContext ctx) { ctx.say("text"); }
-}
-```
-
-### Inheritance (Legacy)
-
-```java
-class Test extends DtrTest {
-    @Test void test() { ctx.say("text"); }
-}
-```
+| `@DtrConfig(outputDir="path")` | Configuration |
 
 ---
 
@@ -213,8 +309,8 @@ class Test extends DtrTest {
 
 ### 📚 Tutorials
 - **[Basics](docs/tutorials/basics.md)** — 20-minute introduction
-- **[HTTP Testing](docs/tutorials/http-testing.md)** — REST API documentation
-- **[Field Injection Guide](docs/tutorials/field-injection-guide.md)** — Modern patterns
+- **[HTTP Testing](docs/tutorials/http-testing.md)** — REST API docs
+- **[Field Injection](docs/tutorials/field-injection-guide.md)** — Modern patterns
 
 ### 📖 How-To Guides
 - **[80/20 Essentials](docs/how-to/80-20-essentials.md)** — Minimal path to productivity
@@ -229,17 +325,6 @@ class Test extends DtrTest {
 - **[Annotation Reference](docs/reference/annotation-reference.md)** — All annotations
 - **[FAQ & Troubleshooting](docs/reference/FAQ_AND_TROUBLESHOOTING.md)** — Common issues
 - **[Migration Guide](docs/MIGRATING.md)** — Version upgrades
-
----
-
-## Output Formats
-
-- **Markdown** — Primary output (GitHub-ready)
-- **LaTeX** — Academic papers
-- **Blog** — Jekyll, Hugo
-- **Slides** — Reveal.js
-- **HTML** — Standalone pages
-- **JSON** — Machine-readable
 
 ---
 
