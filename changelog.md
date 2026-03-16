@@ -8,6 +8,274 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [2026.4.0] — 2026-03-15
+
+### Overview
+
+DTR 2026.4.0 is the **Developer Experience & Quality of Life** release. This release introduces
+comprehensive improvements to reduce cognitive load, minimize boilerplate, and maximize automation
+across the entire DTR testing workflow. The focus is on making documentation testing delightful,
+intuitive, and frictionless.
+
+This release adds five major feature areas: fluent API builders, auto-section generation, unified
+documentation annotations, static import utilities, and composite test annotations — all designed
+to make writing documentation tests feel natural and effortless.
+
+---
+
+### Added
+
+#### Fluent TableBuilder API
+
+Type-safe, chainable builder for table construction with compile-time validation:
+
+```java
+ctx.table()
+   .headers("Name", "Age", "City")
+   .row("Alice", "30", "NYC")
+   .row("Bob", "25", "LA")
+   .build();
+```
+
+**Benefits:** Eliminates 2D array syntax, IDE autocomplete support, method chaining, compile-time validation.
+
+#### @AutoSection Annotation
+
+Automatic section title generation from test method names:
+
+```java
+@Test
+@AutoSection  // Auto-generates "Get Users" from testGetUsers()
+void testGetUsers(DtrContext ctx) {
+    say("Returns all users from the database");
+}
+```
+
+**Benefits:** Zero boilerplate, consistent naming conventions, eliminates repetitive `sayNextSection()` calls.
+
+#### @Doc Unified Annotation
+
+Consolidates @DocSection, @DocDescription, @DocNote, @DocWarning, and @DocCode into a single annotation:
+
+```java
+@Doc(
+    section = "User Authentication",
+    description = "Tests login flow with valid credentials",
+    note = "Uses test database fixture",
+    warning = "Requires auth service to be running",
+    code = "POST /api/login { \"username\": \"alice\", \"password\": \"***\" }"
+)
+@Test void testLogin() { ... }
+```
+
+**Benefits:** Single annotation replaces 5+, cleaner test code, coherent documentation structure.
+
+#### Static Import Utilities (Dtr class)
+
+Zero-qualification method calls for cleaner test code:
+
+```java
+import static io.github.seanchatmangpt.dtr.Dtr.*;
+
+@DtrTest
+class MyTest {
+    @Test void test() {
+        say("Hello");  // No ctx. prefix required
+        sayCode("int x = 42;", "java");
+        sayNextSection("New Section");
+    }
+}
+```
+
+**Benefits:** Python-like ergonomics, reduced visual noise, cleaner test code.
+
+#### @DtrTest Composite Annotation
+
+Single annotation replaces @ExtendWith(DtrExtension.class) and lifecycle boilerplate:
+
+```java
+@DtrTest  // Enables DTR, no other setup needed
+class UserApiTest {
+    @Test void test() { ... }
+}
+```
+
+**Replaces:**
+```java
+@ExtendWith(DtrExtension.class)
+class UserApiTest {
+    @AfterAll
+    static void cleanup(DtrContext ctx) {
+        ctx.finishAndWriteOut();
+    }
+}
+```
+
+**Benefits:** One annotation vs. three lines, eliminates lifecycle boilerplate, self-documenting.
+
+#### Fluent Assertion API (DtrAssertions)
+
+Chainable assertions with batch documentation:
+
+```java
+assertThat(ctx, "User API", user)
+    .check("name", user.getName(), equalTo("Alice"))
+    .check("age", user.getAge(), greaterThan(18))
+    .check("email", user.getEmail(), containsString("@"))
+    .verifyAll();  // Documents all assertions as a table
+```
+
+**Benefits:** Assertion grouping, batch documentation, rich failure context, chainable API.
+
+#### Configuration System (@DtrConfig)
+
+Hierarchical configuration with sensible defaults:
+
+```java
+@DtrConfig(
+    format = OutputFormat.MARKDOWN,
+    outputDir = "docs/test",
+    includeEnvProfile = true
+)
+@DtrTest
+class ConfiguredTest { ... }
+```
+
+**Precedence:** System properties → @DtrConfig(method) → @DtrConfig(class) → @DtrConfig(package) → defaults.
+
+**Benefits:** Flexible configuration, system property overrides, hierarchical precedence.
+
+#### Enhanced Error Messaging (DtrException)
+
+Rich error context with source location, suggestions, and documentation links:
+
+```java
+📍 Location: UserApiTest.java:42
+📋 Method: testGetUsers
+🕐 When: 2026-03-15T10:30:00Z
+
+💡 Suggestion: Ensure directory exists or use 'docs/test' default
+
+📚 Related Documentation:
+- docs/reference/configuration.md
+- docs/tutorials/your-first-doctest.md
+```
+
+**Benefits:** Actionable error messages, source location tracking, helpful suggestions.
+
+#### IDE Integration Support (@LivePreview)
+
+Live preview of documentation in supported IDEs:
+
+```java
+@LivePreview(refreshRateMs = 500, inlineGutter = true)
+@DtrTest
+class PreviewTest { ... }
+```
+
+**Benefits:** IDE-native preview, visual feedback, reduced context switching.
+
+#### @AutoDoc Intelligent Annotation
+
+Auto-generates documentation from method signatures, Javadoc, and code analysis:
+
+```java
+@AutoDoc(
+    includeSignature = true,
+    generateExample = true,
+    notes = "Uses cached responses"
+)
+@Test void testGetUsers() { ... }
+```
+
+**Benefits:** Zero-boilerplate documentation, Javadoc integration, automatic examples.
+
+---
+
+### Changed
+
+- **API Ergonomics:** All new DX/QoL features are additive — existing tests continue to work without modification
+- **Documentation:** Updated QUICKSTART.md, tutorials, and reference docs with new API examples
+- **Error Messages:** Enhanced all DTR exceptions with rich context and suggestions
+
+---
+
+### Migration Guide
+
+#### From 2026.3.0 to 2026.4.0
+
+All changes are backward compatible. To adopt new DX/QoL features:
+
+1. **Replace @ExtendWith with @DtrTest:**
+   ```java
+   // Before
+   @ExtendWith(DtrExtension.class)
+   public class MyTest { }
+
+   // After
+   @DtrTest
+   public class MyTest { }
+   ```
+
+2. **Add static imports (optional):**
+   ```java
+   import static io.github.seanchatmangpt.dtr.Dtr.*;
+
+   // Now use: say("text") instead of ctx.say("text")
+   ```
+
+3. **Use @AutoSection to reduce boilerplate:**
+   ```java
+   // Before
+   @Test void testGetUsers(DtrContext ctx) {
+       ctx.sayNextSection("Get Users");
+       ctx.say("Returns all users");
+   }
+
+   // After
+   @Test
+   @AutoSection  // Auto-generates "Get Users"
+   void testGetUsers(DtrContext ctx) {
+       say("Returns all users");
+   }
+   ```
+
+4. **Consolidate multiple annotations with @Doc:**
+   ```java
+   // Before
+   @DocSection("Authentication")
+   @DocDescription("Tests login flow")
+   @DocNote("Uses test database")
+   @Test void testLogin() { }
+
+   // After
+   @Doc(
+       section = "Authentication",
+       description = "Tests login flow",
+       note = "Uses test database"
+   )
+   @Test void testLogin() { }
+   ```
+
+5. **Use TableBuilder for fluent table construction:**
+   ```java
+   // Before
+   ctx.sayTable(new String[][]{
+       {"Name", "Age"},
+       {"Alice", "30"}
+   });
+
+   // After
+   ctx.table()
+      .headers("Name", "Age")
+      .row("Alice", "30")
+      .build();
+   ```
+
+**No breaking changes** — all existing tests work without modification.
+
+---
+
 ## [2.6.0] — 2026-03-13
 
 ### Overview

@@ -8,7 +8,7 @@
 [![Java 26](https://img.shields.io/badge/Java-26-orange.svg)](https://openjdk.org/projects/jdk/26/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**Version:** 2026.3.0 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
+**Version:** 2026.4.0 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
 
 ---
 
@@ -36,7 +36,7 @@ Documentation stays in sync with code because it's generated from live test exec
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.3.0</version>
+    <version>2026.4.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -81,7 +81,7 @@ Add to `.mvn/maven.config`:
 ### Write your first documentation test
 
 ```java
-import io.github.seanchatmangpt.dtr.junit5.DtrContext;
+import io.github.seanchatmangpt.dtr.DtrContext;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,11 +92,35 @@ import java.util.Map;
 class HelloDtrTest {
 
     @Test
-    @DocSection("User API")
+    @AutoSection  // Auto-generates "Get User" from method name
     void testGetUser(DtrContext ctx) {
         ctx.say("Returns user details by ID.");
         ctx.sayCode("GET /api/users/{id}", "http");
         ctx.sayKeyValue(Map.of(
+            "Authentication", "Bearer token",
+            "Rate Limit", "100/hour"
+        ));
+    }
+}
+```
+
+### Or use the new simplified API (2026.4.0+)
+
+```java
+import static io.github.seanchatmangpt.dtr.Dtr.*;
+import io.github.seanchatmangpt.dtr.AutoSection;
+import io.github.seanchatmangpt.dtr.DtrTest;
+import org.junit.jupiter.api.Test;
+
+@DtrTest  // Single annotation, no boilerplate
+class HelloDtrTest {
+
+    @Test
+    @AutoSection  // Auto-generates "Get User" from method name
+    void testGetUser() {
+        say("Returns user details by ID.");
+        sayCode("GET /api/users/{id}", "http");
+        sayKeyValue(Map.of(
             "Authentication", "Bearer token",
             "Rate Limit", "100/hour"
         ));
@@ -117,6 +141,133 @@ cat target/docs/test-results/HelloDtrTest.md
 ```
 
 Output is pure, portable Markdown — committed to your repository, diffable, and rendered natively by GitHub, GitLab, and every Markdown-aware editor.
+
+---
+
+## Migration Guide: From 2026.3.x to 2026.4.0
+
+### Overview
+
+DTR 2026.4.0 introduces major DX/QoL improvements while maintaining 100% backward compatibility. All existing tests work without modification.
+
+### Key Changes
+
+#### 1. Simplified Test Setup
+
+**Before (2026.3.x):**
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @AfterAll
+    static void cleanup(DtrContext ctx) {
+        ctx.finishAndWriteOut();
+    }
+}
+```
+
+**After (2026.4.0):**
+```java
+@DtrTest  // Single annotation replaces all boilerplate
+class MyTest {
+    // No lifecycle methods needed!
+}
+```
+
+#### 2. Static Import Support
+
+**Before:**
+```java
+@Test void test(DtrContext ctx) {
+    ctx.say("Hello");
+    ctx.sayCode("int x = 42;", "java");
+}
+```
+
+**After:**
+```java
+import static io.github.seanchatmangpt.dtr.Dtr.*;
+
+@Test void test() {
+    say("Hello");  // No ctx. prefix
+    sayCode("int x = 42;", "java");
+}
+```
+
+#### 3. Auto-Section Generation
+
+**Before:**
+```java
+@Test void testGetUsers(DtrContext ctx) {
+    ctx.sayNextSection("Get Users");
+    ctx.say("Returns all users");
+}
+```
+
+**After:**
+```java
+@Test
+@AutoSection  // Auto-generates "Get Users" from method name
+void testGetUsers() {
+    say("Returns all users");
+}
+```
+
+#### 4. Fluent TableBuilder
+
+**Before:**
+```java
+ctx.sayTable(new String[][]{
+    {"Name", "Age"},
+    {"Alice", "30"},
+    {"Bob", "25"}
+});
+```
+
+**After:**
+```java
+ctx.table()
+   .headers("Name", "Age")
+   .row("Alice", "30")
+   .row("Bob", "25")
+   .build();
+```
+
+#### 5. Unified @Doc Annotation
+
+**Before (multiple annotations):**
+```java
+@DocSection("Authentication")
+@DocDescription("Tests login flow")
+@DocNote("Uses test database")
+@DocWarning("Requires auth service")
+@Test void testLogin() { }
+```
+
+**After (single annotation):**
+```java
+@Doc(
+    section = "Authentication",
+    description = "Tests login flow",
+    note = "Uses test database",
+    warning = "Requires auth service"
+)
+@Test void testLogin() { }
+```
+
+### Migration Path
+
+1. **Update dependency** to `2026.4.0`
+2. **Run existing tests** — all should pass without changes
+3. **Gradually adopt new features:**
+   - Replace `@ExtendWith(DtrExtension.class)` with `@DtrTest`
+   - Add `import static io.github.seanchatmangpt.dtr.Dtr.*;`
+   - Use `@AutoSection` for new tests
+   - Try `TableBuilder` for complex tables
+4. **Refactor at your own pace** — old and new APIs can coexist
+
+### Breaking Changes
+
+**None.** All changes are additive and backward compatible.
 
 ---
 
