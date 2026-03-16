@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  IntelliJ IDEA Plugin Descriptor for DTR Live Preview
+
+  This descriptor defines extension points for IDE integration:
+  - Custom file type recognition for .dtr.preview files
+  - Tool window for live documentation preview
+  - Editor gutter integration for inline preview
+
+  Plugin Implementation: Separate project (org.dtr.intellij.plugin)
+  This descriptor serves as documentation and extension point contract.
+-->
+<idea-plugin url="https://github.com/seanchatmangpt/dtr">
+    <id>io.github.seanchatmangpt.dtr.intellij</id>
+    <name>DTR Live Preview</name>
+    <description>Live preview for DTR documentation tests with real-time rendering and inline gutter support</description>
+    <version>2026.2.0</version>
+    <vendor email="dtr@example.com" url="https://github.com/seanchatmangpt/dtr">DTR Project</vendor>
+
+    <!-- Extension Points for Third-Party Plugins -->
+    <extensionPoints>
+        <extensionPoint name="previewRenderer" interface="io.github.seanchatmangpt.dtr.ide.intellij.PreviewRendererExtension" dynamic="true">
+            <with tag="implementation" class="java.lang.Class"/>
+        </extensionPoint>
+        <extensionPoint name="previewDecorator" interface="io.github.seanchatmangpt.dtr.ide.intellij.PreviewDecoratorExtension" dynamic="true"/>
+    </extensionPoints>
+
+    <!-- File Type Registration -->
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- DTR Preview File Type (.dtr.preview) -->
+        <fileType name="DTR Preview"
+                  implementationClass="io.github.seanchatmangpt.dtr.ide.intellij.DtrPreviewFileType"
+                  fieldName="INSTANCE"
+                  language="DTR Preview"
+                  extensions="dtr.preview"/>
+
+        <!-- DTR Preview File Type Detector -->
+        <fileTypeDetector implementation="io.github.seanchatmangpt.dtr.ide.intellij.DtrPreviewFileTypeDetector"/>
+
+        <!-- Tool Window for Live Preview -->
+        <toolWindow id="DTR Preview"
+                   factoryClass="io.github.seanchatmangpt.dtr.ide.intellij.DtrPreviewToolWindowFactory"
+                   anchor="right"
+                   icon="/icons/dtr-preview.svg">
+
+            <!-- Condition: Only show when DTR test files are open -->
+            <condition>
+                <!-- Implementation checks for @LivePreview annotation or .dtr.preview files -->
+            </condition>
+        </toolWindow>
+
+        <!-- Editor Gutter Icon Renderer for Inline Preview -->
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                       implementationClass="io.github.seanchatmangpt.dtr.ide.intellij.DtrInlinePreviewMarker"/>
+
+        <!-- Editor Toolbar Action -->
+        <action id="DTR.OpenPreview"
+                class="io.github.seanchatmangpt.dtr.ide.intellij.actions.OpenPreviewAction"
+                text="Open DTR Preview"
+                description="Open live preview for current DTR test"
+                icon="/icons/open-preview.svg">
+
+            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="EditorPopupMenu1"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="after" relative-to-action="EditorTabPopupMenu1"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="control shift P"/>
+        </action>
+
+        <!-- Toolbar Integration -->
+        <action id="DTR.RefreshPreview"
+                class="io.github.seanchatmangpt.dtr.ide.intellij.actions.RefreshPreviewAction"
+                text="Refresh DTR Preview"
+                description="Force refresh of DTR preview"
+                icon="/icons/refresh-preview.svg">
+
+            <add-to-group group-id="DTR.Preview.Toolbar"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="control shift R"/>
+        </action>
+
+        <!-- Application Settings -->
+        <applicationConfigurable parentId="tools"
+                                 instance="io.github.seanchatmangpt.dtr.ide.intellij.settings.DtrConfigurable"
+                                 id="dtr.preview.settings"
+                                 displayName="DTR Preview"/>
+
+        <!-- Project Settings -->
+        <projectConfigurable parentId="tools"
+                            instance="io.github.seanchatmangpt.dtr.ide.intellij.settings.DtrProjectConfigurable"
+                            id="dtr.preview.project.settings"
+                            displayName="DTR Preview"/>
+
+        <!-- Build System Integration -->
+        <externalSystemTaskExecutionListener implementation="io.github.seanchatmangpt.dtr.ide.intellij.build.DtrTestExecutionListener"/>
+
+        <!-- Run Configuration Listener -->
+        <runConfigurationExtension implementation="io.github.seanchatmangpt.dtr.ide.intellij.run.DtrRunConfigurationExtension"/>
+
+        <!-- File Watcher for .dtr.preview files -->
+        <asyncFilePathToUriConverter implementation="io.github.seanchatmangpt.dtr.ide.intellij.watcher.DtrPreviewFileWatcher"/>
+
+        <!-- Syntax Highlighting for .dtr.preview JSON -->
+        <lang.parserDefinition language="DTR Preview JSON"
+                              implementationClass="io.github.seanchatmangpt.dtr.ide.intellij.highlighting.DtrPreviewParserDefinition"/>
+
+        <!-- Color Settings Page -->
+        <colorSettingsPage implementation="io.github.seanchatmangpt.dtr.ide.intellij.highlighting.DtrPreviewColorSettingsPage"/>
+
+        <!-- Annotator for @LivePreview annotation -->
+        <annotator language="JAVA" implementationClass="io.github.seanchatmangpt.dtr.ide.intellij.annotator.LivePreviewAnnotator"/>
+
+        <!-- Quick Documentation Provider -->
+        <lang.documentationProvider language="JAVA"
+                                   implementationClass="io.github.seanchatmangpt.dtr.ide.intellij.documentation.DtrDocumentationProvider"
+                                   order="first"/>
+
+        <!-- Navigation: Goto from test to preview -->
+        <gotoSymbolContributor implementation="io.github.seanchatmangpt.dtr.ide.intellij.navigation.DtrPreviewGotoContributor"/>
+
+        <!-- Notification Group -->
+        <notificationGroup id="DTR Preview Notifications"
+                          displayType="BALLOON"
+                          isLogByDefault="true"/>
+
+        <!-- Startup Activity -->
+        <postStartupActivity implementation="io.github.seanchatmangpt.dtr.ide.intellij.DtrPreviewStartupActivity"/>
+
+        <!-- Project Component -->
+        <projectService serviceImplementation="io.github.seanchatmangpt.dtr.ide.intellij.DtrPreviewProjectService"/>
+
+        <!-- Application Component -->
+        <applicationService serviceImplementation="io.github.seanchatmangpt.dtr.ide.intellij.DtrPreviewApplicationService"/>
+    </extensions>
+
+    <!-- Actions -->
+    <actions>
+        <!-- Main Toolbar Integration -->
+        <group id="DTR.Preview.Toolbar">
+            <separator/>
+            <action id="DTR.OpenPreview"/>
+            <action id="DTR.RefreshPreview"/>
+            <separator/>
+        </group>
+
+        <!-- Editor Context Menu -->
+        <group id="DTR.EditorContextMenu">
+            <separator/>
+            <action id="DTR.OpenPreview"/>
+            <action id="DTR.ToggleInlineGutter"/>
+            <separator/>
+        </group>
+
+        <!-- View Menu -->
+        <group id="DTR.ViewMenu" text="DTR Preview">
+            <add-to-group group-id="ViewMenu" anchor="after" relative-to-action="ToolWindows"/>
+            <action id="DTR.OpenPreview"/>
+            <action id="DTR.ToggleInlineGutter"/>
+        </group>
+    </actions>
+
+    <!-- Dependencies -->
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Compatibility -->
+    <idea-version since-build="233.0" until-build="241.*"/>
+
+    <!-- Changelog -->
+    <change-notes><![CDATA[
+        <h3>2026.2.0</h3>
+        <ul>
+            <li>Initial release of DTR Live Preview plugin</li>
+            <li>Support for @LivePreview annotation</li>
+            <li>.dtr.preview file type recognition</li>
+            <li>Tool window with real-time preview rendering</li>
+            <li>Inline gutter preview for quick feedback</li>
+            <li>Auto-refresh on test execution</li>
+        </ul>
+    ]]>
+    </change-notes>
+</idea-plugin>
