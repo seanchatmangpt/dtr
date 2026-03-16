@@ -407,11 +407,11 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 
 | Key | Value |
 | --- | --- |
-| `Formats dispatched` | `8` |
-| `Wall-clock time` | `2 ms` |
-| `Threads created` | `8` |
-| `Concurrency model` | `Virtual threads (JEP 444)` |
 | `Thread pool to size` | `None required` |
+| `Concurrency model` | `Virtual threads (JEP 444)` |
+| `Threads created` | `8` |
+| `Wall-clock time` | `2 ms` |
+| `Formats dispatched` | `8` |
 
 ```java
 // UNNAMED PATTERNS (JEP 456) — Declare intent to ignore
@@ -431,12 +431,12 @@ String label = switch (event) {
 
 | Check | Result |
 | --- | --- |
-| Sealed classes make SayEvent grammar closed and verified | `✓ PASS` |
-| All features are in production use, not prototype code | `✓ PASS` |
-| Records provide immutable event carriers with zero boilerplate | `✓ PASS` |
-| Unnamed patterns communicate intentional component non-use | `✓ PASS` |
-| Virtual threads enable O(1) multi-format rendering | `✓ PASS` |
 | Pattern matching switch is exhaustive over all 16 SayEvent types | `✓ PASS` |
+| Virtual threads enable O(1) multi-format rendering | `✓ PASS` |
+| Unnamed patterns communicate intentional component non-use | `✓ PASS` |
+| Records provide immutable event carriers with zero boilerplate | `✓ PASS` |
+| All features are in production use, not prototype code | `✓ PASS` |
+| Sealed classes make SayEvent grammar closed and verified | `✓ PASS` |
 
 ## 5. AI-Augmented Development with Claude Code
 
@@ -456,17 +456,17 @@ The development workflow employed Claude Code — Anthropic's terminal-based AI 
 
 ```json
 {
-  "buildCommand" : "mvnd test -pl dtr-core --enable-preview",
-  "context" : {
-    "previewEnabled" : true,
-    "pattern" : "sealed switch over SayEvent hierarchy",
-    "targetClass" : "io.github.seanchatmangpt.dtr.rendermachine.latex.ArXivTemplate",
-    "javaVersion" : "25"
-  },
-  "rootAgent" : "claude-orchestrator",
-  "task" : "implement ArXiv LaTeX template",
+  "targetAgent" : "java-26-expert",
   "agentEvent" : "dispatch",
-  "targetAgent" : "java-26-expert"
+  "task" : "implement ArXiv LaTeX template",
+  "rootAgent" : "claude-orchestrator",
+  "context" : {
+    "javaVersion" : "25",
+    "targetClass" : "io.github.seanchatmangpt.dtr.rendermachine.latex.ArXivTemplate",
+    "pattern" : "sealed switch over SayEvent hierarchy",
+    "previewEnabled" : true
+  },
+  "buildCommand" : "mvnd test -pl dtr-core --enable-preview"
 }
 ```
 
@@ -494,13 +494,13 @@ unnamed patterns wherever they are the correct tool.
 
 | Key | Value |
 | --- | --- |
-| `Output formats supported` | `11` |
-| `Test classes in dtr-core` | `20+` |
-| `Documentation drift incidents` | `0 — structurally impossible` |
-| `Java features actively used` | `7 (sealed, records, patterns, vthreads, unnamed, seqcoll, textblocks)` |
-| `AI-assisted development sessions` | `Multiple` |
-| `Lines of production code` | `~8000` |
 | `Total say* methods implemented` | `22` |
+| `Lines of production code` | `~8000` |
+| `AI-assisted development sessions` | `Multiple` |
+| `Java features actively used` | `7 (sealed, records, patterns, vthreads, unnamed, seqcoll, textblocks)` |
+| `Documentation drift incidents` | `0 — structurally impossible` |
+| `Test classes in dtr-core` | `20+` |
+| `Output formats supported` | `11` |
 
 The AI-augmentation workflow did not merely accelerate implementation. It changed the quality of the architecture. Human developers often defer modernization ("we'll use records when we have time to refactor"). AI agents apply modern idioms at every opportunity without the friction cost. The result is a codebase that is uniformly idiomatic — no legacy patterns, no deferred modernization debt.
 
@@ -614,12 +614,12 @@ DTR configuration migration from v1 to v2:
 
 | Check | Result |
 | --- | --- |
-| sayClassHierarchy() renders DTR → Object chain | `✓ PASS` |
-| No other testing library provides any of these 5 capabilities | `✓ PASS` |
-| sayStringProfile() computes word/line/char counts without regex library | `✓ PASS` |
-| sayCallSite() surfaces class/method/line from live JVM stack | `✓ PASS` |
-| sayReflectiveDiff() detects all changed fields between v1 and v2 | `✓ PASS` |
 | sayAnnotationProfile() lists all @Test methods on this class | `✓ PASS` |
+| sayReflectiveDiff() detects all changed fields between v1 and v2 | `✓ PASS` |
+| sayCallSite() surfaces class/method/line from live JVM stack | `✓ PASS` |
+| sayStringProfile() computes word/line/char counts without regex library | `✓ PASS` |
+| No other testing library provides any of these 5 capabilities | `✓ PASS` |
+| sayClassHierarchy() renders DTR → Object chain | `✓ PASS` |
 
 > [!NOTE]
 > All five innovations use only `java.lang.reflect`, `java.lang.invoke`, and Java's built-in string APIs. No external dependencies were added. The capabilities emerge from Java's reflection subsystem combined with the test-as-documentation paradigm.
@@ -644,14 +644,14 @@ Live reflection measurement — test methods in this class:
 
 | Key | Value |
 | --- | --- |
-| `Documentation drift incidents` | `0` |
-| `Citation keys registered` | `16` |
-| `say* API methods available` | `22` |
-| `Lines in this test class` | `600+` |
-| `Test methods in PhDThesisDocTest` | `11` |
-| `Java features demonstrated` | `7` |
-| `Output formats supported` | `11` |
 | `say* methods used in this file` | `22 (all of them)` |
+| `Output formats supported` | `11` |
+| `Java features demonstrated` | `7` |
+| `Test methods in PhDThesisDocTest` | `11` |
+| `Lines in this test class` | `600+` |
+| `say* API methods available` | `22` |
+| `Citation keys registered` | `16` |
+| `Documentation drift incidents` | `0` |
 
 | Evaluation Criterion | Target | Measured | Result |
 | --- | --- | --- | --- |
@@ -669,14 +669,14 @@ Live reflection measurement — test methods in this class:
 
 | Check | Result |
 | --- | --- |
-| Five Blue Ocean innovations demonstrated in chapter 6 | `✓ PASS` |
-| File compiles on Java 26 with --enable-preview | `✓ PASS` |
-| Zero documentation drift — structural, not procedural guarantee | `✓ PASS` |
-| All 22 say* methods appear in this file | `✓ PASS` |
-| Live reflection counts 11 @Test methods | `✓ PASS` |
-| 11 output formats supported by MultiRenderMachine | `✓ PASS` |
-| All 16 BibTeX citations registered in @BeforeAll | `✓ PASS` |
 | AI-augmented development workflow documented in chapter 5 | `✓ PASS` |
+| All 16 BibTeX citations registered in @BeforeAll | `✓ PASS` |
+| 11 output formats supported by MultiRenderMachine | `✓ PASS` |
+| Live reflection counts 11 @Test methods | `✓ PASS` |
+| All 22 say* methods appear in this file | `✓ PASS` |
+| Zero documentation drift — structural, not procedural guarantee | `✓ PASS` |
+| File compiles on Java 26 with --enable-preview | `✓ PASS` |
+| Five Blue Ocean innovations demonstrated in chapter 6 | `✓ PASS` |
 
 The most important evaluation result is the one that cannot be measured empirically: the experience of reading a document that you trust. Documentation written in DTR's style does not require the reader to wonder "is this still accurate?". If it were not accurate, the test would fail. The document and the test are the same file. Trust is structural, not procedural.
 
@@ -721,12 +721,12 @@ The five Blue Ocean innovations of Chapter 6 demonstrate that the test-as-docume
 
 | Check | Result |
 | --- | --- |
-| AI-augmented development produced idiomatic Java 26 uniformly | `✓ PASS` |
-| Five Blue Ocean innovations with no competing library | `✓ PASS` |
-| Java 26 features are load-bearing, not cosmetic | `✓ PASS` |
-| Thesis statement proven: executable doc eliminates drift structurally | `✓ PASS` |
-| All 22 say* methods demonstrated | `✓ PASS` |
 | This thesis passes its own test suite | `✓ PASS` |
+| All 22 say* methods demonstrated | `✓ PASS` |
+| Thesis statement proven: executable doc eliminates drift structurally | `✓ PASS` |
+| Java 26 features are load-bearing, not cosmetic | `✓ PASS` |
+| Five Blue Ocean innovations with no competing library | `✓ PASS` |
+| AI-augmented development produced idiomatic Java 26 uniformly | `✓ PASS` |
 
 > [!NOTE]
 > The test that generated this document has now run to completion. Every claim in every chapter was backed by executing Java code. The documentation you are reading is the test output. The test passed.
@@ -796,9 +796,9 @@ The following references are cited in this thesis. All BibTeX keys were register
 
 | Check | Result |
 | --- | --- |
-| Bibliography table formatted as Markdown | `✓ PASS` |
-| All 16 keys resolve to non-null citations via BibliographyManager | `✓ PASS` |
 | sayCite() called for every registered key | `✓ PASS` |
+| All 16 keys resolve to non-null citations via BibliographyManager | `✓ PASS` |
+| Bibliography table formatted as Markdown | `✓ PASS` |
 | All 16 BibTeX keys registered in @BeforeAll | `✓ PASS` |
 
 This concludes the references. The bibliography above was generated by iterating the registered citation keys and retrieving their values from `BibliographyManager.getInstance()`. If a citation were missing, the retrieval would return null and the table would display "(not registered)". The bibliography is verified by the same mechanism that generates it.

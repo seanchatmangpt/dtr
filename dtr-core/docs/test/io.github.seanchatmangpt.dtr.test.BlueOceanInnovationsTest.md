@@ -93,9 +93,9 @@ sayBenchmark("HashMap.get() lookup",
 | Metric | Result |
 | --- | --- |
 | Avg | `236 ns` |
-| Min | `83 ns` |
-| Max | `30375 ns` |
-| p99 | `1459 ns` |
+| Min | `42 ns` |
+| Max | `25833 ns` |
+| p99 | `1458 ns` |
 | Ops/sec | `4,237,288` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `636 ns` |
-| Min | `125 ns` |
-| Max | `56333 ns` |
-| p99 | `10791 ns` |
-| Ops/sec | `1,572,327` |
+| Avg | `414 ns` |
+| Min | `166 ns` |
+| Max | `23709 ns` |
+| p99 | `2584 ns` |
+| Ops/sec | `2,415,458` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-15T23:35:57.799212Z` |
+| Timestamp | `2026-03-16T00:12:01.294404Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -359,11 +359,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `63 ns` |
+| Avg | `64 ns` |
 | Min | `41 ns` |
 | Max | `458 ns` |
 | p99 | `458 ns` |
-| Ops/sec | `15,873,015` |
+| Ops/sec | `15,625,000` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -482,8 +482,8 @@ sayThreadDump();
 | `36` | `surefire-forkedjvm-command-thread` | `RUNNABLE` | `true` | `N/A` |
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
 | `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
-| `54` | `ForkJoinPool-1-worker-2` | `TIMED_WAITING` | `true` | `N/A` |
-| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
+| `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
+| `55` | `ForkJoinPool-1-worker-3` | `TIMED_WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
 | `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
 | `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |

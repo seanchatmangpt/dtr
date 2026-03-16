@@ -70,14 +70,14 @@ RenderMachine getRenderMachine()
 void initRenderingMachineIfNull()
 void say(String arg0)
 void sayAndAssertThat(String arg0, long arg1, Matcher arg2)
-void sayAndAssertThat(String arg0, Object arg1, Matcher arg2)
-void sayAndAssertThat(String arg0, int arg1, Matcher arg2)
 void sayAndAssertThat(String arg0, boolean arg1, Matcher arg2)
+void sayAndAssertThat(String arg0, int arg1, Matcher arg2)
+void sayAndAssertThat(String arg0, Object arg1, Matcher arg2)
 void sayAnnotationProfile(Class arg0)
 void sayAsciiChart(String arg0, double[] arg1, String[] arg2)
 void sayAssertions(Map arg0)
-void sayBenchmark(String arg0, Runnable arg1, int arg2, int arg3)
 void sayBenchmark(String arg0, Runnable arg1)
+void sayBenchmark(String arg0, Runnable arg1, int arg2, int arg3)
 void sayCallGraph(Class arg0)
 void sayCallSite()
 void sayCallToAction(String arg0)
@@ -109,8 +109,8 @@ void sayOperatingSystem()
 void sayOrderedList(List arg0)
 void sayRaw(String arg0)
 void sayRecordComponents(Class arg0)
-void sayRef(Class arg0, String arg1)
 void sayRef(DocTestRef arg0)
+void sayRef(Class arg0, String arg1)
 void sayReflectiveDiff(Object arg0, Object arg1)
 void saySecurityManager()
 void saySlideOnly(String arg0)
@@ -141,9 +141,9 @@ void setupForTestCaseMethod(TestInfo arg0)
 
 | Check | Result |
 | --- | --- |
-| DTR is abstract | `✓ PASS` |
-| DTR extends Object | `✓ PASS` |
 | DTR implements RenderMachineCommands | `✓ PASS` |
+| DTR extends Object | `✓ PASS` |
+| DTR is abstract | `✓ PASS` |
 
 ## RenderMachineCommands Interface
 
@@ -172,13 +172,13 @@ void sayBenchmark(String arg0, Runnable arg1, int arg2, int arg3)
 void sayBenchmark(String arg0, Runnable arg1)
 void sayCallGraph(Class arg0)
 void sayCallSite()
-void sayCite(String arg0, String arg1)
 void sayCite(String arg0)
+void sayCite(String arg0, String arg1)
 void sayClassDiagram(Class[] arg0)
 void sayClassHierarchy(Class arg0)
 void sayCode(String arg0, String arg1)
-void sayCodeModel(Method arg0)
 void sayCodeModel(Class arg0)
+void sayCodeModel(Method arg0)
 void sayContractVerification(Class arg0, Class[] arg1)
 void sayControlFlowGraph(Method arg0)
 void sayDocCoverage(Class[] arg0)
@@ -223,8 +223,8 @@ class MyRenderer extends RenderMachine {
 
 | Check | Result |
 | --- | --- |
-| Multiple output formats supported | `✓ PASS` |
 | Interface enables extensibility | `✓ PASS` |
+| Multiple output formats supported | `✓ PASS` |
 | RenderMachineCommands defines say* contract | `✓ PASS` |
 
 ## Core say* Methods for Documentation
@@ -266,13 +266,13 @@ void sayBenchmark(String arg0, Runnable arg1, int arg2, int arg3)
 void sayBenchmark(String arg0, Runnable arg1)
 void sayCallGraph(Class arg0)
 void sayCallSite()
-void sayCite(String arg0, String arg1)
 void sayCite(String arg0)
+void sayCite(String arg0, String arg1)
 void sayClassDiagram(Class[] arg0)
 void sayClassHierarchy(Class arg0)
 void sayCode(String arg0, String arg1)
-void sayCodeModel(Method arg0)
 void sayCodeModel(Class arg0)
+void sayCodeModel(Method arg0)
 void sayContractVerification(Class arg0, Class[] arg1)
 void sayControlFlowGraph(Method arg0)
 void sayDocCoverage(Class[] arg0)
@@ -306,10 +306,10 @@ void sayWarning(String arg0)
 
 | Check | Result |
 | --- | --- |
-| All core say* methods are public | `✓ PASS` |
 | All core say* methods return void | `✓ PASS` |
-| All methods generate Markdown output | `✓ PASS` |
+| All core say* methods are public | `✓ PASS` |
 | No external dependencies needed for rendering | `✓ PASS` |
+| All methods generate Markdown output | `✓ PASS` |
 
 ## Introspection API — Blue Ocean Features
 
@@ -357,10 +357,10 @@ Comparing two test object states to show field-level differences:
 
 | Check | Result |
 | --- | --- |
-| Zero external dependencies for introspection | `✓ PASS` |
 | Documentation extracted from bytecode at runtime | `✓ PASS` |
-| 6 introspection methods available | `✓ PASS` |
+| Zero external dependencies for introspection | `✓ PASS` |
 | All methods use only java.lang.reflect | `✓ PASS` |
+| 6 introspection methods available | `✓ PASS` |
 
 ## Rendering Pipeline and Lifecycle
 
@@ -384,17 +384,17 @@ RenderMachine is the core abstraction that buffers say* calls. RenderMachineComm
 
 | Key | Value |
 | --- | --- |
-| `MarkdownRenderMachine` | `Pure Markdown output for GitHub/docs` |
-| `RenderMachineImpl` | `Bootstrap 3 HTML output to target/site/dtr/` |
-| `SlideRenderMachine` | `Presentation-mode output (saySlideOnly)` |
 | `BlogRenderMachine` | `Blog-post mode (sayHeroImage, sayTweetable, sayTldr)` |
+| `SlideRenderMachine` | `Presentation-mode output (saySlideOnly)` |
+| `RenderMachineImpl` | `Bootstrap 3 HTML output to target/site/dtr/` |
+| `MarkdownRenderMachine` | `Pure Markdown output for GitHub/docs` |
 
 | Check | Result |
 | --- | --- |
-| Index page generated after all tests | `✓ PASS` |
-| Output written at @AfterAll | `✓ PASS` |
-| Annotations processed in fixed order at @BeforeEach | `✓ PASS` |
 | One RenderMachine per test class | `✓ PASS` |
+| Annotations processed in fixed order at @BeforeEach | `✓ PASS` |
+| Output written at @AfterAll | `✓ PASS` |
+| Index page generated after all tests | `✓ PASS` |
 
 ## Annotation-Driven Documentation
 
@@ -437,11 +437,11 @@ Annotations decouple test documentation from test code.
 
 | Check | Result |
 | --- | --- |
-| @DocSection defines heading | `✓ PASS` |
-| @DocCode fences code blocks | `✓ PASS` |
 | @DocWarning creates warning alerts | `✓ PASS` |
-| @DocNote creates GitHub-style alerts | `✓ PASS` |
+| @DocCode fences code blocks | `✓ PASS` |
+| @DocSection defines heading | `✓ PASS` |
 | @DocDescription defines narrative | `✓ PASS` |
+| @DocNote creates GitHub-style alerts | `✓ PASS` |
 
 ## Extended say* Methods for Multi-Format Output
 
@@ -471,18 +471,18 @@ Each RenderMachine implementation (HTML, Markdown, Slides, Blog) interprets say*
 
 | Key | Value |
 | --- | --- |
-| `sayTweetable()` | `Queued for social posting; skipped in docs` |
-| `saySlideOnly()` | `Rendered in Slide mode; skipped in Doc/Blog/Markdown` |
-| `Virtual threads` | `Concurrent say* calls via Executors.newVirtualThreadPerTaskExecutor()` |
-| `sayHeroImage()` | `Rendered as <img> in Blog mode; skipped elsewhere` |
 | `sayDocOnly()` | `Rendered in Doc/Blog/Markdown; skipped in Slide mode` |
+| `sayHeroImage()` | `Rendered as <img> in Blog mode; skipped elsewhere` |
+| `Virtual threads` | `Concurrent say* calls via Executors.newVirtualThreadPerTaskExecutor()` |
+| `saySlideOnly()` | `Rendered in Slide mode; skipped in Doc/Blog/Markdown` |
+| `sayTweetable()` | `Queued for social posting; skipped in docs` |
 
 | Check | Result |
 | --- | --- |
-| 7 extended say* methods available | `✓ PASS` |
-| Virtual thread support for async rendering | `✓ PASS` |
-| Each renderer interprets methods independently | `✓ PASS` |
 | Format-agnostic design avoids coupling | `✓ PASS` |
+| Each renderer interprets methods independently | `✓ PASS` |
+| Virtual thread support for async rendering | `✓ PASS` |
+| 7 extended say* methods available | `✓ PASS` |
 
 ## Self-Awareness Fixed Point
 
@@ -526,15 +526,15 @@ DTR has four documentation layers, modeled as a sealed interface hierarchy. Patt
 
 | Key | Value |
 | --- | --- |
-| `sayTable() invocations` | `5` |
-| `Total say* method calls` | `50+` |
-| `DocumentationLayer patterns matched` | `4` |
-| `sayCallSite() calls` | `2` |
-| `sayAnnotationProfile() calls` | `2` |
-| `sayCodeModel() invocations` | `6+` |
-| `sayReflectiveDiff() calls` | `1` |
-| `Test methods executed` | `8` |
 | `sayClassHierarchy() calls` | `1` |
+| `Test methods executed` | `8` |
+| `sayReflectiveDiff() calls` | `1` |
+| `sayCodeModel() invocations` | `6+` |
+| `sayAnnotationProfile() calls` | `2` |
+| `sayCallSite() calls` | `2` |
+| `DocumentationLayer patterns matched` | `4` |
+| `Total say* method calls` | `50+` |
+| `sayTable() invocations` | `5` |
 
 ## Provenance Tracking via Call Site
 
@@ -547,13 +547,13 @@ The following call site metadata proves documentation generation at runtime:
 
 | Check | Result |
 | --- | --- |
-| Metrics capture via sayKeyValue() | `✓ PASS` |
-| String analysis via sayStringProfile() | `✓ PASS` |
-| All 8 test methods confirmed (assertEquals(8, testMethodCount)) | `✓ PASS` |
-| Provenance via sayCallSite() | `✓ PASS` |
-| DtrTest.class is abstract (verified by reflection) | `✓ PASS` |
-| Pattern matching — exhaustive switch, no default | `✓ PASS` |
 | Fixed point achieved — DTR documents itself | `✓ PASS` |
+| Pattern matching — exhaustive switch, no default | `✓ PASS` |
+| DtrTest.class is abstract (verified by reflection) | `✓ PASS` |
+| Provenance via sayCallSite() | `✓ PASS` |
+| All 8 test methods confirmed (assertEquals(8, testMethodCount)) | `✓ PASS` |
+| String analysis via sayStringProfile() | `✓ PASS` |
+| Metrics capture via sayKeyValue() | `✓ PASS` |
 | Sealed DocumentationLayer hierarchy (JEP 500) | `✓ PASS` |
 
 
