@@ -48,6 +48,9 @@ Create `Java26FeaturesTest.java`:
 package com.example.dtr.tutorials;
 
 import org.junit.jupiter.api.Test;
+import io.github.seanchatmangpt.dtr.junit5.DtrContext;
+import io.github.seanchatmangpt.dtr.junit5.DtrContextField;
+import io.github.seanchatmangpt.dtr.junit5.DtrTest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -56,7 +59,11 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * Topics: Records, Sealed Classes, Pattern Matching, Code Reflection
  */
-public class Java26FeaturesTest extends DtrTest {
+@DtrTest
+public class Java26FeaturesTest {
+
+    @DtrContextField
+    DtrContext ctx;
 
 }
 ```
@@ -99,14 +106,14 @@ Add test method to `Java26FeaturesTest`:
 ```java
 @Test
 void documentUserRecord() {
-    sayNextSection("User Record Schema");
+    ctx.sayNextSection("User Record Schema");
 
-    say("""
+    ctx.say("""
         The `User` record encapsulates user account information with automatic
         validation through a compact constructor.
         """);
 
-    sayRecordComponents(User.class);
+    ctx.sayRecordComponents(User.class);
 }
 ```
 
@@ -210,14 +217,14 @@ Add test method:
 ```java
 @Test
 void documentShapeHierarchy() {
-    sayNextSection("Geometric Shape Types");
+    ctx.sayNextSection("Geometric Shape Types");
 
-    say("""
+    ctx.say("""
         DTR uses reflection to detect sealed hierarchies and automatically
         documents all permitted subclasses.
         """);
 
-    sayCodeModel(Shape.class);
+    ctx.sayCodeModel(Shape.class);
 }
 ```
 
@@ -258,9 +265,9 @@ void documentShapeHierarchy() {
 ```java
 @Test
 void documentShapeClassHierarchy() {
-    sayNextSection("Shape Inheritance Tree");
+    ctx.sayNextSection("Shape Inheritance Tree");
 
-    sayClassHierarchy(Shape.class);
+    ctx.sayClassHierarchy(Shape.class);
 }
 ```
 
@@ -308,14 +315,14 @@ public class PatternMatchingExample {
 ```java
 @Test
 void documentPatternMatching() {
-    sayNextSection("Pattern Matching for Shapes");
+    ctx.sayNextSection("Pattern Matching for Shapes");
 
-    say("""
+    ctx.say("""
         Java 26 enables pattern matching in switch expressions. When combined
         with sealed hierarchies, the compiler verifies exhaustiveness.
         """);
 
-    sayCode("""
+    ctx.sayCode("""
         public static String describeShape(Shape shape) {
             return switch (shape) {
                 case Circle c -> "Circle with radius %.2f".formatted(c.radius());
@@ -325,7 +332,7 @@ void documentPatternMatching() {
         }
         """, "java");
 
-    sayNote("""
+    ctx.sayNote("""
         No `default` case needed - the sealed hierarchy guarantees exhaustiveness.
         Missing a case = compile-time error.
         """);
@@ -351,14 +358,14 @@ Document the guard patterns:
 ```java
 @Test
 void documentPatternMatchingWithGuards() {
-    sayNextSection("Pattern Guards");
+    ctx.sayNextSection("Pattern Guards");
 
-    say("""
+    ctx.say("""
         Pattern guards (`when`) add conditional logic to pattern matching.
         Guards are evaluated after the pattern match succeeds.
         """);
 
-    sayCode("""
+    ctx.sayCode("""
         return switch (shape) {
             case Circle c when c.radius() > 10 -> "Large circle";
             case Circle c -> "Small circle";
@@ -373,7 +380,7 @@ void documentPatternMatchingWithGuards() {
     var smallCircle = new Circle(3.0);
     var square = new Rectangle(5.0, 5.0);
 
-    sayKeyValue(Map.of(
+    ctx.sayKeyValue(Map.of(
         "largeCircle (r=15)", PatternMatchingExample.categorizeShape(largeCircle),
         "smallCircle (r=3)", PatternMatchingExample.categorizeShape(smallCircle),
         "square (5x5)", PatternMatchingExample.categorizeShape(square)
@@ -423,19 +430,19 @@ public class CodeReflectionExample {
 ```java
 @Test
 void documentControlFlowGraph() {
-    sayNextSection("Code Reflection: Fibonacci");
+    ctx.sayNextSection("Code Reflection: Fibonacci");
 
-    say("""
+    ctx.say("""
         JEP 516 (Code Reflection) provides access to the bytecode-level structure
         of methods. DTR renders this as Mermaid flowcharts.
         """);
 
     try {
-        sayControlFlowGraph(
+        ctx.sayControlFlowGraph(
             CodeReflectionExample.class.getDeclaredMethod("fibonacci", int.class)
         );
     } catch (NoSuchMethodException e) {
-        sayWarning("""
+        ctx.sayWarning("""
             Code Reflection requires Java 26 with --enable-preview.
             Current Java version: %s
             """.formatted(System.getProperty("java.version"))
@@ -461,13 +468,13 @@ flowchart TD
 ```java
 @Test
 void documentOperationProfile() {
-    sayNextSection("Operation Profile: Bubble Sort");
+    ctx.sayNextSection("Operation Profile: Bubble Sort");
 
     try {
         var method = CodeReflectionExample.class.getDeclaredMethod("bubbleSort", int[].class);
-        sayOpProfile(method);
+        ctx.sayOpProfile(method);
     } catch (NoSuchMethodException e) {
-        sayWarning("Code Reflection not available on this Java version");
+        ctx.sayWarning("Code Reflection not available on this Java version");
     }
 }
 ```
@@ -487,24 +494,24 @@ void documentOperationProfile() {
 ```java
 @Test
 void documentWithJavaVersionFallback() {
-    sayNextSection("Version-Aware Documentation");
+    ctx.sayNextSection("Version-Aware Documentation");
 
     String javaVersion = System.getProperty("java.version");
     boolean isJava26 = javaVersion.startsWith("26");
 
     if (isJava26) {
-        sayNote("""
+        ctx.sayNote("""
             Running on Java 26 - Code Reflection features enabled.
             Full control flow graphs and operation profiles available.
             """);
 
         try {
-            sayControlFlowGrid(CodeReflectionExample.class.getMethod("fibonacci", int.class));
+            ctx.sayControlFlowGrid(CodeReflectionExample.class.getMethod("fibonacci", int.class));
         } catch (NoSuchMethodException e) {
             // Handle gracefully
         }
     } else {
-        sayWarning("""
+        ctx.sayWarning("""
             Code Reflection requires Java 26 with --enable-preview.
             Current version: %s
 
@@ -512,7 +519,7 @@ void documentWithJavaVersionFallback() {
             """.formatted(javaVersion)
         );
 
-        sayCode("""
+        ctx.sayCode("""
         @CodeReflection
         public static int fibonacci(int n) {
             if (n <= 1) return n;
@@ -533,6 +540,9 @@ void documentWithJavaVersionFallback() {
 package com.example.dtr.tutorials;
 
 import org.junit.jupiter.api.Test;
+import io.github.seanchatmangpt.dtr.junit5.DtrContext;
+import io.github.seanchatmangpt.dtr.junit5.DtrContextField;
+import io.github.seanchatmangpt.dtr.junit5.DtrTest;
 import java.lang.reflect.Method;
 import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -542,23 +552,27 @@ import static org.hamcrest.Matchers.*;
  * Tutorial 3: Documenting Java 26 features with DTR.
  *
  * Demonstrates:
- * - Records with sayRecordComponents()
- * - Sealed classes with sayCodeModel()
- * - Pattern matching with sayCode()
- * - Code Reflection with sayControlFlowGraph()
+ * - Records with ctx.sayRecordComponents()
+ * - Sealed classes with ctx.sayCodeModel()
+ * - Pattern matching with ctx.sayCode()
+ * - Code Reflection with ctx.sayControlFlowGraph()
  */
-public class Java26FeaturesTest extends DtrTest {
+@DtrTest
+public class Java26FeaturesTest {
+
+    @DtrContextField
+    DtrContext ctx;
 
     @Test
     void documentUserRecord() {
-        sayNextSection("User Record Schema");
+        ctx.sayNextSection("User Record Schema");
 
-        say("""
+        ctx.say("""
             The `User` record encapsulates user account information with automatic
             validation through a compact constructor.
             """);
 
-        sayRecordComponents(User.class);
+        ctx.sayRecordComponents(User.class);
 
         // Verify record behavior
         var user = new User("alice", "alice@example.com", 30, LocalDate.now());
@@ -568,14 +582,14 @@ public class Java26FeaturesTest extends DtrTest {
 
     @Test
     void documentShapeHierarchy() {
-        sayNextSection("Geometric Shape Types");
+        ctx.sayNextSection("Geometric Shape Types");
 
-        say("""
+        ctx.say("""
             DTR uses reflection to detect sealed hierarchies and automatically
             documents all permitted subclasses.
             """);
 
-        sayCodeModel(Shape.class);
+        ctx.sayCodeModel(Shape.class);
 
         // Verify all implementations work
         var circle = new Circle(5.0);
@@ -587,14 +601,14 @@ public class Java26FeaturesTest extends DtrTest {
 
     @Test
     void documentPatternMatching() {
-        sayNextSection("Pattern Matching for Shapes");
+        ctx.sayNextSection("Pattern Matching for Shapes");
 
-        say("""
+        ctx.say("""
             Java 26 enables pattern matching in switch expressions. When combined
             with sealed hierarchies, the compiler verifies exhaustiveness.
             """);
 
-        sayCode("""
+        ctx.sayCode("""
         public static String describeShape(Shape shape) {
             return switch (shape) {
                 case Circle c -> "Circle with radius %.2f".formatted(c.radius());
@@ -612,9 +626,9 @@ public class Java26FeaturesTest extends DtrTest {
 
     @Test
     void documentControlFlowGraph() {
-        sayNextSection("Code Reflection: Fibonacci");
+        ctx.sayNextSection("Code Reflection: Fibonacci");
 
-        say("""
+        ctx.say("""
             JEP 516 (Code Reflection) provides access to the bytecode-level structure
             of methods. DTR renders this as Mermaid flowcharts.
             """);
@@ -625,18 +639,18 @@ public class Java26FeaturesTest extends DtrTest {
             try {
                 Method fibMethod = CodeReflectionExample.class
                     .getDeclaredMethod("fibonacci", int.class);
-                sayControlFlowGraph(fibMethod);
+                ctx.sayControlFlowGraph(fibMethod);
             } catch (NoSuchMethodException e) {
-                sayWarning("Could not find fibonacci method");
+                ctx.sayWarning("Could not find fibonacci method");
             }
         } else {
-            sayWarning("""
+            ctx.sayWarning("""
                 Code Reflection requires Java 26 with --enable-preview.
                 Current version: %s
                 """.formatted(javaVersion)
             );
 
-            sayCode("""
+            ctx.sayCode("""
             @CodeReflection
             public static int fibonacci(int n) {
                 if (n <= 1) return n;
@@ -691,11 +705,11 @@ public class Java26FeaturesTest extends DtrTest {
 
 | Feature | DTR Method | What It Documents |
 |---------|-----------|-------------------|
-| Records | `sayRecordComponents()` | Component names, types, annotations |
-| Sealed Classes | `sayCodeModel()` | Hierarchy, permitted subclasses |
-| Pattern Matching | `sayCode()` + examples | Switch expressions, guards |
-| Code Reflection | `sayControlFlowGraph()` | Mermaid flowcharts (Java 26) |
-| Class Hierarchy | `sayClassHierarchy()` | Inheritance trees |
+| Records | `ctx.sayRecordComponents()` | Component names, types, annotations |
+| Sealed Classes | `ctx.sayCodeModel()` | Hierarchy, permitted subclasses |
+| Pattern Matching | `ctx.sayCode()` + examples | Switch expressions, guards |
+| Code Reflection | `ctx.sayControlFlowGraph()` | Mermaid flowcharts (Java 26) |
+| Class Hierarchy | `ctx.sayClassHierarchy()` | Inheritance trees |
 
 **Key Takeaways**:
 1. Records → automatic schema documentation

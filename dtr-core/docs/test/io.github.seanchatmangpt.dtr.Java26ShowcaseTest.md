@@ -160,11 +160,11 @@ String toString()
 | Check | Result |
 | --- | --- |
 | equals() / hashCode() / toString() are auto-generated | `✓ PASS — from record components only` |
-| No setters exist on any SayEvent subtype | `✓ PASS — records have no setters` |
-| TextEvent has exactly 1 component (text: String) | `✓ PASS — compiler-verified` |
-| Compact constructor runs on every instantiation | `✓ PASS — cannot be bypassed` |
-| CodeModelEvent has exactly 1 component (clazz: Class<?>) | `✓ PASS — compiler-verified` |
 | Record components are effectively final | `✓ PASS — no field mutation possible` |
+| CodeModelEvent has exactly 1 component (clazz: Class<?>) | `✓ PASS — compiler-verified` |
+| Compact constructor runs on every instantiation | `✓ PASS — cannot be bypassed` |
+| TextEvent has exactly 1 component (text: String) | `✓ PASS — compiler-verified` |
+| No setters exist on any SayEvent subtype | `✓ PASS — records have no setters` |
 
 ## Pattern Matching — Structural Dispatch Without the Visitor Tax
 
@@ -198,12 +198,12 @@ String rendered = switch (event) {
 
 | Check | Result |
 | --- | --- |
-| No ClassCastException possible | `✓ PASS — sealed type system` |
-| SectionEvent decoded its heading (ADR-001) | `✓ PASS` |
-| Pipeline processed all 4 events | `✓ PASS` |
 | Visitor pattern eliminated | `✓ PASS — 50+ lines of boilerplate removed` |
-| No instanceof casts used in switch arms | `✓ PASS — compiler-verified` |
+| Pipeline processed all 4 events | `✓ PASS` |
+| SectionEvent decoded its heading (ADR-001) | `✓ PASS` |
+| No ClassCastException possible | `✓ PASS — sealed type system` |
 | CodeEvent decoded language tag (java) | `✓ PASS` |
+| No instanceof casts used in switch arms | `✓ PASS — compiler-verified` |
 
 > [!WARNING]
 > The production render pipeline (MultiRenderMachine) uses a switch with all 16 cases and NO default. The demo above uses a default for brevity — a compromise that sacrifices exhaustiveness for readability. In production code, exhaustive switches without defaults are non-negotiable. Every default is a silent no-op waiting to become a production incident.
@@ -245,26 +245,26 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 %     [receive {Pid, done} -> ok end || Pid <- Pids].
 ```
 
-- Blog/Medium
-- LaTeX/IEEE
-- LaTeX/ACM
 - Markdown
-- LaTeX/Nature
 - LaTeX/ArXiv
-- Blog/DevTo
-- Slides/RevealJS
+- LaTeX/IEEE
+- Blog/Medium
+- LaTeX/Nature
 - Blog/Substack
+- Slides/RevealJS
 - PDF
+- Blog/DevTo
+- LaTeX/ACM
 - OpenAPI
 
 | Key | Value |
 | --- | --- |
-| `Wall-clock time` | `2 ms (2411541 ns)` |
 | `Formats rendered concurrently` | `11` |
-| `Erlang equivalence` | `Semantically identical to spawn/receive dispatch` |
-| `Thread pool sizing` | `Not required — virtual threads are created per task` |
-| `Memory per virtual thread` | `~1KB initial stack (vs ~1MB for OS thread)` |
+| `Wall-clock time` | `2 ms (2816083 ns)` |
 | `Concurrency model` | `Virtual threads (JEP 444 — Project Loom)` |
+| `Memory per virtual thread` | `~1KB initial stack (vs ~1MB for OS thread)` |
+| `Thread pool sizing` | `Not required — virtual threads are created per task` |
+| `Erlang equivalence` | `Semantically identical to spawn/receive dispatch` |
 
 > [!NOTE]
 > Sequential rendering cost = Σ(all format times). Virtual thread rendering cost = max(slowest format). For 11 formats with equal I/O latency, virtual threads deliver approximately 11x throughput improvement over a sequential pipeline — without any thread pool configuration, without any backpressure tuning, without any queue management.
@@ -272,9 +272,9 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 | Check | Result |
 | --- | --- |
 | Wall-clock time measured (real, not estimated) | `✓ PASS — 2 ms` |
-| All 11 formats completed successfully | `✓ PASS` |
-| Structured concurrency: all threads joined | `✓ PASS — try-with-resources closes executor` |
 | No thread pool sizing required | `✓ PASS — Executors.newVirtualThreadPerTaskExecutor()` |
+| Structured concurrency: all threads joined | `✓ PASS — try-with-resources closes executor` |
+| All 11 formats completed successfully | `✓ PASS` |
 
 ## Code Model — Documentation Derived from Bytecode, Not From Memory
 
@@ -404,10 +404,10 @@ String label = switch (event) {
 | Check | Result |
 | --- | --- |
 | CodeEvent: code body discarded, only language tag consumed | `✓ PASS` |
-| CitationEvent: pageRef discarded, only citation key consumed | `✓ PASS` |
-| Compiler prevents accidental use of any _ binding after declaration | `✓ PASS` |
-| Code review visibility: _ makes non-use an explicit decision | `✓ PASS` |
 | SectionEvent: heading discarded with _ (routing only needs event type) | `✓ PASS` |
+| Code review visibility: _ makes non-use an explicit decision | `✓ PASS` |
+| Compiler prevents accidental use of any _ binding after declaration | `✓ PASS` |
+| CitationEvent: pageRef discarded, only citation key consumed | `✓ PASS` |
 
 ## Sequenced Collections — Ordered Pipelines as a First-Class Type
 
@@ -440,12 +440,12 @@ SequencedCollection<String> rev = pipeline.reversed();
 
 | Key | Value |
 | --- | --- |
-| `Reversed last (reversed().getLast())` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
 | `Last event (getLast)` | `AssertionsEvent: Validation Evidence` |
-| `First event (getFirst)` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
-| `Total events` | `6` |
-| `Reversed first (reversed().getFirst())` | `AssertionsEvent: Validation Evidence` |
+| `Reversed last (reversed().getLast())` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
 | `reversed() is a live view` | `yes — O(1) wrap, no copy allocated` |
+| `Reversed first (reversed().getFirst())` | `AssertionsEvent: Validation Evidence` |
+| `Total events` | `6` |
+| `First event (getFirst)` | `TitleEvent: ADR-001 — Adopt DTR for Living Documentation` |
 
 > [!NOTE]
 > The Java `reversed()` view is O(1) — unlike Python's `list[::-1]` (which copies) or Erlang's `lists:reverse/1` (which is O(n)). This is the correct design: a view communicates that the underlying data has not changed and that mutations will propagate. Use `new ArrayList<>(pipeline.reversed())` only when you need an independent snapshot.
@@ -453,11 +453,11 @@ SequencedCollection<String> rev = pipeline.reversed();
 | Check | Result |
 | --- | --- |
 | Event ordering is a type guarantee, not a convention | `✓ PASS` |
-| reversed() is a view (O(1), not a copy) | `✓ PASS` |
-| addFirst() / addLast() are symmetrical API concepts | `✓ PASS` |
-| getLast() returns the last-added AssertionsEvent | `✓ PASS` |
-| getFirst() returns the prepended TitleEvent | `✓ PASS` |
 | reversed().getFirst() == getLast() | `✓ PASS` |
+| getFirst() returns the prepended TitleEvent | `✓ PASS` |
+| getLast() returns the last-added AssertionsEvent | `✓ PASS` |
+| addFirst() / addLast() are symmetrical API concepts | `✓ PASS` |
+| reversed() is a view (O(1), not a copy) | `✓ PASS` |
 
 ---
 *Generated by [DTR](http://www.dtr.org)*

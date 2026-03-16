@@ -43,11 +43,15 @@ grep "@ExtendWith" src/test/java/**/*Test.java
 | "preview features not enabled" | [Setup Issues](#setup-issues---preview-features) |
 | "ClassNotFoundException: DtrExtension" | [Setup Issues](#setup-issues---missing-dependency) |
 | "Unsupported class version" | [Setup Issues](#setup-issues---java-version) |
+| "DtrContext cannot be resolved" | [Runtime Failures](#runtime-failures---extension-not-loading) |
+| Test methods don't run | [Runtime Failures](#runtime-failures---tests-not-executed) |
+| Field is null after injection | [Field Injection Errors](#field-injection-errors---field-is-null-after-injection) |
+| "Wrong type instead of DtrContext" | [Field Injection Errors](#field-injection-errors---wrong-field-type) |
+| Field not injected | [Field Injection Errors](#field-injection-errors---field-not-injected) |
+| Static field issues | [Field Injection Errors](#field-injection-errors---static-fields-with-dtrcontextfield) |
 | Tests pass but no docs generated | [Output Problems](#output-problems---no-documentation-generated) |
 | Documentation files are empty | [Output Problems](#output-problems---empty-documentation) |
 | Documentation in wrong location | [Output Problems](#output-problems---wrong-location) |
-| "DtrContext cannot be resolved" | [Runtime Failures](#runtime-failures---extension-not-loading) |
-| Test methods don't run | [Runtime Failures](#runtime-failures---tests-not-executed) |
 | Build is slow | [Performance Issues](#performance-issues---slow-builds) |
 | Out of memory errors | [Performance Issues](#performance-issues---out-of-memory) |
 | Migration errors from 2.5.x | [Migration Issues](#migration-issues---v26-breaking-changes) |
@@ -375,6 +379,404 @@ mvnd test -Dtest=MyDocTest
 ls -la target/docs/test-results/
 # Should show: MyDocTest.md
 ```
+
+---
+
+## Field Injection Errors
+
+### Field is Null After Injection
+
+**Symptom:**
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("Hello");  // NullPointerException: ctx is null
+    }
+}
+```
+
+**Cause:** `@ExtendWith(DtrExtension.class)` annotation is missing or wrong extension class used.
+
+**Fix:**
+
+**1. Verify extension is registered:**
+```java
+import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(DtrExtension.class)  // MUST be present
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("Hello");  // Now ctx is injected
+    }
+}
+```
+
+**2. Use @DtrTest composite annotation:**
+```java
+import io.github.seanchatmangpt.dtr.junit5.DtrTest;
+
+@DtrTest  // Includes @ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("Hello");
+    }
+}
+```
+
+**3. Check imports:**
+- Wrong: `import io.github.seanchatmangpt.dtr.core.DtrExtension;`
+- Right: `import io.github.seanchatmangpt.dtr.junit5.DtrExtension;`
+
+**Verification:**
+```bash
+# Should find the annotation
+grep "@ExtendWith(DtrExtension.class)" src/test/java/MyTest.java
+
+# Run test
+mvnd test -Dtest=MyTest
+# Should pass without NullPointerException
+```
+
+---
+
+### Wrong Field Type
+
+**Symptom:**
+```
+java.lang.IllegalStateException: Field 'ctx' in class 'MyTest' is annotated with
+@DtrContextField but has type 'java.lang.String' instead of 'DtrContext'
+```
+
+**Cause:** Field annotated with `@DtrContextField` has a type other than `DtrContext`.
+
+**Fix:**
+
+**1. Use correct field type:**
+```java
+// WRONG
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private String ctx;  // Error: Wrong type
+
+    @DtrContextField
+    private Object context;  // Error: Wrong type
+
+    @DtrContextField
+    private Integer dtr;  // Error: Wrong type
+}
+
+// RIGHT
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;  // Correct type
+
+    @DtrContextField
+    private DtrContext context;  // Also correct
+
+    @DtrContextField
+    private DtrContext dtr;  // Any name works
+}
+```
+
+**2. Only DtrContext type is supported:**
+- Subclasses of DtrContext: Not supported
+- Interfaces: Not supported
+- Object/Any other type: Not supported
+
+**Verification:**
+```bash
+mvnd test -Dtest=MyTest
+# Should compile and run without IllegalStateException
+```
+
+---
+
+### Field Not Injected
+
+**Symptom:** Field remains null and no error message is shown.
+
+**Cause:** Missing `@DtrContextField` annotation.
+
+**Fix:**
+
+**1. Add @DtrContextField annotation:**
+```java
+// WRONG - No annotation
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    private DtrContext ctx;  // Will NOT be injected
+
+    @Test
+    void test() {
+        ctx.say("Hello");  // NullPointerException
+    }
+}
+
+// RIGHT - With annotation
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField  // MUST be present
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("Hello");  // Works
+    }
+}
+```
+
+**2. Unannotated fields are ignored:**
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx1;  // Injected
+
+    private DtrContext ctx2;  // NOT injected (no annotation)
+
+    @Test
+    void test() {
+        ctx1.say("This works");     // ctx1 is injected
+        ctx2.say("This fails");     // ctx2 is null
+    }
+}
+```
+
+**3. Verify annotation is present:**
+```bash
+# Should find @DtrContextField
+grep "@DtrContextField" src/test/java/MyTest.java
+```
+
+**Verification:**
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        assertNotNull(ctx, "Field should be injected");
+        ctx.say("Field injection verified");
+    }
+}
+```
+
+---
+
+### Static Fields with @DtrContextField
+
+**Symptom:** Static field behaves unexpectedly or shares state across tests.
+
+**Cause:** Static fields are shared across all test instances and have different lifecycle.
+
+**Fix:**
+
+**1. Prefer instance fields:**
+```java
+// RECOMMENDED - Instance field
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;  // Each test instance gets its own context
+
+    @Test
+    void test1() {
+        ctx.say("Test 1");  // Independent context
+    }
+
+    @Test
+    void test2() {
+        ctx.say("Test 2");  // Independent context
+    }
+}
+```
+
+**2. If using static fields, understand the behavior:**
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private static DtrContext staticCtx;  // Shared across all tests
+
+    @Test
+    void test1() {
+        staticCtx.say("Test 1");  // Uses shared context
+    }
+
+    @Test
+    void test2() {
+        staticCtx.say("Test 2");  // Uses same shared context
+    }
+}
+```
+
+**Important notes about static fields:**
+- Static fields ARE supported by DTR
+- Static fields are initialized once per test class
+- All test methods share the same static field instance
+- Static fields share the same underlying RenderMachine
+- Can cause confusion about test isolation
+
+**3. Use instance fields for better test isolation:**
+- Each test method gets its own DtrContext instance
+- Cleaner separation of concerns
+- Recommended for most use cases
+
+**Verification:**
+```bash
+mvnd test -Dtest=MyTest
+# All tests should pass independently
+```
+
+---
+
+### Field Injection with Inheritance
+
+**How it Works:** Field injection scans both the test class and all superclasses for `@DtrContextField` annotated fields.
+
+**Example:**
+```java
+// Base test class
+@ExtendWith(DtrExtension.class)
+class BaseTest {
+    @DtrContextField
+    protected DtrContext baseCtx;
+
+    @Test
+    void baseTest() {
+        baseCtx.say("Base test");  // baseCtx is injected
+    }
+}
+
+// Derived test class
+class DerivedTest extends BaseTest {
+    @DtrContextField
+    private DtrContext derivedCtx;
+
+    @Test
+    void derivedTest() {
+        baseCtx.say("From base");      // Injected from BaseTest
+        derivedCtx.say("From derived"); // Injected from DerivedTest
+    }
+}
+```
+
+**Important Notes:**
+- Fields in superclasses are automatically scanned and injected
+- Each class in the hierarchy can have its own @DtrContextField fields
+- All fields share the same underlying RenderMachine
+- Works with deep inheritance hierarchies
+
+**Common Pattern:**
+```java
+// Common base class with context
+@ExtendWith(DtrExtension.class)
+abstract class ApiTestBase {
+    @DtrContextField
+    protected DtrContext ctx;
+}
+
+// Specific test class
+class UserApiTest extends ApiTestBase {
+    @Test
+    void testGetUser() {
+        ctx.say("User API endpoint");  // ctx is injected from base
+    }
+}
+```
+
+**Verification:**
+```bash
+mvnd test -Dtest=DerivedTest
+# Both baseCtx and derivedCtx should work
+```
+
+---
+
+### Prevention Tips
+
+**1. Always register the extension:**
+```java
+@ExtendWith(DtrExtension.class)  // NEVER forget this
+class MyTest { }
+```
+
+**2. Only annotate DtrContext fields:**
+```java
+@DtrContextField
+private DtrContext ctx;  // Correct
+
+@DtrContextField
+private String ctx;  // WRONG - will fail
+```
+
+**3. Verify imports:**
+```java
+import io.github.seanchatmangpt.dtr.junit5.DtrExtension;      // Correct
+import io.github.seanchatmangpt.dtr.junit5.DtrContext;
+import io.github.seanchatmangpt.dtr.junit5.DtrContextField;
+
+// NOT these:
+// import io.github.seanchatmangpt.dtr.core.DtrExtension;     // Old package
+```
+
+**4. Use assertions during debugging:**
+```java
+@Test
+void test(DtrContext ctx) {
+    assertNotNull(fieldCtx, "Field should be injected");
+    ctx.say("Debug: field is not null");
+}
+```
+
+**5. Prefer private fields for encapsulation:**
+```java
+@DtrContextField
+private DtrContext ctx;  // Recommended
+
+@DtrContextField
+public DtrContext ctx;  // Works but less encapsulation
+```
+
+**6. Mix field and parameter injection as needed:**
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext fieldCtx;
+
+    @Test
+    void test(DtrContext paramCtx) {
+        fieldCtx.say("Via field");    // Both work
+        paramCtx.say("Via parameter");
+    }
+}
+```
+
+**7. Check for common mistakes:**
+- Missing @ExtendWith annotation
+- Wrong package imports (core vs junit5)
+- Wrong field type
+- Missing @DtrContextField annotation
+- Using old DTR 2.x API
 
 ---
 
@@ -924,6 +1326,6 @@ mvnd test -Dtest=MyDocTest -v
 
 ---
 
-**Last Updated:** 2026-03-14
+**Last Updated:** 2026-03-15
 **DTR Version:** 2026.3.0+
 **For version history and migration guides, see [CHANGELOG.md](../CHANGELOG.md)**

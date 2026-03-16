@@ -206,8 +206,18 @@ Provides `sayBenchmark(Runnable, int iterations)` — runs the given lambda `ite
 
 `DtrExtension` implements `BeforeEachCallback` and `AfterEachCallback`:
 
-- `beforeEach`: A fresh `DtrContext` is injected into the test method via the `DtrContext` parameter.
+- `beforeEach`: A fresh `DtrContext` is injected into the test method via the `DtrContext` parameter, or into fields annotated with `@DtrContextField`.
 - `afterEach`: Any pending section markers or open blocks are closed.
+
+**Access Patterns:**
+
+DTR supports three ways to access `DtrContext` in test methods:
+
+1. **Method parameter injection** — `void test(DtrContext context) { ... }`
+2. **Field injection** — `@DtrContextField private DtrContext context;`
+3. **Inheritance** — Extend `DtrTest` base class for direct `say*()` method access
+
+All three patterns are fully supported and can be mixed within the same test suite.
 
 ### Java 26 Requirement
 
