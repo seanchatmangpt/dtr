@@ -34,7 +34,7 @@ class DtrValidatorTest {
         // Act
         ValidationResult result = DtrValidator.validate("fieldName")
             .value(value)
-            .notNull();
+            .notNull().getResult();
 
         // Assert
         assertThat("Valid value should pass notNull validation", result.isValid(), is(true));
@@ -47,7 +47,7 @@ class DtrValidatorTest {
         // Act
         ValidationResult result = DtrValidator.validate("fieldName")
             .value(null)
-            .notNull();
+            .notNull().getResult();
 
         // Assert
         assertThat("Null value should fail notNull validation", result.isValid(), is(false));
@@ -61,12 +61,12 @@ class DtrValidatorTest {
         // Act & Assert
         ValidationResult result1 = DtrValidator.validate("username")
             .value("john.doe")
-            .notBlank();
+            .notBlank().getResult();
         assertThat("Non-blank string should pass", result1.isValid(), is(true));
 
         ValidationResult result2 = DtrValidator.validate("username")
             .value("  whitespace  ")
-            .notBlank();
+            .notBlank().getResult();
         assertThat("String with whitespace should pass", result2.isValid(), is(true));
     }
 
@@ -76,7 +76,7 @@ class DtrValidatorTest {
         // Test empty string
         ValidationResult emptyResult = DtrValidator.validate("username")
             .value("")
-            .notBlank();
+            .notBlank().getResult();
         assertThat("Empty string should fail", emptyResult.isValid(), is(false));
         assertThat("Empty string error should be descriptive",
             emptyResult.errorMessage(), containsString("cannot be blank"));
@@ -84,13 +84,13 @@ class DtrValidatorTest {
         // Test whitespace-only string
         ValidationResult whitespaceResult = DtrValidator.validate("username")
             .value("   ")
-            .notBlank();
+            .notBlank().getResult();
         assertThat("Whitespace-only string should fail", whitespaceResult.isValid(), is(false));
 
         // Test null
         ValidationResult nullResult = DtrValidator.validate("username")
             .value(null)
-            .notBlank();
+            .notBlank().getResult();
         assertThat("Null string should fail", nullResult.isValid(), is(false));
     }
 
@@ -100,19 +100,19 @@ class DtrValidatorTest {
         // Test Integer
         ValidationResult intResult = DtrValidator.validate("age")
             .value(42)
-            .positive();
+            .positive().getResult();
         assertThat("Positive integer should pass", intResult.isValid(), is(true));
 
         // Test Long
         ValidationResult longResult = DtrValidator.validate("count")
             .value(100L)
-            .positive();
+            .positive().getResult();
         assertThat("Positive long should pass", longResult.isValid(), is(true));
 
         // Test Double
         ValidationResult doubleResult = DtrValidator.validate("price")
             .value(19.99)
-            .positive();
+            .positive().getResult();
         assertThat("Positive double should pass", doubleResult.isValid(), is(true));
     }
 
@@ -122,7 +122,7 @@ class DtrValidatorTest {
         // Test zero
         ValidationResult zeroResult = DtrValidator.validate("age")
             .value(0)
-            .positive();
+            .positive().getResult();
         assertThat("Zero should fail positive validation", zeroResult.isValid(), is(false));
         assertThat("Zero error should be descriptive",
             zeroResult.errorMessage(), containsString("must be positive"));
@@ -130,13 +130,13 @@ class DtrValidatorTest {
         // Test negative
         ValidationResult negativeResult = DtrValidator.validate("count")
             .value(-5)
-            .positive();
+            .positive().getResult();
         assertThat("Negative number should fail", negativeResult.isValid(), is(false));
 
         // Test null
         ValidationResult nullResult = DtrValidator.validate("price")
             .value(null)
-            .positive();
+            .positive().getResult();
         assertThat("Null should fail", nullResult.isValid(), is(false));
     }
 
@@ -176,7 +176,8 @@ class DtrValidatorTest {
         ValidationResult result = DtrValidator.validate("username")
             .value(username)
             .notNull()
-            .notBlank();
+            .notBlank()
+            .getResult();
 
         // Assert
         assertThat("All validations should pass", result.isValid(), is(true));
@@ -189,7 +190,8 @@ class DtrValidatorTest {
         ValidationResult result = DtrValidator.validate("username")
             .value(null)
             .notNull()
-            .notBlank();
+            .notBlank()
+            .getResult();
 
         // Assert
         assertThat("First failing validation should stop chain", result.isValid(), is(false));
@@ -209,14 +211,16 @@ class DtrValidatorTest {
         ValidationResult usernameResult = DtrValidator.validate("username")
             .value(username)
             .notNull()
-            .notBlank();
+            .notBlank()
+            .getResult();
 
         assertThat("Username should be valid", usernameResult.isValid(), is(true));
 
         // Validate email
         ValidationResult emailResult = DtrValidator.validate("email")
             .value(email)
-            .notBlank();
+            .notBlank()
+            .getResult();
 
         assertThat("Email should be valid", emailResult.isValid(), is(true));
 
@@ -224,7 +228,8 @@ class DtrValidatorTest {
         ValidationResult ageResult = DtrValidator.validate("age")
             .value(age)
             .notNull()
-            .positive();
+            .positive()
+            .getResult();
 
         assertThat("Age should be valid", ageResult.isValid(), is(true));
     }
@@ -240,21 +245,24 @@ class DtrValidatorTest {
         // Validate configuration key
         ValidationResult keyResult = DtrValidator.validate("configKey")
             .value(configKey)
-            .notBlank();
+            .notBlank()
+            .getResult();
 
         assertThat("Config key should be valid", keyResult.isValid(), is(true));
 
         // Validate configuration value
         ValidationResult valueResult = DtrValidator.validate("configValue")
             .value(configValue)
-            .notBlank();
+            .notBlank()
+            .getResult();
 
         assertThat("Config value should be valid", valueResult.isValid(), is(true));
 
         // Validate timeout
         ValidationResult timeoutResult = DtrValidator.validate("timeoutSeconds")
             .value(timeoutSeconds)
-            .positive();
+            .positive()
+            .getResult();
 
         assertThat("Timeout should be valid", timeoutResult.isValid(), is(true));
 
@@ -275,11 +283,11 @@ class DtrValidatorTest {
 
         ValidationResult usernameResult = DtrValidator.validate("username")
             .value(username)
-            .notBlank();
+            .notBlank().getResult();
 
         ValidationResult ageResult = DtrValidator.validate("age")
             .value(age)
-            .positive();
+            .positive().getResult();
 
         // Both should fail
         assertThat("Username validation should fail", usernameResult.isValid(), is(false));
@@ -356,7 +364,7 @@ class DtrValidatorTest {
     void testTypeSafety_NotBlank() {
         ValidationResult nonStringResult = DtrValidator.validate("field")
             .value(12345)
-            .notBlank();
+            .notBlank().getResult();
 
         assertThat("notBlank() should reject non-String types", nonStringResult.isValid(), is(false));
         assertThat("Error should mention type requirement",
@@ -368,7 +376,7 @@ class DtrValidatorTest {
     void testTypeSafety_Positive() {
         ValidationResult nonNumberResult = DtrValidator.validate("field")
             .value("not-a-number")
-            .positive();
+            .positive().getResult();
 
         assertThat("positive() should reject non-Number types", nonNumberResult.isValid(), is(false));
         assertThat("Error should mention type requirement",
@@ -376,7 +384,6 @@ class DtrValidatorTest {
     }
 
     @Test
-    @DisplayName("Integration test: Complete validation workflow")
     @DisplayName("DTR-009: Validation Framework Integration")
     void testIntegration_CompleteWorkflow() {
         // Scenario: Validate a complete DTR configuration
@@ -388,15 +395,15 @@ class DtrValidatorTest {
         // Validate all configuration parameters
         ValidationResult outputDirResult = DtrValidator.validate("outputDir")
             .value(outputDir)
-            .notBlank();
+            .notBlank().getResult();
 
         ValidationResult maxThreadsResult = DtrValidator.validate("maxThreads")
             .value(maxThreads)
-            .positive();
+            .positive().getResult();
 
         ValidationResult javaVersionResult = DtrValidator.validate("javaVersion")
             .value(javaVersion)
-            .notBlank();
+            .notBlank().getResult();
 
         // All validations should pass
         assertThat("Output directory should be valid", outputDirResult.isValid(), is(true));

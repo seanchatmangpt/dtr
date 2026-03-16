@@ -134,9 +134,9 @@ The example below documents a distributed transaction saga — a pattern used in
 
 | Key | Value |
 | --- | --- |
+| `sayTable() overhead` | `13208 ns` |
 | `Conclusion` | `sub-millisecond — safe to call in hot paths` |
 | `JVM` | `Java 26` |
-| `sayTable() overhead` | `4250 ns` |
 
 ## 2. sayCode() — Executable Specification
 
@@ -193,14 +193,14 @@ The example below is not a toy. It documents the production API contract for a s
 
 | Key | Value |
 | --- | --- |
-| `Idempotency Header` | `Idempotency-Key: UUID required for POST/PATCH` |
-| `Base URL` | `https://api.example.com/v2` |
-| `API Version` | `v2 (v1 deprecated 2024-01-01, EOL 2025-01-01)` |
-| `Circuit Breaker` | `Opens at 50% error rate over 30s rolling window` |
 | `Auth Method` | `OAuth2 Bearer token (RFC 6750)` |
 | `Timeout SLA` | `p99 < 200ms, p999 < 1000ms` |
 | `Rate Limit` | `1000 req/min per client_id, 429 on breach` |
 | `Retry Policy` | `Exponential backoff, max 3 retries, jitter required` |
+| `Idempotency Header` | `Idempotency-Key: UUID required for POST/PATCH` |
+| `Base URL` | `https://api.example.com/v2` |
+| `API Version` | `v2 (v1 deprecated 2024-01-01, EOL 2025-01-01)` |
+| `Circuit Breaker` | `Opens at 50% error rate over 30s rolling window` |
 
 > [!NOTE]
 > Use `LinkedHashMap` (not `Map.of`) when insertion order matters for readability. `Map.of` has undefined iteration order in Java, which produces non-deterministic documentation — a subtle form of documentation drift.
@@ -247,14 +247,14 @@ The example below documents the order event payload for a distributed order mana
   "customerId" : "cust-1234",
   "status" : "PAYMENT_AUTHORISED",
   "lineItems" : [ "SKU-001 x2", "SKU-047 x1" ],
-  "timestampEpochMs" : 1773622363317,
-  "idempotencyKey" : "idem-590161346080666"
+  "timestampEpochMs" : 1773623467607,
+  "idempotencyKey" : "idem-591265619241916"
 }
 ```
 
 | Key | Value |
 | --- | --- |
-| `sayJson() overhead` | `27602083 ns` |
+| `sayJson() overhead` | `26095584 ns` |
 | `JVM` | `Java 26` |
 | `Schema source` | `OrderEvent record — single source of truth` |
 | `Serialiser` | `Jackson ObjectMapper (same as production)` |
@@ -270,14 +270,14 @@ The example below documents a complete API contract validation — the kind of e
 
 | Check | Result |
 | --- | --- |
+| Circuit breaker opens at 50% error rate | `⚠ DEGRADED — opens at 48% (within 5% tolerance)` |
+| Idempotency-Key header honoured on POST | `✓ PASS — duplicate returns 200 not 201` |
+| CORS policy: only allowed origins accepted | `✓ PASS` |
 | JSON schema conforms to OpenAPI 3.1 spec | `✓ PASS` |
 | Response time p99 < 200ms | `✓ PASS — measured 87ms` |
 | HTTP 403 for unauthenticated POST | `✓ PASS` |
 | Rate limit: 429 returned at 1001 req/min | `✓ PASS` |
 | HTTP 200 for authenticated GET | `✓ PASS` |
-| Circuit breaker opens at 50% error rate | `⚠ DEGRADED — opens at 48% (within 5% tolerance)` |
-| Idempotency-Key header honoured on POST | `✓ PASS — duplicate returns 200 not 201` |
-| CORS policy: only allowed origins accepted | `✓ PASS` |
 
 > [!NOTE]
 > The ⚠ DEGRADED row above is not a failure — it is precision. Armstrong's rule: 'Report what you measured, not what you hoped.' A system that claims perfection in its documentation is lying. Document the actual behaviour, including edge cases and tolerances.

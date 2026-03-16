@@ -141,8 +141,9 @@ class DtrContextNewMethodsTest {
         // String assertion
         ctx.sayAndAssertThat("String equality", "hello", equalTo("hello"));
 
-        // Object assertion
-        ctx.sayAndAssertThat("Object equality", new Object(), equalTo(new Object()));
+        // Object assertion (same instance)
+        Object obj = new Object();
+        ctx.sayAndAssertThat("Object identity", obj, equalTo(obj));
 
         // Generic type assertion
         Integer value = 42;

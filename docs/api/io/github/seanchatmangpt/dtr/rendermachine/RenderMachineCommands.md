@@ -7,7 +7,7 @@ Core documentation-output contract for the DTR render machine. <p>Every {@code s
 
 ```java
 public interface RenderMachineCommands {
-    // say, sayNextSection, sayRaw, sayTable, sayCode, sayWarning, sayNote, sayKeyValue, ... (44 total)
+    // say, sayNextSection, sayRaw, sayTable, sayCode, sayWarning, sayNote, sayKeyValue, ... (45 total)
 }
 ```
 
@@ -130,11 +130,10 @@ Renders a code block with optional syntax highlighting language hint.
 
 ### `sayCodeModel`
 
-Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations — control flow, method calls, field accesses, etc. Renders a detailed breakdown of operation types and their counts.</p> <p>On Java 26 and earlier, gracefully falls back to rendering the method signature (parameters with types, return type) extracted via reflection.</p> <p>Example:</p> <pre>{@code sayCodeModel(SayEvent.class.getMethod("toString")); // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.) // Java 26-: Renders String toString() signature only }</pre>
+Documents a method's structure using Project Babylon CodeReflection API.
 
-| Parameter | Description |
-| --- | --- |
-| `method` | the method to introspect and document (must not be null) |
+> [!WARNING]
+> **Deprecated:** Use {@link #sayMethodSignature(java.lang.reflect.Method)} instead.             This method name is ambiguous - it documents method signatures, not full code models.             Scheduled for removal in a future release.
 
 ---
 
@@ -243,6 +242,16 @@ Renders a raw Mermaid diagram as a fenced {@code mermaid} code block. Mermaid re
 | Parameter | Description |
 | --- | --- |
 | `diagramDsl` | the Mermaid DSL string (e.g., "flowchart TD\n    A --> B") |
+
+---
+
+### `sayMethodSignature`
+
+Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations — control flow, method calls, field accesses, etc. Renders a detailed breakdown of operation types and their counts.</p> <p>On Java 26 and earlier, gracefully falls back to rendering the method signature (parameters with types, return type) extracted via reflection.</p> <p>Example:</p> <pre>{@code sayMethodSignature(SayEvent.class.getMethod("toString")); // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.) // Java 26-: Renders String toString() signature only }</pre>
+
+| Parameter | Description |
+| --- | --- |
+| `method` | the method to introspect and document (must not be null) |
 
 ---
 

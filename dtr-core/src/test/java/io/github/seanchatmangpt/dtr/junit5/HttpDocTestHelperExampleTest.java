@@ -15,6 +15,10 @@
  */
 package io.github.seanchatmangpt.dtr.junit5;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -99,9 +103,6 @@ public class HttpDocTestHelperExampleTest {
     void testCustomClient(DtrContext ctx) throws Exception {
         ctx.sayNextSection("Custom HTTP Client Example");
         ctx.say("This example demonstrates using a custom HTTP client with extended timeout.");
-
-        import java.net.http.HttpClient;
-        import java.time.Duration;
 
         HttpClient customClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(30))

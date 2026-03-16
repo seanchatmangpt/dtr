@@ -7,7 +7,7 @@ Fluent validation API for DTR input validation. <p>This class provides a type-sa
 
 ```java
 public class DtrValidator {
-    // DtrValidator, validate, ValidationBuilder, value, notNull, notBlank, positive, getFieldName, ... (9 total)
+    // DtrValidator, validate, ValidationBuilder, value, notNull, notBlank, positive, getResult, ... (11 total)
 }
 ```
 
@@ -39,6 +39,14 @@ Returns the field name being validated.
 
 ---
 
+### `getResult`
+
+Returns the validation result after all chained validations. <p>This method should be called at the end of the validation chain to get the final result.
+
+> **Returns:** the ValidationResult from all chained validations
+
+---
+
 ### `getValue`
 
 Returns the value being validated.
@@ -49,25 +57,35 @@ Returns the value being validated.
 
 ### `notBlank`
 
-Validates that the value is not a blank string. <p>Returns a valid result if the value is a non-null, non-blank string. A blank string is one that is empty, contains only whitespace, or is null. <h2>Example</h2> <pre>{@code ValidationResult result = DtrValidator.validate("username")     .value(input)     .notBlank(); }</pre>
+Validates that the value is not a blank string. <p>If a previous validation already failed, this method does nothing (short-circuit behavior). Otherwise, checks if the value is a non-blank string. <h2>Example</h2> <pre>{@code ValidationResult result = DtrValidator.validate("username")     .value(input)     .notBlank()     .getResult(); }</pre>
 
-> **Returns:** a ValidationResult indicating whether the value is non-blank
+> **Returns:** this builder instance for method chaining
 
 ---
 
 ### `notNull`
 
-Validates that the value is not null. <p>Returns a valid result if the value is non-null, otherwise returns an invalid result with an appropriate error message. <h2>Example</h2> <pre>{@code ValidationResult result = DtrValidator.validate("config")     .value(configObject)     .notNull(); }</pre>
+Validates that the value is not null. <p>If a previous validation already failed, this method does nothing (short-circuit behavior). Otherwise, checks if the value is non-null. <h2>Example</h2> <pre>{@code ValidationResult result = DtrValidator.validate("config")     .value(configObject)     .notNull()     .getResult(); }</pre>
 
-> **Returns:** a ValidationResult indicating whether the value is non-null
+> **Returns:** this builder instance for method chaining
+
+---
+
+### `orThrow`
+
+Throws an exception if the validation failed. <p>This is a convenience method that delegates to the result's orThrow().
+
+| Exception | Description |
+| --- | --- |
+| `IllegalArgumentException` | if validation failed |
 
 ---
 
 ### `positive`
 
-Validates that the value is a positive number. <p>Returns a valid result if the value is a Number greater than zero. This works with any numeric type (Integer, Long, Double, etc.). <h2>Example</h2> <pre>{@code ValidationResult result = DtrValidator.validate("age")     .value(userAge)     .positive(); }</pre>
+Validates that the value is a positive number. <p>If a previous validation already failed, this method does nothing (short-circuit behavior). Otherwise, checks if the value is a positive number. <h2>Example</h2> <pre>{@code ValidationResult result = DtrValidator.validate("age")     .value(userAge)     .positive()     .getResult(); }</pre>
 
-> **Returns:** a ValidationResult indicating whether the value is positive
+> **Returns:** this builder instance for method chaining
 
 ---
 

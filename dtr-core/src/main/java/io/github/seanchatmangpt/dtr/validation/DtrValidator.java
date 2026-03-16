@@ -74,15 +74,16 @@ public class DtrValidator {
      * Fluent builder for validation rules.
      *
      * <p>This class provides a chainable API for applying multiple validation
-     * rules to a single value. Each validation rule returns a ValidationResult
-     * that can be checked or used to throw an exception.
+     * rules to a single value. Validation methods return this builder for chaining,
+     * and the final result can be obtained via {@link #getResult()} or {@link #orThrow()}.
      *
      * <h2>Example Usage</h2>
      * <pre>{@code
      * ValidationResult result = DtrValidator.validate("email")
      *     .value(userEmail)
      *     .notNull()
-     *     .notBlank();
+     *     .notBlank()
+     *     .getResult();
      *
      * if (result.isValid()) {
      *     // Proceed with validated value
@@ -92,6 +93,7 @@ public class DtrValidator {
     public static class ValidationBuilder {
         private final String fieldName;
         private Object value;
+        private ValidationResult currentResult = ValidationResult.valid();
 
         /**
          * Creates a new validation builder for the specified field.
@@ -118,82 +120,116 @@ public class DtrValidator {
         /**
          * Validates that the value is not null.
          *
-         * <p>Returns a valid result if the value is non-null, otherwise returns
-         * an invalid result with an appropriate error message.
+         * <p>If a previous validation already failed, this method does nothing
+         * (short-circuit behavior). Otherwise, checks if the value is non-null.
          *
          * <h2>Example</h2>
          * <pre>{@code
          * ValidationResult result = DtrValidator.validate("config")
          *     .value(configObject)
-         *     .notNull();
+         *     .notNull()
+         *     .getResult();
          * }</pre>
          *
-         * @return a ValidationResult indicating whether the value is non-null
+         * @return this builder instance for method chaining
          */
-        public ValidationResult notNull() {
-            if (value == null) {
-                return ValidationResult.invalid(fieldName + " cannot be null");
+        public ValidationBuilder notNull() {
+            if (currentResult.isValid() && value == null) {
+                currentResult = ValidationResult.invalid(fieldName + " cannot be null");
             }
-            return ValidationResult.valid();
+            return this;
         }
 
         /**
          * Validates that the value is not a blank string.
          *
-         * <p>Returns a valid result if the value is a non-null, non-blank string.
-         * A blank string is one that is empty, contains only whitespace, or is null.
+         * <p>If a previous validation already failed, this method does nothing
+         * (short-circuit behavior). Otherwise, checks if the value is a non-blank string.
          *
          * <h2>Example</h2>
          * <pre>{@code
          * ValidationResult result = DtrValidator.validate("username")
          *     .value(input)
-         *     .notBlank();
+         *     .notBlank()
+         *     .getResult();
          * }</pre>
          *
-         * @return a ValidationResult indicating whether the value is non-blank
+         * @return this builder instance for method chaining
          */
-        public ValidationResult notBlank() {
+        public ValidationBuilder notBlank() {
+            if (!currentResult.isValid()) {
+                return this; // Short-circuit on previous failure
+            }
             if (value instanceof String s) {
                 if (s.isBlank()) {
-                    return ValidationResult.invalid(fieldName + " cannot be blank");
+                    currentResult = ValidationResult.invalid(fieldName + " cannot be blank");
                 }
             } else {
                 // Non-string values are considered invalid for notBlank()
                 if (value == null) {
-                    return ValidationResult.invalid(fieldName + " cannot be null");
+                    currentResult = ValidationResult.invalid(fieldName + " cannot be null");
+                } else {
+                    currentResult = ValidationResult.invalid(fieldName + " must be a String");
                 }
-                return ValidationResult.invalid(fieldName + " must be a String");
             }
-            return ValidationResult.valid();
+            return this;
         }
 
         /**
          * Validates that the value is a positive number.
          *
-         * <p>Returns a valid result if the value is a Number greater than zero.
-         * This works with any numeric type (Integer, Long, Double, etc.).
+         * <p>If a previous validation already failed, this method does nothing
+         * (short-circuit behavior). Otherwise, checks if the value is a positive number.
          *
          * <h2>Example</h2>
          * <pre>{@code
          * ValidationResult result = DtrValidator.validate("age")
          *     .value(userAge)
-         *     .positive();
+         *     .positive()
+         *     .getResult();
          * }</pre>
          *
-         * @return a ValidationResult indicating whether the value is positive
+         * @return this builder instance for method chaining
          */
-        public ValidationResult positive() {
+        public ValidationBuilder positive() {
+            if (!currentResult.isValid()) {
+                return this; // Short-circuit on previous failure
+            }
             if (value instanceof Number n) {
                 if (n.longValue() <= 0) {
-                    return ValidationResult.invalid(fieldName + " must be positive");
+                    currentResult = ValidationResult.invalid(fieldName + " must be positive");
                 }
             } else {
                 if (value == null) {
-                    return ValidationResult.invalid(fieldName + " cannot be null");
+                    currentResult = ValidationResult.invalid(fieldName + " cannot be null");
+                } else {
+                    currentResult = ValidationResult.invalid(fieldName + " must be a Number");
                 }
-                return ValidationResult.invalid(fieldName + " must be a Number");
             }
-            return ValidationResult.valid();
+            return this;
+        }
+
+        /**
+         * Returns the validation result after all chained validations.
+         *
+         * <p>This method should be called at the end of the validation chain
+         * to get the final result.
+         *
+         * @return the ValidationResult from all chained validations
+         */
+        public ValidationResult getResult() {
+            return currentResult;
+        }
+
+        /**
+         * Throws an exception if the validation failed.
+         *
+         * <p>This is a convenience method that delegates to the result's orThrow().
+         *
+         * @throws IllegalArgumentException if validation failed
+         */
+        public void orThrow() {
+            currentResult.orThrow();
         }
 
         /**

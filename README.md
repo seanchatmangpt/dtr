@@ -104,30 +104,6 @@ class HelloDtrTest {
 }
 ```
 
-### Or use the new simplified API (2026.4.0+)
-
-```java
-import static io.github.seanchatmangpt.dtr.Dtr.*;
-import io.github.seanchatmangpt.dtr.AutoSection;
-import io.github.seanchatmangpt.dtr.DtrTest;
-import org.junit.jupiter.api.Test;
-
-@DtrTest  // Single annotation, no boilerplate
-class HelloDtrTest {
-
-    @Test
-    @AutoSection  // Auto-generates "Get User" from method name
-    void testGetUser() {
-        say("Returns user details by ID.");
-        sayCode("GET /api/users/{id}", "http");
-        sayKeyValue(Map.of(
-            "Authentication", "Bearer token",
-            "Rate Limit", "100/hour"
-        ));
-    }
-}
-```
-
 ### Run the test
 
 ```bash
@@ -144,130 +120,65 @@ Output is pure, portable Markdown — committed to your repository, diffable, an
 
 ---
 
-## Migration Guide: From 2026.3.x to 2026.4.0
+## What's New in 2026.4.0
 
-### Overview
+### Critical Bug Fix: DtrContext Parameter Injection
 
-DTR 2026.4.0 introduces major DX/QoL improvements while maintaining 100% backward compatibility. All existing tests work without modification.
+The `DtrContext` parameter injection in test methods now works correctly. Previously, you may have seen:
 
-### Key Changes
+```
+No ParameterResolver registered for parameter [io.github.seanchatmangpt.dtr.junit5.DtrContext arg0]
+```
 
-#### 1. Simplified Test Setup
+This is now fixed. The standard pattern works as documented:
 
-**Before (2026.3.x):**
 ```java
 @ExtendWith(DtrExtension.class)
 class MyTest {
-    @AfterAll
-    static void cleanup(DtrContext ctx) {
-        ctx.finishAndWriteOut();
+    @Test
+    void testGetUser(DtrContext ctx) {  // Parameter injection now works!
+        ctx.say("Returns user details by ID.");
     }
 }
 ```
 
-**After (2026.4.0):**
+### New Features
+
+#### Assertion + Documentation Combined
+
+Four new `sayAndAssertThat` methods combine assertions with documentation:
+
 ```java
-@DtrTest  // Single annotation replaces all boilerplate
-class MyTest {
-    // No lifecycle methods needed!
-}
+ctx.sayAndAssertThat("HTTP Status", response.getStatusCode(), equalTo(200));
 ```
 
-#### 2. Static Import Support
+#### Presentation-Specific Methods
 
-**Before:**
+New methods for slides, blogs, and social media:
+
 ```java
-@Test void test(DtrContext ctx) {
-    ctx.say("Hello");
-    ctx.sayCode("int x = 42;", "java");
-}
+ctx.sayTldr("Quick summary for busy readers");
+ctx.saySlideOnly("Simplified bullet points for slides");
+ctx.sayTweetable("DTR 2026.4.0 adds 12 new say* methods!");
 ```
 
-**After:**
-```java
-import static io.github.seanchatmangpt.dtr.Dtr.*;
+#### Configuration Annotations
 
-@Test void test() {
-    say("Hello");  // No ctx. prefix
-    sayCode("int x = 42;", "java");
-}
-```
-
-#### 3. Auto-Section Generation
-
-**Before:**
-```java
-@Test void testGetUsers(DtrContext ctx) {
-    ctx.sayNextSection("Get Users");
-    ctx.say("Returns all users");
-}
-```
-
-**After:**
-```java
-@Test
-@AutoSection  // Auto-generates "Get Users" from method name
-void testGetUsers() {
-    say("Returns all users");
-}
-```
-
-#### 4. Fluent TableBuilder
-
-**Before:**
-```java
-ctx.sayTable(new String[][]{
-    {"Name", "Age"},
-    {"Alice", "30"},
-    {"Bob", "25"}
-});
-```
-
-**After:**
-```java
-ctx.table()
-   .headers("Name", "Age")
-   .row("Alice", "30")
-   .row("Bob", "25")
-   .build();
-```
-
-#### 5. Unified @Doc Annotation
-
-**Before (multiple annotations):**
-```java
-@DocSection("Authentication")
-@DocDescription("Tests login flow")
-@DocNote("Uses test database")
-@DocWarning("Requires auth service")
-@Test void testLogin() { }
-```
-
-**After (single annotation):**
-```java
-@Doc(
-    section = "Authentication",
-    description = "Tests login flow",
-    note = "Uses test database",
-    warning = "Requires auth service"
-)
-@Test void testLogin() { }
-```
-
-### Migration Path
-
-1. **Update dependency** to `2026.4.0`
-2. **Run existing tests** — all should pass without changes
-3. **Gradually adopt new features:**
-   - Replace `@ExtendWith(DtrExtension.class)` with `@DtrTest`
-   - Add `import static io.github.seanchatmangpt.dtr.Dtr.*;`
-   - Use `@AutoSection` for new tests
-   - Try `TableBuilder` for complex tables
-4. **Refactor at your own pace** — old and new APIs can coexist
+- `@DtrConfig` — Hierarchical configuration (system properties → annotation → default)
+- `@LivePreview` — IDE integration markers for live preview support
 
 ### Breaking Changes
 
-**None.** All changes are additive and backward compatible.
+**Most users: No action required!**
+
+1. **RenderConfig removed** (< 5 users affected)
+   - Migration: Use `@DtrConfig` or `DtrConfiguration.builder()`
+
+2. **sayCodeModel(Method) deprecated** (low impact)
+   - Migration: Use `sayMethodSignature(Method)` instead
+   - Removal planned for 2027.1.0
+
+See [MIGRATING.md](docs/MIGRATING.md) for detailed migration guides.
 
 ---
 
