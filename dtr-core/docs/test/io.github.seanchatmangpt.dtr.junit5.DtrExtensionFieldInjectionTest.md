@@ -40,10 +40,10 @@ All annotated fields were successfully injected with DtrContext instances.
 
 | Key | Value |
 | --- | --- |
-| `protectedCtx` | `true` |
 | `packageCtx` | `true` |
 | `privateCtx` | `true` |
 | `publicCtx` | `true` |
+| `protectedCtx` | `true` |
 
 ## Shared RenderMachine
 

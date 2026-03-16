@@ -140,7 +140,7 @@ This example demonstrates a POST request with a JSON body.
     "Content-Type": "application/json", 
     "Host": "httpbin.org", 
     "User-Agent": "Java-http-client/26", 
-    "X-Amzn-Trace-Id": "Root=1-69b7757e-5d70e8737e967f2040f5a759"
+    "X-Amzn-Trace-Id": "Root=1-69b790bc-5a410351526ee0d31fea8cec"
   }, 
   "json": {
     "email": "alice@example.com", 
