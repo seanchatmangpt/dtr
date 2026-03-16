@@ -22,9 +22,11 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -34,15 +36,58 @@ import java.util.Optional;
  * <p>This extension provides native JUnit 5 support for DTR, replacing
  * the JUnit 4 {@code @Rule} based approach with JUnit 5's extension model.
  *
- * <p>Usage:
+ * <p><strong>Usage Options:</strong></p>
+ *
+ * <p><em>Option 1: Field Injection (Recommended for tests with many methods)</em></p>
  * <pre>{@code
  * @ExtendWith(DtrExtension.class)
- * class MyApiDocTest implements DtrCommands {
+ * class MyApiDocTest {
+ *     @DtrContextField
+ *     private DtrContext ctx;
  *
+ *     @Test
+ *     void testGetUsers() {
+ *         ctx.sayNextSection("User API");
+ *         ctx.say("Documentation for User API goes here.");
+ *     }
+ * }
+ * }</pre>
+ *
+ * <p><em>Option 2: Method Parameter Injection</em></p>
+ * <pre>{@code
+ * @ExtendWith(DtrExtension.class)
+ * class MyApiDocTest {
  *     @Test
  *     void testGetUsers(DtrContext context) {
  *         context.sayNextSection("User API");
  *         context.say("Documentation for User API goes here.");
+ *     }
+ * }
+ * }</pre>
+ *
+ * <p><em>Option 3: Inheritance (Legacy Pattern)</em></p>
+ * <pre>{@code
+ * @ExtendWith(DtrExtension.class)
+ * class MyApiDocTest extends io.github.seanchatmangpt.dtr.DtrTest {
+ *     @Test
+ *     void testGetUsers() {
+ *         sayNextSection("User API");
+ *         say("Documentation for User API goes here.");
+ *     }
+ * }
+ * }</pre>
+ *
+ * <p><em>Option 4: Composite Annotation (Most Concise)</em></p>
+ * <pre>{@code
+ * @DtrTest
+ * class MyApiDocTest {
+ *     @DtrContextField
+ *     private DtrContext ctx;
+ *
+ *     @Test
+ *     void testGetUsers() {
+ *         ctx.sayNextSection("User API");
+ *         ctx.say("Documentation for User API goes here.");
  *     }
  * }
  * }</pre>
@@ -53,9 +98,16 @@ import java.util.Optional;
  *   <li>Documentation output generation after all tests complete</li>
  *   <li>Auto-finish support via {@link AutoFinishDocTest} annotation</li>
  *   <li>@TestSetup method execution before tests</li>
+ *   <li>Field injection via {@link DtrContextField} annotation</li>
  * </ul>
+ *
+ * @see DtrContext
+ * @see DtrContextField
+ * @see DtrTest
+ * @see AutoFinishDocTest
+ * @see TestSetup
  */
-public class DtrExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
+public class DtrExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver, TestInstancePostProcessor {
 
     private static final String RENDER_MACHINE_KEY = "dtr.renderMachine";
     private static final String FILE_NAME_KEY = "dtr.fileName";
@@ -115,6 +167,74 @@ public class DtrExtension implements BeforeAllCallback, BeforeEachCallback, Afte
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
         RenderMachine renderMachine = getOrCreateRenderMachine(extensionContext);
         return new DtrContext(renderMachine);
+    }
+
+    @Override
+    public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
+        RenderMachine renderMachine = getOrCreateRenderMachine(context);
+        injectDtrContextFields(testInstance, renderMachine);
+    }
+
+    /**
+     * Injects DtrContext into fields annotated with @DtrContextField.
+     *
+     * <p>Scans the test instance for fields annotated with {@link DtrContextField}
+     * and injects a new {@link DtrContext} instance into each field. The field type
+     * must be exactly {@link DtrContext}. All access modifiers are supported
+     * (private, protected, package-private, public).</p>
+     *
+     * <p>Each field receives a new DtrContext instance, but all instances share
+     * the same underlying RenderMachine, ensuring consistent documentation output
+     * across all fields.</p>
+     *
+     * @param testInstance the test instance to inject into
+     * @param renderMachine the render machine to use for creating contexts
+     * @throws Exception if field injection fails
+     */
+    private void injectDtrContextFields(Object testInstance, RenderMachine renderMachine) throws Exception {
+        Class<?> testClass = testInstance.getClass();
+
+        // Scan declared fields (including private fields)
+        for (Field field : testClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(DtrContextField.class)) {
+                // Validate field type
+                if (field.getType() != DtrContext.class) {
+                    throw new IllegalStateException(
+                        String.format("Field '%s' in class '%s' is annotated with @DtrContextField " +
+                                      "but has type '%s' instead of 'DtrContext'",
+                                      field.getName(), testClass.getName(), field.getType().getName())
+                    );
+                }
+
+                // Make field accessible (even if private)
+                field.setAccessible(true);
+
+                // Create and inject a new DtrContext instance
+                DtrContext context = new DtrContext(renderMachine);
+                field.set(testInstance, context);
+            }
+        }
+
+        // Also scan superclass fields for inherited test classes
+        Class<?> superclass = testClass.getSuperclass();
+        while (superclass != null && superclass != Object.class) {
+            for (Field field : superclass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(DtrContextField.class)) {
+                    if (field.getType() != DtrContext.class) {
+                        throw new IllegalStateException(
+                            String.format("Field '%s' in class '%s' is annotated with @DtrContextField " +
+                                          "but has type '%s' instead of 'DtrContext'",
+                                          field.getName(), superclass.getName(), field.getType().getName())
+                        );
+                    }
+
+                    field.setAccessible(true);
+                    DtrContext context = new DtrContext(renderMachine);
+                    field.set(testInstance, context);
+                }
+            }
+            superclass = superclass.getSuperclass();
+        }
     }
 
     /**
