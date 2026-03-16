@@ -1,6 +1,6 @@
 # Reference: Configuration
 
-**Version:** 2026.3.0
+**Version:** 2026.4.1
 
 ---
 
@@ -10,10 +10,82 @@
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.3.0</version>
+    <version>2026.4.1</version>
     <scope>test</scope>
 </dependency>
 ```
+
+---
+
+## Test Class Configuration
+
+### Field Injection (Recommended Pattern)
+
+Field injection is the **primary recommended pattern** for accessing `DtrContext` in your tests. It allows you to declare the context once at the class level and use it across all test methods.
+
+#### Basic Field Injection
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyDocumentationTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void testFeature1() {
+        ctx.say("Documenting feature 1");
+    }
+
+    @Test
+    void testFeature2() {
+        ctx.say("Documenting feature 2");
+    }
+}
+```
+
+#### Composite Annotation (Most Concise)
+
+```java
+@DtrTest
+class MyDocumentationTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void testFeature() {
+        ctx.say("Documenting with @DtrTest composite annotation");
+    }
+}
+```
+
+#### Legacy Pattern (For Migration Only)
+
+```java
+// DEPRECATED: Use field injection instead of inheritance
+class MyDocumentationTest extends DtrTest {
+    @Test
+    void test() {
+        say("Direct method access - legacy pattern");
+    }
+}
+```
+
+### Field Injection Benefits
+
+- **Clean method signatures** - No need to repeat `DtrContext ctx` parameters
+- **One declaration** - Context is declared once at class level
+- **All access modifiers supported** - `private`, `protected`, package-private, `public`
+- **Multiple fields** - Can inject multiple `DtrContext` instances if needed
+- **Coexistence with parameter injection** - Both patterns work together
+
+### Configuration Options
+
+| Pattern | Annotations | Best For | Legacy |
+|---------|------------|----------|--------|
+| **Field Injection** | `@ExtendWith(DtrExtension.class)` + `@DtrContextField` | New projects, multiple test methods | No |
+| **Composite Annotation** | `@DtrTest` + `@DtrContextField` | Most concise configuration | No |
+| **Parameter Injection** | `@ExtendWith(DtrExtension.class)` | Tests needing different setup per method | No |
+| **Inheritance** | Extending `DtrTest` | Legacy codebases | ✅ Yes |
 
 ---
 
@@ -120,6 +192,7 @@ cat target/docs/test-results/MyDocTest.md
 | `dtr.benchmark.iterations` | `1000` | Default measured iterations for `sayBenchmark` |
 | `dtr.mermaid.cli` | (auto-detected) | Path to `mmdc` (Mermaid CLI) for LaTeX diagram export |
 | `dtr.javadoc.skip` | `false` | Skip Rust-based Javadoc extraction step |
+| `dtr.ctx.timeout` | (none) | Context injection timeout in milliseconds |
 
 Set system properties in Maven:
 
@@ -166,6 +239,82 @@ Add `slf4j-simple` as a test-scoped dependency to suppress this:
 
 ---
 
+## Field Injection Configuration
+
+Field injection supports several configuration options for advanced use cases:
+
+### Multiple Context Fields
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext primaryCtx;
+
+    @DtrContextField
+    private DtrContext secondaryCtx;
+
+    @Test
+    void test() {
+        primaryCtx.say("Primary documentation");
+        secondaryCtx.say("Secondary documentation");
+        // Both share the same underlying RenderMachine
+    }
+}
+```
+
+### Context Configuration via Properties
+
+```java
+// Configure context behavior via system properties
+mvnd test -Ddtr.ctx.timeout=5000 -Ddtr.format=markdown
+```
+
+### Field Injection Best Practices
+
+1. **Use `private` fields** - Encapsulate context from external access
+2. **Name consistently** - Use `ctx` or `context` for clarity
+3. **Prefer field injection for 3+ test methods** - Reduces boilerplate
+4. **Use `@DtrTest` for new projects** - Most concise configuration
+5. **Avoid mixing with inheritance** - Use field injection instead of extending `DtrTest`
+
+### Migration from Legacy Patterns
+
+#### From Parameter Injection
+```java
+// BEFORE
+@Test
+void test(DtrContext ctx) { ctx.say("..."); }
+
+// AFTER
+@DtrContextField
+private DtrContext ctx;
+
+@Test
+void test() { ctx.say("..."); }
+```
+
+#### From Inheritance
+```java
+// BEFORE
+class MyTest extends DtrTest {
+    @Test
+    void test() { say("Direct access"); }
+}
+
+// AFTER
+@DtrTest
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() { ctx.say("Field injection"); }
+}
+```
+
+---
+
 ## Maven enforcer rules
 
 The parent `pom.xml` includes Maven Enforcer rules that require:
@@ -183,6 +332,54 @@ Run `mvnd validate` to check these rules without building.
 | Java | 26 | 26.ea.13+ |
 | Maven | 4.0.0-rc-3 | 4.0.0-rc-3+ |
 | mvnd | 2.0.0 | 2.0.0+ |
+
+---
+
+## Legacy Configuration Patterns
+
+The following patterns are supported for backwards compatibility but are **not recommended for new projects**:
+
+### Legacy Inheritance Pattern
+
+```java
+// ⚠️ DEPRECATED: Use field injection instead
+class MyDocumentationTest extends DtrTest {
+    @Test
+    void test() {
+        say("Direct method access - legacy pattern");
+    }
+}
+```
+
+**Why field injection is better:**
+- No coupling to base class
+- Clearer annotation-based configuration
+- Works with multiple inheritance hierarchies
+- More flexible for testing integration
+
+### Legacy Parameter Injection Pattern
+
+```java
+// ⚠️ VERBOSE: Use field injection for classes with multiple methods
+@ExtendWith(DtrExtension.class)
+class MyDocumentationTest {
+    @Test
+    void test1(DtrContext ctx) { ctx.say("Method 1"); }
+    @Test
+    void test2(DtrContext ctx) { ctx.say("Method 2"); }
+    @Test
+    void test3(DtrContext ctx) { ctx.say("Method 3"); }
+}
+```
+
+**When to use parameter injection:**
+- Each test method needs different context setup
+- Only 1-2 test methods in the class
+- Context requirements vary significantly per method
+
+---
+
+## Maven enforcer rules
 
 Verify your environment:
 
@@ -272,9 +469,35 @@ For advanced customization, see the [RenderMachine API](rendermachine-api.md) re
 
 ---
 
+## Field Injection Advantages
+
+### Why Field Injection is Recommended
+
+1. **Cleaner Code** - No repeated `DtrContext` parameters in method signatures
+2. **One Declaration** - Context is declared once per class, not per method
+3. **Type Safety** - Compile-time checking of field types
+4. **All Access Modifiers** - Works with `private`, `protected`, package-private, `public`
+5. **Multiple Fields** - Can inject multiple contexts for different purposes
+6. **No Base Class Coupling** - Doesn't require extending `DtrTest`
+7. **Annotation-Based** - Clear intent with `@DtrContextField`
+8. **Modern Java Pattern** - Aligns with dependency injection best practices
+
+### When to Use Field Injection vs Other Patterns
+
+| Use Case | Recommended Pattern | Alternative |
+|----------|-------------------|-------------|
+| New projects with multiple test methods | Field Injection + `@DtrTest` | Parameter injection |
+| Tests needing different context setup per method | Parameter Injection | Field injection |
+| Legacy code migration | Field Injection | Continue with inheritance |
+| Simple tests with 1-2 methods | Either pattern | Use preference |
+| Complex test suites | Field Injection + `@DtrTest` | Parameter injection per method |
+
+---
+
 ## See also
 
 - [DtrContext and DtrExtension API Reference](testbrowser-api.md) — API surface
+- [Field Injection Guide](../tutorials/field-injection-guide.md) — Complete field injection patterns and migration
 - [Architecture](ARCHITECTURE.md) — System design and component overview
 - [Troubleshooting](TROUBLESHOOTING.md) — Maven proxy, Java version errors, common issues
 - [Known Issues](KNOWN_ISSUES.md) — version-specific limitations

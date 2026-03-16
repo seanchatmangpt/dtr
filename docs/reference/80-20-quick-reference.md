@@ -6,13 +6,13 @@
 
 ## Quick Start
 
-```java
-import io.github.seanchatmangpt.dtr.core.DtrContext;
-import io.github.seanchatmangpt.dtr.core.DtrExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+### Modern Field Injection Pattern (RECOMMENDED)
 
-@ExtendWith(DtrExtension.class)
+```java
+import io.github.seanchatmangpt.dtr.core.DtrContextField;
+import org.junit.jupiter.api.Test;
+
+@DtrContextField
 class MyDocTest {
     @Test
     void myTest(DtrContext ctx) {
@@ -25,6 +25,18 @@ class MyDocTest {
 ```
 
 **Output:** `target/docs/test-results/MyDocTest.md`
+
+### Legacy Pattern (Not Recommended)
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyDocTest extends DtrTest {
+    @Test
+    void myTest(DtrContext ctx) {
+        // ... same as above
+    }
+}
+```
 
 ---
 
@@ -84,6 +96,48 @@ ctx.sayCite("smith2023");
 
 ---
 
+## Setup Patterns
+
+### Maven Dependency
+```xml
+<dependency>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-core</artifactId>
+    <version>2026.4.1</version>
+</dependency>
+```
+
+### Recommended: Field Injection
+```java
+import io.github.seanchatmangpt.dtr.core.DtrContextField;
+import org.junit.jupiter.api.Test;
+
+@DtrContextField  // Simple annotation-based injection
+class MyDocTest {
+    @Test
+    void myTest(DtrContext ctx) {
+        // DTR context automatically injected
+    }
+}
+```
+
+### Legacy: Extension + Inheritance
+```java
+import io.github.seanchatmangpt.dtr.core.DtrExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(DtrExtension.class)
+class MyDocTest extends DtrTest {  // Legacy pattern - avoid
+    @Test
+    void myTest(DtrContext ctx) {
+        // Requires inheritance from DtrTest
+    }
+}
+```
+
+---
+
 ## Learn More
 
 - **Full API Reference:** See [Complete say* API Reference](say-api-methods.md) for all 50+ methods
@@ -93,4 +147,4 @@ ctx.sayCite("smith2023");
 
 ---
 
-**DTR 2026.3.0** — `io.github.seanchatmangpt.dtr:dtr-core:2026.3.0` — Java 26+ — `--enable-preview`
+**DTR 2026.4.1** — `io.github.seanchatmangpt.dtr:dtr-core:2026.4.1` — Java 26+ — `--enable-preview`

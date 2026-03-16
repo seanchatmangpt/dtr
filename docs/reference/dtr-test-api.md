@@ -1,13 +1,42 @@
-# Reference: DtrTest Base Class API
+# Reference: DtrTest API
+
+**Primary Approach:** Field injection with `@DtrContextField` + `@DtrTest` annotation (recommended)
+**Legacy Approach:** Extending `DtrTest` (deprecated since 2026.4.1)
 
 **Package:** `io.github.seanchatmangpt.dtr.core`
-**Version:** 2026.3.0
+**Version:** 2026.4.1
 
-`DtrContext` is the parameter-injection API for JUnit Jupiter 6 tests. `DtrExtension` is the JUnit Jupiter 6 extension that manages the documentation lifecycle. Together they replace the v2.4.x `DTR` abstract base class.
+`DtrContext` is the parameter-injection API for JUnit Jupiter 6 tests. `DtrExtension` is the JUnit Jupiter 6 extension that manages the documentation lifecycle. **Field injection with `@DtrContextField` is the primary approach, providing cleaner code and better test structure than the legacy `extends DtrTest` pattern.** The `@DtrTest` annotation enables composite test scenarios and metadata management.
 
 ---
 
 ## Quick start
+
+### Recommended: Field Injection with @DtrTest Annotation
+
+```java
+import io.github.seanchatmangpt.dtr.core.DtrContext;
+import org.junit.jupiter.api.Test;
+
+@DtrTest(
+    description = "User documentation tests for the 2026.4.1 release",
+    tags = {"user-management", "authentication"}
+)
+class UserDocTest {
+
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void userRegistration() {
+        ctx.sayNextSection("User Registration");
+        ctx.say("This section documents the user registration feature introduced in 2026.4.1.");
+        ctx.sayCode("record User(String name, String email) {}", "java");
+    }
+}
+```
+
+### Alternative: Parameter Injection Approach
 
 ```java
 import io.github.seanchatmangpt.dtr.core.DtrContext;
@@ -16,18 +45,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(DtrExtension.class)
-class MyDocTest {
+class ParamInjectionDocTest {
 
     @Test
     void example(DtrContext ctx) {
-        ctx.sayNextSection("My Feature");
-        ctx.say("This section documents the feature.");
+        ctx.sayNextSection("Parameter Injection");
+        ctx.say("This section documents the parameter injection approach.");
         ctx.sayCode("record User(String name) {}", "java");
     }
 }
 ```
 
-**Output:** `target/docs/test-results/MyDocTest.md` (and `.html`, `.tex`, `.json`)
+**Output:** `target/docs/test-results/ParamInjectionDocTest.md` (and `.html`, `.tex`, `.json`)
+
+**Benefits of Field Injection:**
+- Cleaner test method signatures (no parameter noise)
+- Better IDE support and autocomplete
+- More readable test code
+- Supports `@DtrTest` for metadata and composite test scenarios
+- Avoids repetitive parameter passing across multiple test methods
 
 ---
 
@@ -58,7 +94,7 @@ Provides access to all 50+ `say*` documentation methods and the `RenderMachine` 
 
 ### say* methods
 
-All 50+ documentation output methods are documented in [say* Core API Reference](request-api.md). The method groups are:
+All 50+ documentation output methods are documented in [say* Core API Reference](say-api-methods.md). The method groups are:
 
 | Group | Methods | Since |
 |-------|---------|-------|
@@ -69,6 +105,7 @@ All 50+ documentation output methods are documented in [say* Core API Reference]
 | Mermaid | `sayMermaid`, `sayClassDiagram` | 2026.3.0 |
 | Coverage and Quality | `sayDocCoverage`, `sayContractVerification`, `sayEvolutionTimeline` | 2026.3.0 |
 | Utility | `sayEnvProfile`, `sayRecordComponents`, `sayException`, `sayAsciiChart` | 2026.3.0 |
+| Field Injection | `@DtrContextField`, `@DtrTest` | 2026.4.1 |
 
 ### RenderMachine methods
 
@@ -119,9 +156,9 @@ class FeatureDocTest {
     @Test
     void overview(DtrContext ctx) {
         ctx.sayNextSection("Feature Overview");
-        ctx.say("This document describes the 2026.3.0 release.");
+        ctx.say("This document describes the 2026.4.1 release.");
         ctx.sayNote("Requires Java 26+ with --enable-preview.");
-        ctx.sayWarning("API incompatible with DTR 2026.2.x — see changelog.");
+        ctx.sayWarning("API incompatible with DTR 2026.3.x — see changelog.");
     }
 
     @Test
@@ -195,32 +232,143 @@ target/docs/test-results/
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.3.0</version>
+    <version>2026.4.1</version>
     <scope>test</scope>
 </dependency>
 ```
 
 ---
 
-## Migration from v2026.2.x DTR base class
+## Legacy Pattern Migration
 
-In 2026.3.0 the `DTR` abstract base class and JUnit 4 lifecycle were replaced by `DtrContext` + `DtrExtension`.
+In 2026.4.1, the field injection approach with `@DtrContextField` and `@DtrTest` annotation has become the primary pattern, replacing the legacy `extends DtrTest` approach. The field injection provides cleaner code and better test organization.
 
-| v2026.2.x (DTR base class) | 2026.3.0 (DtrContext) |
-|-------------------------|---------------------|
-| `extends DTR` | `@ExtendWith(DtrExtension.class)` |
-| `sayNextSection("x")` | `ctx.sayNextSection("x")` |
-| `say("x")` | `ctx.say("x")` |
-| `getRenderMachine()` | `ctx.getRenderMachine()` |
-| `setRenderMachine(m)` | `ctx.setRenderMachine(m)` |
-| `@Before setupForTestCaseMethod()` | Handled automatically by `DtrExtension` |
-| `@AfterClass finishDocTest()` | Handled automatically by `DtrExtension` |
+| Legacy: Extends DtrTest | Modern: Field Injection |
+|------------------------|---------------------|
+| `extends DtrTest` | `@ExtendWith(DtrExtension.class)` + `@DtrContextField` |
+| `ctx.sayNextSection("x")` | `ctx.sayNextSection("x")` |
+| `ctx.say("x")` | `ctx.say("x")` |
+| `ctx.getRenderMachine()` | `ctx.getRenderMachine()` |
+| `ctx.setRenderMachine(m)` | `ctx.setRenderMachine(m)` |
+| Automatic lifecycle management | Automatic lifecycle management |
+| No metadata support | `@DtrTest` for composite scenarios and metadata |
+
+### Migration from Legacy `extends DtrTest` Pattern
+
+The legacy pattern extends `DtrTest` directly:
+
+```java
+// LEGACY - Deprecated since 2026.4.1
+class LegacyDocTest extends DtrTest {
+    @Test
+    void legacyMethod() {
+        say("Legacy approach - discouraged for new tests");
+    }
+}
+```
+
+The modern approach uses field injection and the `@DtrTest` annotation:
+
+```java
+// MODERN - Recommended since 2026.4.1
+@DtrTest(description = "Modern documentation test")
+class ModernDocTest {
+
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void modernMethod() {
+        ctx.say("Modern approach - cleaner code, better metadata support");
+    }
+}
+```
+
+---
+
+## @DtrTest Annotation Examples
+
+The `@DtrTest` annotation enables composite test scenarios and metadata management:
+
+### Basic @DtrTest Usage
+
+```java
+@DtrTest(
+    description = "API documentation tests",
+    version = "2026.4.1"
+)
+class ApiDocTest {
+
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void apiOverview() {
+        ctx.sayNextSection("API Overview");
+        ctx.say("API documentation for version 2026.4.1.");
+    }
+}
+```
+
+### Composite Test Scenarios
+
+```java
+@DtrTest(
+    description = "Complete user workflow documentation",
+    composite = true,
+    dependsOn = {"userAuth", "userProfile", "userSettings"}
+)
+class UserWorkflowDocTest {
+
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void workflowOverview() {
+        ctx.sayNextSection("User Workflow Overview");
+        ctx.say("Complete user lifecycle documentation for 2026.4.1.");
+    }
+}
+```
+
+### Multi-class Test Organization
+
+```java
+// Core functionality tests
+@DtrTest(description = "Core functionality documentation", tags = {"core"})
+class CoreFunctionalityDoc {
+
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void coreFeatures() {
+        ctx.sayNextSection("Core Features");
+        ctx.say("Core documentation for 2026.4.1.");
+    }
+}
+
+// Advanced features tests
+@DtrTest(description = "Advanced features documentation", tags = {"advanced"})
+class AdvancedFeaturesDoc {
+
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void advancedFeatures() {
+        ctx.sayNextSection("Advanced Features");
+        ctx.say("Advanced documentation for 2026.4.1.");
+    }
+}
+```
 
 ---
 
 ## See also
 
-- [say* Core API Reference](request-api.md) — all 50+ method signatures
+- [Field Injection Guide](../tutorials/field-injection-guide.md) — **Primary pattern**: `@DtrContextField` + `@DtrTest` for cleaner tests
+- [say* Core API Reference](say-api-methods.md) — all 50+ method signatures
 - [RenderMachine API](rendermachine-api.md) — rendering implementations
 - [Configuration](configuration.md) — output directory, Maven settings
 - [Architecture](../architecture.md) — DTR system design and component overview

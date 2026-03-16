@@ -2,7 +2,18 @@
 
 Generate documentation in multiple formats beyond Markdown: LaTeX, blog posts, HTML presentations, and OpenAPI specifications — all from a single DTR test.
 
-**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
+> **Legacy Notice:** This documentation reflects the legacy inheritance-based approach using DtrContext parameters. For new projects, use field injection with `@DtrContextField` as shown in all examples below.
+
+**DTR Version:** 2026.4.1 | **Java:** 26+ with `--enable-preview`
+
+> **Note:** Modern DTR tests use field injection with `@DtrContextField` for cleaner, more type-safe code. All examples below have been updated to use this pattern.
+
+**Benefits of Field Injection:**
+- Type safety at compile time
+- Reduced boilerplate code
+- Better IDE support and refactoring
+- Cleaner method signatures
+- Automatic dependency injection without parameter lists
 
 ---
 
@@ -36,10 +47,10 @@ DTR's `MultiRenderMachine` routes each `say*` call to multiple output engines si
 @ExtendWith(DtrExtension.class)
 class ResearchDocTest {
 
-    @Test
-    void documentAsAcmPaper(DtrContext ctx) {
+    @DtrTest
+    void documentAsAcmPaper(@DtrContextField DtrContext ctx) {
         ctx.sayNextSection("Abstract");
-        ctx.say("This paper presents DTR 2026.3.0, a documentation testing runtime " +
+        ctx.say("This paper presents DTR 2026.4.1, a documentation testing runtime " +
                 "for Java 26 that generates publication-ready output from JUnit Jupiter 6 tests.");
 
         ctx.sayNextSection("Introduction");
@@ -99,11 +110,11 @@ pdflatex target/docs/test-results/ResearchDocTest.tex
 ### Generate a Blog Post
 
 ```java
-@Test
-void generateBlogPost(DtrContext ctx) {
+@DtrTest
+void generateBlogPost(@DtrContextField DtrContext ctx) {
     ctx.sayNextSection("Building Resilient APIs with Java 26");
 
-    ctx.say("In this article, we'll document a REST API using DTR 2026.3.0 — " +
+    ctx.say("In this article, we'll document a REST API using DTR 2026.4.1 — " +
             "a testing framework that generates documentation directly from executed tests.");
 
     ctx.sayNextSection("Setup");
@@ -113,7 +124,7 @@ void generateBlogPost(DtrContext ctx) {
         <dependency>
             <groupId>io.github.seanchatmangpt.dtr</groupId>
             <artifactId>dtr-core</artifactId>
-            <version>2026.3.0</version>
+            <version>2026.4.1</version>
             <scope>test</scope>
         </dependency>
         """, "xml");
@@ -124,8 +135,8 @@ void generateBlogPost(DtrContext ctx) {
     ctx.sayCode("""
         @ExtendWith(DtrExtension.class)
         class ApiDocTest {
-            @Test
-            void documentApi(DtrContext ctx) {
+            @DtrTest
+            void documentApi(@DtrContextField DtrContext ctx) {
                 ctx.sayNextSection("User API");
                 ctx.sayEnvProfile();
             }
@@ -152,8 +163,8 @@ target/blog/
 Document API interactions manually using `sayJson` and `sayCode`:
 
 ```java
-@Test
-void documentRestApi(DtrContext ctx) throws Exception {
+@DtrTest
+void documentRestApi(@DtrContextField DtrContext ctx) throws Exception {
     ctx.sayNextSection("User Management API");
     ctx.say("Base URL: `https://api.example.com/v1`");
 
@@ -204,12 +215,12 @@ cat target/docs/openapi.yaml
 ### Generate Slides
 
 ```java
-@Test
-void presentApiDocumentation(DtrContext ctx) {
-    ctx.sayNextSection("DTR 2026.3.0: Documentation from Tests");
+@DtrTest
+void presentApiDocumentation(@DtrContextField DtrContext ctx) {
+    ctx.sayNextSection("DTR 2026.4.1: Documentation from Tests");
     ctx.say("Generate Markdown, LaTeX, blog posts, and slides from a single JUnit Jupiter 6 test.");
 
-    ctx.sayNextSection("New in 2026.3.0");
+    ctx.sayNextSection("New in 2026.4.1");
     ctx.sayUnorderedList(java.util.List.of(
         "sayBenchmark — inline microbenchmarks",
         "sayMermaid — Mermaid diagram DSL",
@@ -231,7 +242,7 @@ void presentApiDocumentation(DtrContext ctx) {
         """, "java");
 
     ctx.sayNextSection("Thank You");
-    ctx.say("DTR 2026.3.0 — March 2026 | Java 26 | Maven Central");
+    ctx.say("DTR 2026.4.1 — March 2026 | Java 26 | Maven Central");
 }
 ```
 
@@ -309,8 +320,8 @@ See [ARCHITECTURE.md](../ARCHITECTURE.md#rendermachine) for complete details.
 For large documentation suites, virtual threads dispatch to render engines concurrently with minimal overhead:
 
 ```java
-@Test
-void generateAllFormats(DtrContext ctx) {
+@DtrTest
+void generateAllFormats(@DtrContextField DtrContext ctx) {
     ctx.sayNextSection("Multi-Format Output Demo");
     ctx.sayEnvProfile();
 
@@ -355,16 +366,40 @@ published: true
 
 ## Best Practices
 
+### Field Injection for Advanced Features
+
+Field injection with `@DtrContextField` provides significant benefits for advanced rendering features:
+
+```java
+@DtrTest
+void documentAdvancedFeatures(@DtrContextField DtrContext ctx) {
+    // Field injection enables cleaner access to advanced features
+    ctx.sayBenchmark("Performance measurement", () -> ...);
+    ctx.sayControlFlowGraph(complexMethod);  // No parameter passing needed
+    ctx.sayCallSite();  // Automatic context detection
+    ctx.sayMermaid("flowchart TD");  // Direct access to all features
+}
+```
+
+**Benefits for Advanced Rendering:**
+- No parameter clutter in method signatures
+- Automatic access to all say* methods
+- Better IDE autocomplete support
+- Simplified inheritance hierarchies
+- Clean separation between test logic and documentation generation
+
 ### One test = one focused document
 
 ```java
-// GOOD: focused
-@Test void documentUserApiCreate(DtrContext ctx) { ... }
+// GOOD: focused with field injection
+@DtrTest void documentUserApiCreate(@DtrContextField DtrContext ctx) { ... }
 
-@Test void documentUserApiRead(DtrContext ctx) { ... }
+@DtrTest void documentUserApiRead(@DtrContextField DtrContext ctx) { ... }
 
 // BAD: too broad
-@Test void documentWholeApi(DtrContext ctx) { ... }
+@DtrTest void documentWholeApi(@DtrContextField DtrContext ctx) { ... }
+
+> **Legacy Note:** The older inheritance-based approach required extending from base classes and passing DtrContext as a parameter. Field injection with `@DtrContextField` is the modern recommended approach for cleaner, more maintainable code.
 ```
 
 ### Include descriptive text

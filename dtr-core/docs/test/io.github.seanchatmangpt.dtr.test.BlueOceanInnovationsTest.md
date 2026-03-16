@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `365 ns` |
+| Avg | `153 ns` |
 | Min | `41 ns` |
-| Max | `78125 ns` |
-| p99 | `750 ns` |
-| Ops/sec | `2,739,726` |
+| Max | `8041 ns` |
+| p99 | `500 ns` |
+| Ops/sec | `6,535,947` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `538 ns` |
+| Avg | `537 ns` |
 | Min | `208 ns` |
-| Max | `44166 ns` |
-| p99 | `7917 ns` |
-| Ops/sec | `1,858,736` |
+| Max | `29917 ns` |
+| p99 | `12125 ns` |
+| Ops/sec | `1,862,197` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-16T03:13:48.143867Z` |
+| Timestamp | `2026-03-16T05:10:02.351098Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -276,8 +276,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayClassDiagram(Class[])` | ✅ direct |
 | `void sayClassHierarchy(Class)` | ✅ direct |
 | `void sayCode(String, String)` | ✅ direct |
-| `void sayCodeModel(Class)` | ✅ direct |
 | `void sayCodeModel(Method)` | ✅ direct |
+| `void sayCodeModel(Class)` | ✅ direct |
 | `void sayContractVerification(Class, Class[])` | ✅ direct |
 | `void sayControlFlowGraph(Method)` | ✅ direct |
 | `void sayDocCoverage(Class[])` | ✅ direct |
@@ -360,11 +360,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `90 ns` |
+| Avg | `88 ns` |
 | Min | `41 ns` |
-| Max | `416 ns` |
-| p99 | `416 ns` |
-| Ops/sec | `11,111,111` |
+| Max | `625 ns` |
+| p99 | `625 ns` |
+| Ops/sec | `11,363,636` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -484,11 +484,11 @@ sayThreadDump();
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
 | `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
 | `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
+| `56` | `ForkJoinPool-1-worker-3` | `TIMED_WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
-| `56` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
-| `58` | `ForkJoinPool-1-worker-5` | `TIMED_WAITING` | `true` | `N/A` |
+| `59` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
 | `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
-| `61` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
+| `65` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
 | `66` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
 
 *17 live threads*

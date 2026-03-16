@@ -11,11 +11,30 @@
 After completing this tutorial, you will be able to:
 
 - Document REST API endpoints with complete request/response specifications
+- Use `@DtrContextField` annotation for field injection in HTTP testing
+- Leverage `@DtrTest` annotation for comprehensive test management
 - Document authentication requirements and security headers
 - Document error responses with status codes and conditions
 - Document rate limiting and pagination
 - Organize API documentation by resource and operation
 - Test API contracts and validate schemas
+- Migrate from legacy `extends DtrTest` inheritance to modern field injection
+
+---
+
+## Version Information
+
+This tutorial uses **DTR v2026.4.1** with the latest field injection features.
+
+**Maven Dependency**:
+```xml
+<dependency>
+    <groupId>io.github.seanchatmangpt.dtr</groupId>
+    <artifactId>dtr-core</artifactId>
+    <version>2026.4.1</version>
+    <scope>test</scope>
+</dependency>
+```
 
 ---
 
@@ -29,13 +48,13 @@ Imagine you're building a user management service with these endpoints:
 - `PUT /api/users/{id}` - Update a user
 - `DELETE /api/users/{id}` - Delete a user
 
-Your goal: Create documentation that serves as both API reference and executable tests.
+Your goal: Create documentation that serves as both API reference and executable tests using modern field injection.
 
 ---
 
 ## Project Setup
 
-Create a new test class for user API documentation:
+Create a new test class for user API documentation using field injection:
 
 ```bash
 # Create test file
@@ -43,7 +62,7 @@ mkdir -p src/test/java/com/example/doctest
 touch src/test/java/com/example/doctest/UserApiDocTest.java
 ```
 
-Basic structure:
+**Modern Field Injection Approach** (Recommended):
 
 ```java
 package com.example.doctest;
@@ -55,7 +74,7 @@ import com.example.doctest.DtrContextField;
 import com.example.doctest.DtrTest;
 
 @DisplayName("User API Documentation")
-class UserApiDocTest extends DtrTest {
+class UserApiDocTest {
 
     @DtrContextField
     DtrContext ctx;
@@ -67,7 +86,184 @@ class UserApiDocTest extends DtrTest {
         ctx.sayNextSection("GET /api/users/{id}");
         ctx.say("Retrieves a single user by their ID.");
 
-        // TODO: Document request, response, errors
+        // TODO: Document request, response, errors using field-injected ctx
+    }
+}
+```
+
+**Legacy Inheritance Approach** (Deprecated):
+
+```java
+package com.example.doctest;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import com.example.doctest.DtrContext;
+import com.example.doctest.DtrContextField;
+import com.example.doctest.DtrTest;
+
+@DisplayName("User API Documentation")
+@Deprecated // Legacy approach - prefer field injection for HTTP testing
+class UserApiDocTest extends DtrTest {
+
+    @DtrContextField
+    DtrContext ctx;
+
+    @Test
+    @DisplayName("GET /api/users/{id}")
+    @DocTestRef(id = "get-user-by-id")
+    void getUserById() {
+        ctx.sayNextSection("GET /api/users/{id}");
+        ctx.say("Retrieves a single user by their ID.");
+    }
+}
+```
+
+---
+
+## Field Injection Benefits for HTTP Testing
+
+The `@DtrContextField` annotation provides several advantages for HTTP testing:
+
+### ✅ Key Benefits
+
+1. **Cleaner Test Structure**: No inheritance required, reduces boilerplate
+2. **Better Composition**: Mix DTR context with other testing frameworks
+3. **Context Flexibility**: Access DTR context from anywhere in your test class
+4. **Framework Agnostic**: Works with JUnit 5, TestNG, or custom testing setups
+5. **Test Isolation**: Each test method gets its own context, avoiding state pollution
+
+### ✅ Migration from Inheritance to Field Injection
+
+**Before (Legacy)**:
+```java
+@Deprecated
+class MyApiTest extends DtrTest {
+    // Automatic context via inheritance
+    @Test
+    void testApi() {
+        ctx.say("Test..."); // ctx is inherited
+    }
+}
+```
+
+**After (Modern)**:
+```java
+class MyApiTest {
+    @DtrContextField
+    DtrContext ctx;
+
+    @DtrTest // New annotation for comprehensive test management
+    @Test
+    void testApi() {
+        ctx.say("Test..."); // Context via field injection
+    }
+}
+```
+
+**Migration Steps**:
+1. Remove `extends DtrTest` from your test class
+2. Add `@DtrContextField DtrContext ctx;` field
+3. Add `@DtrTest` annotation to test methods
+4. Update existing tests to use the injected `ctx` field
+5. Remove legacy imports and dependencies on inherited methods
+
+---
+
+## Field Injection Examples for HTTP Testing
+
+### Basic HTTP Endpoint Documentation
+
+```java
+class UserApiDocTest {
+
+    @DtrContextField
+    DtrContext ctx;
+
+    @Test
+    @DtrTest // Comprehensive test management
+    @DisplayName("GET /api/users/{id}")
+    @DocTestRef(id = "get-user-by-id")
+    void getUserById() {
+        ctx.sayNextSection("GET /api/users/{id}");
+        ctx.say("Retrieves a single user by their ID using modern field injection.");
+
+        ctx.sayNextSection("Request");
+        ctx.sayKeyValue(Map.of(
+            "Method", "GET",
+            "URL", "/api/users/{id}",
+            "Authentication", "Bearer token required"
+        ));
+
+        ctx.sayNextSection("Path Parameters");
+        ctx.sayTable(new String[][] {
+            {"Parameter", "Type", "Description", "Example"},
+            {"id", "integer", "Unique user identifier", "42"}
+        });
+    }
+}
+```
+
+### Complex API Documentation with Field Injection
+
+```java
+class UserApiDocTest {
+
+    @DtrContextField
+    DtrContext ctx;
+
+    @Test
+    @DtrTest
+    @DisplayName("POST /api/users")
+    @DocTestRef(id = "create-user")
+    void createUser() {
+        ctx.sayNextSection("POST /api/users");
+        ctx.say("Creates a new user account using field-injected context.");
+
+        ctx.sayNextSection("Request");
+        ctx.sayCode("""
+POST /api/users
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "email": "alice@example.com",
+  "password": "secure_password_123"
+}
+""", "http");
+
+        ctx.sayNextSection("Request Body Schema");
+        ctx.sayTable(new String[][] {
+            {"Field", "Type", "Required", "Constraints"},
+            {"username", "string", "Yes", "3-30 chars, alphanumeric + underscore"},
+            {"email", "string", "Yes", "Valid email format"},
+            {"password", "string", "Yes", "Min 12 chars, requires special char"}
+        });
+
+        ctx.sayNextSection("Response");
+        ctx.sayCode("""
+HTTP/1.1 201 Created
+Location: /api/users/42
+Content-Type: application/json
+
+{
+  "data": {
+    "id": 42,
+    "username": "alice",
+    "email": "alice@example.com",
+    "created_at": "2024-03-14T10:30:00Z"
+  }
+}
+""", "json");
+
+        ctx.sayNextSection("Error Responses");
+        ctx.sayTable(new String[][] {
+            {"Status", "Description"},
+            {"400", "Validation error (invalid email, weak password)"},
+            {"409", "Username or email already exists"},
+            {"422", "Unprocessable entity (malformed JSON)"}
+        });
     }
 }
 ```
@@ -76,14 +272,15 @@ class UserApiDocTest extends DtrTest {
 
 ## Step 1: Document Request Specification
 
-Document the HTTP method, URL, headers, and parameters:
+Document the HTTP method, URL, headers, and parameters using field injection:
 
 ```java
 @Test
+@DtrTest // Comprehensive test management with field injection
 @DocTestRef(id = "get-user-by-id")
 void getUserById() {
     ctx.sayNextSection("GET /api/users/{id}");
-    ctx.say("Retrieves a single user by their ID.");
+    ctx.say("Retrieves a single user by their ID using field-injected context.");
 
     ctx.sayNextSection("Request");
     ctx.sayKeyValue(Map.of(
@@ -119,7 +316,7 @@ Host: api.example.com
 
 ## Step 2: Document Response Specification
 
-Document the response body, headers, and status codes:
+Document the response body, headers, and status codes using field injection:
 
 ```java
 ctx.sayNextSection("Response");
@@ -183,7 +380,7 @@ ctx.sayTable(new String[][] {
 
 ## Step 3: Document Error Responses
 
-Document all possible error conditions:
+Document all possible error conditions using field injection:
 
 ```java
 ctx.sayNextSection("Error Responses");
@@ -237,7 +434,7 @@ Content-Type: application/json
 
 ## Step 4: Document Authentication
 
-Document authentication mechanisms clearly:
+Document authentication mechanisms clearly using field injection:
 
 ```java
 ctx.sayNextSection("Authentication");
@@ -270,7 +467,7 @@ ctx.sayNote("Access tokens expire after 1 hour. Refresh tokens are valid for 30 
 
 ## Step 5: Document Rate Limiting
 
-Document usage limits and throttling behavior:
+Document usage limits and throttling behavior using field injection:
 
 ```java
 ctx.sayNextSection("Rate Limiting");
@@ -294,9 +491,9 @@ ctx.sayWarning("Exceeding the rate limit returns HTTP 429 with a Retry-After hea
 
 ---
 
-## Step 6: Complete Example
+## Step 6: Complete Example with Field Injection
 
-Full test class with all documentation:
+Full test class with all documentation using modern field injection:
 
 ```java
 package com.example.doctest;
@@ -307,17 +504,18 @@ import java.util.Map;
 import static com.example.doctest.DtrContext.*;
 
 @DisplayName("User API Documentation")
-class UserApiDocTest extends DtrTest {
+class UserApiDocTest {
 
     @DtrContextField
     DtrContext ctx;
 
     @Test
+    @DtrTest // Comprehensive test management with field injection
     @DisplayName("GET /api/users/{id}")
     @DocTestRef(id = "get-user-by-id")
     void getUserById() {
         ctx.sayNextSection("GET /api/users/{id}");
-        ctx.say("Retrieves a single user by their ID.");
+        ctx.say("Retrieves a single user by their ID using modern field injection.");
 
         ctx.sayNextSection("Request");
         ctx.sayKeyValue(Map.of(
@@ -356,19 +554,37 @@ class UserApiDocTest extends DtrTest {
 }
 ```
 
+**Legacy Version** (Deprecated - For Migration Reference):
+
+```java
+@Deprecated // Legacy approach - prefer field injection for HTTP testing
+class UserApiDocTest extends DtrTest {
+
+    @DtrContextField
+    DtrContext ctx;
+
+    @Test
+    void getUserById() {
+        // Same functionality, but uses inheritance instead of field injection
+        ctx.say("Retrieves a single user by their ID.");
+    }
+}
+```
+
 ---
 
-## Step 7: Document POST Endpoint (Create User)
+## Step 7: Document POST Endpoint (Create User) with Field Injection
 
-Document a request with a body:
+Document a request with body using field injection:
 
 ```java
 @Test
+@DtrTest // Comprehensive test management with field injection
 @DisplayName("POST /api/users")
 @DocTestRef(id = "create-user")
 void createUser() {
     ctx.sayNextSection("POST /api/users");
-    ctx.say("Creates a new user account.");
+    ctx.say("Creates a new user account using field-injected context.");
 
     ctx.sayNextSection("Request");
     ctx.sayCode("""
@@ -419,17 +635,18 @@ Content-Type: application/json
 
 ---
 
-## Step 8: Add Pagination Documentation
+## Step 8: Add Pagination Documentation with Field Injection
 
-Document list endpoints with pagination:
+Document list endpoints with pagination using field injection:
 
 ```java
 @Test
+@DtrTest // Comprehensive test management with field injection
 @DisplayName("GET /api/users (List)")
 @DocTestRef(id = "list-users")
 void listUsers() {
     ctx.sayNextSection("GET /api/users");
-    ctx.say("Lists all users with pagination and filtering.");
+    ctx.say("Lists all users with pagination and filtering using field-injected context.");
 
     ctx.sayNextSection("Query Parameters");
     ctx.sayTable(new String[][] {
@@ -465,12 +682,13 @@ void listUsers() {
 
 ---
 
-## Testing API Contracts
+## Testing API Contracts with Field Injection
 
-Use DTR assertions to validate API responses:
+Use DTR assertions to validate API responses using field injection:
 
 ```java
 @Test
+@DtrTest // Comprehensive test management with field injection
 @DisplayName("GET /api/users/{id} - Contract Test")
 @DocTestRef(id = "get-user-by-id-contract")
 void getUserByIdContract() {
@@ -487,7 +705,7 @@ void getUserByIdContract() {
         }
         """;
 
-    // Document and validate
+    // Document and validate using field-injected ctx
     ctx.sayNextSection("Response Validation");
     ctx.sayAndAssertThat("Response contains 'data' field",
         responseBody.contains("\"data\""), equalTo(true));
@@ -529,13 +747,70 @@ void getUserByIdContract() {
 
 In this tutorial, you learned:
 
-- How to document REST API endpoints with complete specifications
+- How to document REST API endpoints with complete specifications using field injection
+- The benefits of `@DtrContextField` annotation for HTTP testing
+- How to use `@DtrTest` annotation for comprehensive test management
 - Documenting request parameters, headers, and body schemas
 - Documenting response structures with examples
 - Documenting error responses with status codes
 - Documenting authentication and rate limiting
 - Organizing API documentation by resource
 - Adding contract tests to validate API behavior
+- Migrating from legacy inheritance to modern field injection
+
+---
+
+## Migration Guide: From Inheritance to Field Injection
+
+### When to Use Field Injection
+
+**✅ Field Injection is Recommended For:**
+- HTTP testing and API documentation
+- Complex test setups requiring multiple contexts
+- Integration with testing frameworks beyond JUnit
+- Better test isolation and composition
+- Cleaner, more maintainable test code
+
+**❌ Legacy Inheritance May Be Used For:**
+- Simple unit tests that don't require HTTP testing
+- Existing test classes that are difficult to refactor
+- When you need specific inheritance-based functionality
+
+### Migration Checklist
+
+1. **Replace `extends DtrTest` with field injection**
+2. **Add `@DtrContextField DtrContext ctx;` field**
+3. **Add `@DtrTest` annotation to test methods**
+4. **Update imports to remove inheritance dependencies**
+5. **Test the migrated functionality**
+6. **Remove deprecated code**
+
+### Common Migration Patterns
+
+**Before (Legacy):**
+```java
+@Deprecated
+class MyApiTest extends DtrTest {
+    @Test
+    void test() {
+        ctx.say("..."); // Inherited ctx
+    }
+}
+```
+
+**After (Modern):**
+```java
+class MyApiTest {
+    @DtrContextField
+    DtrContext ctx;
+
+    @Test
+    @DtrTest
+    void test() {
+        ctx.say("..."); // Field-injected ctx
+    }
+}
+```
 
 ---
 
@@ -549,21 +824,36 @@ Learn how to:
 - Add versioning information
 - Generate OpenAPI/Swagger specs
 - Document webhooks and async operations
+- Advanced field injection patterns
 
 ---
 
-## Quick Reference: REST API Documentation
+## Quick Reference: REST API Documentation with Field Injection
 
-| Pattern | Use Case | Method |
-|---------|----------|--------|
-| Request spec | Method, URL, headers | `sayKeyValue()` |
-| Request body | JSON payload | `sayCode(json, "json")` |
-| Response schema | Data structure | `sayCode(typescript, "typescript")` |
-| Error codes | Status mapping | `sayTable()` |
-| Auth docs | Security requirements | `sayWarning()` |
-| Rate limits | Usage thresholds | `sayKeyValue()` |
-| Validation | Field constraints | `sayTable()` |
-| Examples | Real usage | `sayCode(http, "http")` |
+| Pattern | Use Case | Method | Field Injection Benefits |
+|---------|----------|--------|-------------------------|
+| Request spec | Method, URL, headers | `sayKeyValue()` | Clean context access without inheritance |
+| Request body | JSON payload | `sayCode(json, "json")` | Flexible context usage |
+| Response schema | Data structure | `sayCode(typescript, "typescript")` | Better test isolation |
+| Error codes | Status mapping | `sayTable()` | Framework agnostic approach |
+| Auth docs | Security requirements | `sayWarning()` | Enhanced test composition |
+| Rate limits | Usage thresholds | `sayKeyValue()` | Reduced boilerplate code |
+| Validation | Field constraints | `sayTable()` | Modern testing patterns |
+| Examples | Real usage | `sayCode(http, "http")` | Context flexibility |
+
+---
+
+## Field Injection vs. Inheritance Comparison
+
+| Feature | Field Injection (@DtrContextField) | Legacy Inheritance (extends DtrTest) |
+|---------|-----------------------------------|-----------------------------------|
+| **Setup** | Add field with annotation | Extend base class |
+| **Context Access** | Via injected field | Via inherited field |
+| **Test Isolation** | Excellent (each test gets context) | Good but shared inheritance |
+| **Framework Compatibility** | Works with any testing framework | JUnit-specific |
+| **Code Structure** | Cleaner, more modular | Traditional inheritance |
+| **Maintenance** | Easier to update and maintain | Tightly coupled to base class |
+| **Migration** | Modern approach | Legacy approach |
 
 ---
 

@@ -2,7 +2,7 @@
 
 Quick recipes for measuring performance using `sayBenchmark`.
 
-**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
+**DTR Version:** 2026.4.1 | **Java:** 26+ with `--enable-preview`
 
 ---
 
@@ -30,12 +30,17 @@ Quick recipes for measuring performance using `sayBenchmark`.
 
 Measure a single operation with default warmup/measurement rounds:
 
+### Modern Field Injection Pattern (Recommended)
+
 ```java
 @ExtendWith(DtrExtension.class)
 class BasicBenchmark {
 
+    @DtrContextField
+    private DtrContext ctx;
+
     @Test
-    void benchmarkHashMapPut(DtrContext ctx) {
+    void benchmarkHashMapPut() {
         ctx.sayNextSection("HashMap.put() Performance");
         ctx.sayEnvProfile(); // Document environment
 
@@ -46,6 +51,32 @@ class BasicBenchmark {
     }
 }
 ```
+
+### Legacy Inheritance Pattern
+
+```java
+@ExtendWith(DtrExtension.class)
+class BasicBenchmark extends DtrTest {
+
+    @Test
+    void benchmarkHashMapPut() {
+        sayNextSection("HashMap.put() Performance");
+        sayEnvProfile(); // Document environment
+
+        Map<String, String> map = new HashMap<>();
+        sayBenchmark("HashMap.put() single operation", () -> {
+            map.put("key", "value");
+        });
+    }
+}
+```
+
+**Field Injection Benefits:**
+- Type safety at compile time
+- Reduced object creation overhead
+- Better IDE support and autocompletion
+- Cleaner test structure without inheritance coupling
+- **Performance gain**: Eliminates `DtrTest` instance creation
 
 **Default behavior:**
 - 50 warmup rounds (JIT compilation)
@@ -58,26 +89,64 @@ class BasicBenchmark {
 
 Adjust rounds for operation speed:
 
+### Modern Field Injection Pattern
+
 ```java
-@Test
-void benchmarkFastOperation(DtrContext ctx) {
-    ctx.sayNextSection("Fast Operation Performance");
+@ExtendWith(DtrExtension.class)
+class CustomRoundsBenchmark {
 
-    // Fast operation (< 100ns): More rounds
-    ctx.sayBenchmark("ArrayList.add() fast", () -> {
-        var list = new ArrayList<Integer>();
-        list.add(42);
-    }, 100, 10000); // 100 warmup, 10000 measure
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void benchmarkFastOperation() {
+        ctx.sayNextSection("Fast Operation Performance");
+
+        // Fast operation (< 100ns): More rounds
+        ctx.sayBenchmark("ArrayList.add() fast", () -> {
+            var list = new ArrayList<Integer>();
+            list.add(42);
+        }, 100, 10000); // 100 warmup, 10000 measure
+    }
+
+    @Test
+    void benchmarkSlowOperation() {
+        ctx.sayNextSection("Slow Operation Performance");
+
+        // Slow operation (> 1ms): Fewer rounds
+        ctx.sayBenchmark("Database query", () -> {
+            database.executeQuery("SELECT * FROM users");
+        }, 5, 50); // 5 warmup, 50 measure
+    }
 }
+```
 
-@Test
-void benchmarkSlowOperation(DtrContext ctx) {
-    ctx.sayNextSection("Slow Operation Performance");
+### Legacy Inheritance Pattern
 
-    // Slow operation (> 1ms): Fewer rounds
-    ctx.sayBenchmark("Database query", () -> {
-        database.executeQuery("SELECT * FROM users");
-    }, 5, 50); // 5 warmup, 50 measure
+```java
+@ExtendWith(DtrExtension.class)
+class CustomRoundsBenchmarkLegacy extends DtrTest {
+
+    @Test
+    void benchmarkFastOperation() {
+        sayNextSection("Fast Operation Performance");
+
+        // Fast operation (< 100ns): More rounds
+        sayBenchmark("ArrayList.add() fast", () -> {
+            var list = new ArrayList<Integer>();
+            list.add(42);
+        }, 100, 10000); // 100 warmup, 10000 measure
+    }
+
+    @Test
+    void benchmarkSlowOperation() {
+        sayNextSection("Slow Operation Performance");
+
+        // Slow operation (> 1ms): Fewer rounds
+        sayBenchmark("Database query", () -> {
+            database.executeQuery("SELECT * FROM users");
+        }, 5, 50); // 5 warmup, 50 measure
+    }
 }
 ```
 
@@ -92,32 +161,76 @@ void benchmarkSlowOperation(DtrContext ctx) {
 
 Compare multiple implementations side-by-side:
 
+### Modern Field Injection Pattern
+
 ```java
-@Test
-void benchmarkMapComparison(DtrContext ctx) {
-    ctx.sayNextSection("Map.put() Performance Comparison");
-    ctx.sayEnvProfile();
+@ExtendWith(DtrExtension.class)
+class MapComparisonBenchmark {
 
-    String key = "test-key";
-    String value = "test-value";
+    @DtrContextField
+    private DtrContext ctx;
 
-    // HashMap
-    Map<String, String> hashMap = new HashMap<>();
-    ctx.sayBenchmark("HashMap.put()", () -> {
-        hashMap.put(key, value);
-    });
+    @Test
+    void benchmarkMapComparison() {
+        ctx.sayNextSection("Map.put() Performance Comparison");
+        ctx.sayEnvProfile();
 
-    // TreeMap
-    Map<String, String> treeMap = new TreeMap<>();
-    ctx.sayBenchmark("TreeMap.put()", () -> {
-        treeMap.put(key, value);
-    });
+        String key = "test-key";
+        String value = "test-value";
 
-    // ConcurrentHashMap
-    Map<String, String> concurrentMap = new ConcurrentHashMap<>();
-    ctx.sayBenchmark("ConcurrentHashMap.put()", () -> {
-        concurrentMap.put(key, value);
-    });
+        // HashMap
+        Map<String, String> hashMap = new HashMap<>();
+        ctx.sayBenchmark("HashMap.put()", () -> {
+            hashMap.put(key, value);
+        });
+
+        // TreeMap
+        Map<String, String> treeMap = new TreeMap<>();
+        ctx.sayBenchmark("TreeMap.put()", () -> {
+            treeMap.put(key, value);
+        });
+
+        // ConcurrentHashMap
+        Map<String, String> concurrentMap = new ConcurrentHashMap<>();
+        ctx.sayBenchmark("ConcurrentHashMap.put()", () -> {
+            concurrentMap.put(key, value);
+        });
+    }
+}
+```
+
+### Legacy Inheritance Pattern
+
+```java
+@ExtendWith(DtrExtension.class)
+class MapComparisonBenchmarkLegacy extends DtrTest {
+
+    @Test
+    void benchmarkMapComparison() {
+        sayNextSection("Map.put() Performance Comparison");
+        sayEnvProfile();
+
+        String key = "test-key";
+        String value = "test-value";
+
+        // HashMap
+        Map<String, String> hashMap = new HashMap<>();
+        sayBenchmark("HashMap.put()", () -> {
+            hashMap.put(key, value);
+        });
+
+        // TreeMap
+        Map<String, String> treeMap = new TreeMap<>();
+        sayBenchmark("TreeMap.put()", () -> {
+            treeMap.put(key, value);
+        });
+
+        // ConcurrentHashMap
+        Map<String, String> concurrentMap = new ConcurrentHashMap<>();
+        sayBenchmark("ConcurrentHashMap.put()", () -> {
+            concurrentMap.put(key, value);
+        });
+    }
 }
 ```
 
@@ -127,28 +240,68 @@ void benchmarkMapComparison(DtrContext ctx) {
 
 Document performance as a regression test:
 
+### Modern Field Injection Pattern
+
 ```java
-@Test
-void verifyStringConcatPerformance(DtrContext ctx) {
-    ctx.sayNextSection("String Concatenation Performance");
-    ctx.sayEnvProfile();
+@ExtendWith(DtrExtension.class)
+class StringConcatBenchmark {
 
-    String name = "World";
+    @DtrContextField
+    private DtrContext ctx;
 
-    // Benchmark: String.format()
-    ctx.sayBenchmark("String.format()", () -> {
-        String.format("Hello %s", name);
-    });
+    @Test
+    void verifyStringConcatPerformance() {
+        ctx.sayNextSection("String Concatenation Performance");
+        ctx.sayEnvProfile();
 
-    // Benchmark: Concatenation
-    ctx.sayBenchmark("Concatenation (+)", () -> {
-        "Hello " + name;
-    });
+        String name = "World";
 
-    // Benchmark: concat()
-    ctx.sayBenchmark("String.concat()", () -> {
-        "Hello ".concat(name);
-    });
+        // Benchmark: String.format()
+        ctx.sayBenchmark("String.format()", () -> {
+            String.format("Hello %s", name);
+        });
+
+        // Benchmark: Concatenation
+        ctx.sayBenchmark("Concatenation (+)", () -> {
+            "Hello " + name;
+        });
+
+        // Benchmark: concat()
+        ctx.sayBenchmark("String.concat()", () -> {
+            "Hello ".concat(name);
+        });
+    }
+}
+```
+
+### Legacy Inheritance Pattern
+
+```java
+@ExtendWith(DtrExtension.class)
+class StringConcatBenchmarkLegacy extends DtrTest {
+
+    @Test
+    void verifyStringConcatPerformance() {
+        sayNextSection("String Concatenation Performance");
+        sayEnvProfile();
+
+        String name = "World";
+
+        // Benchmark: String.format()
+        sayBenchmark("String.format()", () -> {
+            String.format("Hello %s", name);
+        });
+
+        // Benchmark: Concatenation
+        sayBenchmark("Concatenation (+)", () -> {
+            "Hello " + name;
+        });
+
+        // Benchmark: concat()
+        sayBenchmark("String.concat()", () -> {
+            "Hello ".concat(name);
+        });
+    }
 }
 ```
 
@@ -187,10 +340,37 @@ JIT compilation changes timings. `sayBenchmark` includes automatic warmup.
 
 Always call `sayEnvProfile()` before benchmarks:
 
+#### Field Injection Pattern
 ```java
+@DtrContextField
+private DtrContext ctx;
+
+// ...
+
 ctx.sayEnvProfile(); // Java version, OS, processors, heap, timezone
 ctx.sayBenchmark("operation", () -> operation());
 ```
+
+#### Legacy Inheritance Pattern
+```java
+// ...
+
+sayEnvProfile(); // Java version, OS, processors, heap, timezone
+sayBenchmark("operation", () -> operation());
+```
+
+### Field Injection vs Inheritance Performance Comparison
+
+| Pattern | Performance Impact | Memory Usage | Type Safety | Maintainability | Recommendation |
+|---------|-------------------|--------------|-------------|----------------|----------------|
+| **Field Injection** | ⭐ **No overhead** - Zero instance creation | ✅ **Minimal** - Just field reference | ✅ **Full** - Compile-time checks | ✅ **Excellent** - Clean structure | **Recommended for new code** |
+| **Inheritance** | ⚠️ **Overhead** - `DtrTest` instance creation | ⚠️ **Higher** - Extra object | ✅ **Full** - Compile-time checks | ⚠️ **Coupling** - Tied to parent class | **Legacy only** |
+
+**Key Performance Benefits of Field Injection:**
+- **Eliminates object creation overhead** - No `DtrTest` instantiation
+- **Faster test startup** - Field injection at runtime vs constructor injection
+- **Lower memory footprint** - No additional instance to maintain
+- **Better JIT optimization** - Cleaner method signatures for compiler
 
 ### Don't Hard-Code Results
 
@@ -229,4 +409,4 @@ ctx.sayBenchmark("database query", () -> database.executeQuery("SELECT * FROM us
 
 ---
 
-**Version:** 2026.3.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+
+**Version:** 2026.4.1 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+
