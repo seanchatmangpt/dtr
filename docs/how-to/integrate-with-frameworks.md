@@ -1,6 +1,6 @@
 # How-to: Integrate DTR with Frameworks
 
-DTR 2.6.0 uses JUnit 5's `@ExtendWith(DtrExtension.class)` and works with any framework that can start a server or provide test infrastructure via JUnit 5 extensions.
+DTR 2.6.0 uses JUnit Jupiter 6's `@ExtendWith(DtrExtension.class)` and works with any framework that can start a server or provide test infrastructure via JUnit Jupiter 6 extensions.
 
 **DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 
@@ -8,7 +8,7 @@ DTR 2.6.0 uses JUnit 5's `@ExtendWith(DtrExtension.class)` and works with any fr
 
 ## The Pattern
 
-1. Start your server or test infrastructure (using the framework's JUnit 5 integration)
+1. Start your server or test infrastructure (using the framework's JUnit Jupiter 6 integration)
 2. Obtain the server URL or connection details
 3. Write a `@Test` method that accepts `DtrContext ctx`
 4. Use `ctx.say*()` for documentation, `java.net.http.HttpClient` for HTTP calls, `assertThat(...)` for assertions
@@ -87,7 +87,7 @@ class SpringUserApiDocTest {
 
 ## Arquillian / JBoss
 
-Use `@RunAsClient` and `@ArquillianResource` with JUnit 5 (via `arquillian-junit5-container`):
+Use `@RunAsClient` and `@ArquillianResource` with JUnit Jupiter 6 (via `arquillian-junit5-container`):
 
 ```java
 import io.github.seanchatmangpt.dtr.core.DtrContext;

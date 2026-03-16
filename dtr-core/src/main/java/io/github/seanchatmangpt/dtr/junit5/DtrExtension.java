@@ -16,8 +16,12 @@
 package io.github.seanchatmangpt.dtr.junit5;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolver;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachine;
 import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineImpl;
 
@@ -47,12 +51,24 @@ import java.util.Optional;
  * <ul>
  *   <li>RenderMachine lifecycle (one per test class)</li>
  *   <li>Documentation output generation after all tests complete</li>
+ *   <li>Auto-finish support via {@link AutoFinishDocTest} annotation</li>
+ *   <li>@TestSetup method execution before tests</li>
  * </ul>
  */
-public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
+public class DtrExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
 
     private static final String RENDER_MACHINE_KEY = "dtr.renderMachine";
     private static final String FILE_NAME_KEY = "dtr.fileName";
+
+    @Override
+    public void beforeAll(ExtensionContext context) throws Exception {
+        // Process @TestSetup methods before any tests run
+        var testClass = context.getTestClass();
+        if (testClass.isPresent()) {
+            var renderMachine = getOrCreateRenderMachine(context);
+            processTestSetupMethods(testClass.get(), renderMachine, context);
+        }
+    }
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
@@ -64,6 +80,22 @@ public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
     }
 
     @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+        // Check if @AutoFinishDocTest is present at class or method level
+        if (shouldAutoFinish(context)) {
+            var store = getStore(context);
+            var renderMachine = (RenderMachine) store.get(RENDER_MACHINE_KEY);
+
+            if (renderMachine != null) {
+                renderMachine.finishAndWriteOut();
+                // Remove the render machine so next test gets a fresh one
+                store.remove(RENDER_MACHINE_KEY);
+                store.remove(FILE_NAME_KEY);
+            }
+        }
+    }
+
+    @Override
     public void afterAll(ExtensionContext context) throws Exception {
         var store = getStore(context);
         var renderMachine = (RenderMachine) store.get(RENDER_MACHINE_KEY);
@@ -72,6 +104,17 @@ public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
             renderMachine.finishAndWriteOut();
             store.remove(RENDER_MACHINE_KEY);
         }
+    }
+
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        return parameterContext.getParameter().getType() == DtrContext.class;
+    }
+
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        RenderMachine renderMachine = getOrCreateRenderMachine(extensionContext);
+        return new DtrContext(renderMachine);
     }
 
     /**
@@ -103,6 +146,60 @@ public class DtrExtension implements BeforeEachCallback, AfterAllCallback {
 
     private ExtensionContext.Store getStore(ExtensionContext context) {
         return context.getStore(ExtensionContext.Namespace.create(getClass()));
+    }
+
+    /**
+     * Processes methods annotated with @TestSetup in the test class.
+     * These methods are executed before any tests and can accept DtrContext as a parameter.
+     */
+    private void processTestSetupMethods(Class<?> testClass, RenderMachine renderMachine, ExtensionContext context) {
+        for (Method method : testClass.getDeclaredMethods()) {
+            if (method.getAnnotation(TestSetup.class) != null) {
+                try {
+                    // Check if method accepts DtrContext parameter
+                    if (method.getParameterCount() == 1 &&
+                        method.getParameterTypes()[0] == DtrContext.class) {
+                        method.setAccessible(true);
+                        DtrContext ctx = new DtrContext(renderMachine);
+                        method.invoke(null, ctx);
+                    } else if (method.getParameterCount() == 0) {
+                        method.setAccessible(true);
+                        method.invoke(null);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to execute @TestSetup method: " + method.getName(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines whether auto-finish should be triggered for the current test.
+     * Checks both method-level and class-level @AutoFinishDocTest annotations.
+     *
+     * @param context the extension context
+     * @return true if auto-finish should be triggered
+     */
+    private boolean shouldAutoFinish(ExtensionContext context) {
+        // Check method-level annotation first
+        Optional<Method> methodOpt = context.getTestMethod();
+        if (methodOpt.isPresent()) {
+            Method method = methodOpt.get();
+            if (method.isAnnotationPresent(AutoFinishDocTest.class)) {
+                return true;
+            }
+        }
+
+        // Check class-level annotation
+        Optional<Class<?>> classOpt = context.getTestClass();
+        if (classOpt.isPresent()) {
+            Class<?> clazz = classOpt.get();
+            if (clazz.isAnnotationPresent(AutoFinishDocTest.class)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void processAnnotations(ExtensionContext context, RenderMachine renderMachine) {

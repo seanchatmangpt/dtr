@@ -8,6 +8,206 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [2026.4.0] — 2026-03-16
+
+### Overview
+
+DTR 2026.4.0 is a **Developer Experience (DX) and Quality of Life (QoL) enhancement release**
+focused on improving the testing and documentation workflow. This release adds 12 new `say*` methods
+for better assertion integration, cross-references, and presentation support, while completing the
+migration to JUnit Jupiter 6 and fixing a critical bug in DtrContext parameter injection.
+
+**Key highlights:**
+- 4 new `sayAndAssertThat` methods combine assertions with documentation in a single call
+- 7 new presentation-specific methods for slides and blogs (`saySlideOnly`, `sayTweetable`, `sayTldr`, etc.)
+- New `sayRef` overload for convenient cross-references
+- JUnit Jupiter 5 → 6 migration complete
+- Critical bug fix: DtrContext parameter injection now works correctly
+- IDE integration support with LivePreview annotation
+
+---
+
+### Added
+
+#### Assertion + Documentation Combined
+
+Four new `sayAndAssertThat` methods eliminate the boilerplate of asserting and documenting separately.
+Each method runs a Hamcrest assertion and automatically documents the result as "✓ PASS" on success.
+
+```java
+// Generic version
+<T> void sayAndAssertThat(String label, T actual, Matcher<? super T> matcher)
+
+// Primitive overloads (avoid autoboxing ambiguity)
+void sayAndAssertThat(String label, long actual, Matcher<Long> matcher)
+void sayAndAssertThat(String label, int actual, Matcher<Integer> matcher)
+void sayAndAssertThat(String label, boolean actual, Matcher<Boolean> matcher)
+```
+
+- Combines assertion and documentation in one call
+- Automatically renders "✓ PASS" on success
+- Rethrows assertion failure on test failure (no false positives)
+- Defined in `DtrTest` base class
+- Eliminates repetitive `assertThat() + sayAssertions()` pattern
+
+#### Cross-Reference Convenience Overload
+
+New convenience overload for `sayRef` eliminates the need to manually construct `DocTestRef` objects.
+
+```java
+// Old way (still supported)
+void sayRef(DocTestRef ref)
+
+// New way (more concise)
+void sayRef(Class<?> docTestClass, String anchor)
+```
+
+- Delegates to `sayRef(DocTestRef.of(docTestClass, anchor))`
+- Available in both `DtrTest` and `DtrContext`
+- Simplifies cross-referencing between documentation sections
+- Renders as markdown link or LaTeX `\ref{}` command
+
+#### Presentation-Specific Methods
+
+Seven new methods enable content targeting for slides, blogs, and social media while keeping
+documentation tests DRY (Don't Repeat Yourself).
+
+**Slide-Specific Content:**
+```java
+// Content appears ONLY in slide deck, not in generated docs
+void saySlideOnly(String text)
+
+// Presenter notes (slides only, visible to speaker during presentation)
+void saySpeakerNote(String text)
+```
+
+**Documentation-Specific Content:**
+```java
+// Content appears ONLY in docs/blog, not in slides
+void sayDocOnly(String text)
+```
+
+**Blog & Social Media:**
+```java
+// Hero image section (blogs + slides)
+void sayHeroImage(String altText)
+
+// Social-media quote box (≤280 chars for Twitter/X)
+void sayTweetable(String text)
+
+// TL;DR summary box (blogs)
+void sayTldr(String text)
+
+// Call-to-action button/link (blogs)
+void sayCallToAction(String url)
+```
+
+- Content targeting prevents duplication across output formats
+- Enables maintaining a single test for slides, docs, and blogs
+- `sayTweetable` enforces 280-character limit for social media
+- `sayHeroImage` renders as featured image in blogs, hero section in slides
+- `sayTldr` renders as highlighted summary box
+- `sayCallToAction` renders as clickable button/link
+
+#### IDE Integration Support
+
+New `@LivePreview` annotation enables IDE live preview functionality for documentation tests.
+
+- Annotation: `io.github.seanchatmangpt.dtr.ide.LivePreview`
+- IntelliJ IDEA configuration in `META-INF/dtr/intellij.xml`
+- Enables real-time documentation preview in supported IDEs
+- Improves iteration speed when authoring documentation tests
+
+### Changed
+
+#### JUnit Jupiter Migration (Version 5 → 6)
+
+Complete migration from JUnit Jupiter 5 to JUnit Jupiter 6.
+
+**Dependency changes:**
+- Updated: `org.junit.jupiter:junit-jupiter` from `5.x` to `6.0.3`
+- Removed: `junit:junit:4.12` (legacy JUnit 4)
+- All test code migrated to JUnit Jupiter 6 APIs
+
+**Migrated test files:**
+- `StressBreakpointTest.java`
+- `MathsDocTest.java`
+- `ResultDocTest.java`
+
+**Benefits:**
+- Access to latest JUnit Jupiter 6 features and improvements
+- Improved test execution performance
+- Better alignment with Java 26 ecosystem
+- Consistent dependency versions across the project
+
+#### Critical Bug Fix: DtrContext Parameter Injection
+
+**Problem:** DtrExtension documented that `DtrContext` could be injected as a test parameter,
+but the implementation was missing the `ParameterResolver` interface.
+
+**Error before fix:**
+```
+No ParameterResolver registered for parameter [io.github.seanchatmangpt.dtr.junit5.DtrContext arg0]
+```
+
+**Solution:**
+- Added `ParameterResolver` to `DtrExtension` implements clause
+- Implemented `supportsParameter()` to detect `DtrContext` type parameters
+- Implemented `resolveParameter()` to inject `DtrContext` with shared `RenderMachine`
+- Added `DtrExtensionParameterInjectionTest` to verify the fix
+
+**Impact:** All three usage patterns now work as documented:
+1. Extend `DtrTest` and use `say*` methods directly
+2. Extend `DtrTest` and inject `DtrContext` as a test parameter
+3. Use `@ExtendWith(DtrExtension.class)` without extending `DtrTest`
+
+### Breaking Changes
+
+#### RenderConfig Removed
+
+**REMOVED:** `RenderConfig` class has been removed.
+
+**REPLACEMENT:** Use `@DtrConfig` annotation or `DtrConfiguration` builder instead.
+
+**Impact:** Low — affects only users who programmatically created `RenderMachine` instances.
+
+**Migration guide:**
+```java
+// Before (2026.3.0)
+RenderConfig config = new RenderConfig();
+List<RenderMachine> machines = config.createRenderMachines();
+
+// After (2026.4.0) - Annotation-based (recommended)
+@DtrConfig(format = OutputFormat.MARKDOWN)
+class MyTest { }
+
+// After (2026.4.0) - Programmatic
+DtrConfiguration config = DtrConfiguration.builder()
+    .format(OutputFormat.MARKDOWN)
+    .build();
+```
+
+#### Method Deprecation
+
+**DEPRECATED:** `sayCodeModel(Method method)` — Use `sayMethodSignature(Method method)` instead.
+
+**Rationale:** The original `sayCodeModel(Method)` method name was ambiguous — it suggested
+full code model rendering (like `sayCodeModel(Class)`), but only rendered the method signature.
+The new name `sayMethodSignature` more accurately reflects the method's behavior.
+
+**Timeline:** Removal planned for 2027.1.0
+
+**Migration guide:**
+```java
+// Old (deprecated, still works)
+sayCodeModel(myMethod);
+
+// New (recommended)
+sayMethodSignature(myMethod);
+```
+
+---
+
 ## [2.6.0] — 2026-03-13
 
 ### Overview

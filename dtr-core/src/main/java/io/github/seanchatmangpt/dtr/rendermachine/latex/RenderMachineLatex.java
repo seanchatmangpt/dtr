@@ -411,6 +411,12 @@ public final class RenderMachineLatex extends RenderMachine {
     }
 
     @Override
+    public void sayMethodSignature(java.lang.reflect.Method method) {
+        // For LaTeX output, delegate to sayCodeModel(Method) for consistent rendering
+        sayCodeModel(method);
+    }
+
+    @Override
     public void sayCallSite() {
         var walker = java.lang.StackWalker.getInstance(java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE);
         walker.walk(frames -> {

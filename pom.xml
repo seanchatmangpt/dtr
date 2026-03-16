@@ -11,7 +11,7 @@ the specific language governing permissions and limitations under the License. -
 
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr</artifactId>
-    <version>2026.3.0</version>
+    <version>2026.4.0</version>
     <packaging>pom</packaging>
 
     <name>DTR - Documentation Testing Runtime</name>
@@ -40,7 +40,7 @@ the specific language governing permissions and limitations under the License. -
         <url>https://github.com/seanchatmangpt/dtr</url>
         <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
         <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
-        <tag>v2026.3.0</tag>
+        <tag>v2026.4.0</tag>
     </scm>
 
     <issueManagement>
@@ -145,11 +145,6 @@ the specific language governing permissions and limitations under the License. -
                 <version>${guava.version}</version>
             </dependency>
             <!-- Testing -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-            </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
@@ -551,6 +546,115 @@ the specific language governing permissions and limitations under the License. -
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+            Developer Experience (DX) Profile — faster local development iterations.
+
+            Use this profile for active development when you want to run tests but skip
+            heavy javadoc generation. Parallel test execution reduces test time.
+
+            Usage:
+                mvnd -Pdev test
+                mvnd -Pdev verify
+                make quick-test   (uses this profile via Makefile target)
+
+            Features:
+                - Parallel test execution (one thread per CPU core)
+                - Skip javadoc generation (faster build)
+                - Java 26 preview features enabled
+
+            When to use:
+                - Active development with frequent test runs
+                - Iterating on code changes
+                - Local development before final verify
+
+            When NOT to use:
+                - Release builds (use -Prelease or -Prelease-rc)
+                - Final verification before commit (use plain mvnd verify)
+        -->
+        <profile>
+            <id>dev</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <parallel>methods</parallel>
+                            <threadCount>1C</threadCount>
+                            <perCoreThreadCount>true</perCoreThreadCount>
+                            <argLine>
+                                --enable-preview
+                                --add-opens java.base/java.lang=ALL-UNNAMED
+                                --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+                            </argLine>
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
+                            <excludes>
+                                <exclude>**/*IntegrationTest.java</exclude>
+                            </excludes>
+                            <systemPropertyVariables>
+                                <dtr.output.dir>${dtr.output.dir}</dtr.output.dir>
+                                <dtr.format>${dtr.format}</dtr.format>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+            Quick Compile Profile — fastest possible compilation for syntax checking.
+
+            Use this profile when you only need to verify compilation without running tests.
+            Ideal for quick syntax checks during heavy refactoring.
+
+            Usage:
+                mvnd -Pquick compile
+                make fast-iterate   (uses this profile via Makefile target)
+
+            Features:
+                - Skip all test execution
+                - Skip javadoc generation
+                - Minimal build overhead
+
+            When to use:
+                - Checking compilation after refactoring
+                - Verifying syntax changes
+                - Fastest possible feedback loop
+
+            When NOT to use:
+                - When you need to verify tests pass (use -Pdev or plain mvnd test)
+                - Release builds (use -Prelease or -Prelease-rc)
+        -->
+        <profile>
+            <id>quick</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

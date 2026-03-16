@@ -9,8 +9,8 @@
 
 | Key | Value |
 | --- | --- |
-| `API Version` | `v2` |
 | `Base URL` | `https://api.example.com` |
+| `API Version` | `v2` |
 | `Timeout` | `30 seconds` |
 
 ---

@@ -7,7 +7,7 @@ Abstract base class for documentation testing framework using JUnit 5. <p>DtrTes
 
 ```java
 public abstract class DtrTest implements RenderMachineCommands {
-    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (46 total)
+    // setupForTestCaseMethod, processDocAnnotations, initRenderingMachineIfNull, finishDocTest, sayRef, getRenderMachine, setClassNameForDtrOutputFile, saySlideOnly, ... (47 total)
 }
 ```
 
@@ -113,11 +113,14 @@ Renders the full class hierarchy (superclass chain + interfaces) as a tree.
 
 ### `sayCodeModel`
 
-Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations. On Java 26 and earlier, renders the method signature extracted via reflection.</p>
+Documents a method's structure using Project Babylon CodeReflection API.
 
 | Parameter | Description |
 | --- | --- |
 | `method` | the method to introspect and document |
+
+> [!WARNING]
+> **Deprecated:** Use {@link #sayMethodSignature(java.lang.reflect.Method)} instead.             This method name is ambiguous - it documents method signatures, not full code models.             Scheduled for removal in a future release.
 
 ---
 
@@ -186,6 +189,16 @@ Renders Javadoc for a method from the dtr-javadoc index. */
 ### `sayMermaid`
 
 Renders a raw Mermaid diagram as a fenced code block. */
+
+---
+
+### `sayMethodSignature`
+
+Documents a method's structure using Project Babylon CodeReflection API. <p>On Java 26+, uses {@code java.lang.reflect.code.CodeReflection.reflect(method)} to introspect the method's bytecode operations. On Java 26 and earlier, renders the method signature extracted via reflection.</p>
+
+| Parameter | Description |
+| --- | --- |
+| `method` | the method to introspect and document |
 
 ---
 

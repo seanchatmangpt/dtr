@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `262 ns` |
-| Min | `83 ns` |
-| Max | `31750 ns` |
-| p99 | `1500 ns` |
-| Ops/sec | `3,816,793` |
+| Avg | `182 ns` |
+| Min | `42 ns` |
+| Max | `19541 ns` |
+| p99 | `1209 ns` |
+| Ops/sec | `5,494,505` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `794 ns` |
-| Min | `208 ns` |
-| Max | `64875 ns` |
-| p99 | `29166 ns` |
-| Ops/sec | `1,259,445` |
+| Avg | `336 ns` |
+| Min | `209 ns` |
+| Max | `7542 ns` |
+| p99 | `958 ns` |
+| Ops/sec | `2,976,190` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-15T04:50:46.665759Z` |
+| Timestamp | `2026-03-16T01:11:20.103360Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -276,8 +276,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayClassDiagram(Class[])` | ✅ direct |
 | `void sayClassHierarchy(Class)` | ✅ direct |
 | `void sayCode(String, String)` | ✅ direct |
-| `void sayCodeModel(Class)` | ✅ direct |
 | `void sayCodeModel(Method)` | ✅ direct |
+| `void sayCodeModel(Class)` | ✅ direct |
 | `void sayContractVerification(Class, Class[])` | ✅ direct |
 | `void sayControlFlowGraph(Method)` | ✅ direct |
 | `void sayDocCoverage(Class[])` | ✅ direct |
@@ -289,6 +289,7 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayJson(Object)` | ✅ direct |
 | `void sayKeyValue(Map)` | ✅ direct |
 | `void sayMermaid(String)` | ✅ direct |
+| `void sayMethodSignature(Method)` | ✅ direct |
 | `void sayModuleDependencies(Class[])` | ✅ direct |
 | `void sayNextSection(String)` | ✅ direct |
 | `void sayNote(String)` | ✅ direct |
@@ -301,8 +302,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayReflectiveDiff(Object, Object)` | ✅ direct |
 | `void saySecurityManager()` | ✅ direct |
 | `void sayStringProfile(String)` | ✅ direct |
-| `void saySystemProperties(String)` | ✅ direct |
 | `void saySystemProperties()` | ✅ direct |
+| `void saySystemProperties(String)` | ✅ direct |
 | `void sayTable(String[][])` | ✅ direct |
 | `void sayThreadDump()` | ✅ direct |
 | `void sayUnorderedList(List)` | ✅ direct |
@@ -321,6 +322,7 @@ Derives the git commit history for the source file of the given class using `git
 
 | Commit | Date | Author | Summary |
 | --- | --- | --- | --- |
+| `4b0655c` | 2026-03-15 | Sean Chatman | feat: implement DTR 2026.4.0 DX/QoL improvements (Phase 0-1) |
 | `6a9cc57` | 2026-03-14 | Sean Chatman | feat(validation): environment-validation session results |
 | `6a3ab6f` | 2026-03-14 | Claude | chore: eradicate all remaining Java 25 references (80/20 gaps) |
 | `2155e33` | 2026-03-14 | Claude | Close 80/20 gaps: LICENSE, String.formatted, license plugin, TODO |
@@ -330,7 +332,6 @@ Derives the git commit history for the source file of the given class using `git
 | `6279901` | 2026-03-14 | Claude | feat: add sayContractVerification and sayEvolutionTimeline + fix MultiRenderMachine |
 | `dd1c236` | 2026-03-14 | Claude | feat: DTR v2.6.0 Blue Ocean 80/20 innovation — 13 new say* methods |
 | `f8aa8d6` | 2026-03-12 | Claude | fix: close remaining audit gaps for Fortune 500 readiness |
-| `d749c3f` | 2026-03-12 | Claude | Remove all DocTester references; rename to DTR branding |
 
 *10 most recent commits touching `RenderMachineImpl.java`*
 
@@ -359,11 +360,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `350 ns` |
+| Avg | `66 ns` |
 | Min | `41 ns` |
-| Max | `27125 ns` |
-| p99 | `27125 ns` |
-| Ops/sec | `2,857,142` |
+| Max | `542 ns` |
+| p99 | `542 ns` |
+| Ops/sec | `15,151,515` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -463,10 +464,10 @@ sayThreadDump();
 
 | Metric | Value |
 | --- | --- |
-| Thread Count | `17` |
-| Daemon Thread Count | `16` |
-| Peak Thread Count | `17` |
-| Total Started Thread Count | `17` |
+| Thread Count | `16` |
+| Daemon Thread Count | `15` |
+| Peak Thread Count | `16` |
+| Total Started Thread Count | `16` |
 
 ### Thread Details
 
@@ -481,16 +482,15 @@ sayThreadDump();
 | `34` | `surefire-forkedjvm-stream-flusher` | `TIMED_WAITING` | `true` | `N/A` |
 | `36` | `surefire-forkedjvm-command-thread` | `RUNNABLE` | `true` | `N/A` |
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
-| `52` | `ForkJoinPool-1-worker-1` | `TIMED_WAITING` | `true` | `N/A` |
-| `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
-| `56` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
+| `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
+| `54` | `ForkJoinPool-1-worker-2` | `TIMED_WAITING` | `true` | `N/A` |
+| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
+| `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
-| `59` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
-| `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
+| `64` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
 | `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
-| `70` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
 
-*17 live threads*
+*16 live threads*
 
 > [!NOTE]
 > On Java 21+, virtual threads appear alongside platform threads. Thread states include NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, and TERMINATED. The peak thread count shows the maximum concurrent threads since JVM start.

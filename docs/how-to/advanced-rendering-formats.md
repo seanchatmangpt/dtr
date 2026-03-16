@@ -2,7 +2,7 @@
 
 Generate documentation in multiple formats beyond Markdown: LaTeX, blog posts, HTML presentations, and OpenAPI specifications — all from a single DTR test.
 
-**DTR Version:** 2026.2.0 | **Java:** 26+ with `--enable-preview`
+**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
@@ -39,8 +39,8 @@ class ResearchDocTest {
     @Test
     void documentAsAcmPaper(DtrContext ctx) {
         ctx.sayNextSection("Abstract");
-        ctx.say("This paper presents DTR 2026.2.0, a documentation testing runtime " +
-                "for Java 26 that generates publication-ready output from JUnit 5 tests.");
+        ctx.say("This paper presents DTR 2026.3.0, a documentation testing runtime " +
+                "for Java 26 that generates publication-ready output from JUnit Jupiter 6 tests.");
 
         ctx.sayNextSection("Introduction");
         ctx.say("Background: API documentation drifts from implementation over time. " +
@@ -103,7 +103,7 @@ pdflatex target/docs/test-results/ResearchDocTest.tex
 void generateBlogPost(DtrContext ctx) {
     ctx.sayNextSection("Building Resilient APIs with Java 26");
 
-    ctx.say("In this article, we'll document a REST API using DTR 2026.2.0 — " +
+    ctx.say("In this article, we'll document a REST API using DTR 2026.3.0 — " +
             "a testing framework that generates documentation directly from executed tests.");
 
     ctx.sayNextSection("Setup");
@@ -113,7 +113,7 @@ void generateBlogPost(DtrContext ctx) {
         <dependency>
             <groupId>io.github.seanchatmangpt.dtr</groupId>
             <artifactId>dtr-core</artifactId>
-            <version>2026.2.0</version>
+            <version>2026.3.0</version>
             <scope>test</scope>
         </dependency>
         """, "xml");
@@ -206,10 +206,10 @@ cat target/docs/openapi.yaml
 ```java
 @Test
 void presentApiDocumentation(DtrContext ctx) {
-    ctx.sayNextSection("DTR 2026.2.0: Documentation from Tests");
-    ctx.say("Generate Markdown, LaTeX, blog posts, and slides from a single JUnit 5 test.");
+    ctx.sayNextSection("DTR 2026.3.0: Documentation from Tests");
+    ctx.say("Generate Markdown, LaTeX, blog posts, and slides from a single JUnit Jupiter 6 test.");
 
-    ctx.sayNextSection("New in 2026.2.0");
+    ctx.sayNextSection("New in 2026.3.0");
     ctx.sayUnorderedList(java.util.List.of(
         "sayBenchmark — inline microbenchmarks",
         "sayMermaid — Mermaid diagram DSL",
@@ -231,7 +231,7 @@ void presentApiDocumentation(DtrContext ctx) {
         """, "java");
 
     ctx.sayNextSection("Thank You");
-    ctx.say("DTR 2026.2.0 — March 2026 | Java 26 | Maven Central");
+    ctx.say("DTR 2026.3.0 — March 2026 | Java 26 | Maven Central");
 }
 ```
 

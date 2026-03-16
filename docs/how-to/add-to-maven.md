@@ -13,7 +13,7 @@
 </dependency>
 ```
 
-DTR 2.6.0 requires JUnit 5:
+DTR 2.6.0 requires JUnit Jupiter 6:
 
 ```xml
 <dependency>

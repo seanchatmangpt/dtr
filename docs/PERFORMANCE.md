@@ -1,6 +1,6 @@
 # DTR Performance Guide
 
-**Version:** 2026.2.0 | **Last Updated:** 2026-03-14
+**Version:** 2026.3.0 | **Last Updated:** 2026-03-14
 
 ---
 
@@ -16,7 +16,7 @@ DTR is designed for minimal overhead with strategic bulk operations. This guide 
 | **Documentation generation** | Bulk write after tests | Single I/O operation per class |
 | **I/O vs CPU bound** | Primarily I/O bound | Documentation writing is disk-bound |
 | **Memory footprint** | ~10-50 MB per test class | Accumulates in memory, writes once |
-| **Parallel execution** | Fully compatible | Works with JUnit 5 parallel test execution |
+| **Parallel execution** | Fully compatible | Works with JUnit Jupiter 6 parallel test execution |
 
 ### Architecture
 
@@ -39,7 +39,7 @@ Optimization is worth the effort in these scenarios:
 
 **Solutions:**
 - Use `mvnd` instead of `mvn` (Maven daemon)
-- Enable JUnit 5 parallel execution
+- Enable JUnit Jupiter 6 parallel execution
 - Split test classes across modules
 
 ### 2. CI/CD Pipelines
@@ -263,7 +263,7 @@ mvnd clean test
 
 **Impact:** 20-40% faster builds on subsequent runs.
 
-### 2. Enable JUnit 5 Parallel Execution
+### 2. Enable JUnit Jupiter 6 Parallel Execution
 
 Configure in `pom.xml`:
 
@@ -424,4 +424,4 @@ Use this checklist before optimizing:
 
 ---
 
-**Version:** 2026.2.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+
+**Version:** 2026.3.0 | **Java:** 26.ea.13+ with `--enable-preview` | **Maven:** 4.0.0-rc-3+

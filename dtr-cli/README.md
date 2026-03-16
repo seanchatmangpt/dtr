@@ -2,6 +2,8 @@
 
 A comprehensive, modern Python CLI tool for managing, converting, and publishing DTR documentation exports.
 
+**Requires Python 3.11 or higher**
+
 **Built with:** Python 3.11+ • Typer • uv • Pydantic • Rich
 
 ## Features
@@ -15,6 +17,20 @@ A comprehensive, modern Python CLI tool for managing, converting, and publishing
 - **Fast Dependency Management** — Managed with `uv` for rapid installation
 
 ## Installation
+
+### Prerequisites
+
+**Python 3.11 or higher is required.**
+
+Check your Python version:
+```bash
+python --version
+```
+
+If you need to install Python 3.11+, consider using:
+- **pyenv** (macOS/Linux): `pyenv install 3.11 && pyenv local 3.11`
+- **SDKMAN** (alternative): `sdk install python 3.11.0`
+- **Official installer**: Download from [python.org](https://www.python.org/downloads/)
 
 ### Using `uv` (Recommended)
 

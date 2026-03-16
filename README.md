@@ -8,13 +8,13 @@
 [![Java 26](https://img.shields.io/badge/Java-26-orange.svg)](https://openjdk.org/projects/jdk/26/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**Version:** 2026.2.0 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
+**Version:** 2026.4.0 | **License:** Apache 2.0 | **Java:** 26+ (`--enable-preview`)
 
 ---
 
 ## What is DTR?
 
-DTR (Documentation Testing Runtime) is a Java 26 library that turns JUnit 5 tests into living documentation generators. Instead of writing docs separately from code — and watching them drift as code changes — you write `say*` method calls inside your tests that simultaneously:
+DTR (Documentation Testing Runtime) is a Java 26 library that turns JUnit Jupiter 6 tests into living documentation generators. Instead of writing docs separately from code — and watching them drift as code changes — you write `say*` method calls inside your tests that simultaneously:
 
 1. **Execute** your assertions and validations
 2. **Capture** structured documentation events
@@ -36,7 +36,7 @@ Documentation stays in sync with code because it's generated from live test exec
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.2.0</version>
+    <version>2026.4.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -81,7 +81,7 @@ Add to `.mvn/maven.config`:
 ### Write your first documentation test
 
 ```java
-import io.github.seanchatmangpt.dtr.junit5.DtrContext;
+import io.github.seanchatmangpt.dtr.DtrContext;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,7 +92,7 @@ import java.util.Map;
 class HelloDtrTest {
 
     @Test
-    @DocSection("User API")
+    @AutoSection  // Auto-generates "Get User" from method name
     void testGetUser(DtrContext ctx) {
         ctx.say("Returns user details by ID.");
         ctx.sayCode("GET /api/users/{id}", "http");
@@ -117,6 +117,68 @@ cat target/docs/test-results/HelloDtrTest.md
 ```
 
 Output is pure, portable Markdown — committed to your repository, diffable, and rendered natively by GitHub, GitLab, and every Markdown-aware editor.
+
+---
+
+## What's New in 2026.4.0
+
+### Critical Bug Fix: DtrContext Parameter Injection
+
+The `DtrContext` parameter injection in test methods now works correctly. Previously, you may have seen:
+
+```
+No ParameterResolver registered for parameter [io.github.seanchatmangpt.dtr.junit5.DtrContext arg0]
+```
+
+This is now fixed. The standard pattern works as documented:
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @Test
+    void testGetUser(DtrContext ctx) {  // Parameter injection now works!
+        ctx.say("Returns user details by ID.");
+    }
+}
+```
+
+### New Features
+
+#### Assertion + Documentation Combined
+
+Four new `sayAndAssertThat` methods combine assertions with documentation:
+
+```java
+ctx.sayAndAssertThat("HTTP Status", response.getStatusCode(), equalTo(200));
+```
+
+#### Presentation-Specific Methods
+
+New methods for slides, blogs, and social media:
+
+```java
+ctx.sayTldr("Quick summary for busy readers");
+ctx.saySlideOnly("Simplified bullet points for slides");
+ctx.sayTweetable("DTR 2026.4.0 adds 12 new say* methods!");
+```
+
+#### Configuration Annotations
+
+- `@DtrConfig` — Hierarchical configuration (system properties → annotation → default)
+- `@LivePreview` — IDE integration markers for live preview support
+
+### Breaking Changes
+
+**Most users: No action required!**
+
+1. **RenderConfig removed** (< 5 users affected)
+   - Migration: Use `@DtrConfig` or `DtrConfiguration.builder()`
+
+2. **sayCodeModel(Method) deprecated** (low impact)
+   - Migration: Use `sayMethodSignature(Method)` instead
+   - Removal planned for 2027.1.0
+
+See [MIGRATING.md](docs/MIGRATING.md) for detailed migration guides.
 
 ---
 
@@ -276,9 +338,9 @@ mvnd verify -DskipTests
 
 DTR uses **CalVer** versioning: `YYYY.MINOR.PATCH`
 
-- **`2026.2.0`** — First release of 2026, minor version 1
+- **`2026.3.0`** — First release of 2026, minor version 1
 - **`2026.1.1`** — Patch release (bug fix, dependency update)
-- **`2026.2.0`** — Minor release (new features, new `say*` methods)
+- **`2026.3.0`** — Minor release (new features, new `say*` methods)
 - **`2027.1.0`** — Year boundary (January 1st, new calendar year)
 
 **Release types:**
