@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `318 ns` |
-| Min | `41 ns` |
-| Max | `50209 ns` |
-| p99 | `1125 ns` |
-| Ops/sec | `3,144,654` |
+| Avg | `258 ns` |
+| Min | `83 ns` |
+| Max | `46459 ns` |
+| p99 | `1292 ns` |
+| Ops/sec | `3,875,968` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `587 ns` |
-| Min | `167 ns` |
-| Max | `27917 ns` |
-| p99 | `27500 ns` |
-| Ops/sec | `1,703,577` |
+| Avg | `451 ns` |
+| Min | `83 ns` |
+| Max | `22458 ns` |
+| p99 | `8583 ns` |
+| Ops/sec | `2,217,294` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-16T00:31:05.347808Z` |
+| Timestamp | `2026-03-16T00:52:32.413658Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -359,11 +359,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `102 ns` |
+| Avg | `67 ns` |
 | Min | `41 ns` |
-| Max | `459 ns` |
-| p99 | `459 ns` |
-| Ops/sec | `9,803,921` |
+| Max | `417 ns` |
+| p99 | `417 ns` |
+| Ops/sec | `14,925,373` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -483,10 +483,10 @@ sayThreadDump();
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
 | `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
 | `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
-| `55` | `ForkJoinPool-1-worker-3` | `TIMED_WAITING` | `true` | `N/A` |
-| `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
+| `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
 | `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
-| `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
+| `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
+| `64` | `ForkJoinPool-1-worker-6` | `TIMED_WAITING` | `true` | `N/A` |
 | `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
 
 *16 live threads*

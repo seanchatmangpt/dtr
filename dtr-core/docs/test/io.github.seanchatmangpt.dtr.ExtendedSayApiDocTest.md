@@ -136,7 +136,7 @@ The example below documents a distributed transaction saga — a pattern used in
 | --- | --- |
 | `Conclusion` | `sub-millisecond — safe to call in hot paths` |
 | `JVM` | `Java 26` |
-| `sayTable() overhead` | `4042 ns` |
+| `sayTable() overhead` | `4250 ns` |
 
 ## 2. sayCode() — Executable Specification
 
@@ -247,14 +247,14 @@ The example below documents the order event payload for a distributed order mana
   "customerId" : "cust-1234",
   "status" : "PAYMENT_AUTHORISED",
   "lineItems" : [ "SKU-001 x2", "SKU-047 x1" ],
-  "timestampEpochMs" : 1773621076360,
-  "idempotencyKey" : "idem-588874405365166"
+  "timestampEpochMs" : 1773622363317,
+  "idempotencyKey" : "idem-590161346080666"
 }
 ```
 
 | Key | Value |
 | --- | --- |
-| `sayJson() overhead` | `28520708 ns` |
+| `sayJson() overhead` | `27602083 ns` |
 | `JVM` | `Java 26` |
 | `Schema source` | `OrderEvent record — single source of truth` |
 | `Serialiser` | `Jackson ObjectMapper (same as production)` |

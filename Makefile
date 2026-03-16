@@ -22,11 +22,13 @@ CURRENT_VERSION := $(shell scripts/current-version.sh)
 .PHONY: help compile test verify clean install package snapshot \
         release-minor release-patch release-year \
         release-rc-minor release-rc-patch \
+        release-minor-dry-run release-patch-dry-run release-year-dry-run \
+        release-rc-minor-dry-run release-rc-patch-dry-run \
         publish version check \
         build-dtr-javadoc extract-javadoc check-javadoc gen-javadoc-docs \
         build-guard guard-scan guard-scan-json guard-test clean-guard \
         build-observatory observe observe-test clean-observatory \
-        dx dx-fast \
+        dx dx-fast fast-iterate quick-test \
         build-cct cct-test clean-cct
 
 help:
@@ -67,6 +69,10 @@ help:
 	@echo "  dx                 full five-phase pipeline (Ψ→H→Λ→Ω)"
 	@echo "  dx-fast            skip mvnd verify (Ψ+H+Ω — faster iteration)"
 	@echo ""
+	@echo "Developer Build Optimization:"
+	@echo "  fast-iterate       compile only (syntax check, no tests)"
+	@echo "  quick-test         run tests with parallel execution (skip javadoc)"
+	@echo ""
 
 compile:
 	$(MVND) compile
@@ -106,6 +112,18 @@ release-year:
 	scripts/bump.sh year
 	scripts/release.sh
 
+release-minor-dry-run:
+	scripts/bump.sh --dry-run minor
+	scripts/release.sh --dry-run
+
+release-patch-dry-run:
+	scripts/bump.sh --dry-run patch
+	scripts/release.sh --dry-run
+
+release-year-dry-run:
+	scripts/bump.sh --dry-run year
+	scripts/release.sh --dry-run
+
 # ─── Release candidates → GitHub Packages ────────────────────────────────────
 
 release-rc-minor:
@@ -115,6 +133,14 @@ release-rc-minor:
 release-rc-patch:
 	scripts/bump.sh patch rc
 	scripts/release-rc.sh
+
+release-rc-minor-dry-run:
+	scripts/bump.sh --dry-run minor rc
+	scripts/release-rc.sh --dry-run
+
+release-rc-patch-dry-run:
+	scripts/bump.sh --dry-run patch rc
+	scripts/release-rc.sh --dry-run
 
 # ─── Utilities ───────────────────────────────────────────────────────────────
 
@@ -227,4 +253,12 @@ cct-test: ## Run cct toolkit unit tests
 
 clean-cct: ## Clean cct toolkit build artifacts
 	cd scripts/rust/claude-code-toolkit && cargo clean
+
+# ─── Developer Build Optimization ──────────────────────────────────────────────
+
+fast-iterate: ## Quick compilation only (syntax check, no tests, uses -Pquick profile)
+	$(MVND) compile -Pquick -q
+
+quick-test: ## Run tests with parallel execution, skip javadoc (uses -Pdev profile)
+	$(MVND) test -Pdev -q
 

@@ -694,13 +694,13 @@ public final class RenderMachineImpl extends RenderMachine {
     // =========================================================================
 
     /**
-     * Implements the previously-stub sayCodeModel(Method) using the Java 26
-     * Code Reflection API. Renders an op-count table + IR excerpt when a code model
-     * is available; falls back to method signature rendering on older runtimes.
+     * Implements sayMethodSignature(Method) using the Java 26 Code Reflection API.
+     * Renders an op-count table + IR excerpt when a code model is available;
+     * falls back to method signature rendering on older runtimes.
      */
     @Override
     @SuppressWarnings("preview")
-    public void sayCodeModel(java.lang.reflect.Method method) {
+    public void sayMethodSignature(java.lang.reflect.Method method) {
         if (method == null) return;
 
         var analysis = CodeModelAnalyzer.analyze(method, 10);
@@ -740,6 +740,17 @@ public final class RenderMachineImpl extends RenderMachine {
             }
             markdownDocument.add("```");
         }
+    }
+
+    /**
+     * @deprecated Use {@link #sayMethodSignature(java.lang.reflect.Method)} instead.
+     *             This method name is ambiguous - it documents method signatures, not full code models.
+     *             Scheduled for removal in a future release.
+     */
+    @Override
+    @Deprecated(forRemoval = true, since = "2026.4.0")
+    public void sayCodeModel(java.lang.reflect.Method method) {
+        sayMethodSignature(method);
     }
 
     @Override

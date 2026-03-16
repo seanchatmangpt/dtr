@@ -185,13 +185,23 @@ public interface RenderMachineCommands {
      *
      * <p>Example:</p>
      * <pre>{@code
-     * sayCodeModel(SayEvent.class.getMethod("toString"));
+     * sayMethodSignature(SayEvent.class.getMethod("toString"));
      * // Java 26+: Renders operation breakdown (INVOKE: 3, FIELD_READ: 1, etc.)
      * // Java 26-: Renders String toString() signature only
      * }</pre>
      *
      * @param method the method to introspect and document (must not be null)
      */
+    void sayMethodSignature(java.lang.reflect.Method method);
+
+    /**
+     * Documents a method's structure using Project Babylon CodeReflection API.
+     *
+     * @deprecated Use {@link #sayMethodSignature(java.lang.reflect.Method)} instead.
+     *             This method name is ambiguous - it documents method signatures, not full code models.
+     *             Scheduled for removal in a future release.
+     */
+    @Deprecated(forRemoval = true, since = "2026.4.0")
     void sayCodeModel(java.lang.reflect.Method method);
 
     /**

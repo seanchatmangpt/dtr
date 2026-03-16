@@ -15,11 +15,13 @@
  */
 package io.github.seanchatmangpt.dtr.crossref;
 
+import io.github.seanchatmangpt.dtr.DtrException;
+
 /**
  * Thrown when a cross-reference targets a DocTest class that does not exist
  * or cannot be resolved.
  */
-public class InvalidDocTestRefException extends RuntimeException {
+public class InvalidDocTestRefException extends DtrException {
 
     /**
      * Creates a new exception with the given message.
@@ -27,7 +29,7 @@ public class InvalidDocTestRefException extends RuntimeException {
      * @param message descriptive error message
      */
     public InvalidDocTestRefException(String message) {
-        super(message);
+        super(builder().message(message).errorCode("DTR-REF-001"));
     }
 
     /**
@@ -37,6 +39,6 @@ public class InvalidDocTestRefException extends RuntimeException {
      * @param cause the underlying cause
      */
     public InvalidDocTestRefException(String message, Throwable cause) {
-        super(message, cause);
+        super(builder().message(message).errorCode("DTR-REF-001").cause(cause));
     }
 }

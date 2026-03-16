@@ -15,11 +15,13 @@
  */
 package io.github.seanchatmangpt.dtr.crossref;
 
+import io.github.seanchatmangpt.dtr.DtrException;
+
 /**
  * Thrown when a cross-reference targets an anchor (section) that does not exist
  * in the target DocTest.
  */
-public class InvalidAnchorException extends RuntimeException {
+public class InvalidAnchorException extends DtrException {
 
     /**
      * Creates a new exception with the given message.
@@ -27,7 +29,7 @@ public class InvalidAnchorException extends RuntimeException {
      * @param message descriptive error message
      */
     public InvalidAnchorException(String message) {
-        super(message);
+        super(builder().message(message).errorCode("DTR-ANCHOR-001"));
     }
 
     /**
@@ -37,6 +39,6 @@ public class InvalidAnchorException extends RuntimeException {
      * @param cause the underlying cause
      */
     public InvalidAnchorException(String message, Throwable cause) {
-        super(message, cause);
+        super(builder().message(message).errorCode("DTR-ANCHOR-001").cause(cause));
     }
 }

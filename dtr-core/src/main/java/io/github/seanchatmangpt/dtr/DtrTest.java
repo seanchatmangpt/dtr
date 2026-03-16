@@ -452,6 +452,19 @@ public abstract class DtrTest implements RenderMachineCommands {
      *
      * @param method the method to introspect and document
      */
+    public final void sayMethodSignature(java.lang.reflect.Method method) {
+        renderMachine.sayMethodSignature(method);
+    }
+
+    /**
+     * Documents a method's structure using Project Babylon CodeReflection API.
+     *
+     * @deprecated Use {@link #sayMethodSignature(java.lang.reflect.Method)} instead.
+     *             This method name is ambiguous - it documents method signatures, not full code models.
+     *             Scheduled for removal in a future release.
+     * @param method the method to introspect and document
+     */
+    @Deprecated(forRemoval = true, since = "2026.4.0")
     @Override
     public final void sayCodeModel(java.lang.reflect.Method method) {
         renderMachine.sayCodeModel(method);

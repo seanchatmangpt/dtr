@@ -5,7 +5,7 @@
 Thrown when a cross-reference targets a DocTest class that does not exist or cannot be resolved.
 
 ```java
-public class InvalidDocTestRefException extends RuntimeException {
+public class InvalidDocTestRefException extends DtrException {
     // InvalidDocTestRefException, InvalidDocTestRefException
 }
 ```
