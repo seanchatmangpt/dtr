@@ -2,7 +2,7 @@
 
 Tutorials are **learning-oriented**. They take you through a series of steps to complete a project. When you finish, you will have a working DTR setup and a clear mental model of how it works.
 
-**DTR version:** 2026.2.0 | **Java:** 26+ with `--enable-preview`
+**DTR version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 
@@ -22,7 +22,7 @@ Tutorials are **learning-oriented**. They take you through a series of steps to 
 
 ### Tutorial 1: Hello DTR (15 min)
 
-[**basics.md**](basics.md) | **Prerequisites:** Java 26, Maven/mvnd, basic JUnit 5
+[**basics.md**](basics.md) | **Prerequisites:** Java 26, Maven/mvnd, basic JUnit Jupiter 6
 
 **What you'll build:** Your first documentation test from scratch
 
@@ -169,7 +169,7 @@ All tutorials require:
 
 - **Java 26** installed (`java -version` shows `openjdk 26.ea.13` or higher)
 - **Maven 4** or **mvnd** available (`mvnd --version`)
-- **Basic JUnit 5 knowledge** — `@Test` annotations, assertions, test structure
+- **Basic JUnit Jupiter 6 knowledge** — `@Test` annotations, assertions, test structure
 
 ### Installation
 
@@ -180,7 +180,7 @@ Add DTR to your `pom.xml`:
     <dependency>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>2026.2.0</version>
+        <version>2026.3.0</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -268,4 +268,4 @@ After completing the tutorial series:
 
 ---
 
-**Version:** DTR 2026.2.0 | **Last Updated:** March 2026 | **Java:** 26+
+**Version:** DTR 2026.3.0 | **Last Updated:** March 2026 | **Java:** 26+

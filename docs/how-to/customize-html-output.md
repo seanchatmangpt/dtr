@@ -1,6 +1,6 @@
 # How-To: Configure Multi-Format Output (MultiRenderMachine)
 
-Configure DTR 2.6.0 to generate documentation in multiple formats simultaneously — Markdown, LaTeX, blog posts, HTML slides, and JSON — from a single JUnit 5 test.
+Configure DTR 2.6.0 to generate documentation in multiple formats simultaneously — Markdown, LaTeX, blog posts, HTML slides, and JSON — from a single JUnit Jupiter 6 test.
 
 **DTR Version:** 2.6.0 | **Java:** 25+ with `--enable-preview`
 

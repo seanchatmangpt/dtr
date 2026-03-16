@@ -39,7 +39,7 @@ This document covers failure scenarios, recovery procedures, and rollback strate
 make release-minor
 # ...
 # error: failed to push some refs to 'https://github.com/...'
-# ! [rejected]        v2026.2.0 -> v2026.2.0 (would clobber existing tag)
+# ! [rejected]        v2026.3.0 -> v2026.3.0 (would clobber existing tag)
 ```
 
 ### Causes
@@ -62,7 +62,7 @@ git ls-remote --tags origin
 git pull origin main
 
 # 4. Determine if tag exists on remote
-git tag -d v2026.2.0  # Only if exists locally and needs to be removed
+git tag -d v2026.3.0  # Only if exists locally and needs to be removed
 
 # 5. If tag exists on remote, DO NOT delete it
 #    - This means someone else released this version
@@ -114,7 +114,7 @@ mvnd verify --enable-preview
 make release-patch
 
 # Example:
-# Failed: v2026.2.0 (tests fail)
+# Failed: v2026.3.0 (tests fail)
 # Fix: v2026.2.1 (fixes included)
 ```
 
@@ -123,8 +123,8 @@ make release-patch
 **Do NOT delete the failed tag**
 ```bash
 # WRONG:
-git tag -d v2026.2.0
-git push origin :refs/tags/v2026.2.0
+git tag -d v2026.3.0
+git push origin :refs/tags/v2026.3.0
 ```
 
 ### Changelog Entry
@@ -133,10 +133,10 @@ git push origin :refs/tags/v2026.2.0
 ## v2026.2.1 (2026-03-15)
 
 ### Bug Fixes
-- Fix failing integration test that blocked v2026.2.0 release
+- Fix failing integration test that blocked v2026.3.0 release
 
 ### Notes
-- v2026.2.0 tag exists but was not published due to test failure
+- v2026.3.0 tag exists but was not published due to test failure
 ```
 
 ---
@@ -214,7 +214,7 @@ make release-patch
 
 ```bash
 # Check if artifact is available
-curl -I https://repo1.maven.org/maven2/io/github/seanchatmangpt/dtr/2026.2.0/
+curl -I https://repo1.maven.org/maven2/io/github/seanchatmangpt/dtr/2026.3.0/
 
 # If 200 OK, artifact is published
 # If 404, deployment failed - go to Scenario 3
@@ -224,22 +224,22 @@ curl -I https://repo1.maven.org/maven2/io/github/seanchatmangpt/dtr/2026.2.0/
 
 ```bash
 # Option A: Auto-generate notes from commits
-gh release create v2026.2.0 --generate-notes
+gh release create v2026.3.0 --generate-notes
 
 # Option B: Use custom notes
-gh release create v2026.2.0 \
-  --title "v2026.2.0" \
+gh release create v2026.3.0 \
+  --title "v2026.3.0" \
   --notes "Release notes here..."
 
 # Option C: Read from changelog
-gh release create v2026.2.0 \
-  --notes-file docs/releases/2026.2.0.md
+gh release create v2026.3.0 \
+  --notes-file docs/releases/2026.3.0.md
 ```
 
 #### Step 3: Verify
 
 ```bash
-gh release view v2026.2.0
+gh release view v2026.3.0
 ```
 
 ---
@@ -292,11 +292,11 @@ Two developers run `make release-minor` simultaneously, creating conflicting tag
 ```bash
 # Developer A
 make release-minor
-# Creates v2026.2.0, pushes successfully
+# Creates v2026.3.0, pushes successfully
 
 # Developer B (simultaneous)
 make release-minor
-# Error: ! [rejected] v2026.2.0 -> v2026.2.0 (would clobber existing tag)
+# Error: ! [rejected] v2026.3.0 -> v2026.3.0 (would clobber existing tag)
 ```
 
 ### What Happens
@@ -312,7 +312,7 @@ make release-minor
 git pull origin main
 
 # Check if tag exists on remote
-git ls-remote --tags origin | grep v2026.2.0
+git ls-remote --tags origin | grep v2026.3.0
 
 # Tag exists - DO NOT delete it
 # Create a patch release instead:
@@ -330,13 +330,13 @@ make release-patch
 3. **Use branch protection** requiring PR review
 4. **Create RC first** to reserve the version:
    ```bash
-   make release-rc-minor  # Reserves v2026.2.0-rc.1
+   make release-rc-minor  # Reserves v2026.3.0-rc.1
    ```
 
 ### Team Coordination
 
 ```
-🚨 RELEASE IN PROGRESS: v2026.2.0
+🚨 RELEASE IN PROGRESS: v2026.3.0
 Started by: @username
 ETA: 5 minutes
 Please wait until complete before releasing.
@@ -367,16 +367,16 @@ make release-minor
 ```bash
 # Step 1: Create RC
 make release-rc-minor
-# Result: v2026.2.0-rc.1
+# Result: v2026.3.0-rc.1
 
 # Step 2: RC needs fixes
 # (make code changes)
 make release-rc-minor
-# Result: v2026.2.0-rc.2 (N auto-incremented)
+# Result: v2026.3.0-rc.2 (N auto-incremented)
 
 # Step 3: Promote to final
 make release-minor
-# Result: v2026.2.0 (same minor number, -rc.N stripped)
+# Result: v2026.3.0 (same minor number, -rc.N stripped)
 ```
 
 ### Verification Before Promotion
@@ -387,7 +387,7 @@ gh api /orgs/YOUR_ORG/packages/maven/io.github.seanchatmangpt.dtr/versions
 
 # 2. Download and test RC
 mvn dependency:get \
-  -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2026.2.0-rc.2
+  -Dartifact=io.github.seanchatmangpt.dtr:dtr-core:2026.3.0-rc.2
 
 # 3. Run integration tests with RC
 mvnd verify -Prc-test
@@ -398,7 +398,7 @@ make release-minor
 
 ### What NOT to Do
 
-**Don't** run `make release-minor` twice - it will increment to v2026.2.0
+**Don't** run `make release-minor` twice - it will increment to v2026.3.0
 **Don't** manually delete RC tags before promotion
 **Don't** skip RC testing - RCs exist to catch issues before Maven Central
 
@@ -412,12 +412,12 @@ GitHub Releases can be deleted (the tag remains):
 
 ```bash
 # Delete release only (tag stays)
-gh release delete v2026.2.0 --yes
+gh release delete v2026.3.0 --yes
 
 # Delete both release and tag (NOT RECOMMENDED)
-gh release delete v2026.2.0 --yes
-git push origin :refs/tags/v2026.2.0
-git tag -d v2026.2.0
+gh release delete v2026.3.0 --yes
+git push origin :refs/tags/v2026.3.0
+git tag -d v2026.3.0
 ```
 
 ### RC Rollback (GitHub Packages)
@@ -514,7 +514,7 @@ When a release fails:
 ### Example Team Communication
 
 ```
-🚨 RELEASE FAILURE: v2026.2.0
+🚨 RELEASE FAILURE: v2026.3.0
 
 Workflow: https://github.com/org/repo/actions/runs/12345
 Cause: Integration test failure in PaymentProcessorTest
@@ -530,7 +530,7 @@ ETA: 2 hours
 ## Appendix: Complete Recovery Example
 
 ```bash
-# === SCENARIO: CI gate fails for v2026.2.0 ===
+# === SCENARIO: CI gate fails for v2026.3.0 ===
 
 # 1. Investigate failure
 gh run list --workflow=ci-gate.yml --limit 5
@@ -548,13 +548,13 @@ mvnd verify --enable-preview
 
 # 4. Check if version needs increment
 ./scripts/current-version.sh
-# Output: 2026.2.0
+# Output: 2026.3.0
 
 # 5. Create patch release
 make release-patch
 
 # This creates v2026.2.1 with the fix
-# v2026.2.0 tag remains (as historical record)
+# v2026.3.0 tag remains (as historical record)
 
 # 6. Monitor deployment
 gh run watch

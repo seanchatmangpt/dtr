@@ -67,13 +67,13 @@ RC builds go to GitHub Packages only. Maven Central receives final versions only
 
 ```bash
 # Create first RC
-make release-rc-minor          # → v2026.2.0-rc.1
+make release-rc-minor          # → v2026.3.0-rc.1
 
 # If RC needs fixes, push code changes, then:
-make release-rc-minor          # → v2026.2.0-rc.2 (N auto-increments from git tags)
+make release-rc-minor          # → v2026.3.0-rc.2 (N auto-increments from git tags)
 
 # Promote to final when RC is good:
-make release-minor             # → v2026.2.0 (strips -rc.N, publishes to Maven Central)
+make release-minor             # → v2026.3.0 (strips -rc.N, publishes to Maven Central)
 ```
 
 RC promotion (`make release-minor` from a `-rc.N` state) strips the RC suffix and
@@ -92,7 +92,7 @@ Breaking API changes are handled by deprecation cycle:
 3. Remove the method no earlier than `2027.1.0` (one full year of warning)
 
 The year boundary IS the breaking change window. Downstream users who pin
-`[2026.2.0,2027)` are protected by the range.
+`[2026.3.0,2027)` are protected by the range.
 
 ---
 
@@ -101,10 +101,10 @@ The year boundary IS the breaking change window. Downstream users who pin
 Document this in README once:
 ```xml
 <!-- Pinned to 2026 — protected from year-boundary changes -->
-<version>[2026.2.0,2027)</version>
+<version>[2026.3.0,2027)</version>
 
 <!-- From specific release onward within 2026 -->
-<version>[2026.2.0,2027)</version>
+<version>[2026.3.0,2027)</version>
 ```
 
 ---

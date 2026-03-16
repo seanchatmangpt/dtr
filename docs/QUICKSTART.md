@@ -39,11 +39,11 @@ Add this to your `pom.xml`:
     <dependency>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr-core</artifactId>
-        <version>2026.2.0</version>
+        <version>2026.3.0</version>
         <scope>test</scope>
     </dependency>
 
-    <!-- JUnit 5 (required) -->
+    <!-- JUnit Jupiter 6 (required) -->
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter</artifactId>
@@ -103,7 +103,64 @@ If you see no errors, you're ready to write your first test.
 
 ## Your First Test
 
+### The Modern Way (DTR 2026.4.0+)
+
 Create a file named `src/test/java/com/example/MyFirstDocTest.java`:
+
+```java
+package com.example;
+
+import io.github.seanchatmangpt.dtr.DtrTest; // Note: @DtrTest annotation
+import io.github.seanchatmangpt.dtr.Doc;
+import org.junit.jupiter.api.Test;
+
+// Single annotation - no @ExtendWith needed!
+@DtrTest
+class MyFirstDocTest {
+
+    @Test
+    @Doc(
+        section = "Hello DTR",
+        description = "This is my first documentation test!"
+    )
+    void helloDtr() {
+        sayNextSection("Code Example");
+        sayCode("System.out.println(\"Hello, DTR!\");", "java");
+        sayNote("Documentation is generated from this test.");
+    }
+}
+```
+
+### Using Static Imports (Even Cleaner)
+
+For the cleanest syntax, use static imports:
+
+```java
+package com.example;
+
+import io.github.seanchatmangpt.dtr.DtrTest;
+import io.github.seanchatmangpt.dtr.Doc;
+import org.junit.jupiter.api.Test;
+
+import static io.github.seanchatmangpt.dtr.Dtr.*; // Static imports
+
+@DtrTest
+class MyFirstDocTest {
+
+    @Test
+    @Doc(section = "Hello DTR", description = "This is my first documentation test!")
+    void helloDtr() {
+        // No "say" qualification needed - clean and Python-like!
+        sayNextSection("Code Example");
+        sayCode("System.out.println(\"Hello, DTR!\");", "java");
+        sayNote("Documentation is generated from this test.");
+    }
+}
+```
+
+### The Classic Way (Still Supported)
+
+If you prefer the traditional approach:
 
 ```java
 package com.example;
@@ -126,6 +183,8 @@ class MyFirstDocTest extends DtrTest {
     }
 }
 ```
+
+**All three approaches work identically** — choose the style you prefer!
 
 ## Running the Test
 

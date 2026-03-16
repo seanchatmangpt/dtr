@@ -254,6 +254,11 @@ public final class MultiRenderMachine extends RenderMachine {
     }
 
     @Override
+    public void sayMethodSignature(java.lang.reflect.Method method) {
+        dispatchToAll(m -> m.sayMethodSignature(method));
+    }
+
+    @Override
     public void sayCallSite() {
         dispatchToAll(RenderMachine::sayCallSite);
     }

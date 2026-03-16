@@ -2,7 +2,7 @@
 
 Reference documentation is **information-oriented**. It is the authoritative, exhaustive description of DTR's API. Use it when you need to look up a specific method, class, or configuration option.
 
-**Version:** 2026.2.0 | **Maven:** `io.github.seanchatmangpt:dtr-core:2026.2.0` | **Java:** 26+ with `--enable-preview`
+**Version:** 2026.3.0 | **Maven:** `io.github.seanchatmangpt:dtr-core:2026.3.0` | **Java:** 26+ with `--enable-preview`
 
 > **See also:** [Architecture](../architecture.md) | [Tutorials](../tutorials/)
 
@@ -61,7 +61,7 @@ The following pages document APIs that were removed in v2.6.0. They are preserve
 
 | Removed API | Description |
 |-------------|-------------|
-| [TestBrowser API](testbrowser-api.md) | ~~JUnit 5 extension lifecycle, DtrContext methods~~ (removed in v2.6.0) |
+| [TestBrowser API](testbrowser-api.md) | ~~JUnit Jupiter 6 extension lifecycle, DtrContext methods~~ (removed in v2.6.0) |
 | [HTTP Client APIs](request-api.md), [response-api.md), [http-constants.md](http-constants.md) | ~~Request/Response building, HTTP constants~~ (removed in v2.6.0) |
 | [WebSocket APIs](websockets-reference.md) | ~~WebSocket client, session management~~ (removed in v2.6.0) |
 | [Server-Sent Events APIs](sse-reference.md) | ~~SSE stream client, event handling~~ (removed in v2.6.0) |

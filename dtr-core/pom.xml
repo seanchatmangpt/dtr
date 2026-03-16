@@ -23,13 +23,13 @@
     <parent>
         <groupId>io.github.seanchatmangpt.dtr</groupId>
         <artifactId>dtr</artifactId>
-        <version>2026.3.0</version>
+        <version>2026.4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.3.0</version>
+    <version>2026.4.0</version>
     <name>DTR Core</name>
     <description>Core library for DTR: HTTP test browser and Markdown documentation generator for JUnit tests.</description>
     <packaging>jar</packaging>
@@ -48,7 +48,7 @@
         <url>https://github.com/seanchatmangpt/dtr</url>
         <connection>scm:git:git://github.com/seanchatmangpt/dtr.git</connection>
         <developerConnection>scm:git:git@github.com:seanchatmangpt/dtr.git</developerConnection>
-        <tag>v2026.3.0</tag>
+        <tag>v2026.4.0</tag>
     </scm>
 
     <developers>
@@ -149,11 +149,11 @@
             </exclusions>
         </dependency>
 
+        <!-- Hamcrest for sayAndAssertThat methods -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>provided</scope>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>3.0</version>
         </dependency>
 
         <!-- We use Jackson for rendering jsons and xml: -->

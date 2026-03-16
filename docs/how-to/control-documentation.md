@@ -138,7 +138,7 @@ ctx.sayNextSection("Error Handling");
 
 ## Organize with multiple test methods
 
-Each `@Test` method in a class contributes to the same output file. Use JUnit 5's `@TestMethodOrder` to control order:
+Each `@Test` method in a class contributes to the same output file. Use JUnit Jupiter 6's `@TestMethodOrder` to control order:
 
 ```java
 import org.junit.jupiter.api.MethodOrderer;

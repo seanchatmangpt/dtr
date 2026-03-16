@@ -6,7 +6,7 @@ LaTeX to PDF compiler with fallback strategy chain. Attempts to compile .tex fil
 
 ```java
 public class LatexCompiler {
-    // compile, isBinaryAvailable, invokeBinary, validatePdfOutput, LatexCompilationException, LatexCompilationException
+    // compile, getCompilationHistory, getFullDiagnosticSummary, isBinaryAvailable, invokeBinary, validatePdfOutput, LatexCompilationException, LatexCompilationException
 }
 ```
 
@@ -33,13 +33,42 @@ Compile a .tex file to PDF using available LaTeX compilers. Tries compilers in p
 | --- | --- |
 | `texFile` | the .tex source file to compile |
 
-> **Returns:** true if compilation succeeded, false if all compilers unavailable
+> **Returns:** LatexCompilationResult containing detailed diagnostics
+
+---
+
+### `getCompilationHistory`
+
+Get the history of all compilation attempts for this compiler instance.
+
+> **Returns:** unmodifiable list of compilation results in chronological order
+
+---
+
+### `getFullDiagnosticSummary`
+
+Get a summary of all compilation attempts.
+
+> **Returns:** formatted string containing diagnostic summaries of all attempts
 
 ---
 
 ### `invokeBinary`
 
 Invoke LaTeX compiler binary with standard flags.
+
+| Parameter | Description |
+| --- | --- |
+| `compiler` | the compiler command to invoke |
+| `texFile` | the TeX file to compile |
+| `output` | list to capture standard output lines |
+| `errors` | list to capture error messages |
+
+| Exception | Description |
+| --- | --- |
+| `IOException` | if process execution fails |
+| `InterruptedException` | if process is interrupted |
+| `LatexCompilationException` | if compilation fails with non-zero exit code |
 
 ---
 

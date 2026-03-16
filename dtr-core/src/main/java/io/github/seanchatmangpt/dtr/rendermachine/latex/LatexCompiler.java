@@ -18,6 +18,11 @@ package io.github.seanchatmangpt.dtr.rendermachine.latex;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +50,8 @@ public class LatexCompiler {
         "xelatex"
     };
 
+    private final List<LatexCompilationResult> compilationHistory = new ArrayList<>();
+
     /**
      * Compile a .tex file to PDF using available LaTeX compilers.
      *
@@ -52,33 +59,115 @@ public class LatexCompiler {
      * Logs warnings for each failure but does not throw exception if all fail.
      *
      * @param texFile the .tex source file to compile
-     * @return true if compilation succeeded, false if all compilers unavailable
+     * @return LatexCompilationResult containing detailed diagnostics
      */
-    public boolean compile(File texFile) {
+    public LatexCompilationResult compile(File texFile) {
         if (!texFile.exists() || !texFile.getName().endsWith(".tex")) {
             logger.warn("Invalid TeX file: {}", texFile.getAbsolutePath());
-            return false;
+            LatexCompilationResult result = new LatexCompilationResult(
+                false,
+                "N/A (invalid file)",
+                Collections.emptyList(),
+                List.of("Invalid TeX file: " + texFile.getAbsolutePath()),
+                Instant.now(),
+                Duration.ZERO,
+                texFile.getParentFile().getAbsolutePath()
+            );
+            compilationHistory.add(result);
+            return result;
         }
 
         for (String compiler : COMPILER_CHAIN) {
+            Instant start = Instant.now();
             try {
                 if (isBinaryAvailable(compiler)) {
                     logger.info("Using {} for LaTeX compilation", compiler);
-                    invokeBinary(compiler, texFile);
+                    List<String> output = new ArrayList<>();
+                    List<String> errors = new ArrayList<>();
+
+                    invokeBinary(compiler, texFile, output, errors);
                     validatePdfOutput(texFile);
-                    logger.info("Successfully compiled: {}", texFile.getName());
-                    return true;
+
+                    Duration duration = Duration.between(start, Instant.now());
+                    LatexCompilationResult result = new LatexCompilationResult(
+                        true,
+                        compiler,
+                        output,
+                        errors,
+                        start,
+                        duration,
+                        texFile.getParentFile().getAbsolutePath()
+                    );
+                    compilationHistory.add(result);
+                    logger.info("Successfully compiled: {} ({})", texFile.getName(), duration.toMillis() + "ms");
+                    return result;
                 }
             } catch (Exception e) {
+                Duration duration = Duration.between(start, Instant.now());
+                List<String> errors = List.of(
+                    compiler + " failed: " + e.getMessage(),
+                    "Exception type: " + e.getClass().getSimpleName()
+                );
+                LatexCompilationResult result = new LatexCompilationResult(
+                    false,
+                    compiler,
+                    Collections.emptyList(),
+                    errors,
+                    start,
+                    duration,
+                    texFile.getParentFile().getAbsolutePath()
+                );
+                compilationHistory.add(result);
                 logger.debug("Compiler {} failed, trying next: {}", compiler, e.getMessage());
                 continue;
             }
         }
 
-        logger.warn(
-            "No LaTeX compiler available (checked: latexmk, pdflatex, xelatex). "
-            + "PDF generation skipped. Markdown documentation still available.");
-        return false;
+        Duration duration = Duration.ZERO;
+        List<String> errors = List.of(
+            "No LaTeX compiler available (checked: latexmk, pdflatex, xelatex)",
+            "PDF generation skipped. Markdown documentation still available."
+        );
+        LatexCompilationResult result = new LatexCompilationResult(
+            false,
+            "None available",
+            Collections.emptyList(),
+            errors,
+            Instant.now(),
+            duration,
+            texFile.getParentFile().getAbsolutePath()
+        );
+        compilationHistory.add(result);
+        logger.warn("{}", String.join("; ", errors));
+        return result;
+    }
+
+    /**
+     * Get the history of all compilation attempts for this compiler instance.
+     *
+     * @return unmodifiable list of compilation results in chronological order
+     */
+    public List<LatexCompilationResult> getCompilationHistory() {
+        return Collections.unmodifiableList(compilationHistory);
+    }
+
+    /**
+     * Get a summary of all compilation attempts.
+     *
+     * @return formatted string containing diagnostic summaries of all attempts
+     */
+    public String getFullDiagnosticSummary() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LaTeX Compilation History (").append(compilationHistory.size()).append(" attempts):\n");
+        sb.append("=".repeat(80)).append("\n");
+
+        for (int i = 0; i < compilationHistory.size(); i++) {
+            sb.append("Attempt #").append(i + 1).append(":\n");
+            sb.append(compilationHistory.get(i).getDiagnosticSummary());
+            sb.append("-".repeat(80)).append("\n");
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -108,8 +197,17 @@ public class LatexCompiler {
 
     /**
      * Invoke LaTeX compiler binary with standard flags.
+     *
+     * @param compiler the compiler command to invoke
+     * @param texFile the TeX file to compile
+     * @param output list to capture standard output lines
+     * @param errors list to capture error messages
+     * @throws IOException if process execution fails
+     * @throws InterruptedException if process is interrupted
+     * @throws LatexCompilationException if compilation fails with non-zero exit code
      */
-    private void invokeBinary(String compiler, File texFile) throws IOException, InterruptedException {
+    private void invokeBinary(String compiler, File texFile, List<String> output, List<String> errors)
+            throws IOException, InterruptedException {
         ProcessBuilder pb;
 
         if ("latexmk".equals(compiler)) {
@@ -139,8 +237,18 @@ public class LatexCompiler {
 
         Process p = pb.start();
 
-        // Capture output for logging
-        String output = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        // Capture output for logging and diagnostics
+        String fullOutput = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Parse output into lines
+        String[] lines = fullOutput.split("\\r?\\n");
+        for (String line : lines) {
+            output.add(line);
+            // Collect error lines (typically start with ! or contain error keywords)
+            if (line.startsWith("!") || line.toLowerCase().contains("error")) {
+                errors.add(line);
+            }
+        }
 
         int exitCode = p.waitFor();
 
@@ -149,11 +257,11 @@ public class LatexCompiler {
         switch (exitCode) {
             case 0:
                 // Success - exit code 0 indicates successful compilation
-                logger.debug("Compilation succeeded with {}",compiler);
+                logger.debug("Compilation succeeded with {}", compiler);
                 break;
             case 1:
                 // Compilation error - typical LaTeX error (syntax, missing files, etc.)
-                logger.debug("Compiler {} error output:\n{}", compiler, output);
+                logger.debug("Compiler {} error output:\n{}", compiler, fullOutput);
                 throw new LatexCompilationException(
                     "LaTeX compilation failed (exit code 1): %s".formatted(compiler)
                 );
@@ -165,7 +273,7 @@ public class LatexCompiler {
                 );
             default:
                 // Unknown exit code
-                logger.debug("Compiler %s output:\n%s", compiler, output);
+                logger.debug("Compiler %s output:\n%s", compiler, fullOutput);
                 throw new LatexCompilationException(
                     "Compiler %s exited with unexpected code %d".formatted(compiler, exitCode)
                 );

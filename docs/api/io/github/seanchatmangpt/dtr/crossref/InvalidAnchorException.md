@@ -5,7 +5,7 @@
 Thrown when a cross-reference targets an anchor (section) that does not exist in the target DocTest.
 
 ```java
-public class InvalidAnchorException extends RuntimeException {
+public class InvalidAnchorException extends DtrException {
     // InvalidAnchorException, InvalidAnchorException
 }
 ```

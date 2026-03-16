@@ -7,7 +7,7 @@ Markdown-based render machine implementation for generating portable API documen
 
 ```java
 public final class RenderMachineImpl extends RenderMachine {
-    // RenderMachineImpl, sayCodeModel, sayJavaCode, sayCodeModel, sayDocCoverage, convertTextToId, renderModuleInfo
+    // RenderMachineImpl, sayCodeModel, sayJavaCode, sayMethodSignature, sayDocCoverage, convertTextToId, renderModuleInfo
 }
 ```
 
@@ -46,7 +46,11 @@ Renders module information for a single module.
 
 ### `sayCodeModel`
 
-Implements the previously-stub sayCodeModel(Method) using the Java 26 Code Reflection API. Renders an op-count table + IR excerpt when a code model is available; falls back to method signature rendering on older runtimes.
+Documents a class's structure using Java reflection — the DTR stand-in for Project Babylon's Code Reflection API (JEP 494). <p>Renders the class's sealed hierarchy, record components, and all public method signatures derived directly from the bytecode. The documentation cannot drift from the implementation because it IS the implementation.</p> <p>Demonstrates Java 26/26 features:</p> <ul>   <li>Guarded switch expression for class kind detection</li>   <li>{@code Class.getPermittedSubclasses()} for sealed hierarchies</li>   <li>{@code Class.getRecordComponents()} for record inspection</li>   <li>{@code var} + streams for method signature rendering</li>   <li>Text block for the method signature template</li> </ul>
+
+| Parameter | Description |
+| --- | --- |
+| `clazz` | the class to introspect and document |
 
 ---
 
@@ -64,6 +68,12 @@ Add a Java code example to the documentation. Useful for showing the test code t
 | --- | --- |
 | `javaCode` | the Java code to include (as a string) |
 | `description` | optional description of what the code does |
+
+---
+
+### `sayMethodSignature`
+
+Implements sayMethodSignature(Method) using the Java 26 Code Reflection API. Renders an op-count table + IR excerpt when a code model is available; falls back to method signature rendering on older runtimes.
 
 ---
 

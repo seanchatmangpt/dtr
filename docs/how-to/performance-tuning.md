@@ -2,7 +2,7 @@
 
 Quick recipes to optimize your DTR tests and documentation generation for faster builds.
 
-**DTR Version:** 2026.2.0 | **Java:** 26+ with `--enable-preview`
+**DTR Version:** 2026.3.0 | **Java:** 26+ with `--enable-preview`
 
 ---
 

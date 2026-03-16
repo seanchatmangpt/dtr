@@ -13,7 +13,7 @@ Java's evolution over the past decade has moved steadily toward a single goal: c
 **From:** Complex threading models + ceremony-heavy data classes + verbose type dispatch
 **To:** Structured concurrency + transparent immutable records + exhaustive pattern matching
 
-DTR 2026.2.0 uses all of these features — not because they are fashionable, but because they solve real problems in a documentation generation library.
+DTR 2026.3.0 uses all of these features — not because they are fashionable, but because they solve real problems in a documentation generation library.
 
 ---
 

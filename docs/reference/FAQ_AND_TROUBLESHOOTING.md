@@ -1,6 +1,6 @@
 # FAQ and Troubleshooting Guide
 
-**DTR 2026.2.0+** — Quick answers to common questions.
+**DTR 2026.3.0+** — Quick answers to common questions.
 
 > **📋 Comprehensive Troubleshooting:** For detailed symptom-based problem solving, see [TROUBLESHOOTING.md](../TROUBLESHOOTING.md).
 
@@ -41,7 +41,7 @@ grep -A 5 "dtr-core" pom.xml  # Must show: <scope>test</scope>
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.2.0</version>
+    <version>2026.3.0</version>
     <scope>test</scope>  <!-- CRITICAL -->
 </dependency>
 ```
@@ -100,10 +100,10 @@ java -version  # Should show 26
 
 #### Q4: Tests compile but don't run ("No tests were executed")
 
-**Quick Answer:** Verify JUnit 5 imports and test class naming.
+**Quick Answer:** Verify JUnit Jupiter 6 imports and test class naming.
 
 ```java
-// Correct imports (JUnit 5)
+// Correct imports (JUnit Jupiter 6)
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
@@ -256,7 +256,7 @@ mvnd.maxHeapSize=2g
 
 ---
 
-## Migration from DTR 2.x to 2026.2.0+
+## Migration from DTR 2.x to 2026.3.0+
 
 ### Q: What changed in DTR 2026?
 
@@ -267,7 +267,7 @@ mvnd.maxHeapSize=2g
    // Old (2.x)
    import io.github.seanchatmangpt.dtr.core.DtrContext;
 
-   // New (2026.2.0+)
+   // New (2026.3.0+)
    import io.github.seanchatmangpt.dtr.junit5.DtrContext;
    ```
 
@@ -281,7 +281,7 @@ mvnd.maxHeapSize=2g
        }
    }
 
-   // New (2026.2.0+ - recommended)
+   // New (2026.3.0+ - recommended)
    @ExtendWith(DtrExtension.class)
    class MyDocTest {
        @Test
@@ -325,7 +325,7 @@ ctx.sayJson(response.body());
 
 ### Q: Where did `sayAndAssertThat` go?
 
-**Answer:** Removed in v2.6.0. Use JUnit 5 assertions for testing, `ctx.sayAssertions()` for documentation.
+**Answer:** Removed in v2.6.0. Use JUnit Jupiter 6 assertions for testing, `ctx.sayAssertions()` for documentation.
 
 ```java
 // Assert (throws if false)
@@ -347,7 +347,7 @@ ctx.sayAssertions(Map.of(
 
 - `WebSocketClient`, `ServerSentEventsClient` → Use `jakarta.websocket.*` or `java.net.http.HttpClient`
 - `BearerTokenAuth`, `ApiKeyAuth`, `BasicAuth` → Pass tokens as headers manually
-- DTR 2026.2.0+ focuses on documentation generation, not HTTP testing
+- DTR 2026.3.0+ focuses on documentation generation, not HTTP testing
 
 ---
 
@@ -425,8 +425,8 @@ git log --oneline --decorate | head -20
 git tag | grep -E '^v[0-9]'
 
 # Create missing tags
-git tag v2026.2.0
-git tag v2026.2.0
+git tag v2026.3.0
+git tag v2026.3.0
 
 # Verify
 git tag -l
@@ -482,7 +482,7 @@ mvnd clean compile -U
 grep "import.*dtr" src/test/java/MyDocTest.java
 # Must be: io.github.seanchatmangpt.dtr.junit5.*
 
-# 2. Verify JUnit 5
+# 2. Verify JUnit Jupiter 6
 grep "import org.junit" src/test/java/MyDocTest.java
 # Must be: org.junit.jupiter.api.*
 
@@ -497,7 +497,7 @@ mvnd test -Dtest=MyDocTest -v
 ---
 
 **Last Updated:** 2026-03-15
-**DTR Version:** 2026.2.0+
+**DTR Version:** 2026.3.0+
 **For comprehensive troubleshooting, see [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)**
 
 ---
@@ -540,7 +540,7 @@ ctx.sayJson(response.body());
 
 `sayAndAssertThat(String, T, Matcher)` was **removed in v2.6.0**.
 
-**Replacement:** Use JUnit 5 assertions for the assertion, and `ctx.sayAssertions(Map)` to document results:
+**Replacement:** Use JUnit Jupiter 6 assertions for the assertion, and `ctx.sayAssertions(Map)` to document results:
 
 ```java
 // Assert (throws if false)
@@ -596,7 +596,7 @@ Authenticate directly using standard Java HTTP clients and pass tokens as header
 **Error:** `@Test` annotation not recognized or `DtrContext` cannot be resolved
 
 **Solution:**
-Ensure you are using JUnit 5 and the correct imports:
+Ensure you are using JUnit Jupiter 6 and the correct imports:
 
 ```java
 import io.github.seanchatmangpt.dtr.core.DtrContext;

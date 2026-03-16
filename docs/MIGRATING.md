@@ -1,6 +1,6 @@
 # DTR Migration Guide
 
-**Last Updated:** March 14, 2026
+**Last Updated:** March 15, 2026
 
 **Target Audience:** Users upgrading from previous DTR versions
 
@@ -10,29 +10,32 @@
 
 1. [Overview](#overview)
 2. [Historical Migration Guides](#historical-migration-guides)
-3. [v2.5.x → v2.6.0 (HIGH IMPACT)](#v25x--v260-high-impact)
-4. [v2.0.0 → v2.5.x](#v200--v25x)
-5. [v1.x → v2.0.0](#v1x--v200)
-6. [Feature Mapping Table](#feature-mapping-table)
-7. [Troubleshooting Migrations](#troubleshooting-migrations)
+3. [v2026.3.0 → v2026.4.0 (LOW IMPACT)](#v202630--v202640-low-impact)
+4. [v2.5.x → v2.6.0 (HIGH IMPACT)](#v25x--v260-high-impact)
+5. [v2.0.0 → v2.5.x](#v200--v25x)
+6. [v1.x → v2.0.0](#v1x--v200)
+7. [Feature Mapping Table](#feature-mapping-table)
+8. [Troubleshooting Migrations](#troubleshooting-migrations)
 
 ---
 
 ## Overview
 
-This guide helps you migrate between DTR versions. DTR uses **calendar versioning** (CalVer) starting from 2026.2.0, which corresponds to semantic version 2.6.0.
+This guide helps you migrate between DTR versions. DTR uses **calendar versioning** (CalVer) starting from 2026.3.0, which corresponds to semantic version 2.6.0.
 
 ### Version Mapping
 
 | CalVer | Semantic | Status | Key Changes |
 |--------|----------|--------|-------------|
-| 2026.2.0 | 2.6.0 | Current | HTTP client removed, 14 new say* methods |
-| 2026.2.0 | 2.5.0 | Stable | Maven Central ready, RenderMachine unsealed |
-| 2026.2.0 | 2.4.0 | Stable | Introspection methods added |
+| 2026.4.0 | — | Current | ParameterResolver fix, 12 new say* methods, @DtrConfig |
+| 2026.3.0 | 2.6.0 | Stable | HTTP client removed, 14 new say* methods |
+| 2026.3.0 | 2.5.0 | Stable | Maven Central ready, RenderMachine unsealed |
+| 2026.3.0 | 2.4.0 | Stable | Introspection methods added |
 | 2.0.0 | 2.0.0 | Legacy | Java 26 migration, Markdown-first |
 
 ### Migration Impact Assessment
 
+- **v2026.3.0 → v2026.4.0**: ✅ **LOW IMPACT** — ParameterResolver fix, new features, minimal breaking changes
 - **v2.5.x → v2.6.0**: ⚠️ **HIGH IMPACT** — HTTP client layer removed, requires code changes
 - **v2.0.0 → v2.5.x**: ✅ **LOW IMPACT** — Mostly additive, RenderMachine sealed→abstract
 - **v1.x → v2.0.0**: ⚠️ **BREAKING** — Complete rewrite, Java 26 required
@@ -51,11 +54,154 @@ The following migration guides are archived for historical reference:
 
 ---
 
+## v2026.3.0 → v2026.4.0 (LOW IMPACT)
+
+### What Changed
+
+DTR 2026.4.0 is a **DX/QoL enhancement release** with minimal breaking changes. Most users can upgrade without any code modifications.
+
+**Key highlights:**
+- Critical bug fix: `DtrContext` parameter injection now works
+- 12 new `say*` methods (assertion combos, presentation support)
+- `@DtrConfig` annotation for hierarchical configuration
+- `@LivePreview` annotation for IDE integration
+- `RenderConfig` class removed (use `@DtrConfig` instead)
+- `sayCodeModel(Method)` deprecated (use `sayMethodSignature(Method)` instead)
+
+### Breaking Changes
+
+#### 1. RenderConfig Removed
+
+**Affected:** Users who programmatically created `RenderMachine` instances (rare)
+
+**Before (2026.3.0):**
+```java
+RenderConfig config = new RenderConfig();
+List<RenderMachine> machines = config.createRenderMachines();
+```
+
+**After (2026.4.0):**
+```java
+// Option 1: Annotation-based (recommended)
+@DtrConfig(format = OutputFormat.MARKDOWN)
+class MyTest { }
+
+// Option 2: Programmatic
+DtrConfiguration config = DtrConfiguration.builder()
+    .format(OutputFormat.MARKDOWN)
+    .build();
+```
+
+#### 2. sayCodeModel(Method) Deprecated
+
+**Affected:** Users calling `sayCodeModel(Method)` (low impact)
+
+**Migration:**
+```java
+// Before (deprecated, still works)
+ctx.sayCodeModel(MyClass.class.getMethod("myMethod"));
+
+// After (recommended)
+ctx.sayMethodSignature(MyClass.class.getMethod("myMethod"));
+```
+
+**Timeline:** Removal planned for 2027.1.0
+
+### New Features
+
+#### DtrContext Parameter Injection (Fixed)
+
+The `DtrContext` parameter injection now works correctly:
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @Test
+    void testGetUser(DtrContext ctx) {  // This now works!
+        ctx.say("Returns user details by ID.");
+    }
+}
+```
+
+#### Assertion + Documentation Combined
+
+Four new `sayAndAssertThat` methods:
+
+```java
+ctx.sayAndAssertThat("HTTP Status", response.getStatusCode(), equalTo(200));
+ctx.sayAndAssertThat("Response Size", response.getBody().length(), greaterThan(0));
+```
+
+#### Presentation-Specific Methods
+
+New methods for slides, blogs, and social media:
+
+```java
+ctx.sayTldr("Quick summary for busy readers");
+ctx.saySlideOnly("Simplified bullet points for slides");
+ctx.saySpeakerNote("Presenter notes (slides only)");
+ctx.sayTweetable("DTR 2026.4.0 adds 12 new say* methods!");
+ctx.sayDocOnly("This appears only in docs, not slides");
+ctx.sayHeroImage("Architecture diagram");
+ctx.sayCallToAction("https://github.com/seanchatmangpt/dtr");
+```
+
+#### Configuration Annotations
+
+```java
+@DtrConfig(
+    format = OutputFormat.MARKDOWN,
+    outputDir = "target/docs",
+    autoSection = true
+)
+class MyTest { }
+
+@LivePreview
+@Test
+void testWithPreview(DtrContext ctx) {
+    ctx.say("This can be previewed in supported IDEs");
+}
+```
+
+### Migration Steps
+
+1. **Update dependency:**
+```xml
+<version>2026.4.0</version>
+```
+
+2. **Run tests** — all should pass without changes
+
+3. **Check for RenderConfig usage:**
+```bash
+grep -r "RenderConfig" src/test/java
+```
+
+4. **Check for sayCodeModel(Method) usage:**
+```bash
+grep -r "sayCodeModel.*getMethod" src/test/java
+```
+
+5. **Adopt new features** (optional):
+   - Replace separate assertion + documentation with `sayAndAssertThat`
+   - Add presentation-specific content for slides/blogs
+   - Use `@DtrConfig` for configuration
+
+### Validation Checklist
+
+- [ ] `pom.xml` uses version `2026.4.0`
+- [ ] All tests pass with `mvnd clean test`
+- [ ] Documentation appears in `target/docs/`
+- [ ] No `RenderConfig` references (or migrated to `@DtrConfig`)
+- [ ] No deprecated `sayCodeModel(Method)` calls (or migrated to `sayMethodSignature`)
+
+---
+
 ## v2.5.x → v2.6.0 (HIGH IMPACT)
 
 ### What Changed
 
-DTR 2.6.0 (2026.2.0) is a **breaking release** that removes the entire HTTP client layer. DTR is now a pure documentation-generation library with no HTTP testing responsibilities.
+DTR 2.6.0 (2026.3.0) is a **breaking release** that removes the entire HTTP client layer. DTR is now a pure documentation-generation library with no HTTP testing responsibilities.
 
 **Key Principle:** DTR focuses on documentation generation only. HTTP testing should use standard Java libraries or dedicated testing frameworks.
 
@@ -115,7 +261,7 @@ In exchange for the removed HTTP stack, v2.6.0 adds **14 new `say*` methods** fo
 <dependency>
     <groupId>io.github.seanchatmangpt.dtr</groupId>
     <artifactId>dtr-core</artifactId>
-    <version>2026.2.0</version>
+    <version>2026.3.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -450,7 +596,7 @@ If the migration to v2.6.0 fails or you need more time:
 1. **Revert to v2.5.x** in your `pom.xml`:
 
 ```xml
-<version>2026.2.0</version>  <!-- This is v2.5.x -->
+<version>2026.3.0</version>  <!-- This is v2.5.x -->
 ```
 
 2. **Restore your test code** from version control:
@@ -469,7 +615,7 @@ mvnd clean install
 
 After migrating to v2.6.0, verify:
 
-- [ ] `pom.xml` uses version `2026.2.0` (or later)
+- [ ] `pom.xml` uses version `2026.3.0` (or later)
 - [ ] All test classes use `@ExtendWith(DtrExtension.class)`
 - [ ] All test methods accept `DtrContext ctx` parameter
 - [ ] No references to `sayAndMakeRequest`, `sayAndAssertThat`, `Request`, `Response`
@@ -485,13 +631,13 @@ After migrating to v2.6.0, verify:
 
 ### What Changed
 
-This migration covers versions from v2.0.0 through v2.5.x (2026.2.0). Most changes are backward compatible.
+This migration covers versions from v2.0.0 through v2.5.x (2026.3.0). Most changes are backward compatible.
 
 ### Key Changes
 
 | Version | Key Changes | Breaking? |
 |---------|-------------|-----------|
-| v2.0.0 | Java 26 required, Markdown output, JUnit 5 support | Yes |
+| v2.0.0 | Java 26 required, Markdown output, JUnit Jupiter 6 support | Yes |
 | v2.4.0 | Added introspection methods (`sayCallSite`, `sayAnnotationProfile`, etc.) | No |
 | v2.5.0 | RenderMachine: sealed → abstract, Maven Central ready | Rare edge case |
 
@@ -527,7 +673,7 @@ public final class MyCustomRenderer extends RenderMachine {
 1. **Update dependency:**
 
 ```xml
-<version>2026.2.0</version>
+<version>2026.3.0</version>
 ```
 
 2. **No code changes required** for 99% of users
@@ -548,7 +694,7 @@ DTR 2.0.0 was a complete rewrite with major breaking changes:
 
 - **Java 26 required** (was Java 8+)
 - **Markdown-first output** (was HTML)
-- **JUnit 5 support** (was JUnit 4)
+- **JUnit Jupiter 6 support** (was JUnit 4)
 - **HttpClient 5.x** (was HttpClient 4.5)
 - **Annotation-based testing API** (`@DocSection`, `@DocDescription`)
 
@@ -687,7 +833,7 @@ public class UserApiDocTest {
 1. **Upgrade Java to 26**
 2. **Update Maven to 4.0.0-rc-3+**
 3. **Update pom.xml** (see above)
-4. **Migrate JUnit 4 → JUnit 5**
+4. **Migrate JUnit 4 → JUnit Jupiter 6**
 5. **Update test class structure** (remove `extends DTR`, add `@ExtendWith`)
 6. **Update CI/CD documentation paths**
 7. **Run `mvnd clean test`**
@@ -806,17 +952,17 @@ export JAVA_HOME=/usr/lib/jvm/java-26-openjdk
 java -version  # Verify
 ```
 
-#### 4. JUnit 4 vs JUnit 5 Confusion
+#### 4. JUnit 4 vs JUnit Jupiter 6 Confusion
 
 **Symptom:** Tests don't run or `@Test` not found.
 
-**Solution:** Ensure you're using JUnit 5 annotations:
+**Solution:** Ensure you're using JUnit Jupiter 6 annotations:
 
 ```java
 // Wrong (JUnit 4)
 import org.junit.Test;
 
-// Correct (JUnit 5)
+// Correct (JUnit Jupiter 6)
 import org.junit.jupiter.api.Test;
 ```
 
@@ -853,7 +999,7 @@ If you need to rollback quickly:
 
 ```xml
 <!-- In pom.xml -->
-<version>2026.2.0</version>  <!-- v2.5.x, before HTTP client removal -->
+<version>2026.3.0</version>  <!-- v2.5.x, before HTTP client removal -->
 ```
 
 Then restore your test code from git:
@@ -888,10 +1034,10 @@ When reporting issues, include:
 
 | DTR Version | Java Required | Maven Required | JUnit | HTTP Client | Status |
 |-------------|---------------|----------------|-------|-------------|--------|
-| 2026.2.0 (v2.6.0) | 26+ | 4.0.0-rc-3+ | JUnit 5 | None (use your own) | ✅ Current |
-| 2026.2.0 (v2.5.x) | 26+ | 4.0.0-rc-3+ | JUnit 5 | Built-in (deprecated) | ✅ Stable |
-| 2026.2.0 (v2.4.x) | 26+ | 4.0.0-rc-3+ | JUnit 5 | Built-in | ✅ Stable |
-| v2.0.0 | 26+ | 4.0.0-rc-3+ | JUnit 5 | Built-in | ⚠️ Legacy |
+| 2026.3.0 (v2.6.0) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | None (use your own) | ✅ Current |
+| 2026.3.0 (v2.5.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in (deprecated) | ✅ Stable |
+| 2026.3.0 (v2.4.x) | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in | ✅ Stable |
+| v2.0.0 | 26+ | 4.0.0-rc-3+ | JUnit Jupiter 6 | Built-in | ⚠️ Legacy |
 | v1.x | 8-21 | 3.x | JUnit 4 | Built-in | ❌ Deprecated |
 
 ### Migration Decision Tree
@@ -914,6 +1060,6 @@ Are you upgrading from v2.5.x to v2.6.0+?
 
 **Last Updated:** March 14, 2026
 
-**DTR Version:** 2026.2.0 (v2.6.0)
+**DTR Version:** 2026.3.0 (v2.6.0)
 
 **For the latest version of this guide, see:** https://github.com/seanchatmangpt/dtr/docs/MIGRATING.md

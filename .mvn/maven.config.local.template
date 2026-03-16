@@ -1,0 +1,14 @@
+# Maven local development configuration
+# Copy this file to .mvn/maven.config.local to enable faster local builds
+#
+# Features enabled:
+# -T1C              : Parallel builds with one thread per CPU core
+# -DskipTests       : Skip test execution for faster compilation iterations
+#
+# Usage:
+#   cp .mvn/maven.config.local.template .mvn/maven.config.local
+#   mvnd compile    # Will use these settings automatically
+#
+# Note: This file is git-ignored. Remove .mvn/maven.config.local to disable.
+-T1C
+-DskipTests

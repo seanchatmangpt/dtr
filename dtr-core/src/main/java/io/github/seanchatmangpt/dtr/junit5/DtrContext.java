@@ -151,6 +151,23 @@ public class DtrContext implements RenderMachineCommands {
         renderMachine.sayRef(ref);
     }
 
+    /**
+     * Convenience method to create and render a cross-reference to another DocTest's section.
+     *
+     * <p>Creates a {@link DocTestRef} and delegates to {@link #sayRef(DocTestRef)}.
+     * The reference is rendered as a markdown link in Markdown mode or as a LaTeX
+     * cross-reference command in LaTeX mode. In LaTeX, the resolved section number
+     * (e.g., "Section 3.2") is automatically substituted after compilation.</p>
+     *
+     * @param docTestClass the target DocTest class (must not be null)
+     * @param anchor the section/anchor name within that DocTest, e.g., "user-registration"
+     *               (typically derived from @DocSection annotation value)
+     * @see DocTestRef#of(Class, String)
+     */
+    public void sayRef(Class<?> docTestClass, String anchor) {
+        sayRef(DocTestRef.of(docTestClass, anchor));
+    }
+
     // ========================================================================
     // Code model introspection
     // ========================================================================
@@ -160,6 +177,17 @@ public class DtrContext implements RenderMachineCommands {
         renderMachine.sayCodeModel(clazz);
     }
 
+    @Override
+    public void sayMethodSignature(java.lang.reflect.Method method) {
+        renderMachine.sayMethodSignature(method);
+    }
+
+    /**
+     * @deprecated Use {@link #sayMethodSignature(java.lang.reflect.Method)} instead.
+     *             This method name is ambiguous - it documents method signatures, not full code models.
+     *             Scheduled for removal in a future release.
+     */
+    @Deprecated(forRemoval = true, since = "2026.4.0")
     @Override
     public void sayCodeModel(java.lang.reflect.Method method) {
         renderMachine.sayCodeModel(method);
@@ -311,6 +339,126 @@ public class DtrContext implements RenderMachineCommands {
     @Override
     public void sayOperatingSystem() {
         renderMachine.sayOperatingSystem();
+    }
+
+    // ========================================================================
+    // Presentation-specific methods (slides/blog only)
+    // ========================================================================
+
+    /**
+     * Renders content only for slide output (ignored by markdown/blog render machines).
+     *
+     * @param text the text to render on slides only
+     */
+    public void saySlideOnly(String text) {
+        renderMachine.saySlideOnly(text);
+    }
+
+    /**
+     * Renders content only for documentation/blog output (ignored by slide render machines).
+     *
+     * @param text the text to render in docs only
+     */
+    public void sayDocOnly(String text) {
+        renderMachine.sayDocOnly(text);
+    }
+
+    /**
+     * Renders speaker notes for slides (ignored by doc/blog render machines).
+     *
+     * @param text the speaker notes text
+     */
+    public void saySpeakerNote(String text) {
+        renderMachine.saySpeakerNote(text);
+    }
+
+    /**
+     * Renders a hero image for blogs and slides (ignored by other formats).
+     *
+     * @param altText the alt text for the image
+     */
+    public void sayHeroImage(String altText) {
+        renderMachine.sayHeroImage(altText);
+    }
+
+    /**
+     * Renders a tweetable excerpt (≤280 chars) for social media queue.
+     *
+     * @param text the text to tweet (will be truncated to 280 chars)
+     */
+    public void sayTweetable(String text) {
+        renderMachine.sayTweetable(text);
+    }
+
+    /**
+     * Renders a TLDR (too long; didn't read) summary for blogs.
+     *
+     * @param text the summary text
+     */
+    public void sayTldr(String text) {
+        renderMachine.sayTldr(text);
+    }
+
+    /**
+     * Renders a call-to-action link for blogs.
+     *
+     * @param url the URL for the CTA button/link
+     */
+    public void sayCallToAction(String url) {
+        renderMachine.sayCallToAction(url);
+    }
+
+    // ========================================================================
+    // Assertion helpers (assert + document in one call)
+    // ========================================================================
+
+    /**
+     * Runs a Hamcrest assertion and documents the result as a table row.
+     * Passes a {@code ✓ PASS} label on success; rethrows on failure.
+     *
+     * @param label the check description
+     * @param actual the actual value
+     * @param matcher the Hamcrest matcher
+     */
+    public <T> void sayAndAssertThat(String label, T actual, org.hamcrest.Matcher<? super T> matcher) {
+        org.hamcrest.MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
+    }
+
+    /**
+     * Overload for {@code long} primitives — avoids ambiguous autoboxing.
+     *
+     * @param label the check description
+     * @param actual the actual value
+     * @param matcher the Hamcrest matcher
+     */
+    public void sayAndAssertThat(String label, long actual, org.hamcrest.Matcher<Long> matcher) {
+        org.hamcrest.MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
+    }
+
+    /**
+     * Overload for {@code int} primitives.
+     *
+     * @param label the check description
+     * @param actual the actual value
+     * @param matcher the Hamcrest matcher
+     */
+    public void sayAndAssertThat(String label, int actual, org.hamcrest.Matcher<Integer> matcher) {
+        org.hamcrest.MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
+    }
+
+    /**
+     * Overload for {@code boolean} primitives.
+     *
+     * @param label the check description
+     * @param actual the actual value
+     * @param matcher the Hamcrest matcher
+     */
+    public void sayAndAssertThat(String label, boolean actual, org.hamcrest.Matcher<Boolean> matcher) {
+        org.hamcrest.MatcherAssert.assertThat(label, actual, matcher);
+        sayAssertions(Map.of(label, "✓ PASS"));
     }
 
     // ========================================================================

@@ -15,6 +15,8 @@
  */
 package io.github.seanchatmangpt.dtr.bibliography;
 
+import io.github.seanchatmangpt.dtr.DtrException;
+
 /**
  * Thrown when a citation references a non-existent bibliography entry.
  *
@@ -22,7 +24,7 @@ package io.github.seanchatmangpt.dtr.bibliography;
  * sayCite() is called with a key that doesn't exist in the loaded bibliography.
  * Tests fail fast if a citation key is not found.
  */
-public class UnknownCitationException extends RuntimeException {
+public class UnknownCitationException extends DtrException {
 
     /**
      * Creates an exception for an unknown citation.
@@ -30,7 +32,10 @@ public class UnknownCitationException extends RuntimeException {
      * @param key the unknown citation key
      */
     public UnknownCitationException(String key) {
-        super("Unknown citation key: '%s'".formatted(key));
+        super(builder()
+            .message("Unknown citation key: '%s'".formatted(key))
+            .errorCode("DTR-CITE-001")
+            .context("citationKey", key));
     }
 
     /**
@@ -39,6 +44,9 @@ public class UnknownCitationException extends RuntimeException {
      * @param message detailed error message
      */
     public UnknownCitationException(String message, Throwable cause) {
-        super(message, cause);
+        super(builder()
+            .message(message)
+            .errorCode("DTR-CITE-001")
+            .cause(cause));
     }
 }

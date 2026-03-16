@@ -247,7 +247,7 @@ act push
 act pull_request
 
 # Simulate tag push
-act push --ref refs/tags/v2026.2.0
+act push --ref refs/tags/v2026.3.0
 ```
 
 ---
