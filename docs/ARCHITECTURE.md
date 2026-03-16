@@ -62,6 +62,7 @@ JUnit Jupiter 6 extension that manages `RenderMachine` lifecycle and processes a
 **Lifecycle Management:**
 
 - `beforeEach` — Initialize or retrieve shared `RenderMachine` for test class
+- `postProcessTestInstance` — Inject `DtrContext` into fields annotated with `@DtrContextField`
 - `afterAll` — Call `finishAndWriteOut()` to flush documentation
 
 **Annotation Processing:**
@@ -77,23 +78,90 @@ void testUserApi() { ... }
 
 All annotations are processed in fixed order regardless of source order: Section → Description → Note → Warning → Code.
 
+### @DtrContextField (Field-Level Injection)
+
+**Location:** `/dtr-core/src/main/java/io/github/seanchatmangpt/dtr/junit5/DtrContextField.java`
+
+Annotation that enables field-level injection of `DtrContext` into test instances. Provides an alternative to method parameter injection or inheritance.
+
+**Usage:**
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyDocTest {
+    @DtrContextField
+    private DtrContext context;
+
+    @Test
+    void testOne() {
+        context.say("Documentation for test one");
+    }
+
+    @Test
+    void testTwo() {
+        context.say("Documentation for test two");
+    }
+}
+```
+
+**Benefits:**
+
+- **Shared context** — Same `DtrContext` instance across all test methods in class
+- **Reduced boilerplate** — No need to inject parameter in every test method
+- **Flexible composition** — Works with existing test classes without requiring inheritance
+- **Explicit dependencies** — Clear field declarations show documentation intent
+
+**Lifecycle:** Fields are injected during `DtrExtension.postProcessTestInstance()`, after test instance construction but before `@BeforeEach` methods.
+
 ### DtrContext (Injected Context)
 
 **Location:** Not a separate class — `DtrTest` implements `RenderMachineCommands`
 
-Test methods receive documentation context through inheritance. When extending `DtrTest`, all `say*` methods are available directly:
+Test methods receive documentation context through three complementary patterns:
+
+#### Pattern 1: Method Parameter Injection
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyDocTest {
+    @Test
+    void testFeature(DtrContext context) {
+        context.say("Feature documentation via parameter");
+    }
+}
+```
+
+#### Pattern 2: Inheritance via DtrTest
 
 ```java
 @ExtendWith(DtrExtension.class)
 class MyDocTest extends DtrTest {
     @Test
-    void testFeature(DtrContext context) {
-        context.say("Feature documentation");  // Via DtrTest inheritance
+    void testFeature() {
+        say("Feature documentation via inheritance");  // Direct method access
     }
 }
 ```
 
-**Note:** The architecture uses inheritance (`DtrTest` base class) rather than method injection for simplicity and type safety.
+#### Pattern 3: Field Injection with @DtrContextField
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyDocTest {
+    @DtrContextField
+    private DtrContext context;
+
+    @Test
+    void testFeature() {
+        context.say("Feature documentation via field injection");
+    }
+}
+```
+
+**Note:** All three patterns are fully supported. Choose based on your testing style:
+- **Method injection** — Explicit dependencies, works with existing test classes
+- **Inheritance** — Most concise, direct method access
+- **Field injection** — Shared context across multiple test methods, reduces parameter passing
 
 ### RenderMachine (Output Abstraction)
 
@@ -499,17 +567,26 @@ flowchart TD
 
 ## Key Design Decisions
 
-### Inheritance over Injection
+### Multiple Access Patterns
 
-**Decision:** `DtrTest` uses inheritance rather than method parameter injection for documentation context.
+**Decision:** DTR supports three complementary patterns for accessing documentation context — method injection, inheritance, and field injection.
 
 **Rationale:**
 
-- Simpler API — test methods directly call `say*` without parameter passing
-- Type safety — compile-time checking of all `say*` methods
-- Less boilerplate — no need to inject `DtrContext` into every test method
+- **Flexibility** — Different teams have different testing styles and constraints
+- **Migration path** — Existing tests can adopt DTR without restructuring
+- **Composition** — Field injection enables sharing context across methods without inheritance
+- **Type safety** — All patterns maintain compile-time checking of `say*` methods
 
-**Trade-off:** Tests must extend `DtrTest` (single inheritance limitation).
+**Pattern Selection Guide:**
+
+| Pattern | Best For | Trade-offs |
+|---------|----------|------------|
+| **Method injection** | New tests, explicit dependencies | Parameter in every method signature |
+| **Inheritance** | New test suites, maximum brevity | Single inheritance limitation |
+| **Field injection** | Existing tests, shared context | Field declarations required |
+
+All three patterns can coexist in the same codebase — choose per-test-class based on your needs.
 
 ### Sealed Events Over Visitor Pattern
 

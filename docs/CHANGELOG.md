@@ -1,3 +1,23 @@
+## v2026.4.1 — 2026-03-15
+
+- docs: complete field injection documentation update
+- docs: update API documentation and metadata for field injection
+- docs: add generated test documentation for field injection feature
+- feat: add @DtrContextField field injection and @DtrTest composite annotation
+- chore: update session log
+
+### Install
+
+```xml
+<dependency>
+  <groupId>io.github.seanchatmangpt.dtr</groupId>
+  <artifactId>dtr-core</artifactId>
+  <version>2026.4.1</version>
+</dependency>
+```
+
+Year-bounded range (recommended for libraries): `[2026.1.0,2027)`
+
 ## [NEXT] - In Progress
 
 ### Documentation Overhaul

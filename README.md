@@ -82,6 +82,7 @@ Add to `.mvn/maven.config`:
 
 ```java
 import io.github.seanchatmangpt.dtr.DtrContext;
+import io.github.seanchatmangpt.dtr.junit5.DtrContextField;
 import io.github.seanchatmangpt.dtr.junit5.DtrExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,9 +92,12 @@ import java.util.Map;
 @ExtendWith(DtrExtension.class)
 class HelloDtrTest {
 
+    @DtrContextField
+    private DtrContext ctx;
+
     @Test
     @AutoSection  // Auto-generates "Get User" from method name
-    void testGetUser(DtrContext ctx) {
+    void testGetUser() {
         ctx.say("Returns user details by ID.");
         ctx.sayCode("GET /api/users/{id}", "http");
         ctx.sayKeyValue(Map.of(
@@ -120,6 +124,76 @@ Output is pure, portable Markdown — committed to your repository, diffable, an
 
 ---
 
+## Context Injection Patterns
+
+DTR supports two patterns for accessing `DtrContext` in your tests:
+
+### Field Injection (Recommended)
+
+Declare the context once at the class level:
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyApiTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void listUsers() {
+        ctx.say("Returns all users");
+    }
+
+    @Test
+    void createUser() {
+        ctx.say("Creates a new user");
+    }
+}
+```
+
+**Benefits:**
+- Clean method signatures
+- One declaration for entire test class
+- Less repetition for tests with many methods
+
+### Parameter Injection (Alternative)
+
+Inject the context as a method parameter:
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyApiTest {
+    @Test
+    void listUsers(DtrContext ctx) {
+        ctx.say("Returns all users");
+    }
+
+    @Test
+    void createUser(DtrContext ctx) {
+        ctx.say("Creates a new user");
+    }
+}
+```
+
+**Benefits:**
+- Explicit dependencies per test method
+- Different setup possible for each method
+- More familiar to JUnit users
+
+### Which Pattern to Choose?
+
+| Use Case | Recommended Pattern |
+|----------|-------------------|
+| Test class with 3+ methods | **Field Injection** |
+| Each test needs different setup | Parameter Injection |
+| New to DTR | **Field Injection** (simpler) |
+| Migrating from JUnit assertions | Parameter Injection (familiar) |
+
+**Default recommendation:** Start with **field injection** for cleaner, more maintainable test classes.
+
+See **[Field Injection Guide](docs/tutorials/field-injection-guide.md)** for complete details including advanced patterns, thread safety, and migration guides.
+
+---
+
 ## What's New in 2026.4.0
 
 ### Critical Bug Fix: DtrContext Parameter Injection
@@ -143,6 +217,25 @@ class MyTest {
 ```
 
 ### New Features
+
+#### Field Injection for DtrContext
+
+New `@DtrContextField` annotation provides cleaner test classes:
+
+```java
+@ExtendWith(DtrExtension.class)
+class MyTest {
+    @DtrContextField
+    private DtrContext ctx;
+
+    @Test
+    void test() {
+        ctx.say("Clean method signatures");
+    }
+}
+```
+
+Field injection is now the **recommended pattern** for most test classes. See **[Field Injection Guide](docs/tutorials/field-injection-guide.md)** for details.
 
 #### Assertion + Documentation Combined
 
@@ -254,8 +347,11 @@ Most documentation uses just 8 methods. Master these first:
 Example using the 80/20 set:
 
 ```java
+@DtrContextField
+private DtrContext ctx;
+
 @Test
-void documentApi(DtrContext ctx) {
+void documentApi() {
     ctx.sayNextSection("Authentication API");
     ctx.say("All endpoints require Bearer token authentication.");
     ctx.sayCode("Authorization: Bearer <token>", "http");
@@ -274,6 +370,7 @@ void documentApi(DtrContext ctx) {
 
 Learn by doing with step-by-step guides:
 
+- **[Field Injection Guide](docs/tutorials/field-injection-guide.md)** — Recommended pattern for DtrContext access
 - **[Your First DocTest](docs/tutorials/your-first-doctest.md)** — 20-minute introduction to DTR basics
 - **[Testing a REST API](docs/tutorials/testing-a-rest-api.md)** — Document real HTTP endpoints
 - **[Records and Sealed Classes](docs/tutorials/records-sealed-classes.md)** — Advanced pattern matching

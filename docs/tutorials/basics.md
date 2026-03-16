@@ -88,9 +88,11 @@ Create a new file `src/test/java/com/example/HelloDtrTest.java`:
 ```java
 package com.example;
 
-import io.github.seanchatmangpt.dtr.DtrTest;
+import io.github.seanchatmangpt.dtr.DtrContext;
 import io.github.seanchatmangpt.dtr.DocSection;
 import io.github.seanchatmangpt.dtr.DtrExtension;
+import io.github.seanchatmangpt.dtr.DtrTest;
+import io.github.seanchatmangpt.dtr.DtrContextField;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -101,26 +103,30 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(DtrExtension.class)
-class HelloDtrTest extends DtrTest {
+@DtrTest
+class HelloDtrTest {
+
+    @DtrContextField
+    private DtrContext dtr;
 
     @Test
     @DocSection("Getting Started")
     void gettingStarted() {
-        say("DTR transforms tests into living documentation.");
-        sayNextSection("Core Concept");
-        say("Every test run regenerates documentation from live behavior.");
+        dtr.say("DTR transforms tests into living documentation.");
+        dtr.sayNextSection("Core Concept");
+        dtr.say("Every test run regenerates documentation from live behavior.");
     }
 
     @Test
     @DocSection("Using say Methods")
     void usingSayMethods() {
-        say("The `say` method renders paragraphs in your documentation.");
+        dtr.say("The `say` method renders paragraphs in your documentation.");
 
-        sayNextSection("Code Examples");
-        sayCode("int x = 42;", "java");
+        dtr.sayNextSection("Code Examples");
+        dtr.sayCode("int x = 42;", "java");
 
-        sayNextSection("Structured Data");
-        sayTable(new String[][]{
+        dtr.sayNextSection("Structured Data");
+        dtr.sayTable(new String[][]{
             {"Method", "Description", "Example"},
             {"say()", "Paragraphs", "Text blocks"},
             {"sayCode()", "Code blocks", "Syntax highlighted"},
@@ -131,12 +137,12 @@ class HelloDtrTest extends DtrTest {
     @Test
     @DocSection("Assertions and Documentation")
     void assertionsAndDocumentation() {
-        say("DTR combines assertions with documentation generation.");
+        dtr.say("DTR combines assertions with documentation generation.");
 
         int result = 2 + 2;
         assertThat("Addition works", result, equalTo(4));
 
-        sayAssertions(Map.of(
+        dtr.sayAssertions(Map.of(
             "2 + 2", "4",
             "Calculation", "✓ PASS"
         ));
@@ -145,16 +151,16 @@ class HelloDtrTest extends DtrTest {
     @Test
     @DocSection("Lists and Formatting")
     void listsAndFormatting() {
-        say("DTR supports various formatting options:");
+        dtr.say("DTR supports various formatting options:");
 
-        sayUnorderedList(List.of(
+        dtr.sayUnorderedList(List.of(
             "Bullet points for unordered lists",
             "Numbered lists for sequences",
             "Code blocks with syntax highlighting"
         ));
 
-        sayNextSection("Numbered Steps");
-        sayOrderedList(List.of(
+        dtr.sayNextSection("Numbered Steps");
+        dtr.sayOrderedList(List.of(
             "Write your test",
             "Add say* methods",
             "Run with mvnd test",
@@ -167,13 +173,33 @@ class HelloDtrTest extends DtrTest {
 ### What's Happening Here?
 
 - **`@ExtendWith(DtrExtension.class)`** — Registers DTR with JUnit Jupiter 6
-- **`extends DtrTest`** — Provides access to all `say*` methods
+- **`@DtrTest`** — Marks the class as a DTR documentation test
+- **`@DtrContextField`** — Injects a `DtrContext` instance for accessing `say*` methods
+- **`private DtrContext dtr`** — Field that provides access to all documentation methods
 - **`@DocSection("...")`** — Creates section headings in documentation
-- **`say(...)`** — Adds paragraph text
-- **`sayNextSection(...)`** — Creates major section breaks
-- **`sayCode(...)`** — Renders syntax-highlighted code blocks
-- **`sayTable(...)`** — Formats tables from 2D arrays
-- **`sayAssertions(...)`** — Documents test results
+- **`dtr.say(...)`** — Adds paragraph text
+- **`dtr.sayNextSection(...)`** — Creates major section breaks
+- **`dtr.sayCode(...)`** — Renders syntax-highlighted code blocks
+- **`dtr.sayTable(...)`** — Formats tables from 2D arrays
+- **`dtr.sayAssertions(...)`** — Documents test results
+
+### Alternative: Inheritance Pattern
+
+DTR also supports the classic inheritance pattern for backwards compatibility:
+
+```java
+@ExtendWith(DtrExtension.class)
+class HelloDtrTest extends DtrTest {
+    @Test
+    void gettingStarted() {
+        say("Direct access to say* methods without 'dtr.' prefix");
+    }
+}
+```
+
+**When to use each approach:**
+- **Field injection (recommended):** Use for new projects — more flexible, works with multiple test base classes
+- **Inheritance:** Use if migrating existing code or if you prefer direct method access without the `dtr.` prefix
 
 ---
 
@@ -292,82 +318,114 @@ Here are practical patterns you'll use frequently:
 ### Pattern 1: Documenting a Feature
 
 ```java
-@Test
-@DocSection("Feature: User Registration")
-void documentUserRegistration() {
-    say("User registration requires email and password:");
+@ExtendWith(DtrExtension.class)
+@DtrTest
+class FeatureDocumentation {
 
-    sayCode("""
+    @DtrContextField
+    private DtrContext dtr;
+
+    @Test
+    @DocSection("Feature: User Registration")
+    void documentUserRegistration() {
+        dtr.say("User registration requires email and password:");
+
+        dtr.sayCode("""
+            User user = new User("alice@example.com", "securePass123");
+            userService.register(user);
+            """, "java");
+
         User user = new User("alice@example.com", "securePass123");
-        userService.register(user);
-        """, "java");
+        boolean registered = userService.register(user);
 
-    User user = new User("alice@example.com", "securePass123");
-    boolean registered = userService.register(user);
-
-    assertThat("Registration succeeds", registered, equalTo(true));
-    sayAssertions(Map.of("User registered", "✓ PASS"));
+        assertThat("Registration succeeds", registered, equalTo(true));
+        dtr.sayAssertions(Map.of("User registered", "✓ PASS"));
+    }
 }
 ```
 
 ### Pattern 2: Documenting API Responses
 
 ```java
-@Test
-@DocSection("API Response Format")
-void documentApiResponse() {
-    say("API endpoints return JSON with this structure:");
+@ExtendWith(DtrExtension.class)
+@DtrTest
+class ApiDocumentation {
 
-    Map<String, Object> response = Map.of(
-        "status", 200,
-        "message", "Success",
-        "data", List.of("item1", "item2")
-    );
+    @DtrContextField
+    private DtrContext dtr;
 
-    sayJson(response);
+    @Test
+    @DocSection("API Response Format")
+    void documentApiResponse() {
+        dtr.say("API endpoints return JSON with this structure:");
+
+        Map<String, Object> response = Map.of(
+            "status", 200,
+            "message", "Success",
+            "data", List.of("item1", "item2")
+        );
+
+        dtr.sayJson(response);
+    }
 }
 ```
 
 ### Pattern 3: Documenting Configuration
 
 ```java
-@Test
-@DocSection("Configuration Options")
-void documentConfiguration() {
-    say("DTR supports these configuration options:");
+@ExtendWith(DtrExtension.class)
+@DtrTest
+class ConfigurationDocumentation {
 
-    sayKeyValue(Map.of(
-        "output.format", "markdown, html, latex, json",
-        "output.directory", "target/docs/test-results/",
-        "filename.strategy", "class-based"
-    ));
+    @DtrContextField
+    private DtrContext dtr;
+
+    @Test
+    @DocSection("Configuration Options")
+    void documentConfiguration() {
+        dtr.say("DTR supports these configuration options:");
+
+        dtr.sayKeyValue(Map.of(
+            "output.format", "markdown, html, latex, json",
+            "output.directory", "target/docs/test-results/",
+            "filename.strategy", "class-based"
+        ));
+    }
 }
 ```
 
 ### Pattern 4: Progressive Documentation
 
 ```java
-@Test
-@DocSection("Building a Complex Example")
-void buildComplexExample() {
-    say("Start with the basics...");
-    sayCode("int base = 10;", "java");
+@ExtendWith(DtrExtension.class)
+@DtrTest
+class ProgressiveDocumentation {
 
-    sayNextSection("Add Complexity");
-    say("Layer on additional concepts:");
-    sayCode("""
+    @DtrContextField
+    private DtrContext dtr;
+
+    @Test
+    @DocSection("Building a Complex Example")
+    void buildComplexExample() {
+        dtr.say("Start with the basics...");
+        dtr.sayCode("int base = 10;", "java");
+
+        dtr.sayNextSection("Add Complexity");
+        dtr.say("Layer on additional concepts:");
+        dtr.sayCode("""
+            int base = 10;
+            int multiplier = 5;
+            int result = base * multiplier;
+            """, "java");
+
+        dtr.sayNextSection("Final Result");
         int base = 10;
         int multiplier = 5;
         int result = base * multiplier;
-        """, "java");
 
-    sayNextSection("Final Result");
-    int base = 10;
-    int multiplier = 5;
-    int result = base * multiplier;
-
-    assertThat("Calculation correct", result, equalTo(50));
-    sayAssertions(Map.of("10 * 5", "50"));
+        assertThat("Calculation correct", result, equalTo(50));
+        dtr.sayAssertions(Map.of("10 * 5", "50"));
+    }
 }
 ```
 
@@ -391,19 +449,23 @@ Create a test class `CalculatorDocTest.java` that:
 
 ```java
 @ExtendWith(DtrExtension.class)
-class CalculatorDocTest extends DtrTest {
+@DtrTest
+class CalculatorDocTest {
+
+    @DtrContextField
+    private DtrContext dtr;
 
     @Test
     @DocSection("Calculator Operations")
     void basicOperations() {
-        say("The calculator supports basic arithmetic operations:");
+        dtr.say("The calculator supports basic arithmetic operations:");
 
         // TODO: Document addition with code example and assertion
 
-        sayNextSection("Operation Results");
+        dtr.sayNextSection("Operation Results");
         // TODO: Add a table showing results
 
-        sayNextSection("Edge Cases");
+        dtr.sayNextSection("Edge Cases");
         // TODO: List edge cases to consider
     }
 }
@@ -412,10 +474,10 @@ class CalculatorDocTest extends DtrTest {
 ### Solution Hint
 
 You'll need:
-- `sayCode()` for examples
+- `dtr.sayCode()` for examples
 - `assertThat()` for assertions
-- `sayTable()` for results
-- `sayUnorderedList()` for edge cases
+- `dtr.sayTable()` for results
+- `dtr.sayUnorderedList()` for edge cases
 
 ---
 
@@ -424,11 +486,12 @@ You'll need:
 In this tutorial, you learned:
 
 - **The DTR mental model** — tests generate documentation automatically
-- **How to write a DTR test** — `@ExtendWith(DtrExtension.class)` + `extends DtrTest`
-- **Core `say*` methods** — `say()`, `sayCode()`, `sayTable()`, `sayNextSection()`, etc.
+- **How to write a DTR test** — `@ExtendWith(DtrExtension.class)` + `@DtrTest` + `@DtrContextField`
+- **Core `say*` methods** — `dtr.say()`, `dtr.sayCode()`, `dtr.sayTable()`, `dtr.sayNextSection()`, etc.
 - **Running tests** — `mvnd test -Dtest=YourTest`
 - **Output location** — `target/docs/test-results/`
 - **Common patterns** — practical examples for everyday use
+- **Field injection vs inheritance** — two approaches, same results
 
 ### Key Takeaways
 

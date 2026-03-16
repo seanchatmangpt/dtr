@@ -50,17 +50,22 @@ package com.example.doctest;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-import static com.example.doctest.DtrContext.*;
+import com.example.doctest.DtrContext;
+import com.example.doctest.DtrContextField;
+import com.example.doctest.DtrTest;
 
 @DisplayName("User API Documentation")
-class UserApiDocTest {
+class UserApiDocTest extends DtrTest {
+
+    @DtrContextField
+    DtrContext ctx;
 
     @Test
     @DisplayName("GET /api/users/{id}")
     @DocTestRef(id = "get-user-by-id")
     void getUserById() {
-        sayNextSection("GET /api/users/{id}");
-        say("Retrieves a single user by their ID.");
+        ctx.sayNextSection("GET /api/users/{id}");
+        ctx.say("Retrieves a single user by their ID.");
 
         // TODO: Document request, response, errors
     }
@@ -77,32 +82,32 @@ Document the HTTP method, URL, headers, and parameters:
 @Test
 @DocTestRef(id = "get-user-by-id")
 void getUserById() {
-    sayNextSection("GET /api/users/{id}");
-    say("Retrieves a single user by their ID.");
+    ctx.sayNextSection("GET /api/users/{id}");
+    ctx.say("Retrieves a single user by their ID.");
 
-    sayNextSection("Request");
-    sayKeyValue(Map.of(
+    ctx.sayNextSection("Request");
+    ctx.sayKeyValue(Map.of(
         "Method", "GET",
         "URL", "/api/users/{id}",
         "Authentication", "Bearer token required",
         "Content-Type", "Not applicable (GET request)"
     ));
 
-    sayNextSection("Path Parameters");
-    sayTable(new String[][] {
+    ctx.sayNextSection("Path Parameters");
+    ctx.sayTable(new String[][] {
         {"Parameter", "Type", "Description", "Example"},
         {"id", "integer", "Unique user identifier", "42"}
     });
 
-    sayNextSection("Query Parameters");
-    sayTable(new String[][] {
+    ctx.sayNextSection("Query Parameters");
+    ctx.sayTable(new String[][] {
         {"Parameter", "Type", "Required", "Description"},
         {"fields", "string", "No", "Comma-separated list of fields to include"},
         {"include", "string", "No", "Related resources to include (e.g., 'profile')"}
     });
 
-    sayNextSection("Request Example");
-    sayCode("""
+    ctx.sayNextSection("Request Example");
+    ctx.sayCode("""
 GET /api/users/42?fields=id,username,email&include=profile
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Host: api.example.com
@@ -117,10 +122,10 @@ Host: api.example.com
 Document the response body, headers, and status codes:
 
 ```java
-sayNextSection("Response");
+ctx.sayNextSection("Response");
 
 // Success response
-sayCode("""
+ctx.sayCode("""
 HTTP/1.1 200 OK
 Content-Type: application/json
 X-RateLimit-Remaining: 99
@@ -144,8 +149,8 @@ X-Request-ID: req_abc123
 """, "json");
 
 // Document response schema
-sayNextSection("Response Schema");
-sayCode("""
+ctx.sayNextSection("Response Schema");
+ctx.sayCode("""
 interface UserResponse {
   data: {
     id: number;              // Unique user ID
@@ -164,8 +169,8 @@ interface UserResponse {
 """, "typescript");
 
 // Document response headers
-sayNextSection("Response Headers");
-sayTable(new String[][] {
+ctx.sayNextSection("Response Headers");
+ctx.sayTable(new String[][] {
     {"Header", "Description", "Example"},
     {"Content-Type", "Response format", "application/json"},
     {"X-RateLimit-Remaining", "Remaining requests", "99"},
@@ -181,9 +186,9 @@ sayTable(new String[][] {
 Document all possible error conditions:
 
 ```java
-sayNextSection("Error Responses");
+ctx.sayNextSection("Error Responses");
 
-sayTable(new String[][] {
+ctx.sayTable(new String[][] {
     {"Status", "Code", "Title", "Description"},
     {"400", "bad_request", "Invalid request", "Malformed request syntax or parameters"},
     {"401", "unauthorized", "Authentication required", "Missing or invalid Bearer token"},
@@ -193,10 +198,10 @@ sayTable(new String[][] {
 });
 
 // Detailed error examples
-sayNextSection("Error Response Examples");
+ctx.sayNextSection("Error Response Examples");
 
-sayWarning("401 Unauthorized - Missing Token");
-sayCode("""
+ctx.sayWarning("401 Unauthorized - Missing Token");
+ctx.sayCode("""
 HTTP/1.1 401 Unauthorized
 Content-Type: application/json
 WWW-Authenticate: Bearer
@@ -210,8 +215,8 @@ WWW-Authenticate: Bearer
 }
 """, "json");
 
-sayWarning("404 Not Found - Invalid User ID");
-sayCode("""
+ctx.sayWarning("404 Not Found - Invalid User ID");
+ctx.sayCode("""
 HTTP/1.1 404 Not Found
 Content-Type: application/json
 
@@ -235,19 +240,19 @@ Content-Type: application/json
 Document authentication mechanisms clearly:
 
 ```java
-sayNextSection("Authentication");
+ctx.sayNextSection("Authentication");
 
-say("This endpoint requires Bearer token authentication. Include the token in the Authorization header:");
+ctx.say("This endpoint requires Bearer token authentication. Include the token in the Authorization header:");
 
-sayCode("""
+ctx.sayCode("""
 Authorization: Bearer <your_access_token>
 """, "http");
 
-sayNextSection("Obtaining an Access Token");
+ctx.sayNextSection("Obtaining an Access Token");
 
-say("Tokens are obtained via the authentication endpoint:");
+ctx.say("Tokens are obtained via the authentication endpoint:");
 
-sayCode("""
+ctx.sayCode("""
 POST /api/auth/token
 Content-Type: application/json
 
@@ -258,7 +263,7 @@ Content-Type: application/json
 }
 """, "json");
 
-sayNote("Access tokens expire after 1 hour. Refresh tokens are valid for 30 days.");
+ctx.sayNote("Access tokens expire after 1 hour. Refresh tokens are valid for 30 days.");
 ```
 
 ---
@@ -268,23 +273,23 @@ sayNote("Access tokens expire after 1 hour. Refresh tokens are valid for 30 days
 Document usage limits and throttling behavior:
 
 ```java
-sayNextSection("Rate Limiting");
+ctx.sayNextSection("Rate Limiting");
 
-sayKeyValue(Map.of(
+ctx.sayKeyValue(Map.of(
     "Limit", "100 requests per minute",
     "Window", "Rolling 60-second window",
     "Headers", "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
 ));
 
-sayNextSection("Rate Limit Headers");
-sayTable(new String[][] {
+ctx.sayNextSection("Rate Limit Headers");
+ctx.sayTable(new String[][] {
     {"Header", "Description", "Example"},
     {"X-RateLimit-Limit", "Request limit per window", "100"},
     {"X-RateLimit-Remaining", "Remaining requests", "95"},
     {"X-RateLimit-Reset", "Unix timestamp when limit resets", "1709251200"}
 });
 
-sayWarning("Exceeding the rate limit returns HTTP 429 with a Retry-After header.");
+ctx.sayWarning("Exceeding the rate limit returns HTTP 429 with a Retry-After header.");
 ```
 
 ---
@@ -302,30 +307,33 @@ import java.util.Map;
 import static com.example.doctest.DtrContext.*;
 
 @DisplayName("User API Documentation")
-class UserApiDocTest {
+class UserApiDocTest extends DtrTest {
+
+    @DtrContextField
+    DtrContext ctx;
 
     @Test
     @DisplayName("GET /api/users/{id}")
     @DocTestRef(id = "get-user-by-id")
     void getUserById() {
-        sayNextSection("GET /api/users/{id}");
-        say("Retrieves a single user by their ID.");
+        ctx.sayNextSection("GET /api/users/{id}");
+        ctx.say("Retrieves a single user by their ID.");
 
-        sayNextSection("Request");
-        sayKeyValue(Map.of(
+        ctx.sayNextSection("Request");
+        ctx.sayKeyValue(Map.of(
             "Method", "GET",
             "URL", "/api/users/{id}",
             "Authentication", "Bearer token required"
         ));
 
-        sayNextSection("Path Parameters");
-        sayTable(new String[][] {
+        ctx.sayNextSection("Path Parameters");
+        ctx.sayTable(new String[][] {
             {"Parameter", "Type", "Description", "Example"},
             {"id", "integer", "Unique user identifier", "42"}
         });
 
-        sayNextSection("Response");
-        sayCode("""
+        ctx.sayNextSection("Response");
+        ctx.sayCode("""
 {
   "data": {
     "id": 42,
@@ -335,15 +343,15 @@ class UserApiDocTest {
 }
 """, "json");
 
-        sayNextSection("Error Responses");
-        sayTable(new String[][] {
+        ctx.sayNextSection("Error Responses");
+        ctx.sayTable(new String[][] {
             {"Status", "Description"},
             {"404", "User not found"},
             {"401", "Unauthorized"}
         });
 
-        sayNextSection("Authentication");
-        say("Requires Bearer token in Authorization header.");
+        ctx.sayNextSection("Authentication");
+        ctx.say("Requires Bearer token in Authorization header.");
     }
 }
 ```
@@ -359,11 +367,11 @@ Document a request with a body:
 @DisplayName("POST /api/users")
 @DocTestRef(id = "create-user")
 void createUser() {
-    sayNextSection("POST /api/users");
-    say("Creates a new user account.");
+    ctx.sayNextSection("POST /api/users");
+    ctx.say("Creates a new user account.");
 
-    sayNextSection("Request");
-    sayCode("""
+    ctx.sayNextSection("Request");
+    ctx.sayCode("""
 POST /api/users
 Authorization: Bearer <token>
 Content-Type: application/json
@@ -375,16 +383,16 @@ Content-Type: application/json
 }
 """, "http");
 
-    sayNextSection("Request Body Schema");
-    sayTable(new String[][] {
+    ctx.sayNextSection("Request Body Schema");
+    ctx.sayTable(new String[][] {
         {"Field", "Type", "Required", "Constraints"},
         {"username", "string", "Yes", "3-30 chars, alphanumeric + underscore"},
         {"email", "string", "Yes", "Valid email format"},
         {"password", "string", "Yes", "Min 12 chars, requires special char"}
     });
 
-    sayNextSection("Response");
-    sayCode("""
+    ctx.sayNextSection("Response");
+    ctx.sayCode("""
 HTTP/1.1 201 Created
 Location: /api/users/42
 Content-Type: application/json
@@ -399,8 +407,8 @@ Content-Type: application/json
 }
 """, "json");
 
-    sayNextSection("Error Responses");
-    sayTable(new String[][] {
+    ctx.sayNextSection("Error Responses");
+    ctx.sayTable(new String[][] {
         {"Status", "Description"},
         {"400", "Validation error (invalid email, weak password)"},
         {"409", "Username or email already exists"},
@@ -420,11 +428,11 @@ Document list endpoints with pagination:
 @DisplayName("GET /api/users (List)")
 @DocTestRef(id = "list-users")
 void listUsers() {
-    sayNextSection("GET /api/users");
-    say("Lists all users with pagination and filtering.");
+    ctx.sayNextSection("GET /api/users");
+    ctx.say("Lists all users with pagination and filtering.");
 
-    sayNextSection("Query Parameters");
-    sayTable(new String[][] {
+    ctx.sayNextSection("Query Parameters");
+    ctx.sayTable(new String[][] {
         {"Parameter", "Type", "Default", "Description"},
         {"page", "integer", "1", "Page number (1-indexed)"},
         {"per_page", "integer", "20", "Items per page (1-100)"},
@@ -432,8 +440,8 @@ void listUsers() {
         {"order", "string", "asc", "Sort order (asc, desc)"}
     });
 
-    sayNextSection("Response");
-    sayCode("""
+    ctx.sayNextSection("Response");
+    ctx.sayCode("""
 {
   "data": [
     {"id": 1, "username": "alice", "email": "alice@example.com"},
@@ -466,7 +474,7 @@ Use DTR assertions to validate API responses:
 @DisplayName("GET /api/users/{id} - Contract Test")
 @DocTestRef(id = "get-user-by-id-contract")
 void getUserByIdContract() {
-    sayNextSection("GET /api/users/{id} - Contract Validation");
+    ctx.sayNextSection("GET /api/users/{id} - Contract Validation");
 
     // Simulated API response
     String responseBody = """
@@ -480,18 +488,18 @@ void getUserByIdContract() {
         """;
 
     // Document and validate
-    sayNextSection("Response Validation");
-    sayAndAssertThat("Response contains 'data' field",
+    ctx.sayNextSection("Response Validation");
+    ctx.sayAndAssertThat("Response contains 'data' field",
         responseBody.contains("\"data\""), equalTo(true));
 
-    sayAndAssertThat("Response contains 'id' field",
+    ctx.sayAndAssertThat("Response contains 'id' field",
         responseBody.contains("\"id\""), equalTo(true));
 
-    sayAndAssertThat("Response contains 'username' field",
+    ctx.sayAndAssertThat("Response contains 'username' field",
         responseBody.contains("\"username\""), equalTo(true));
 
-    sayNextSection("Schema Validation");
-    sayKeyValue(Map.of(
+    ctx.sayNextSection("Schema Validation");
+    ctx.sayKeyValue(Map.of(
         "id", "present: ✓",
         "username", "present: ✓",
         "email", "present: ✓",

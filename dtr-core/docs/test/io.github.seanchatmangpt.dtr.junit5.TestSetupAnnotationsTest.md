@@ -17,8 +17,8 @@ Verification: Both @TestSetup methods executed successfully.
 
 | Key | Value |
 | --- | --- |
-| `setupWithContextExecuted` | `true` |
 | `setupExecuted` | `true` |
+| `setupWithContextExecuted` | `true` |
 
 ## Authenticated Test Example
 
