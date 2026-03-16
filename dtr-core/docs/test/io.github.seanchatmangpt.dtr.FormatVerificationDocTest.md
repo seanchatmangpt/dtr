@@ -58,10 +58,10 @@ sealed interface SayEvent permits
 
 | Check | Result |
 | --- | --- |
-| No instanceof in render dispatch | `✓ PASS` |
-| Records ensure immutability | `✓ PASS` |
-| Sealed hierarchy enforces completeness | `✓ PASS` |
 | All 4 pipeline events processed | `✓ PASS` |
+| Sealed hierarchy enforces completeness | `✓ PASS` |
+| Records ensure immutability | `✓ PASS` |
+| No instanceof in render dispatch | `✓ PASS` |
 
 > [!NOTE]
 > Add SayEvent.NewFormatEvent to the sealed interface: every switch in every renderer fails to compile until it handles the new case. Silent no-ops are structurally impossible.
@@ -114,13 +114,13 @@ void testConcurrentCacheInvalidation() {
 
 | Key | Value |
 | --- | --- |
-| `Mutation Score` | `98.7%` |
-| `Coverage Target` | `100% branch coverage` |
-| `Timeout Per Test` | `5 seconds` |
-| `Property-Based Library` | `jqwik (50k test cases)` |
 | `Concurrency Level` | `32 virtual threads` |
-| `Fuzzing Engine` | `libFuzzer integration` |
+| `Property-Based Library` | `jqwik (50k test cases)` |
+| `Timeout Per Test` | `5 seconds` |
+| `Coverage Target` | `100% branch coverage` |
+| `Mutation Score` | `98.7%` |
 | `Test Framework` | `JUnit 5 + Hamcrest` |
+| `Fuzzing Engine` | `libFuzzer integration` |
 
 ## Testing Capabilities
 
@@ -148,15 +148,15 @@ Test execution metadata is captured and available for export:
 
 ```json
 {
-  "testClass" : "FormatVerificationDocTest",
-  "duration" : "142ms",
-  "coverage" : {
-    "methods" : "97.2%",
-    "lines" : "98.7%",
-    "branches" : "100%"
-  },
-  "testsRun" : 1,
   "testsPassed" : 1,
+  "testsRun" : 1,
+  "coverage" : {
+    "branches" : "100%",
+    "lines" : "98.7%",
+    "methods" : "97.2%"
+  },
+  "duration" : "142ms",
+  "testClass" : "FormatVerificationDocTest",
   "executedAt" : "2026-03-11T05:15:00Z"
 }
 ```
@@ -165,12 +165,12 @@ Test execution metadata is captured and available for export:
 
 | Check | Result |
 | --- | --- |
-| Code coverage adequate | `✓ 100% branch coverage` |
-| Mutation score acceptable | `✓ 98.7% > 98.0% threshold` |
-| Unit tests pass | `✓ 1,243/1,247 (99.68%)` |
-| Property invariants hold | `✓ 50,000/50,000 (100%)` |
-| Fuzzing finds no crashes | `✓ 1,000,000/1,000,000 (100%)` |
 | Performance regression free | `✓ avg 142ms (within SLA)` |
+| Fuzzing finds no crashes | `✓ 1,000,000/1,000,000 (100%)` |
+| Property invariants hold | `✓ 50,000/50,000 (100%)` |
+| Unit tests pass | `✓ 1,243/1,247 (99.68%)` |
+| Mutation score acceptable | `✓ 98.7% > 98.0% threshold` |
+| Code coverage adequate | `✓ 100% branch coverage` |
 
 ## Patent-Specific Testing Methodology
 
@@ -218,16 +218,16 @@ The implementation exhibits high mutation resistance (98.7% mutation kill rate):
 
 ```json
 {
-  "mutationEngine" : "PIT (Pitest)",
-  "mutationsKilled" : 1013,
   "mutationsCovered" : {
-    "boundaryMutations" : "100%",
-    "returnValueMutations" : "97.2%",
     "arithmeticMutations" : "98.1%",
+    "returnValueMutations" : "97.2%",
+    "boundaryMutations" : "100%",
     "conditionalMutations" : "99.8%"
   },
-  "mutationsGenerated" : 1027,
-  "killRate" : "98.7%"
+  "mutationsKilled" : 1013,
+  "mutationEngine" : "PIT (Pitest)",
+  "killRate" : "98.7%",
+  "mutationsGenerated" : 1027
 }
 ```
 
@@ -257,10 +257,10 @@ void propertyConcurrentMapEventualConsistency(@ForAll List<String> keys) {
 
 | Check | Result |
 | --- | --- |
-| Total property checks executed | `600,000` |
-| Test cases generated per property | `50,000` |
-| Shrinking examples enabled | `Yes` |
 | Properties defined | `12` |
+| Shrinking examples enabled | `Yes` |
+| Test cases generated per property | `50,000` |
+| Total property checks executed | `600,000` |
 | Failures found and fixed | `3` |
 
 ## Fuzzing (Libfuzzer)
@@ -282,11 +282,11 @@ public void fuzzJsonParser(byte[] data) {
 
 | Key | Value |
 | --- | --- |
-| `Fuzz iterations` | `1,000,000` |
-| `Timeout violations` | `0` |
-| `Unique crashes found` | `0` |
-| `Memory leaks found` | `0` |
 | `Time budget per iteration` | `100ms` |
+| `Memory leaks found` | `0` |
+| `Unique crashes found` | `0` |
+| `Timeout violations` | `0` |
+| `Fuzz iterations` | `1,000,000` |
 
 ## Invariant-Based Testing
 
@@ -392,16 +392,16 @@ mvnd test -pl dtr-core -Dtest=FormatVerificationDocTest \
 
 | Check | Result |
 | --- | --- |
-| ✓ All 9 extended API methods render correctly | `PASS` |
-| ✓ Patent format includes legal language | `PASS` |
-| ✓ Social queue includes tweets and posts | `PASS` |
-| ✓ Code blocks with syntax highlighting work | `PASS` |
-| ✓ Slide deck generates valid HTML5 | `PASS` |
-| ✓ Lists (ordered/unordered) preserve formatting | `PASS` |
-| ✓ Blog platforms have platform-specific front matter | `PASS` |
 | ✓ Alerts (warning/note) render appropriately | `PASS` |
-| ✓ Tables render in all formats | `PASS` |
+| ✓ Blog platforms have platform-specific front matter | `PASS` |
+| ✓ Lists (ordered/unordered) preserve formatting | `PASS` |
+| ✓ Slide deck generates valid HTML5 | `PASS` |
+| ✓ Code blocks with syntax highlighting work | `PASS` |
+| ✓ Social queue includes tweets and posts | `PASS` |
+| ✓ Patent format includes legal language | `PASS` |
+| ✓ All 9 extended API methods render correctly | `PASS` |
 | ✓ JSON serialization works across platforms | `PASS` |
+| ✓ Tables render in all formats | `PASS` |
 
 ---
 *Generated by [DTR](http://www.dtr.org)*
