@@ -1,0 +1,61 @@
+Priority,File,Line,Error Type,Current Message,Enhancement Status
+P0,DtrExtension.java,170,RuntimeException,"Failed to execute @TestSetup method",PENDING
+P0,ReferenceResolver.java,132,InvalidDocTestRefException,"DocTest class not found in index",PENDING
+P0,ReferenceResolver.java,138,InvalidAnchorException,"Anchor not found",PENDING
+P0,RenderMachineImpl.java,514,RuntimeException,"DTR failed to write documentation file",PENDING
+P0,MultiRenderMachine.java,153,RuntimeException,"DTR render timed out",PENDING
+P0,MultiRenderMachine.java,146,MultiRenderException,"Render machine failed",PENDING
+P0,LatexCompiler.java,265,LatexCompilationException,"LaTeX compilation failed (exit code 1)",PENDING
+P0,LatexCompiler.java,271,LatexCompilationException,"LaTeX binary not found",PENDING
+P0,LatexCompiler.java,291,IOException,"PDF output missing or empty",PENDING
+P0,BlogRenderMachine.java,916,RuntimeException,"Blog rendering failed",PENDING
+P0,SlideRenderMachine.java,699,RuntimeException,"Slide rendering failed",PENDING
+P0,LatexmkStrategy.java,44,IOException,"Invalid TeX file",PENDING
+P0,PdflatexStrategy.java,43,IOException,"Invalid TeX file",PENDING
+P0,XelatexStrategy.java,43,IOException,"Invalid TeX file",PENDING
+P0,PandocStrategy.java,63,IOException,"Invalid TeX file",PENDING
+P1,DtrValidator.java,68,IllegalArgumentException,"Field name cannot be null or blank",PENDING
+P1,ValidationResult.java,45,IllegalArgumentException,"Error message cannot be null or blank",PENDING
+P1,ValidationResult.java,69,IllegalArgumentException,"Error message validation",PENDING
+P1,DocumentAssembler.java,45,IllegalArgumentException,"texFiles cannot be null or empty",PENDING
+P1,AssemblyManifest.java,45,IllegalArgumentException,"includedTests cannot be null or empty",PENDING
+P1,AssemblyManifest.java,48,IllegalArgumentException,"totalPages must be non-negative",PENDING
+P1,AssemblyManifest.java,51,IllegalArgumentException,"totalWords must be non-negative",PENDING
+P1,TableOfContents.java,37,IllegalArgumentException,"docTest cannot be null or empty",PENDING
+P1,TableOfContents.java,40,IllegalArgumentException,"title cannot be null or empty",PENDING
+P1,TableOfContents.java,43,IllegalArgumentException,"level must be 1, 2, or 3",PENDING
+P1,TableOfContents.java,55,IllegalStateException,"Invalid level",PENDING
+P1,TableOfContents.java,81,IllegalArgumentException,"docTest cannot be null or empty",PENDING
+P1,TableOfContents.java,84,IllegalArgumentException,"sectionTitle cannot be null or empty",PENDING
+P1,TableOfContents.java,87,IllegalArgumentException,"level must be 1, 2, or 3",PENDING
+P1,IndexBuilder.java,39,IllegalArgumentException,"term cannot be null or empty",PENDING
+P1,IndexBuilder.java,42,IllegalArgumentException,"pageNumbers cannot be null or empty",PENDING
+P1,IndexBuilder.java,81,IllegalArgumentException,"term cannot be null or empty",PENDING
+P1,IndexBuilder.java,84,IllegalArgumentException,"pageNumber must be positive",PENDING
+P1,WordCounter.java,46,IllegalArgumentException,"texContent cannot be null",PENDING
+P1,BibliographyManager.java,66,IllegalArgumentException,"Citation key cannot be null or blank",PENDING
+P1,BibliographyManager.java,97,IllegalArgumentException,"Citation key cannot be null or blank",PENDING
+P1,BibTeXEntry.java,43,IllegalArgumentException,"Entry type cannot be null or empty",PENDING
+P1,BibTeXEntry.java,46,IllegalArgumentException,"Entry key cannot be null or empty",PENDING
+P1,CitationKey.java,40,IllegalArgumentException,"Citation key cannot be null or blank",PENDING
+P2,CallSiteRecord.java,59,IllegalArgumentException,"className cannot be null or blank",PENDING
+P2,CallSiteRecord.java,62,IllegalArgumentException,"methodName cannot be null or blank",PENDING
+P2,CallSiteRecord.java,65,IllegalArgumentException,"lineNumber must be >= 0",PENDING
+P2,StringMetrics.java,75,IllegalArgumentException,"wordCount cannot be negative",PENDING
+P2,StringMetrics.java,78,IllegalArgumentException,"lineCount cannot be negative",PENDING
+P2,StringMetrics.java,81,IllegalArgumentException,"characterCount cannot be negative",PENDING
+P2,StringMetrics.java,84,IllegalArgumentException,"uniqueCharCount cannot be negative",PENDING
+P2,StringMetrics.java,87,IllegalArgumentException,"letterCount cannot be negative",PENDING
+P2,StringMetrics.java,90,IllegalArgumentException,"nonAsciiCount cannot be negative",PENDING
+P2,StringMetrics.java,95,IllegalArgumentException,"avgWordLength validation",PENDING
+P2,StringMetrics.java,99,IllegalArgumentException,"maxWordLength validation",PENDING
+P2,StringMetrics.java,103,IllegalArgumentException,"minWordLength validation",PENDING
+P2,ReflectiveDiff.java,86,IllegalArgumentException,"fieldName cannot be null or blank",PENDING
+P2,ReflectiveDiff.java,89,IllegalArgumentException,"beforeValueString cannot be null",PENDING
+P2,ReflectiveDiff.java,92,IllegalArgumentException,"afterValueString cannot be null",PENDING
+P2,AnnotationProfile.java,66,IllegalArgumentException,"className cannot be null or blank",PENDING
+P2,AnnotationProfile.java,73,IllegalArgumentException,"annotation names cannot be null or blank",PENDING
+P2,ClassHierarchy.java,76,IllegalArgumentException,"superclass names cannot be null or blank",PENDING
+P2,ClassHierarchy.java,83,IllegalArgumentException,"interface names cannot be null or blank",PENDING
+P2,DtrException.java,200,IllegalStateException,"Error message is required",PENDING
+P3,DtrValidator.java,53,AssertionError,"DtrValidator cannot be instantiated",PENDING
