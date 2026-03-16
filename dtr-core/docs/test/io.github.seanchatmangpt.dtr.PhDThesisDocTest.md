@@ -238,10 +238,10 @@ void finishDocTest()
 RenderMachine getRenderMachine()
 void initRenderingMachineIfNull()
 void say(String arg0)
-void sayAndAssertThat(String arg0, int arg1, Matcher arg2)
 void sayAndAssertThat(String arg0, long arg1, Matcher arg2)
-void sayAndAssertThat(String arg0, Object arg1, Matcher arg2)
 void sayAndAssertThat(String arg0, boolean arg1, Matcher arg2)
+void sayAndAssertThat(String arg0, int arg1, Matcher arg2)
+void sayAndAssertThat(String arg0, Object arg1, Matcher arg2)
 void sayAnnotationProfile(Class arg0)
 void sayAsciiChart(String arg0, double[] arg1, String[] arg2)
 void sayAssertions(Map arg0)
@@ -285,8 +285,8 @@ void saySecurityManager()
 void saySlideOnly(String arg0)
 void saySpeakerNote(String arg0)
 void sayStringProfile(String arg0)
-void saySystemProperties(String arg0)
 void saySystemProperties()
+void saySystemProperties(String arg0)
 void sayTable(String[][] arg0)
 void sayThreadDump()
 void sayTldr(String arg0)
@@ -407,11 +407,11 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 
 | Key | Value |
 | --- | --- |
-| `Thread pool to size` | `None required` |
 | `Concurrency model` | `Virtual threads (JEP 444)` |
 | `Threads created` | `8` |
-| `Wall-clock time` | `2 ms` |
+| `Wall-clock time` | `1 ms` |
 | `Formats dispatched` | `8` |
+| `Thread pool to size` | `None required` |
 
 ```java
 // UNNAMED PATTERNS (JEP 456) — Declare intent to ignore
@@ -431,12 +431,12 @@ String label = switch (event) {
 
 | Check | Result |
 | --- | --- |
-| Pattern matching switch is exhaustive over all 16 SayEvent types | `✓ PASS` |
 | Virtual threads enable O(1) multi-format rendering | `✓ PASS` |
 | Unnamed patterns communicate intentional component non-use | `✓ PASS` |
 | Records provide immutable event carriers with zero boilerplate | `✓ PASS` |
 | All features are in production use, not prototype code | `✓ PASS` |
 | Sealed classes make SayEvent grammar closed and verified | `✓ PASS` |
+| Pattern matching switch is exhaustive over all 16 SayEvent types | `✓ PASS` |
 
 ## 5. AI-Augmented Development with Claude Code
 
@@ -614,12 +614,12 @@ DTR configuration migration from v1 to v2:
 
 | Check | Result |
 | --- | --- |
-| sayAnnotationProfile() lists all @Test methods on this class | `✓ PASS` |
 | sayReflectiveDiff() detects all changed fields between v1 and v2 | `✓ PASS` |
 | sayCallSite() surfaces class/method/line from live JVM stack | `✓ PASS` |
 | sayStringProfile() computes word/line/char counts without regex library | `✓ PASS` |
 | No other testing library provides any of these 5 capabilities | `✓ PASS` |
 | sayClassHierarchy() renders DTR → Object chain | `✓ PASS` |
+| sayAnnotationProfile() lists all @Test methods on this class | `✓ PASS` |
 
 > [!NOTE]
 > All five innovations use only `java.lang.reflect`, `java.lang.invoke`, and Java's built-in string APIs. No external dependencies were added. The capabilities emerge from Java's reflection subsystem combined with the test-as-documentation paradigm.
@@ -630,7 +630,6 @@ We evaluate DTR against eleven criteria derived from the documentation quality l
 
 Live reflection measurement — test methods in this class:
 
-- chapter00_abstract
 - chapter01_introduction
 - chapter02_background
 - chapter03_architecture
@@ -641,10 +640,10 @@ Live reflection measurement — test methods in this class:
 - chapter08_discussion
 - chapter09_conclusion
 - chapter10_references
+- chapter00_abstract
 
 | Key | Value |
 | --- | --- |
-| `say* methods used in this file` | `22 (all of them)` |
 | `Output formats supported` | `11` |
 | `Java features demonstrated` | `7` |
 | `Test methods in PhDThesisDocTest` | `11` |
@@ -652,6 +651,7 @@ Live reflection measurement — test methods in this class:
 | `say* API methods available` | `22` |
 | `Citation keys registered` | `16` |
 | `Documentation drift incidents` | `0` |
+| `say* methods used in this file` | `22 (all of them)` |
 
 | Evaluation Criterion | Target | Measured | Result |
 | --- | --- | --- | --- |
@@ -669,7 +669,6 @@ Live reflection measurement — test methods in this class:
 
 | Check | Result |
 | --- | --- |
-| AI-augmented development workflow documented in chapter 5 | `✓ PASS` |
 | All 16 BibTeX citations registered in @BeforeAll | `✓ PASS` |
 | 11 output formats supported by MultiRenderMachine | `✓ PASS` |
 | Live reflection counts 11 @Test methods | `✓ PASS` |
@@ -677,6 +676,7 @@ Live reflection measurement — test methods in this class:
 | Zero documentation drift — structural, not procedural guarantee | `✓ PASS` |
 | File compiles on Java 26 with --enable-preview | `✓ PASS` |
 | Five Blue Ocean innovations demonstrated in chapter 6 | `✓ PASS` |
+| AI-augmented development workflow documented in chapter 5 | `✓ PASS` |
 
 The most important evaluation result is the one that cannot be measured empirically: the experience of reading a document that you trust. Documentation written in DTR's style does not require the reader to wonder "is this still accurate?". If it were not accurate, the test would fail. The document and the test are the same file. Trust is structural, not procedural.
 

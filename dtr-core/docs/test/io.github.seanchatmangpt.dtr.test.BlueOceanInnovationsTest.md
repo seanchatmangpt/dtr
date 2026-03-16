@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `236 ns` |
-| Min | `42 ns` |
-| Max | `25833 ns` |
-| p99 | `1458 ns` |
-| Ops/sec | `4,237,288` |
+| Avg | `318 ns` |
+| Min | `41 ns` |
+| Max | `50209 ns` |
+| p99 | `1125 ns` |
+| Ops/sec | `3,144,654` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `414 ns` |
-| Min | `166 ns` |
-| Max | `23709 ns` |
-| p99 | `2584 ns` |
-| Ops/sec | `2,415,458` |
+| Avg | `587 ns` |
+| Min | `167 ns` |
+| Max | `27917 ns` |
+| p99 | `27500 ns` |
+| Ops/sec | `1,703,577` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -169,8 +169,8 @@ classDiagram
         +sayAnnotationProfile(Class)
         +sayAsciiChart(String, double[], String[])
         +sayAssertions(Map)
-        +sayBenchmark(String, Runnable, int, int)
         +sayBenchmark(String, Runnable)
+        +sayBenchmark(String, Runnable, int, int)
     }
 ```
 
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-16T00:12:01.294404Z` |
+| Timestamp | `2026-03-16T00:31:05.347808Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -267,8 +267,8 @@ Documents interface contract coverage across implementation classes. For each pu
 | `void sayAnnotationProfile(Class)` | ✅ direct |
 | `void sayAsciiChart(String, double[], String[])` | ✅ direct |
 | `void sayAssertions(Map)` | ✅ direct |
-| `void sayBenchmark(String, Runnable, int, int)` | ✅ direct |
 | `void sayBenchmark(String, Runnable)` | ✅ direct |
+| `void sayBenchmark(String, Runnable, int, int)` | ✅ direct |
 | `void sayCallGraph(Class)` | ✅ direct |
 | `void sayCallSite()` | ✅ direct |
 | `void sayCite(String)` | ✅ direct |
@@ -359,11 +359,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `64 ns` |
+| Avg | `102 ns` |
 | Min | `41 ns` |
-| Max | `458 ns` |
-| p99 | `458 ns` |
-| Ops/sec | `15,625,000` |
+| Max | `459 ns` |
+| p99 | `459 ns` |
+| Ops/sec | `9,803,921` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -463,10 +463,10 @@ sayThreadDump();
 
 | Metric | Value |
 | --- | --- |
-| Thread Count | `17` |
-| Daemon Thread Count | `16` |
-| Peak Thread Count | `17` |
-| Total Started Thread Count | `17` |
+| Thread Count | `16` |
+| Daemon Thread Count | `15` |
+| Peak Thread Count | `16` |
+| Total Started Thread Count | `16` |
 
 ### Thread Details
 
@@ -487,10 +487,9 @@ sayThreadDump();
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
 | `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
 | `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
-| `65` | `ForkJoinPool-1-worker-7` | `WAITING` | `true` | `N/A` |
-| `66` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
+| `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
 
-*17 live threads*
+*16 live threads*
 
 > [!NOTE]
 > On Java 21+, virtual threads appear alongside platform threads. Thread states include NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, and TERMINATED. The peak thread count shows the maximum concurrent threads since JVM start.
