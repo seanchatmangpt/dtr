@@ -92,11 +92,11 @@ sayBenchmark("HashMap.get() lookup",
 
 | Metric | Result |
 | --- | --- |
-| Avg | `182 ns` |
-| Min | `42 ns` |
-| Max | `19541 ns` |
-| p99 | `1209 ns` |
-| Ops/sec | `5,494,505` |
+| Avg | `224 ns` |
+| Min | `83 ns` |
+| Max | `32625 ns` |
+| p99 | `1125 ns` |
+| Ops/sec | `4,464,285` |
 | Warmup rounds | `50` |
 | Measure rounds | `500` |
 | Java | `26` |
@@ -107,11 +107,11 @@ String concatenation benchmark — shows allocation cost:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `336 ns` |
-| Min | `209 ns` |
-| Max | `7542 ns` |
-| p99 | `958 ns` |
-| Ops/sec | `2,976,190` |
+| Avg | `375 ns` |
+| Min | `125 ns` |
+| Max | `10084 ns` |
+| p99 | `917 ns` |
+| Ops/sec | `2,666,666` |
 | Warmup rounds | `50` |
 | Measure rounds | `200` |
 | Java | `26` |
@@ -211,7 +211,7 @@ One-liner that documents the complete runtime environment. No parameters — rea
 | Max Heap | `12288 MB` |
 | Timezone | `America/Los_Angeles` |
 | DTR Version | `2.6.0` |
-| Timestamp | `2026-03-16T01:11:20.103360Z` |
+| Timestamp | `2026-03-16T02:14:00.344016Z` |
 
 ## C2: sayRecordComponents() — Java Record Schema
 
@@ -360,11 +360,11 @@ Benchmark results from b1 rendered as a chart:
 
 | Metric | Result |
 | --- | --- |
-| Avg | `66 ns` |
+| Avg | `88 ns` |
 | Min | `41 ns` |
-| Max | `542 ns` |
-| p99 | `542 ns` |
-| Ops/sec | `15,151,515` |
+| Max | `208 ns` |
+| p99 | `208 ns` |
+| Ops/sec | `11,363,636` |
 | Warmup rounds | `20` |
 | Measure rounds | `100` |
 | Java | `26` |
@@ -464,10 +464,10 @@ sayThreadDump();
 
 | Metric | Value |
 | --- | --- |
-| Thread Count | `16` |
-| Daemon Thread Count | `15` |
-| Peak Thread Count | `16` |
-| Total Started Thread Count | `16` |
+| Thread Count | `17` |
+| Daemon Thread Count | `16` |
+| Peak Thread Count | `17` |
+| Total Started Thread Count | `17` |
 
 ### Thread Details
 
@@ -483,14 +483,15 @@ sayThreadDump();
 | `36` | `surefire-forkedjvm-command-thread` | `RUNNABLE` | `true` | `N/A` |
 | `50` | `VirtualThread-unblocker` | `RUNNABLE` | `true` | `N/A` |
 | `52` | `ForkJoinPool-1-worker-1` | `WAITING` | `true` | `N/A` |
-| `54` | `ForkJoinPool-1-worker-2` | `TIMED_WAITING` | `true` | `N/A` |
+| `54` | `ForkJoinPool-1-worker-2` | `WAITING` | `true` | `N/A` |
 | `55` | `ForkJoinPool-1-worker-3` | `WAITING` | `true` | `N/A` |
-| `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
 | `57` | `ForkJoinPool-1-worker-4` | `WAITING` | `true` | `N/A` |
-| `64` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
-| `65` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
+| `58` | `ForkJoinPool-1-worker-5` | `WAITING` | `true` | `N/A` |
+| `60` | `ForkJoinPool-1-worker-6` | `WAITING` | `true` | `N/A` |
+| `65` | `ForkJoinPool-1-worker-7` | `TIMED_WAITING` | `true` | `N/A` |
+| `66` | `process reaper` | `TIMED_WAITING` | `true` | `N/A` |
 
-*16 live threads*
+*17 live threads*
 
 > [!NOTE]
 > On Java 21+, virtual threads appear alongside platform threads. Thread states include NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, and TERMINATED. The peak thread count shows the maximum concurrent threads since JVM start.

@@ -245,21 +245,21 @@ private void dispatchToAll(Consumer<RenderMachine> action) {
 %     [receive {Pid, done} -> ok end || Pid <- Pids].
 ```
 
-- LaTeX/ArXiv
-- Markdown
-- LaTeX/IEEE
 - Blog/Medium
+- LaTeX/IEEE
 - LaTeX/ACM
-- Blog/Substack
-- Blog/DevTo
+- Markdown
 - LaTeX/Nature
+- LaTeX/ArXiv
+- Blog/DevTo
 - Slides/RevealJS
+- Blog/Substack
 - PDF
 - OpenAPI
 
 | Key | Value |
 | --- | --- |
-| `Wall-clock time` | `2 ms (2230584 ns)` |
+| `Wall-clock time` | `2 ms (2411541 ns)` |
 | `Formats rendered concurrently` | `11` |
 | `Erlang equivalence` | `Semantically identical to spawn/receive dispatch` |
 | `Thread pool sizing` | `Not required — virtual threads are created per task` |

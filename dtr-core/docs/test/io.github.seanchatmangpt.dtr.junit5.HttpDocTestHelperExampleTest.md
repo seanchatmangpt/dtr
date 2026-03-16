@@ -61,8 +61,8 @@ This example demonstrates various response validation techniques.
 
 | Key | Value |
 | --- | --- |
-| `Contains JSON` | `true` |
 | `Response length` | `429` |
+| `Contains JSON` | `true` |
 
 ## PUT and DELETE Request Examples
 
@@ -140,7 +140,7 @@ This example demonstrates a POST request with a JSON body.
     "Content-Type": "application/json", 
     "Host": "httpbin.org", 
     "User-Agent": "Java-http-client/26", 
-    "X-Amzn-Trace-Id": "Root=1-69b758c7-3d1aee33797e39cb55f4b1ba"
+    "X-Amzn-Trace-Id": "Root=1-69b76778-063f29c70c738a5e353e9095"
   }, 
   "json": {
     "email": "alice@example.com", 

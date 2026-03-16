@@ -32,8 +32,8 @@ int x = 42;
 
 | Key | Value |
 | --- | --- |
-| `status` | `functional` |
 | `feature` | `parameter-injection` |
+| `status` | `functional` |
 
 ## Parameter Injection Basics
 
