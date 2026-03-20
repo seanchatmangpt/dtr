@@ -4,7 +4,9 @@ import io.github.seanchatmangpt.dtr.rendermachine.RenderMachineCommands;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Abstraction layer that composes multiple {@code say*} primitives into
@@ -104,9 +106,8 @@ public final class BlueOceanLayer {
                 implementations.length, contract.getSimpleName()));
         cmd.sayContractVerification(contract, implementations);
 
-        var allClasses = new Class<?>[implementations.length + 1];
-        allClasses[0] = contract;
-        System.arraycopy(implementations, 0, allClasses, 1, implementations.length);
+        var allClasses = Stream.concat(Stream.of(contract), Arrays.stream(implementations))
+                .toArray(Class<?>[]::new);
         cmd.sayClassDiagram(allClasses);
 
         for (Class<?> impl : implementations) {
@@ -140,11 +141,11 @@ public final class BlueOceanLayer {
     public static void documentErrorPattern(RenderMachineCommands cmd, Throwable t) {
         cmd.sayNextSection("Error Pattern: " + t.getClass().getSimpleName());
         cmd.sayException(t);
-        Throwable root = t;
+        var root = t;
         while (root.getCause() != null) root = root.getCause();
         if (root != t) {
-            cmd.sayWarning("Root cause: " + root.getClass().getSimpleName() +
-                    " — " + root.getMessage());
+            cmd.sayWarning("Root cause: %s — %s".formatted(
+                    root.getClass().getSimpleName(), root.getMessage()));
         }
     }
 
