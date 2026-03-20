@@ -4,6 +4,7 @@ import io.github.seanchatmangpt.dtr.benchmark.BenchmarkRunner;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SequencedMap;
 
 /**
  * Static utilities for Vision 2030 documentation patterns.
@@ -23,15 +24,17 @@ public final class Vision2030Utils {
      *
      * @return ordered map of environment key-value pairs
      */
-    public static Map<String, String> systemFingerprint() {
+    public static SequencedMap<String, String> systemFingerprint() {
+        var rt = Runtime.getRuntime();
         var map = new LinkedHashMap<String, String>();
         map.put("Java Version", System.getProperty("java.version", "unknown"));
         map.put("Java Vendor", System.getProperty("java.vendor", "unknown"));
-        map.put("OS", System.getProperty("os.name", "unknown") + " " +
-                System.getProperty("os.version", "") + " " +
-                System.getProperty("os.arch", ""));
-        map.put("Processors", String.valueOf(Runtime.getRuntime().availableProcessors()));
-        map.put("Max Heap (MB)", String.valueOf(Runtime.getRuntime().maxMemory() / (1024 * 1024)));
+        map.put("OS", "%s %s %s".formatted(
+                System.getProperty("os.name", "unknown"),
+                System.getProperty("os.version", ""),
+                System.getProperty("os.arch", "")));
+        map.put("Processors", String.valueOf(rt.availableProcessors()));
+        map.put("Max Heap (MB)", String.valueOf(rt.maxMemory() / (1024 * 1024)));
         map.put("Timezone", System.getProperty("user.timezone",
                 java.util.TimeZone.getDefault().getID()));
         return map;
@@ -84,12 +87,12 @@ public final class Vision2030Utils {
      * @param clazz the class to describe
      * @return ordered map of class metadata
      */
-    public static Map<String, String> classMetadata(Class<?> clazz) {
+    public static SequencedMap<String, String> classMetadata(Class<?> clazz) {
+        var moduleName = clazz.getModule().getName();
         var map = new LinkedHashMap<String, String>();
         map.put("Class", clazz.getName());
         map.put("Package", clazz.getPackageName());
-        map.put("Module", clazz.getModule().getName() != null
-                ? clazz.getModule().getName() : "unnamed");
+        map.put("Module", moduleName instanceof String name ? name : "unnamed");
         map.put("Sealed", String.valueOf(clazz.isSealed()));
         map.put("Record", String.valueOf(clazz.isRecord()));
         map.put("Interface", String.valueOf(clazz.isInterface()));

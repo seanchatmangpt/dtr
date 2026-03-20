@@ -49,12 +49,13 @@ public final class BlueOceanLayer {
     public static void documentPerformanceProfile(RenderMachineCommands cmd, String title,
                                                    String[] labels, Runnable[] tasks) {
         if (labels.length != tasks.length) {
-            throw new IllegalArgumentException("labels and tasks must have the same length");
+            throw new IllegalArgumentException(
+                    "labels length %d != tasks length %d".formatted(labels.length, tasks.length));
         }
         cmd.sayNextSection("Performance Profile: " + title);
-        cmd.say("Benchmarking " + labels.length + " tasks with real `System.nanoTime()` measurements.");
+        cmd.say("Benchmarking %d task(s) with real `System.nanoTime()` measurements.".formatted(labels.length));
 
-        for (int i = 0; i < labels.length; i++) {
+        for (var i = 0; i < labels.length; i++) {
             cmd.sayBenchmark(labels[i], tasks[i]);
         }
 
@@ -97,8 +98,8 @@ public final class BlueOceanLayer {
                                                    Class<?> contract,
                                                    Class<?>... implementations) {
         cmd.sayNextSection("Contract Compliance: " + contract.getSimpleName());
-        cmd.say("Verifying " + implementations.length + " implementation(s) against `" +
-                contract.getSimpleName() + "`.");
+        cmd.say("Verifying %d implementation(s) against `%s`.".formatted(
+                implementations.length, contract.getSimpleName()));
         cmd.sayContractVerification(contract, implementations);
 
         var allClasses = new Class<?>[implementations.length + 1];
