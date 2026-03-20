@@ -35,18 +35,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Vision 2030 Showcase: the "hero" test that proves Vision2030Utils and
- * BlueOceanLayer work together as a cohesive documentation system.
+ * Vision 2030 Showcase: the "hero" test that proves the whole DTR system works together.
  *
- * <p>This test walks through eight real-world "jobs to be done" — from getting
- * started to system audits, performance showdowns, contract reviews, record
- * schemas, error handling, class deep dives, and a closing summary. Every
- * measurement is real ({@code System.nanoTime()}), every diagram is generated
- * from live class structure, every assertion is verified at runtime.</p>
+ * <p>Demonstrates every major capability of {@link Vision2030Utils} and {@link BlueOceanLayer}
+ * in a single, end-to-end documentation test. Each section solves a real-world "job to be done":</p>
+ * <ol>
+ *   <li>Getting Started with Vision 2030 utilities</li>
+ *   <li>System audit via BlueOceanLayer</li>
+ *   <li>Performance showdown across Map implementations</li>
+ *   <li>API contract review for RenderMachineCommands</li>
+ *   <li>Record schema documentation for CallSiteRecord</li>
+ *   <li>Error handling patterns with realistic exception chains</li>
+ *   <li>Class deep dive into RenderMachineImpl</li>
+ *   <li>TL;DR summary with social-ready callouts</li>
+ * </ol>
  *
- * <p>Together, these sections demonstrate that DTR's Vision 2030 layer turns
- * a single test class into a self-documenting, self-verifying technical
- * report.</p>
+ * <p>All measurements are real ({@code System.nanoTime()}), all reflection is live,
+ * all diagrams are generated from actual class structure. No simulation, no hard-coded numbers.</p>
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class Vision2030ShowcaseTest extends DtrTest {
@@ -149,6 +154,9 @@ public class Vision2030ShowcaseTest extends DtrTest {
             concurrentMap.put(key, i);
         }
 
+        say("Each map is pre-populated with 1,000 entries. We measure `.get(\"key-500\")` "
+                + "for a key in the middle of the keyspace.");
+
         say("**HashMap vs TreeMap** -- O(1) amortized vs O(log n) lookup:");
 
         var hashVsTree = Vision2030Utils.benchmarkComparison(
@@ -172,7 +180,6 @@ public class Vision2030ShowcaseTest extends DtrTest {
 
         say("**Visual comparison** -- average lookup times:");
 
-        // Extract average ns values for the chart
         long hashAvg = Long.parseLong(hashVsTree[1][1]);
         long treeAvg = Long.parseLong(hashVsTree[1][2]);
         long concurrentAvg = Long.parseLong(hashVsConcurrent[1][2]);
@@ -212,7 +219,7 @@ public class Vision2030ShowcaseTest extends DtrTest {
         var meta = Vision2030Utils.classMetadata(RenderMachineCommands.class);
         sayAndAssertThat("RenderMachineCommands is an interface",
                 meta.get("Interface"), equalTo("true"));
-        sayAndAssertThat("RenderMachineCommands has public methods",
+        sayAndAssertThat("RenderMachineCommands has many public methods",
                 Integer.parseInt(meta.get("Public Methods")), greaterThan(20));
     }
 
@@ -229,7 +236,7 @@ public class Vision2030ShowcaseTest extends DtrTest {
                 + "schema alongside a live example serialized as JSON.");
 
         sayCode("""
-                // CallSiteRecord captures provenance: where in the code was this call made?
+                // CallSiteRecord captures provenance: where was this call made?
                 var example = new CallSiteRecord(
                         "Vision2030ShowcaseTest", "a5_record_schema_documentation", 185);
                 BlueOceanLayer.documentRecordProfile(this, CallSiteRecord.class, example);
@@ -243,8 +250,11 @@ public class Vision2030ShowcaseTest extends DtrTest {
                 CallSiteRecord.class.isRecord(), is(true));
         sayAndAssertThat("CallSiteRecord has 3 components",
                 CallSiteRecord.class.getRecordComponents().length, equalTo(3));
-        sayAndAssertThat("Example className is correct",
+        sayAndAssertThat("Example className matches",
                 example.className(), equalTo("Vision2030ShowcaseTest"));
+
+        sayNote("Record schemas update automatically when the record class changes. "
+                + "No manual synchronization required.");
     }
 
     // =========================================================================
@@ -255,9 +265,9 @@ public class Vision2030ShowcaseTest extends DtrTest {
     void a6_error_handling_patterns() {
         sayNextSection("Error Handling Patterns");
 
-        say("Realistic exception chains are common in production code. DTR documents "
-                + "the full chain -- type, message, cause, and stack frames -- so that "
-                + "error handling patterns are as well-documented as the happy path.");
+        say("Documenting error handling is as important as documenting the happy path. "
+                + "`BlueOceanLayer.documentErrorPattern()` renders exception chains with "
+                + "full cause unwinding and a root-cause warning.");
 
         say("Consider a typical layered failure: a configuration file is missing, "
                 + "which causes initialization to fail, which causes the service to "
@@ -288,7 +298,6 @@ public class Vision2030ShowcaseTest extends DtrTest {
                 rootCause.getClass().getSimpleName(),
                 equalTo("FileNotFoundException"));
 
-        // Unwalk the chain to verify depth
         int depth = 0;
         Throwable t = serviceError;
         while (t != null) {
@@ -298,8 +307,8 @@ public class Vision2030ShowcaseTest extends DtrTest {
         sayAndAssertThat("Exception chain depth", depth, equalTo(3));
 
         say("**Best practice:** always preserve the cause chain when wrapping exceptions. "
-                + "DTR's `documentErrorPattern()` automatically unwraps to the root cause "
-                + "and emits a warning so readers immediately see the underlying problem.");
+                + "`documentErrorPattern()` automatically unwraps to the root cause and emits "
+                + "a warning so readers immediately see the underlying problem.");
     }
 
     // =========================================================================
@@ -354,27 +363,28 @@ public class Vision2030ShowcaseTest extends DtrTest {
                 + "-- all generated from live code. #Java26 #DTR #DocumentationTesting");
 
         say("**What we demonstrated in this showcase:**");
-        sayOrderedList(List.of(
-                "Getting Started -- system fingerprints and class metadata with Vision2030Utils",
-                "System Audit -- full runtime landscape with BlueOceanLayer.documentSystemLandscape()",
-                "Performance Showdown -- HashMap vs TreeMap vs ConcurrentHashMap with real nanoTime measurements",
-                "API Contract Review -- interface compliance verification for RenderMachineCommands",
-                "Record Schema Documentation -- CallSiteRecord profile with live JSON example",
-                "Error Handling Patterns -- 3-level exception chain documentation",
-                "Class Deep Dive -- complete RenderMachineImpl profile from reflection",
-                "This summary -- TL;DR, tweetable quote, and call to action"
-        ));
+        sayTable(new String[][]{
+                {"Section", "Capability", "Key API"},
+                {"Getting Started", "Environment fingerprinting", "Vision2030Utils.systemFingerprint()"},
+                {"System Audit", "Full runtime landscape", "BlueOceanLayer.documentSystemLandscape()"},
+                {"Performance Showdown", "Head-to-head benchmarks", "Vision2030Utils.benchmarkComparison()"},
+                {"API Contract Review", "Interface compliance", "BlueOceanLayer.documentContractCompliance()"},
+                {"Record Schema", "Record profiling", "BlueOceanLayer.documentRecordProfile()"},
+                {"Error Handling", "Exception chain docs", "BlueOceanLayer.documentErrorPattern()"},
+                {"Class Deep Dive", "Full class profile", "BlueOceanLayer.documentClassProfile()"},
+                {"Summary", "Social-ready output", "sayTldr() + sayTweetable() + sayCallToAction()"}
+        });
 
         sayCallToAction("https://github.com/seanchatmangpt/dtr");
 
-        // Final assertion: verify the two utility classes are accessible and functional
-        sayAndAssertThat("Vision2030Utils.systemFingerprint() is not empty",
+        sayAndAssertThat("Vision2030Utils.systemFingerprint() returns data",
                 Vision2030Utils.systemFingerprint().isEmpty(), is(false));
         sayAndAssertThat("Vision2030Utils.classMetadata() works on any class",
                 Vision2030Utils.classMetadata(Object.class).containsKey("Class"), is(true));
 
         sayNote("Every section in this showcase used `sayAndAssertThat()` to verify "
                 + "real behavior. If any assertion fails, the test fails -- the "
-                + "documentation cannot claim something the code does not prove.");
+                + "documentation cannot claim something the code does not prove. "
+                + "Generated on Java " + System.getProperty("java.version") + ".");
     }
 }
