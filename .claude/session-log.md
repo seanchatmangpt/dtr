@@ -1100,3 +1100,31 @@ Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
 ### Pipeline
 dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
 
+
+---
+
+## Session: 2026-03-16T06:12:49Z
+**Session ID:** 2b310465-bcec-4c0b-8aa3-48b5c556f2f4
+**Branch:** docs-update-2026.4.1
+
+### Last 3 Commits
+```
+9823c92 docs: rewrite README as outcome-oriented guide
+05d6cc9 docs: complete say* API reference in README
+a2c7ae3 refactor: rewrite README.md as concise say* API reference
+```
+
+### Working Tree Status
+```
+clean
+```
+
+### Build
+Tests: mvnd verify not run this session (no surefire reports)
+
+### Observatory
+Guard: RED | violations=98 | files_scanned=75 | as_of=2026-03-15T00:44:53Z
+
+### Pipeline
+dx pipeline: red | {'observatory': 'skip', 'guard': 'skip', 'build': 'skip', 'git': 'red'}
+
