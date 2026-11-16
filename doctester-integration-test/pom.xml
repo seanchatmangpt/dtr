@@ -151,6 +151,12 @@ the specific language governing permissions and limitations under the License. -
             <artifactId>h2</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.ninjaframework</groupId>
+            <artifactId>ninja-db-classic</artifactId>
+            <version>${ninja.version}</version>
+        </dependency>
+
         <!-- Flyway 10.x for H2 2.x compatibility (overrides old Flyway from Ninja framework) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
